@@ -4,28 +4,27 @@ using System.Collections;
 public class CrystalSystem : MonoBehaviour
 {
     [Header("Jauge")]
-    [SerializeField] private int   _maxCharges    = 15;
-    [SerializeField] private float _ultDamage     = 50f;
-    [SerializeField] private float _slowFactor    = 0.3f; // 30% de la vitesse normale
-    [SerializeField] private float _slowDuration  = 3f;
+    [SerializeField] private int _maxCharges = 15;
 
-    private int  _currentCharges = 0;
-    private bool _isReady        = false;
+    [Header("Ulti")]
+    [SerializeField] private float _ultDamage = 50f;
+    [SerializeField] private float _ultRange = 10f;
+    [SerializeField] private float _slowFactor = 0.3f;
+    [SerializeField] private float _slowDuration = 3f;
 
-    public int  CurrentCharges => _currentCharges;
-    public int  MaxCharges     => _maxCharges;
-    public bool IsReady        => _isReady;
+    private int _currentCharges = 0;
+    private bool _isReady = false;
+
+    public int CurrentCharges => _currentCharges;
+    public int MaxCharges => _maxCharges;
+    public bool IsReady => _isReady;
 
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
 
-        if (_isReady)
-        {
-            Debug.Log($"Ulti prêt — appuie sur E | GetKeyDown E : {Input.GetKeyDown(KeyCode.E)}");
-            if (Input.GetKeyDown(KeyCode.E))
-                TriggerUlt();
-        }
+        if (_isReady && Input.GetKeyDown(KeyCode.E))
+            TriggerUlt();
     }
 
     public void AbsorbProjectile()
@@ -44,12 +43,10 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerUlt()
     {
-        _isReady        = false;
+        _isReady = false;
         _currentCharges = 0;
 
-        // D'abord reset les cristaux en gris
         GameUI.Instance.SetCrystalReady(false);
-        // Puis met à jour le compteur
         GameUI.Instance.UpdateCrystalCharge(0, _maxCharges);
 
         DamageAllEnemies();
@@ -60,37 +57,52 @@ public class CrystalSystem : MonoBehaviour
 
     private void DamageAllEnemies()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        foreach (GameObject enemy in enemies)
-        {
-            EnemyBase eb = enemy.GetComponent<EnemyBase>();
-            if (eb != null) eb.TakeDamage(_ultDamage);
+        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
+        int count = 0;
 
-            BossBase boss = enemy.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(_ultDamage);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Enemy"))
+            {
+                EnemyBase eb = hit.GetComponent<EnemyBase>();
+                if (eb != null) eb.TakeDamage(_ultDamage);
+
+                BossBase boss = hit.GetComponent<BossBase>();
+                if (boss != null) boss.TakeDamage(_ultDamage);
+
+                count++;
+            }
         }
+        Debug.Log($"Ulti — {count} ennemis touchés dans un rayon de {_ultRange}");
     }
 
     private IEnumerator SlowAllEnemies()
     {
-        // Applique le ralentissement
         SetEnemySpeedMultiplier(_slowFactor);
         GameUI.Instance.ShowUltEffect(true);
 
         yield return new WaitForSeconds(_slowDuration);
 
-        // Retire le ralentissement
         SetEnemySpeedMultiplier(1f);
         GameUI.Instance.ShowUltEffect(false);
     }
 
     private void SetEnemySpeedMultiplier(float multiplier)
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        foreach (GameObject enemy in enemies)
+        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
+        foreach (Collider hit in hits)
         {
-            EnemyBase eb = enemy.GetComponent<EnemyBase>();
-            if (eb != null) eb.SetSpeedMultiplier(multiplier);
+            if (hit.CompareTag("Enemy"))
+            {
+                EnemyBase eb = hit.GetComponent<EnemyBase>();
+                if (eb != null) eb.SetSpeedMultiplier(multiplier);
+            }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, _ultRange);
     }
 }

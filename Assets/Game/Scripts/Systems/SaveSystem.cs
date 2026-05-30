@@ -30,7 +30,7 @@ public class SaveData
     public float bestTime        = 0f; // Meilleur temps de survie
     public int   bestWave        = 0;  // Meilleure vague atteinte
     public int   bestKills       = 0;  // Meilleur nombre de kills
-
+    public int   totalGems       = 0;  // Gemmes disponible pour le shop
     // Upgrades méta achetées
     public int hpUpgradeLevel      = 0;
     public int damageUpgradeLevel  = 0;

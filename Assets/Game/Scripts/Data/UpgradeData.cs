@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "SO_Upgrade", menuName = "BulletHeaven/Upgrade")]
 public class UpgradeData : ScriptableObject
@@ -15,6 +15,11 @@ public class UpgradeData : ScriptableObject
     {
         switch (upgradeType)
         {
+            case UpgradeType.DoubleShot:
+                // Disponible une seule fois
+                WeaponBase wb = FindObjectOfType<WeaponBase>();
+                return wb != null && !wb.IsDoubleShotUnlocked();
+            
             case UpgradeType.AddOrbital:
                 return FindObjectOfType<WeaponOrbital>() != null;
 
@@ -42,6 +47,10 @@ public class UpgradeData : ScriptableObject
 
         switch (upgradeType)
         {
+            case UpgradeType.DoubleShot:
+                if (weapon != null) weapon.UnlockDoubleShot();
+                break;
+
             case UpgradeType.MoveSpeed:
                 if (player != null) player.AddMoveSpeed(value);
                 break;
@@ -84,7 +93,7 @@ public class UpgradeData : ScriptableObject
                     if (player_go != null)
                     {
                         WeaponOrbital newOrbital = player_go.AddComponent<WeaponOrbital>();
-                        // On r�cup�re le prefab depuis les ressources
+                        // On récupère le prefab depuis les ressources
                         GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
                         if (prefab != null)
                             newOrbital.Init(prefab);
@@ -114,5 +123,6 @@ public enum UpgradeType
     UnlockAOE,
     UnlockOrbital,
     AddOrbital,
-    AOERadius
+    AOERadius,
+    DoubleShot  // ← ajoute ça
 }

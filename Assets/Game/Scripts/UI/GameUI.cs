@@ -85,7 +85,7 @@ public class GameUI : MonoBehaviour
     public void UpdateGold(int amount)
     {
         if (_goldText != null)
-            _goldText.text = $"Gold : {amount}";
+            _goldText.text = $"  : {amount}";
     }
 
     private void Awake()
