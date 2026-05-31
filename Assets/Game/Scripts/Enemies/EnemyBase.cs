@@ -67,9 +67,17 @@ public class EnemyBase : MonoBehaviour
         return force.normalized * 0.5f; // Force réduite pour ne pas trop perturber
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Color color = default)
     {
         _currentHealth -= damage;
+
+        // Spawn du chiffre flottant
+        if (DamageNumberSpawner.Instance != null)
+        {
+            Color c = color == default ? DamageNumberSpawner.ColorProjectile : color;
+            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c);
+        }
+
         if (_currentHealth <= 0)
             Die();
     }

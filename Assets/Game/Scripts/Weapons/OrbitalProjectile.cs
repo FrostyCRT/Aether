@@ -37,7 +37,7 @@ public class OrbitalProjectile : MonoBehaviour
             // On vérifie que l'ennemi n'est pas en cooldown
             if (!_hitCooldowns.ContainsKey(enemy))
             {
-                enemy.TakeDamage(_damage);
+                enemy.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
                 _hitCooldowns[enemy] = _hitCooldown;
             }
         }

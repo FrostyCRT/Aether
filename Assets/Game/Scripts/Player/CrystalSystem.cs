@@ -65,7 +65,7 @@ public class CrystalSystem : MonoBehaviour
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_ultDamage);
+                if (eb != null) eb.TakeDamage(_ultDamage, DamageNumberSpawner.ColorCritical);
 
                 BossBase boss = hit.GetComponent<BossBase>();
                 if (boss != null) boss.TakeDamage(_ultDamage);

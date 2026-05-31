@@ -64,7 +64,7 @@ public class WeaponAOE : MonoBehaviour
             {
                 EnemyBase enemy = hit.GetComponent<EnemyBase>();
                 if (enemy != null)
-                    enemy.TakeDamage(_damage);
+                    enemy.TakeDamage(_damage, DamageNumberSpawner.ColorAOE);
             }
         }
 

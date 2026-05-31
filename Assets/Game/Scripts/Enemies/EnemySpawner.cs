@@ -47,13 +47,18 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnWave()
     {
+        int currentEnemies = GameObject.FindGameObjectsWithTag("Enemy").Length;
+        if (currentEnemies >= _maxEnemies) return;
+
         for (int i = 0; i < _enemiesPerWave; i++)
         {
+            currentEnemies = GameObject.FindGameObjectsWithTag("Enemy").Length;
+            if (currentEnemies >= _maxEnemies) break;
             SpawnEnemy();
         }
     }
 
-   private void SpawnEnemy()
+    private void SpawnEnemy()
    {
         Vector2 randomCircle = Random.insideUnitCircle.normalized;
         Vector3 spawnPos = _playerTransform.position + new Vector3(
@@ -77,5 +82,14 @@ public class EnemySpawner : MonoBehaviour
 
    public float GetSpawnInterval() => _spawnInterval;
    public void  SetSpawnInterval(float value) => _spawnInterval = value;
+
+    private int _maxEnemies = 15;
+
+    public void SetMaxEnemies(int max)
+    {
+        _maxEnemies = max;
+    }
+
+
 
 }

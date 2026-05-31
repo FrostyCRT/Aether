@@ -34,7 +34,7 @@ public class ProjectileBasic : MonoBehaviour
         {
             EnemyBase enemy = other.GetComponent<EnemyBase>();
             if (enemy != null)
-                enemy.TakeDamage(_damage);
+                enemy.TakeDamage(_damage, DamageNumberSpawner.ColorProjectile);
             else
             {
                 // Essaie avec BossBase

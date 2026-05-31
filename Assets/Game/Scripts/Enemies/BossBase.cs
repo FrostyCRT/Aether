@@ -110,12 +110,19 @@ public class BossBase : MonoBehaviour
         _isCharging = false;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Color color = default)
     {
         _currentHealth -= damage;
-        Debug.Log($"Boss HP : {_currentHealth} / {_maxHealth}");
+
+        // Chiffre flottant au dessus du boss
+        if (DamageNumberSpawner.Instance != null)
+        {
+            Color c = color == default ? DamageNumberSpawner.ColorCritical : color;
+            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, true); // isCritical = true pour les dégâts boss
+        }
+
         GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
-    
+
         if (_currentHealth <= 0)
             Die();
     }

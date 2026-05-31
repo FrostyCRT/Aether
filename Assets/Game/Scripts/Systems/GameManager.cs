@@ -74,4 +74,13 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene(0); // 0 = MainMenu dans Build Settings
     }
+
+    public void TriggerVictory()
+    {
+        if (_isGameOver) return;
+        _isGameOver = true;
+        Debug.Log("VICTOIRE !");
+        // On affichera l'écran de victoire plus tard
+        Invoke(nameof(ShowGameOver), 1.5f);
+    }
 }

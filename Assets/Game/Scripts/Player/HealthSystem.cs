@@ -77,9 +77,17 @@ public class HealthSystem : MonoBehaviour
     public void TakeDamage(float damage)
     {
         _currentHealth -= damage;
-        _currentHealth  = Mathf.Max(_currentHealth, 0f);
-        GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+        _currentHealth = Mathf.Max(_currentHealth, 0f);
 
+        // Chiffre rouge au dessus du joueur
+        if (DamageNumberSpawner.Instance != null)
+            DamageNumberSpawner.Instance.Spawn(
+                transform.position,
+                damage,
+                DamageNumberSpawner.ColorPlayer
+            );
+
+        GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
         if (_currentHealth <= 0)
             Die();
     }

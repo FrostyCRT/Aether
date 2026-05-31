@@ -4,24 +4,23 @@ public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
-    [Header("Vagues")]
-    [SerializeField] private float _waveDuration            = 45f;
-    [SerializeField] private int   _maxWave                 = 10;
-    [SerializeField] private float _spawnIntervalMin        = 0.5f;
-    [SerializeField] private float _spawnIntervalDecrement  = 0.08f;
+    [Header("Paramètres")]
+    public float BossSpawnInterval = 300f; // 5 minutes en secondes
 
     [Header("Boss")]
-    public  float          BossSpawnInterval = 30f; // Public pour tester facilement
-    [SerializeField] private GameObject _bossPrefab;
+    [SerializeField] private GameObject _bossPrefab1;
+    [SerializeField] private GameObject _bossPrefab2;
+    [SerializeField] private GameObject _bossPrefab3;
 
-    private float _waveTimer  = 0f;
-    private float _runTimer   = 0f;
-    private float _bossTimer  = 0f;
-    private int   _currentWave = 1;
-    private bool  _bossAlive   = false;
+    [Header("Limite ennemis")]
+    [SerializeField] private int _maxEnemiesOnScreen = 15;
 
-    public int   CurrentWave => _currentWave;
-    public float RunTimer    => _runTimer;
+    private float _runTimer = 0f;
+    private int _bossCount = 0;
+    private bool _bossAlive = false;
+
+    public int CurrentWave => _bossCount + 1;
+    public float RunTimer => _runTimer;
 
     private EnemySpawner _enemySpawner;
 
@@ -38,61 +37,88 @@ public class WaveManager : MonoBehaviour
     private void Start()
     {
         _enemySpawner = FindObjectOfType<EnemySpawner>();
-        UpdateDifficulty();
+        ApplyDifficulty();
     }
 
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
-        if (_bossAlive) return; // On pause les vagues pendant le boss
+        if (_bossAlive) return;
 
-        _runTimer  += Time.deltaTime;
-        _waveTimer += Time.deltaTime;
-        _bossTimer += Time.deltaTime;
+        _runTimer += Time.deltaTime;
 
-        // Nouvelle vague
-        if (_waveTimer >= _waveDuration && _currentWave < _maxWave)
-        {
-            _waveTimer = 0f;
-            _currentWave++;
-            UpdateDifficulty();
-            GameUI.Instance.UpdateWave(_currentWave);
-            Debug.Log($"Vague {_currentWave} !");
-        }
+        // Mise à jour de la difficulté
+        ApplyDifficulty();
 
-        // Spawn du boss
-        if (_bossTimer >= BossSpawnInterval)
-        {
-            _bossTimer = 0f;
-            SpawnBoss();
-        }
+        // Spawn des boss
+        if (_bossCount == 0 && _runTimer >= 300f) SpawnBoss(1);
+        if (_bossCount == 1 && _runTimer >= 600f) SpawnBoss(2);
+        if (_bossCount == 2 && _runTimer >= 900f) SpawnBoss(3);
 
         GameUI.Instance.UpdateTimer(_runTimer);
     }
 
-    private void SpawnBoss()
+    private void ApplyDifficulty()
     {
-        if (_bossPrefab == null)
+        if (_enemySpawner == null) return;
+
+        float minutes = _runTimer / 60f;
+
+        if (minutes < 3f)
         {
-            Debug.LogWarning("Boss Prefab non assigné !");
-            return;
+            _enemySpawner.SetSpawnInterval(3f);
+            _maxEnemiesOnScreen = 15;
+        }
+        else if (minutes < 5f)
+        {
+            _enemySpawner.SetSpawnInterval(2f);
+            _maxEnemiesOnScreen = 25;
+        }
+        else if (minutes < 8f)
+        {
+            _enemySpawner.SetSpawnInterval(1.5f);
+            _maxEnemiesOnScreen = 30;
+        }
+        else if (minutes < 10f)
+        {
+            _enemySpawner.SetSpawnInterval(1f);
+            _maxEnemiesOnScreen = 40;
+        }
+        else if (minutes < 13f)
+        {
+            _enemySpawner.SetSpawnInterval(0.8f);
+            _maxEnemiesOnScreen = 50;
+        }
+        else
+        {
+            _enemySpawner.SetSpawnInterval(0.6f);
+            _maxEnemiesOnScreen = 60;
         }
 
-        // On tue tous les ennemis sans donner d'XP
-        ClearAllEnemies();
+        _enemySpawner.SetMaxEnemies(_maxEnemiesOnScreen);
+    }
 
-        // On arrête le spawner pendant le combat
-        _enemySpawner.gameObject.SetActive(false);
+    private void SpawnBoss(int bossNumber)
+    {
+        _bossCount++;
         _bossAlive = true;
 
-        // On spawn le boss à distance du joueur
+        ClearAllEnemies();
+        _enemySpawner.gameObject.SetActive(false);
+
         GameObject player = GameObject.FindWithTag("Player");
-        Vector3 spawnPos  = player.transform.position + new Vector3(10f, 0f, 0f);
+        Vector3 spawnPos = player.transform.position + new Vector3(10f, 0f, 0f);
 
-        Instantiate(_bossPrefab, spawnPos, Quaternion.identity);
+        GameObject bossPrefab = bossNumber == 1 ? _bossPrefab1 :
+                                bossNumber == 2 ? _bossPrefab2 : _bossPrefab3;
 
-        GameUI.Instance.UpdateWave(-1); // -1 = affiche "BOSS !"
-        Debug.Log("BOSS SPAWNÉ !");
+        if (bossPrefab != null)
+            Instantiate(bossPrefab, spawnPos, Quaternion.identity);
+        else
+            Debug.LogWarning($"Boss {bossNumber} prefab non assigné !");
+
+        GameUI.Instance.UpdateWave(-1);
+        Debug.Log($"Boss {bossNumber} spawné !");
     }
 
     private void ClearAllEnemies()
@@ -100,7 +126,6 @@ public class WaveManager : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies)
         {
-            // On remet dans le pool sans donner d'XP
             EnemyBase eb = enemy.GetComponent<EnemyBase>();
             if (eb != null)
                 ObjectPool.Instance.ReturnToPool(GetPoolTag(enemy), enemy);
@@ -112,30 +137,20 @@ public class WaveManager : MonoBehaviour
     private string GetPoolTag(GameObject enemy)
     {
         if (enemy.GetComponent<EnemyShooter>() != null) return "EnemyShooter";
-        if (enemy.GetComponent<EnemyTank>()    != null) return "EnemyTank";
+        if (enemy.GetComponent<EnemyTank>() != null) return "EnemyTank";
         return "Enemy";
     }
 
     public void OnBossDied()
     {
         _bossAlive = false;
-        _bossTimer = 0f;
-
-        // On relance le spawner
         _enemySpawner.gameObject.SetActive(true);
-        GameUI.Instance.UpdateWave(_currentWave);
-        Debug.Log("Boss vaincu ! Les vagues reprennent !");
-    }
+        GameUI.Instance.UpdateWave(CurrentWave);
 
-    private void UpdateDifficulty()
-    {
-        if (_enemySpawner == null) return;
+        // Victoire si c'était le boss 3
+        if (_bossCount >= 3)
+            GameManager.Instance.TriggerVictory();
 
-        float newInterval = Mathf.Max(
-            _spawnIntervalMin,
-            _enemySpawner.GetSpawnInterval() - _spawnIntervalDecrement * (_currentWave - 1)
-        );
-
-        _enemySpawner.SetSpawnInterval(newInterval);
+        Debug.Log($"Boss vaincu ! Run continue — Vague {CurrentWave}");
     }
 }
