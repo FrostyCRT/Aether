@@ -37,7 +37,7 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Slider _dashCooldownBar;
 
     [Header("Cristal")]
-    [SerializeField] private UnityEngine.UI.Image[] _crystalIcons; // 15 icônes
+    [SerializeField] private UnityEngine.UI.Image[] _crystalIcons; // 6 icônes
     [SerializeField] private GameObject             _ultReadyEffect;
 
     public void UpdateCrystalCharge(int current, int max)
