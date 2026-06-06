@@ -3,31 +3,30 @@ using UnityEngine;
 public class BossBase : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _maxHealth    = 500f;
-    [SerializeField] private float _moveSpeed    = 3f;
-    [SerializeField] private float _xpValue      = 200f;
-    [SerializeField] private int _goldValue = 50;
+    [SerializeField] protected float _maxHealth = 500f;
+    [SerializeField] protected float _moveSpeed = 3f;
+    [SerializeField] protected float _xpValue   = 200f;
+    [SerializeField] protected int   _goldValue = 50;
 
     [Header("Attaque")]
-    [SerializeField] private GameObject _projectilePrefab;
-    [SerializeField] private float      _fireRate        = 1f;
-    [SerializeField] private int        _projectileCount = 8; // Projectiles en éventail
-    [SerializeField] private float      _chargeCooldown  = 5f; // Secondes entre chaque charge
+    [SerializeField] protected GameObject _projectilePrefab;
+    [SerializeField] protected float      _fireRate        = 1f;
+    [SerializeField] protected int        _projectileCount = 8;
+    [SerializeField] protected float      _chargeCooldown  = 5f;
 
     [Header("Identité")]
-    [SerializeField] private string _bossName = "BOSS";
+    [SerializeField] protected string _bossName = "BOSS";
 
-    private float     _currentHealth;
-    private Transform _playerTransform;
-    private float     _fireTimer   = 0f;
-    private float     _chargeTimer = 0f;
-    private bool      _isCharging  = false;
-    private Vector3   _chargeDirection;
+    protected float     _currentHealth;
+    protected Transform _playerTransform;
+    protected float     _fireTimer   = 0f;
+    protected float     _chargeTimer = 0f;
+    protected bool      _isCharging  = false;
+    protected Vector3   _chargeDirection;
 
-    private void Start()
+    protected virtual void Start()
     {
         GameUI.Instance.ShowBossHP(_bossName);
-        
         _currentHealth = _maxHealth;
 
         GameObject player = GameObject.FindWithTag("Player");
@@ -35,7 +34,7 @@ public class BossBase : MonoBehaviour
             _playerTransform = player.transform;
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (_playerTransform == null) return;
         if (GameManager.Instance.IsGameOver) return;
@@ -45,15 +44,14 @@ public class BossBase : MonoBehaviour
         HandleCharge();
     }
 
-    private void HandleMovement()
+    protected virtual void HandleMovement()
     {
-        if (_isCharging) return; // Pendant la charge c'est HandleCharge qui bouge
-
+        if (_isCharging) return;
         Vector3 direction = (_playerTransform.position - transform.position).normalized;
         transform.position += direction * _moveSpeed * Time.deltaTime;
     }
 
-    private void HandleShooting()
+    protected virtual void HandleShooting()
     {
         _fireTimer += Time.deltaTime;
         if (_fireTimer >= 1f / _fireRate)
@@ -63,7 +61,7 @@ public class BossBase : MonoBehaviour
         }
     }
 
-    private void ShootRadial()
+    protected virtual void ShootRadial()
     {
         if (_projectilePrefab == null) return;
 
@@ -86,7 +84,7 @@ public class BossBase : MonoBehaviour
         }
     }
 
-    private void HandleCharge()
+    protected virtual void HandleCharge()
     {
         _chargeTimer += Time.deltaTime;
 
@@ -99,26 +97,22 @@ public class BossBase : MonoBehaviour
         }
 
         if (_isCharging)
-        {
-            // On déplace via transform, pas via physique
             transform.position += _chargeDirection * _moveSpeed * 4f * Time.deltaTime;
-        }
     }
 
-    private void StopCharge()
+    protected virtual void StopCharge()
     {
         _isCharging = false;
     }
 
-    public void TakeDamage(float damage, Color color = default)
+    public virtual void TakeDamage(float damage, Color color = default)
     {
         _currentHealth -= damage;
 
-        // Chiffre flottant au dessus du boss
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorCritical : color;
-            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, true); // isCritical = true pour les dégâts boss
+            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, true);
         }
 
         GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
@@ -127,17 +121,20 @@ public class BossBase : MonoBehaviour
             Die();
     }
 
-    private void Die()
+    protected virtual void Die()
     {
         XPSystem.Instance.AddXP(_xpValue);
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
         GameUI.Instance.HideBossHP();
         WaveManager.Instance.OnBossDied();
+        // Régénération du joueur à la mort du boss
+        HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
+        if (playerHP != null) playerHP.Heal(0.5f);
         Destroy(gameObject);
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {

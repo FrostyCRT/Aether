@@ -1,24 +1,22 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class OrbitalProjectile : MonoBehaviour
 {
-    [SerializeField] private float _damage = 15f;
+    [SerializeField] private float _damage     = 15f;
+    private float _hitCooldown = 0.5f;
 
-    // Dictionnaire pour éviter de toucher le même ennemi en boucle
-    private System.Collections.Generic.Dictionary<EnemyBase, float> _hitCooldowns
-        = new System.Collections.Generic.Dictionary<EnemyBase, float>();
-
-    private float _hitCooldown = 0.5f; // Délai entre deux hits sur le même ennemi
+    // Cooldowns par GameObject pour couvrir ennemis ET boss
+    private Dictionary<GameObject, float> _hitCooldowns = new Dictionary<GameObject, float>();
 
     private void Update()
     {
-        // On réduit les cooldowns de hit
-        var keys = new System.Collections.Generic.List<EnemyBase>(_hitCooldowns.Keys);
-        foreach (EnemyBase enemy in keys)
+        var keys = new List<GameObject>(_hitCooldowns.Keys);
+        foreach (GameObject go in keys)
         {
-            _hitCooldowns[enemy] -= Time.deltaTime;
-            if (_hitCooldowns[enemy] <= 0f)
-                _hitCooldowns.Remove(enemy);
+            _hitCooldowns[go] -= Time.deltaTime;
+            if (_hitCooldowns[go] <= 0f)
+                _hitCooldowns.Remove(go);
         }
     }
 
@@ -29,17 +27,24 @@ public class OrbitalProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
-        {
-            EnemyBase enemy = other.GetComponent<EnemyBase>();
-            if (enemy == null) return;
+        if (!other.CompareTag("Enemy")) return;
+        if (_hitCooldowns.ContainsKey(other.gameObject)) return;
 
-            // On vérifie que l'ennemi n'est pas en cooldown
-            if (!_hitCooldowns.ContainsKey(enemy))
-            {
-                enemy.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
-                _hitCooldowns[enemy] = _hitCooldown;
-            }
+        // Ennemi normal
+        EnemyBase enemy = other.GetComponent<EnemyBase>();
+        if (enemy != null)
+        {
+            enemy.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
+            _hitCooldowns[other.gameObject] = _hitCooldown;
+            return;
+        }
+
+        // Boss
+        BossBase boss = other.GetComponent<BossBase>();
+        if (boss != null)
+        {
+            boss.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
+            _hitCooldowns[other.gameObject] = _hitCooldown;
         }
     }
 }

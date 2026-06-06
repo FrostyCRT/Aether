@@ -9,11 +9,17 @@ public class WeaponOrbital : MonoBehaviour
     [SerializeField] private float _orbitSpeed   = 180f;
     [SerializeField] private int   _orbitalCount = 2;
 
+    [Header("Contrôle Range (A/E)")]
+    [SerializeField] private float _minOrbitRadius  = 1f;
+    [SerializeField] private float _maxOrbitRadius  = 6f;
+    [SerializeField] private float _rangeChangeSpeed = 2f;
+
     [Header("Références")]
     [SerializeField] private GameObject _orbitalPrefab;
 
     [Header("Limites")]
-    [SerializeField] private int _maxOrbitalCount = 5; // Maximum 5 orbes
+    [SerializeField] private int _maxOrbitalCount = 5;
+
     public bool IsMaxOrbital() => _orbitalCount >= _maxOrbitalCount;
 
     public void AddOrbital()
@@ -63,6 +69,13 @@ public class WeaponOrbital : MonoBehaviour
         if (GameManager.Instance.IsGameOver) return;
         if (_orbitals.Count == 0) return;
 
+        // Contrôle de la range au clavier
+        if (Input.GetKey(KeyCode.A))
+            _orbitRadius = Mathf.Max(_minOrbitRadius, _orbitRadius - _rangeChangeSpeed * Time.deltaTime);
+        if (Input.GetKey(KeyCode.E))
+            _orbitRadius = Mathf.Min(_maxOrbitRadius, _orbitRadius + _rangeChangeSpeed * Time.deltaTime);
+
+        // Rotation des orbitaux
         _currentAngle += _orbitSpeed * Time.deltaTime;
         float angleStep = 360f / _orbitalCount;
 
@@ -75,7 +88,5 @@ public class WeaponOrbital : MonoBehaviour
         }
     }
 
-
-    public void AddDamage(float value) => _damage      += _damage * value;
-    
+    public void AddDamage(float value) => _damage += _damage * value;
 }

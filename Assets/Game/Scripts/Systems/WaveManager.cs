@@ -51,9 +51,9 @@ public class WaveManager : MonoBehaviour
         ApplyDifficulty();
 
         // Spawn des boss
-        if (_bossCount == 0 && _runTimer >= 300f) SpawnBoss(1);
-        if (_bossCount == 1 && _runTimer >= 600f) SpawnBoss(2);
-        if (_bossCount == 2 && _runTimer >= 900f) SpawnBoss(3);
+        if (_bossCount == 0 && _runTimer >= BossSpawnInterval) SpawnBoss(1);
+        if (_bossCount == 1 && _runTimer >= BossSpawnInterval * 2f) SpawnBoss(2);
+        if (_bossCount == 2 && _runTimer >= BossSpawnInterval * 3f) SpawnBoss(3);
 
         GameUI.Instance.UpdateTimer(_runTimer);
     }

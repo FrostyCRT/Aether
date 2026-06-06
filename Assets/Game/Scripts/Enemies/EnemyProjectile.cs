@@ -3,22 +3,23 @@
 public class EnemyProjectile : MonoBehaviour
 {
     [SerializeField] private float _speed    = 6f;
-    [SerializeField] private float _damage   = 15f;
+    
     [SerializeField] private float _maxRange = 20f;
 
     private Vector3 _direction;
     private Vector3 _startPosition;
+    private bool    _hasHit = false; // ← garde fou
 
     public void Init(Vector3 direction)
     {
         _direction     = direction.normalized;
         _startPosition = transform.position;
+        _hasHit        = false;
     }
 
     private void Update()
     {
         transform.position += _direction * _speed * Time.deltaTime;
-
         float distanceTravelled = Vector3.Distance(_startPosition, transform.position);
         if (distanceTravelled >= _maxRange)
             Destroy(gameObject);
@@ -26,28 +27,24 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (_hasHit) return; // ← bloque le double déclenchement
+
         if (other.CompareTag("Player"))
         {
             PlayerController player = other.GetComponent<PlayerController>();
-
             if (player != null && player.IsInvincible)
             {
                 if (player.CanAbsorb)
                 {
-                    // Absorption — charge le cristal
                     CrystalSystem crystal = other.GetComponent<CrystalSystem>();
                     if (crystal != null) crystal.AbsorbProjectile();
+                    _hasHit = true;
                     Destroy(gameObject);
                 }
-                // Pas dans la fenêtre d'absorption → projectile passe à travers
                 return;
             }
 
-            // Joueur non invincible — dégâts normaux
-            HealthSystem health = other.GetComponent<HealthSystem>();
-            if (health != null)
-                health.TakeDamageFromProjectile(_damage);
-
+            _hasHit = true;
             Destroy(gameObject);
         }
     }

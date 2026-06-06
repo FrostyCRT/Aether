@@ -57,14 +57,22 @@ public class WeaponAOE : MonoBehaviour
     private void Pulse()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, _radius);
-
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
             {
+                // Ennemis normaux
                 EnemyBase enemy = hit.GetComponent<EnemyBase>();
                 if (enemy != null)
+                {
                     enemy.TakeDamage(_damage, DamageNumberSpawner.ColorAOE);
+                    continue;
+                }
+
+                // Boss
+                BossBase boss = hit.GetComponent<BossBase>();
+                if (boss != null)
+                    boss.TakeDamage(_damage, DamageNumberSpawner.ColorAOE);
             }
         }
 
