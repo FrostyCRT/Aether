@@ -2,16 +2,6 @@
 
 
 
-il me refaut un script complet et très très précis pour le player, pour Meshy car la il est dans Tripo AI, pas dans Meshi, et je ne peux pas l'exporter, il faut payer l'abonnement, je peux juste faire la modélisation, pas exporter.
-
-
-
-Je veux que le player soit inspiré de Rudéus Grérat dans l'anime Mushoku Tensei. Renseigne toi sur internet pour mieux comprendre. Le prompt pour Meshi peut etre très long, tu as 800 caractères disponibles ( espace inclus ).
-
-
-
-
-
 
 
 Player :
