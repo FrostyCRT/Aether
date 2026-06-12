@@ -1,20 +1,22 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using System.Collections.Generic;
 
 public class LevelUpManager : MonoBehaviour
 {
     public static LevelUpManager Instance { get; private set; }
 
-    [Header("RÈfÈrences")]
+    [Header("R√©f√©rences")]
     [SerializeField] private UpgradeData[] _allUpgrades;
     [SerializeField] private GameObject    _levelUpPanel;
     [SerializeField] private UpgradeUI     _upgradeUI;
 
-    private List<UpgradeData> _currentChoices  = new List<UpgradeData>();
+    private List<UpgradeData> _currentChoices   = new List<UpgradeData>();
+    private List<string>      _chosenUpgrades   = new List<string>(); // ‚Üê historique
     private int               _pendingLevelUps  = 0;
     private bool              _waitingForChoice = false;
     private float             _delayTimer       = 0f;
     private bool              _showingDelay     = false;
+    public bool IsWaitingForChoice => _waitingForChoice;
 
     private void Awake()
     {
@@ -28,10 +30,9 @@ public class LevelUpManager : MonoBehaviour
 
     private void Update()
     {
-        // DÈlai entre deux level ups gÈrÈ dans Update
         if (_showingDelay)
         {
-            _delayTimer -= Time.unscaledDeltaTime; // Ignore timeScale
+            _delayTimer -= Time.unscaledDeltaTime;
             if (_delayTimer <= 0f)
             {
                 _showingDelay = false;
@@ -51,22 +52,17 @@ public class LevelUpManager : MonoBehaviour
     public void ShowLevelUp()
     {
         _pendingLevelUps++;
-
-        // Si dÈj‡ en train d'afficher un level up on attend
         if (_waitingForChoice || _showingDelay) return;
-
         DisplayLevelUp();
     }
 
     private void DisplayLevelUp()
     {
         if (_pendingLevelUps <= 0) return;
-
         _pendingLevelUps--;
         _waitingForChoice = true;
         Time.timeScale    = 0f;
-
-        _currentChoices = GetRandomUpgrades(3);
+        _currentChoices   = GetRandomUpgrades(3);
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(true);
@@ -80,9 +76,11 @@ public class LevelUpManager : MonoBehaviour
         if (index < 0 || index >= _currentChoices.Count) return;
 
         _waitingForChoice = false;
-
         UpgradeData chosen = _currentChoices[index];
         chosen.Apply();
+
+        // On enregistre l'upgrade choisie
+        _chosenUpgrades.Add(chosen.upgradeName);
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(false);
@@ -93,7 +91,6 @@ public class LevelUpManager : MonoBehaviour
 
         if (_pendingLevelUps > 0)
         {
-            // DÈlai de 0.4 secondes avant le prochain level up
             _showingDelay = true;
             _delayTimer   = 0.4f;
         }
@@ -101,6 +98,29 @@ public class LevelUpManager : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
+    }
+
+    // Retourne un r√©sum√© lisible des upgrades prises
+    public string GetUpgradesSummary()
+    {
+        if (_chosenUpgrades.Count == 0)
+            return "Aucune upgrade pour l'instant.";
+
+        // Compte les doublons (ex: D√©g√¢ts x3)
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+        foreach (string name in _chosenUpgrades)
+        {
+            if (counts.ContainsKey(name))
+                counts[name]++;
+            else
+                counts[name] = 1;
+        }
+
+        string summary = "";
+        foreach (var kvp in counts)
+            summary += kvp.Value > 1 ? $"‚Ä¢ {kvp.Key} x{kvp.Value}\n" : $"‚Ä¢ {kvp.Key}\n";
+
+        return summary.TrimEnd();
     }
 
     private List<UpgradeData> GetRandomUpgrades(int count)

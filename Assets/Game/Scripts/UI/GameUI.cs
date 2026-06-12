@@ -15,39 +15,64 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _hpText;
     [SerializeField] private Image           _hpFillImage;
 
-    [Header("Vague et Timer")]
-    [SerializeField] private TextMeshProUGUI _waveText;
+    [Header("Timer")]
     [SerializeField] private TextMeshProUGUI _timerText;
 
     [Header("Boss")]
     [SerializeField] private GameObject      _bossHPBar;
     [SerializeField] private Slider          _bossHPSlider;
     [SerializeField] private TextMeshProUGUI _bossNameText;
-    [SerializeField] private GameObject      _bossIcon; // ← ajoute ça
+    [SerializeField] private GameObject      _bossIcon;
 
     [Header("Game Over")]
     [SerializeField] private GameObject      _gameOverPanel;
     [SerializeField] private TextMeshProUGUI _statsText;
 
-
     [Header("Gold")]
     [SerializeField] private TextMeshProUGUI _goldText;
+
+    [Header("Kill Counter")]
+    [SerializeField] private TextMeshProUGUI _killCountText;
 
     [Header("Dash")]
     [SerializeField] private Slider _dashCooldownBar;
 
     [Header("Cristal")]
-    [SerializeField] private UnityEngine.UI.Image[] _crystalIcons; // 6 icônes
+    [SerializeField] private UnityEngine.UI.Image[] _crystalIcons;
     [SerializeField] private GameObject             _ultReadyEffect;
+
+    [Header("Pause")]
+    [SerializeField] private GameObject      _pausePanel;
+    [SerializeField] private TextMeshProUGUI _pauseStatsText;
+    [SerializeField] private TextMeshProUGUI _pauseUpgradesText;
+    [SerializeField] private GameObject      _abandonConfirmPanel;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        if (MetaProgressionManager.Instance != null)
+            UpdateGold(MetaProgressionManager.Instance.RunGold);
+
+        UpdateKillCount(0);
+    }
 
     public void UpdateCrystalCharge(int current, int max)
     {
         for (int i = 0; i < _crystalIcons.Length; i++)
         {
             if (i < current)
-                _crystalIcons[i].color = new Color(0f, 0.8f, 1f); // Bleu cyan allumé
+                _crystalIcons[i].color = new Color(0f, 0.8f, 1f);
             else
-                _crystalIcons[i].color = new Color(0.2f, 0.2f, 0.2f); // Gris éteint
+                _crystalIcons[i].color = new Color(0.2f, 0.2f, 0.2f);
         }
     }
 
@@ -58,13 +83,11 @@ public class GameUI : MonoBehaviour
 
         if (!ready)
         {
-            // Reset complet en gris
             foreach (var icon in _crystalIcons)
                 icon.color = new Color(0.2f, 0.2f, 0.2f);
         }
         else
         {
-            // Tous en blanc pour signaler que c'est prêt
             foreach (var icon in _crystalIcons)
                 icon.color = Color.white;
         }
@@ -72,7 +95,6 @@ public class GameUI : MonoBehaviour
 
     public void ShowUltEffect(bool show)
     {
-        // On peut ajouter un overlay visuel plus tard
         Debug.Log(show ? "ULT ACTIF — ennemis ralentis !" : "ULT terminé");
     }
 
@@ -88,16 +110,10 @@ public class GameUI : MonoBehaviour
             _goldText.text = $"  : {amount}";
     }
 
-    private void Awake()
+    public void UpdateKillCount(int kills)
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-
-    }
+        if (_killCountText != null)
+            _killCountText.text = $"  : {kills}";    }
 
     public void UpdateXPBar(float currentXP, float xpToNextLevel, int level)
     {
@@ -121,54 +137,37 @@ public class GameUI : MonoBehaviour
             _hpFillImage.color = new Color(0.85f, 0.1f, 0.1f);
     }
 
-    public void UpdateWave(int wave)
-    {
-        if (_waveText == null) return;
-
-        if (wave == -1)
-        {
-            _waveText.text  = "BOSS !";
-            _waveText.color = Color.red;
-        }
-        else
-        {
-            _waveText.text  = $"Vague {wave}";
-            _waveText.color = Color.white;
-        }
-    }
-
     public void UpdateTimer(float seconds)
     {
         if (_timerText == null) return;
-
         int mins = Mathf.FloorToInt(seconds / 60f);
         int secs = Mathf.FloorToInt(seconds % 60f);
         _timerText.text = $"{mins:00}:{secs:00}";
     }
 
-   public void ShowBossHP(string bossName)
-   {
+    public void ShowBossHP(string bossName)
+    {
         _bossHPBar.SetActive(true);
         _bossNameText.gameObject.SetActive(true);
         _bossNameText.text  = bossName;
         _bossHPSlider.value = 1f;
-        if (_bossIcon != null) _bossIcon.SetActive(true); // ← ajoute ça
-   }
+        if (_bossIcon != null) _bossIcon.SetActive(true);
+    }
 
-   public void UpdateBossHP(float current, float max)
-   {
+    public void UpdateBossHP(float current, float max)
+    {
         _bossHPSlider.value = current / max;
-   }
+    }
 
-   public void HideBossHP()
-   {
+    public void HideBossHP()
+    {
         _bossHPBar.SetActive(false);
         _bossNameText.gameObject.SetActive(false);
-        if (_bossIcon != null) _bossIcon.SetActive(false); // ← ajoute ça
-   }
+        if (_bossIcon != null) _bossIcon.SetActive(false);
+    }
 
-   public void ShowGameOver(float runTimer, int killCount, int wave, int goldEarned)
-   {
+    public void ShowGameOver(float runTimer, int killCount, int goldEarned)
+    {
         _gameOverPanel.SetActive(true);
 
         int mins = Mathf.FloorToInt(runTimer / 60f);
@@ -176,13 +175,32 @@ public class GameUI : MonoBehaviour
 
         _statsText.text = $"Temps de survie : {mins:00}:{secs:00}\n" +
                           $"Ennemis tués : {killCount}\n" +
-                          $"Vague atteinte : {wave}\n" +
                           $"Gold gagné : {goldEarned}";
     }
 
-    private void Start()
+    public void ShowPausePanel(bool show)
     {
-        if (MetaProgressionManager.Instance != null)
-            UpdateGold(MetaProgressionManager.Instance.RunGold);
+        _pausePanel.SetActive(show);
+
+        if (show)
+        {
+            int mins = Mathf.FloorToInt(GameManager.Instance.RunTimer / 60f);
+            int secs = Mathf.FloorToInt(GameManager.Instance.RunTimer % 60f);
+
+            _pauseStatsText.text = $"Temps : {mins:00}:{secs:00}\n" +
+                                   $"Ennemis tués : {GameManager.Instance.KillCount}\n" +
+                                   $"Gold : {MetaProgressionManager.Instance.RunGold}";
+
+            _pauseUpgradesText.text = LevelUpManager.Instance.GetUpgradesSummary();
+
+            if (_abandonConfirmPanel != null)
+                _abandonConfirmPanel.SetActive(false);
+        }
+    }
+
+    public void ShowAbandonConfirm(bool show)
+    {
+        if (_abandonConfirmPanel != null)
+            _abandonConfirmPanel.SetActive(show);
     }
 }

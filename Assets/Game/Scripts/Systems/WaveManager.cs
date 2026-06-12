@@ -1,11 +1,11 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
-    [Header("ParamËtres")]
-    public float BossSpawnInterval = 300f; // 5 minutes en secondes
+    [Header("Param√®tres")]
+    public float BossSpawnInterval = 300f;
 
     [Header("Boss")]
     [SerializeField] private GameObject _bossPrefab1;
@@ -15,12 +15,10 @@ public class WaveManager : MonoBehaviour
     [Header("Limite ennemis")]
     [SerializeField] private int _maxEnemiesOnScreen = 15;
 
-    private float _runTimer = 0f;
-    private int _bossCount = 0;
+    private int  _bossCount = 0;
     private bool _bossAlive = false;
-
+    public bool BossAlive => _bossAlive;
     public int CurrentWave => _bossCount + 1;
-    public float RunTimer => _runTimer;
 
     private EnemySpawner _enemySpawner;
 
@@ -43,26 +41,26 @@ public class WaveManager : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance.IsPaused) return;
         if (_bossAlive) return;
 
-        _runTimer += Time.deltaTime;
+        // On utilise le timer de GameManager ‚Äî un seul timer pour tout
+        float runTimer = GameManager.Instance.RunTimer;
 
-        // Mise ‡ jour de la difficultÈ
         ApplyDifficulty();
 
-        // Spawn des boss
-        if (_bossCount == 0 && _runTimer >= BossSpawnInterval) SpawnBoss(1);
-        if (_bossCount == 1 && _runTimer >= BossSpawnInterval * 2f) SpawnBoss(2);
-        if (_bossCount == 2 && _runTimer >= BossSpawnInterval * 3f) SpawnBoss(3);
+        if (_bossCount == 0 && runTimer >= BossSpawnInterval) SpawnBoss(1);
+        if (_bossCount == 1 && runTimer >= BossSpawnInterval * 2f) SpawnBoss(2);
+        if (_bossCount == 2 && runTimer >= BossSpawnInterval * 3f) SpawnBoss(3);
 
-        GameUI.Instance.UpdateTimer(_runTimer);
+        GameUI.Instance.UpdateTimer(runTimer); // ‚Üê m√™me timer partout
     }
 
     private void ApplyDifficulty()
     {
         if (_enemySpawner == null) return;
 
-        float minutes = _runTimer / 60f;
+        float minutes = GameManager.Instance.RunTimer / 60f;
 
         if (minutes < 3f)
         {
@@ -106,8 +104,8 @@ public class WaveManager : MonoBehaviour
         ClearAllEnemies();
         _enemySpawner.gameObject.SetActive(false);
 
-        GameObject player = GameObject.FindWithTag("Player");
-        Vector3 spawnPos = player.transform.position + new Vector3(10f, 0f, 0f);
+        GameObject player    = GameObject.FindWithTag("Player");
+        Vector3    spawnPos  = player.transform.position + new Vector3(10f, 0f, 0f);
 
         GameObject bossPrefab = bossNumber == 1 ? _bossPrefab1 :
                                 bossNumber == 2 ? _bossPrefab2 : _bossPrefab3;
@@ -115,10 +113,9 @@ public class WaveManager : MonoBehaviour
         if (bossPrefab != null)
             Instantiate(bossPrefab, spawnPos, Quaternion.identity);
         else
-            Debug.LogWarning($"Boss {bossNumber} prefab non assignÈ !");
+            Debug.LogWarning($"Boss {bossNumber} prefab non assign√© !");
 
-        GameUI.Instance.UpdateWave(-1);
-        Debug.Log($"Boss {bossNumber} spawnÈ !");
+        Debug.Log($"Boss {bossNumber} spawn√© !");
     }
 
     private void ClearAllEnemies()
@@ -145,12 +142,10 @@ public class WaveManager : MonoBehaviour
     {
         _bossAlive = false;
         _enemySpawner.gameObject.SetActive(true);
-        GameUI.Instance.UpdateWave(CurrentWave);
 
-        // Victoire si c'Ètait le boss 3
         if (_bossCount >= 3)
             GameManager.Instance.TriggerVictory();
 
-        Debug.Log($"Boss vaincu ! Run continue ó Vague {CurrentWave}");
+        Debug.Log($"Boss vaincu ! Run continue ‚Äî Vague {CurrentWave}");
     }
 }

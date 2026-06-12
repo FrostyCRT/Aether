@@ -112,9 +112,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84d2045be8b6dad48a1ca0d69b4ee916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 2
+  _moveSpeed: 2.5
   _maxHealth: 30
   _xpValue: 10
+  _goldValue: 2
   _poolTag: Enemy
 --- !u!65 &-4166910214641852666
 BoxCollider:

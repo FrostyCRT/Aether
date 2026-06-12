@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody    _rb;
     private HealthSystem _healthSystem;
     private Vector3      _moveDirection;
+    private float _speedMultiplier = 1f;
 
     // Dash
     private bool    _isDashing         = false;
@@ -30,7 +31,7 @@ public class PlayerController : MonoBehaviour
     public bool  IsInvincible        => _isInvincible;
     public bool  CanAbsorb           => _canAbsorb;
     public float DashCooldownPercent => _dashCooldownTimer / _dashCooldown;
-
+    
     private void Awake()
     {
         _rb           = GetComponent<Rigidbody>();
@@ -124,7 +125,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            _rb.MovePosition(_rb.position + _moveDirection * _moveSpeed * Time.fixedDeltaTime);
+            _rb.MovePosition(_rb.position + _moveDirection * _moveSpeed * _speedMultiplier * Time.fixedDeltaTime);
         }
     }
 
@@ -136,5 +137,9 @@ public class PlayerController : MonoBehaviour
     public void ReduceDashCooldown(float value)
     {
         _dashCooldown = Mathf.Max(_dashCooldown - value, 0.5f);
+    }
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        _speedMultiplier = multiplier;
     }
 }

@@ -124,5 +124,5 @@ public enum UpgradeType
     UnlockOrbital,
     AddOrbital,
     AOERadius,
-    DoubleShot  // ← ajoute ça
+    DoubleShot  
 }

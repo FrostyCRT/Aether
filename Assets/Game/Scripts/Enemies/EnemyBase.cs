@@ -21,7 +21,7 @@ public class EnemyBase : MonoBehaviour
     private float     _currentHealth;
     private Transform _playerTransform;
 
-    private void Awake()
+    private void OnEnable()
     {
         _currentHealth = _maxHealth;
     }

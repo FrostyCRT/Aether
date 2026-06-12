@@ -18,7 +18,7 @@ public class WeaponOrbital : MonoBehaviour
     [SerializeField] private GameObject _orbitalPrefab;
 
     [Header("Limites")]
-    [SerializeField] private int _maxOrbitalCount = 5;
+    [SerializeField] private int _maxOrbitalCount = 4;
 
     public bool IsMaxOrbital() => _orbitalCount >= _maxOrbitalCount;
 

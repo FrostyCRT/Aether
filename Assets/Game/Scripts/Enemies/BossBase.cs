@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class BossBase : MonoBehaviour
 {
@@ -24,14 +25,26 @@ public class BossBase : MonoBehaviour
     protected bool      _isCharging  = false;
     protected Vector3   _chargeDirection;
 
+    public float MaxHealth   => _maxHealth;
+    public bool  IsSummoned  { get; set; } = false;
+
     protected virtual void Start()
     {
-        GameUI.Instance.ShowBossHP(_bossName);
         _currentHealth = _maxHealth;
 
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
             _playerTransform = player.transform;
+
+        // Attend une frame pour que IsSummoned soit correctement assigné
+        StartCoroutine(InitUI());
+    }
+
+    private IEnumerator InitUI()
+    {
+        yield return null;
+        if (!IsSummoned)
+            GameUI.Instance.ShowBossHP(_bossName);
     }
 
     protected virtual void Update()
@@ -115,7 +128,8 @@ public class BossBase : MonoBehaviour
             DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, true);
         }
 
-        GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
+        if (!IsSummoned)
+            GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
 
         if (_currentHealth <= 0)
             Die();
@@ -126,11 +140,15 @@ public class BossBase : MonoBehaviour
         XPSystem.Instance.AddXP(_xpValue);
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
-        GameUI.Instance.HideBossHP();
-        WaveManager.Instance.OnBossDied();
-        // Régénération du joueur à la mort du boss
-        HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
-        if (playerHP != null) playerHP.Heal(0.5f);
+
+        if (!IsSummoned)
+        {
+            GameUI.Instance.HideBossHP();
+            WaveManager.Instance.OnBossDied();
+            HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
+            if (playerHP != null) playerHP.Heal(0.5f);
+        }
+
         Destroy(gameObject);
     }
 
@@ -142,5 +160,15 @@ public class BossBase : MonoBehaviour
             if (health != null)
                 health.TakeDamage(30f);
         }
+    }
+
+    public void InitWithReducedHP(float percent)
+    {
+        _currentHealth = _maxHealth * percent;
+    }
+
+    public void SetXPValue(float value)
+    {
+        _xpValue = value;
     }
 }
