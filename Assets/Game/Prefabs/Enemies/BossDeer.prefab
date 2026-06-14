@@ -133,13 +133,13 @@ MonoBehaviour:
   _goldValue: 100
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
-  _fireRate: 1
-  _projectileCount: 8
+  _fireRate: 1.5
+  _projectileCount: 12
   _chargeCooldown: 5
   _bossName: Cerf Ancestral
   _teleportCooldown: 8
   _teleportDistance: 4
-  _spiralFireRate: 0.15
+  _spiralFireRate: 0.2
   _spiralBurstCount: 24
   _regenAmount: 100
   _regenCooldown: 15

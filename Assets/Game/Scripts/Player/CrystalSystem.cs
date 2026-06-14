@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using System.Collections;
 
 public class CrystalSystem : MonoBehaviour
@@ -37,7 +37,7 @@ public class CrystalSystem : MonoBehaviour
         _currentCharges++;
         GameUI.Instance.UpdateCrystalCharge(_currentCharges, _maxCharges);
 
-        // Nova ‡ chaque absorption
+        // Nova √† chaque absorption
         TriggerNova();
 
         if (_currentCharges >= _maxCharges)
@@ -49,22 +49,21 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerNova()
     {
-        // DÈg‚ts
         Collider[] hits = Physics.OverlapSphere(transform.position, _novaRadius);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorCritical);
+                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorCritical, true); // ‚Üê fromNova
 
                 BossBase boss = hit.GetComponent<BossBase>();
                 if (boss != null) boss.TakeDamage(_novaDamage);
             }
         }
 
-        // Visuel
         if (_novaVFXPrefab != null)
+
             StartCoroutine(ShowNovaVFX());
     }
 
@@ -95,7 +94,7 @@ public class CrystalSystem : MonoBehaviour
         GameUI.Instance.UpdateCrystalCharge(0, _maxCharges);
         DamageAllEnemies();
         StartCoroutine(SlowAllEnemies());
-        Debug.Log("ULTI D…CLENCH… !");
+        Debug.Log("ULTI D√âCLENCH√â !");
     }
 
     private void DamageAllEnemies()
@@ -114,7 +113,7 @@ public class CrystalSystem : MonoBehaviour
                 count++;
             }
         }
-        Debug.Log($"Ulti ó {count} ennemis touchÈs dans un rayon de {_ultRange}");
+        Debug.Log($"Ulti ‚Äî {count} ennemis touch√©s dans un rayon de {_ultRange}");
     }
 
     private IEnumerator SlowAllEnemies()

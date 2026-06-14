@@ -27,6 +27,7 @@ public class BossBase : MonoBehaviour
 
     public float MaxHealth   => _maxHealth;
     public bool  IsSummoned  { get; set; } = false;
+    public bool RageDisabled { get; set; } = false;
 
     protected virtual void Start()
     {
@@ -137,7 +138,8 @@ public class BossBase : MonoBehaviour
 
     protected virtual void Die()
     {
-        XPSystem.Instance.AddXP(_xpValue);
+        if (XPGemSpawner.Instance != null)
+            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
 
@@ -146,7 +148,17 @@ public class BossBase : MonoBehaviour
             GameUI.Instance.HideBossHP();
             WaveManager.Instance.OnBossDied();
             HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
-            if (playerHP != null) playerHP.Heal(0.5f);
+            if (playerHP != null)
+            {
+                float healAmount = playerHP.MaxHealth * 0.5f;
+                playerHP.Heal(0.5f);
+                if (DamageNumberSpawner.Instance != null)
+                    DamageNumberSpawner.Instance.Spawn(
+                        playerHP.transform.position,
+                        healAmount,
+                        Color.green
+                    );
+            }
         }
 
         Destroy(gameObject);

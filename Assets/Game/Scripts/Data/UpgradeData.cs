@@ -19,9 +19,10 @@ public class UpgradeData : ScriptableObject
                 // Disponible une seule fois
                 WeaponBase wb = FindObjectOfType<WeaponBase>();
                 return wb != null && !wb.IsDoubleShotUnlocked();
-            
+
             case UpgradeType.AddOrbital:
-                return FindObjectOfType<WeaponOrbital>() != null;
+                WeaponOrbital orb = FindObjectOfType<WeaponOrbital>();
+                return orb != null && !orb.IsMaxOrbital();
 
             case UpgradeType.AOERadius:
                 return FindObjectOfType<WeaponAOE>() != null;
@@ -31,6 +32,13 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.UnlockOrbital:
                 return FindObjectOfType<WeaponOrbital>() == null;
+
+            case UpgradeType.UnlockLightning:
+                return FindObjectOfType<WeaponLightningChain>() == null;
+
+            case UpgradeType.AddLightningChain:
+                WeaponLightningChain wlc = FindObjectOfType<WeaponLightningChain>();
+                return wlc != null && !wlc.IsMaxChain();
 
             default:
                 return true;
@@ -47,6 +55,17 @@ public class UpgradeData : ScriptableObject
 
         switch (upgradeType)
         {
+            case UpgradeType.UnlockLightning:
+                GameObject playerGO = GameObject.FindWithTag("Player");
+                if (playerGO != null)
+                    playerGO.AddComponent<WeaponLightningChain>();
+                break;
+
+            case UpgradeType.AddLightningChain:
+                WeaponLightningChain chain = FindObjectOfType<WeaponLightningChain>();
+                if (chain != null) chain.AddChain();
+                break;
+
             case UpgradeType.DoubleShot:
                 if (weapon != null) weapon.UnlockDoubleShot();
                 break;
@@ -124,5 +143,7 @@ public enum UpgradeType
     UnlockOrbital,
     AddOrbital,
     AOERadius,
-    DoubleShot  
+    DoubleShot,
+    UnlockLightning, // ← nouveau
+    AddLightningChain // ← nouveau
 }

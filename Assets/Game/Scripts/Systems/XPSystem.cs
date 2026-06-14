@@ -45,7 +45,10 @@ public class XPSystem : MonoBehaviour
     private void LevelUp()
     {
         CurrentLevel++;
-        Debug.Log($"LEVEL UP ! Niveau {CurrentLevel}");
         LevelUpManager.Instance.ShowLevelUp();
+
+        // Débloque l'attraction des gemmes au niveau 3
+        if (XPGemSpawner.Instance != null)
+            XPGemSpawner.Instance.OnLevelUp(CurrentLevel);
     }
 }

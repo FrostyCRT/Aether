@@ -16,6 +16,7 @@ public class HealthSystem : MonoBehaviour
     private float _damageTimer          = 0f;
 
     public bool IsInvincible => _isInvincible || _isInvincibleExternal;
+    public float MaxHealth => _maxHealth;
 
     private void Awake()
     {

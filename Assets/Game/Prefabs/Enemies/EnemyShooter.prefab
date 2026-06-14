@@ -120,7 +120,7 @@ MonoBehaviour:
   _poolTag: EnemyShooter
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
-  _fireRate: 1.5
+  _fireRate: 1.25
   _preferredRange: 8
   _fleeRange: 4
 --- !u!54 &-8787131198567906403

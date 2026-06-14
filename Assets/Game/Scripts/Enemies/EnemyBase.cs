@@ -44,9 +44,15 @@ public class EnemyBase : MonoBehaviour
     // Virtual = peut être overridé par les classes enfants
     protected virtual void UpdateBehaviour(Transform playerTransform)
     {
-        Vector3 direction  = (playerTransform.position - transform.position).normalized;
+        Vector3 direction = (playerTransform.position - transform.position).normalized;
         Vector3 separation = GetBaseSeparation();
-        transform.position += (direction + separation).normalized * MoveSpeed * _speedMultiplier * Time.deltaTime;
+        Vector3 final = (direction + separation * 0.3f).normalized;
+
+        // Sécurité — jamais dans la direction opposée au joueur
+        if (Vector3.Dot(final, direction) < 0.1f)
+            final = direction;
+
+        transform.position += final * MoveSpeed * _speedMultiplier * Time.deltaTime;
     }
 
     private Vector3 GetBaseSeparation()
@@ -67,11 +73,10 @@ public class EnemyBase : MonoBehaviour
         return force.normalized * 0.5f; // Force réduite pour ne pas trop perturber
     }
 
-    public void TakeDamage(float damage, Color color = default)
+    public void TakeDamage(float damage, Color color = default, bool fromNova = false)
     {
         _currentHealth -= damage;
 
-        // Spawn du chiffre flottant
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorProjectile : color;
@@ -79,14 +84,27 @@ public class EnemyBase : MonoBehaviour
         }
 
         if (_currentHealth <= 0)
-            Die();
+            Die(fromNova);
     }
 
-    private void Die()
+    private void Die(bool fromNova = false)
     {
-        XPSystem.Instance.AddXP(_xpValue);
+        if (XPGemSpawner.Instance != null)
+            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
+
+        // Reset du dash uniquement si tué par la Nova
+        if (fromNova)
+        {
+            GameObject playerGO = GameObject.FindWithTag("Player");
+            if (playerGO != null)
+            {
+                PlayerController pc = playerGO.GetComponent<PlayerController>();
+                if (pc != null) pc.ResetDashCooldown();
+            }
+        }
+
         ObjectPool.Instance.ReturnToPool(_poolTag, gameObject);
     }
 

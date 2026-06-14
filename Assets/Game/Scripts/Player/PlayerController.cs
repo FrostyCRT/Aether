@@ -31,7 +31,12 @@ public class PlayerController : MonoBehaviour
     public bool  IsInvincible        => _isInvincible;
     public bool  CanAbsorb           => _canAbsorb;
     public float DashCooldownPercent => _dashCooldownTimer / _dashCooldown;
-    
+
+    public void ResetDashCooldown()
+    {
+        _dashCooldownTimer = 0f;
+        GameUI.Instance.UpdateDashCooldown(1f);
+    }
     private void Awake()
     {
         _rb           = GetComponent<Rigidbody>();

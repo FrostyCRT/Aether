@@ -110,21 +110,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 1000
+  _maxHealth: 1200
   _moveSpeed: 3
   _xpValue: 0
   _goldValue: 500
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
-  _fireRate: 1.5
-  _projectileCount: 8
+  _fireRate: 1
+  _projectileCount: 7
   _chargeCooldown: 5
   _bossName: La Source Corrompue
   _crystalPrefab: {fileID: 8958141062789975313, guid: b66147b0f2a28a143b75e1972fbbab42,
     type: 3}
   _crystalCount: 6
   _crystalOrbitRadius: 4
-  _crystalOrbitSpeed: 90
+  _crystalOrbitSpeed: 20
   _crystalFireRate: 1
   _slowWaveCooldown: 10
   _slowDuration: 3
@@ -134,9 +134,11 @@ MonoBehaviour:
     type: 3}
   _miniBoss2Prefab: {fileID: 8074673154536467952, guid: 0a332bffaf034c1428bcbb4e22eacd3f,
     type: 3}
-  _summonCooldown: 30
+  _summonCooldown: 35
   _implosionCooldown: 15
   _implosionPullForce: 15
   _implosionRadius: 10
   _implosionDamage: 40
+  _implosionWarningPrefab: {fileID: 4439751606259745131, guid: 978e702dc5a27a34f8e2c773f6ce90f8,
+    type: 3}
   _phase2Threshold: 0.5

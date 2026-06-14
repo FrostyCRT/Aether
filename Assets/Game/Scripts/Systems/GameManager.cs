@@ -43,18 +43,31 @@ public class GameManager : MonoBehaviour
 
     public void TogglePause()
     {
-        IsPaused       = !IsPaused;
+        IsPaused = !IsPaused;
         Time.timeScale = IsPaused ? 0f : 1f;
+
+        GameObject hud = GameObject.Find("HUD");
+        if (hud != null) hud.SetActive(!IsPaused);
+
         GameUI.Instance.ShowPausePanel(IsPaused);
     }
 
     public void ResumePause()
     {
-        IsPaused       = false;
+        IsPaused = false;
         Time.timeScale = 1f;
+
+        GameObject hud = GameObject.Find("HUD");
+        if (hud != null) hud.SetActive(true); // ← toujours réactiver
+
         GameUI.Instance.ShowPausePanel(false);
     }
 
+    private void HideHUD()
+    {
+        GameObject hud = GameObject.Find("HUD");
+        if (hud != null) hud.SetActive(false);
+    }
     public void AbandonRun()
     {
         IsPaused       = false;
@@ -82,10 +95,8 @@ public class GameManager : MonoBehaviour
 
     private void ShowGameOver()
     {
-        MetaProgressionManager.Instance.SaveRunResults(
-            _runTimer,
-            _killCount
-        );
+        HideHUD();
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
         GameUI.Instance.ShowGameOver(
             _runTimer,
             _killCount,
@@ -109,6 +120,22 @@ public class GameManager : MonoBehaviour
     {
         if (_isGameOver) return;
         _isGameOver = true;
-        Invoke(nameof(ShowGameOver), 1.5f);
+        Invoke(nameof(ShowVictory), 2f); // Délai plus long pour savourer
+    }
+
+    private void ShowVictory()
+    {
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
+
+        // Cache le HUD
+        GameObject hud = GameObject.Find("HUD");
+        if (hud != null) hud.SetActive(false);
+
+        GameUI.Instance.ShowVictory(
+            _runTimer,
+            _killCount,
+            MetaProgressionManager.Instance.RunGold,
+            XPSystem.Instance.CurrentLevel
+        );
     }
 }

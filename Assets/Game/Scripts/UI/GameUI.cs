@@ -47,6 +47,11 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _pauseUpgradesText;
     [SerializeField] private GameObject      _abandonConfirmPanel;
 
+    [Header("Victoire")]
+    [SerializeField] private GameObject _victoryPanel;
+    [SerializeField] private TextMeshProUGUI _victoryStatsText;
+    [SerializeField] private TextMeshProUGUI _victoryRecordsText;
+    [SerializeField] private TextMeshProUGUI _victoryBuildListText;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -76,6 +81,31 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    public void ShowVictory(float runTimer, int killCount, int goldEarned, int level)
+    {
+        _victoryPanel.SetActive(true);
+
+        int mins = Mathf.FloorToInt(runTimer / 60f);
+        int secs = Mathf.FloorToInt(runTimer % 60f);
+
+        // Stats de la run
+        _victoryStatsText.text = $"Temps de survie : {mins:00}:{secs:00}\n" +
+                                 $"Ennemis tués : {killCount}\n" +
+                                 $"Niveau atteint : {level}\n" +
+                                 $"Gold gagné : {goldEarned}";
+
+        // Records
+        SaveData data = MetaProgressionManager.Instance.Data;
+        int bestMins = Mathf.FloorToInt(data.bestTime / 60f);
+        int bestSecs = Mathf.FloorToInt(data.bestTime % 60f);
+
+        _victoryRecordsText.text = $"Meilleur temps : {bestMins:00}:{bestSecs:00}\n" +
+                                   $"Meilleur kills : {data.bestKills}\n" +
+                                   $"Runs totales : {data.totalRuns}";
+
+        // Build de la run
+        _victoryBuildListText.text = LevelUpManager.Instance.GetUpgradesSummary();
+    }
     public void SetCrystalReady(bool ready)
     {
         if (_ultReadyEffect != null)

@@ -1,20 +1,20 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class BossDeer : BossBase
 {
-    [Header("Cerf — Téléportation")]
+    [Header("Cerf â€” TÃ©lÃ©portation")]
     [SerializeField] private float _teleportCooldown  = 8f;
     [SerializeField] private float _teleportDistance  = 3f;
 
-    [Header("Cerf — Spirale")]
+    [Header("Cerf â€” Spirale")]
     [SerializeField] private float _spiralFireRate    = 0.15f;
     [SerializeField] private int   _spiralBurstCount  = 24;
 
-    [Header("Cerf — Régénération")]
+    [Header("Cerf â€” RÃ©gÃ©nÃ©ration")]
     [SerializeField] private float _regenAmount       = 100f;
     [SerializeField] private float _regenCooldown     = 30f;
 
-    [Header("Cerf — Rage")]
+    [Header("Cerf â€” Rage")]
     [SerializeField] private float _rageThreshold     = 0.3f; // 30% HP
     private bool _isRaging = false;
 
@@ -45,15 +45,15 @@ public class BossDeer : BossBase
         CheckRage();
     }
 
-    // Le Cerf ne charge pas — il se déplace normalement
+    // Le Cerf ne charge pas â€” il se dÃ©place normalement
     protected override void HandleMovement()
     {
-        if (_isTeleporting) return; // Pause après téléportation
+        if (_isTeleporting) return; // Pause aprÃ¨s tÃ©lÃ©portation
         Vector3 direction = (_playerTransform.position - transform.position).normalized;
         transform.position += direction * _moveSpeed * Time.deltaTime;
     }
 
-    // Téléportation derrière le joueur
+    // TÃ©lÃ©portation derriÃ¨re le joueur
     private bool _isTeleporting = false;
 
     private void HandleTeleport()
@@ -75,7 +75,7 @@ public class BossDeer : BossBase
 
         transform.position = behindPlayer;
 
-        // Freeze le mouvement pendant 0.5s après la téléportation
+        // Freeze le mouvement pendant 0.5s aprÃ¨s la tÃ©lÃ©portation
         _isTeleporting = true;
         Invoke(nameof(StopTeleport), 0.5f);
     }
@@ -132,7 +132,7 @@ public class BossDeer : BossBase
         _spiralAngle += angleStep;
     }
 
-    // Régénération toutes les 30 secondes
+    // RÃ©gÃ©nÃ©ration toutes les 30 secondes
     private void HandleRegen()
     {
         _regenTimer += Time.deltaTime;
@@ -141,21 +141,20 @@ public class BossDeer : BossBase
             _regenTimer     = 0f;
             _currentHealth  = Mathf.Min(_currentHealth + _regenAmount, _maxHealth);
             GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
-            Debug.Log("Cerf Ancestral se régénère !");
+            Debug.Log("Cerf Ancestral se rÃ©gÃ©nÃ¨re !");
         }
     }
 
-    // Rage à 30% HP
+    // Rage Ã  30% HP
     private void CheckRage()
     {
         if (_isRaging) return;
-        if (_currentHealth / _maxHealth <= _rageThreshold)
-        {
-            _isRaging  = true;
-            _fireRate  *= 1.5f;
-            _moveSpeed *= 1.5f;
-            _teleportCooldown *= 0.5f;
-            Debug.Log("Cerf Ancestral entre en RAGE !");
-        }
+        if (RageDisabled) return; // â† pas de rage si invoquÃ©
+        if (_currentHealth / _maxHealth > _rageThreshold) return;
+
+        _isRaging = true;
+        _fireRate *= 1.5f;
+        _moveSpeed *= 1.5f;
+        _teleportCooldown *= 0.5f;
     }
 }
