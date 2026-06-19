@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: SO_UpgradeHeal
   m_EditorClassIdentifier: 
   upgradeName: Soin
-  description: Restaure 20% des HP maximum
+  description: Restaure 30% des HP maximum
   upgradeType: 3
-  value: 0.2
+  value: 0.3

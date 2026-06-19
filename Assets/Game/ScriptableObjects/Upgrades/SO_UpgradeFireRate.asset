@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: SO_UpgradeFireRate
   m_EditorClassIdentifier: 
   upgradeName: Cadence+
-  description: "+50% \xE0 la cadence de tir"
+  description: "+30% \xE0 la cadence de tir"
   upgradeType: 2
-  value: 0.5
+  value: 0.3

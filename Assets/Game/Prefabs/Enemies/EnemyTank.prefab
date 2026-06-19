@@ -115,7 +115,7 @@ MonoBehaviour:
   _moveSpeed: 1.5
   _maxHealth: 70
   _xpValue: 30
-  _goldValue: 6
+  _goldValue: 5
   _poolTag: EnemyTank
 --- !u!54 &5642038682667198314
 Rigidbody:

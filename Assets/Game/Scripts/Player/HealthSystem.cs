@@ -18,11 +18,18 @@ public class HealthSystem : MonoBehaviour
     public bool IsInvincible => _isInvincible || _isInvincibleExternal;
     public float MaxHealth => _maxHealth;
 
+    private float _armorReduction = 0f;
+    private float _regenPerSecond = 0f;
+    private float _regenTimer = 0f;
+    private bool _secondWindUsed = false;
+
     private void Awake()
     {
-        float bonusHP  = MetaProgressionManager.Instance.GetBonusMaxHP();
-        _maxHealth    += _maxHealth * bonusHP;
+        float bonusHP = MetaProgressionManager.Instance.GetBonusMaxHP();
+        _maxHealth += _maxHealth * bonusHP;
         _currentHealth = _maxHealth;
+        _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
+        _regenPerSecond = MetaProgressionManager.Instance.GetBonusRegen();
     }
 
     private void Start()
@@ -42,6 +49,18 @@ public class HealthSystem : MonoBehaviour
 
         if (_damageTimer > 0f)
             _damageTimer -= Time.deltaTime;
+
+        // Régénération passive
+        if (_regenPerSecond > 0f && _currentHealth < _maxHealth)
+        {
+            _regenTimer += Time.deltaTime;
+            if (_regenTimer >= 1f)
+            {
+                _regenTimer = 0f;
+                _currentHealth = Mathf.Min(_currentHealth + _regenPerSecond, _maxHealth);
+                GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -77,18 +96,31 @@ public class HealthSystem : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        // Réduction d'armure
+        damage *= (1f - _armorReduction);
+
+        // Second Souffle — survit une fois à un coup fatal
+        if (MetaProgressionManager.Instance.HasSecondWind() && !_secondWindUsed)
+        {
+            if (_currentHealth - damage <= 0f)
+            {
+                _secondWindUsed = true;
+                _currentHealth = 1f;
+                GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+                Debug.Log("Second Souffle activé !");
+                return;
+            }
+        }
+
         _currentHealth -= damage;
         _currentHealth = Mathf.Max(_currentHealth, 0f);
 
-        // Chiffre rouge au dessus du joueur
         if (DamageNumberSpawner.Instance != null)
             DamageNumberSpawner.Instance.Spawn(
-                transform.position,
-                damage,
-                DamageNumberSpawner.ColorPlayer
-            );
+                transform.position, damage, DamageNumberSpawner.ColorPlayer);
 
         GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+
         if (_currentHealth <= 0)
             Die();
     }

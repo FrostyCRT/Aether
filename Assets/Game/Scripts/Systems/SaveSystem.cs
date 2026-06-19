@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 public static class SaveSystem
 {
@@ -15,8 +16,7 @@ public static class SaveSystem
     public static SaveData Load()
     {
         if (!File.Exists(_savePath))
-            return new SaveData(); // Première fois → données vierges
-
+            return new SaveData();
         string json = File.ReadAllText(_savePath);
         return JsonUtility.FromJson<SaveData>(json);
     }
@@ -25,14 +25,32 @@ public static class SaveSystem
 [System.Serializable]
 public class SaveData
 {
-    public int   totalGold       = 0;  // Gold disponible pour le shop
-    public int   totalRuns       = 0;  // Nombre de parties jouées
-    public float bestTime        = 0f; // Meilleur temps de survie
-    public int   bestWave        = 0;  // Meilleure vague atteinte
-    public int   bestKills       = 0;  // Meilleur nombre de kills
-    public int   totalGems       = 0;  // Gemmes disponible pour le shop
-    // Upgrades méta achetées
-    public int hpUpgradeLevel      = 0;
-    public int damageUpgradeLevel  = 0;
-    public int xpUpgradeLevel      = 0;
+    // Statistiques
+    public int totalGold = 0;
+    public int totalRuns = 0;
+    public float bestTime = 0f;
+    public int bestKills = 0;
+
+    // Branche Guerrier
+    public int damageLevel = 0;
+    public int cadenceLevel = 0;
+    public int crystalDamageLevel = 0;
+    public bool fragmentationUnlocked = false;
+    public bool overpowerUnlocked = false;
+
+    // Branche Gardien
+    public int vitalityLevel = 0;
+    public int regenLevel = 0;
+    public int armorLevel = 0;
+    public bool secondWindUnlocked = false;
+    public bool manaShieldUnlocked = false;
+
+    // Branche Fantôme
+    public int agilityLevel = 0;
+    public int dashLevel = 0;
+    public int novaRadiusLevel = 0;
+    public bool crystalMasteryUnlocked = false;
+    public bool phantomDashUnlocked = false;
+
+    // ← Dictionary et HashSet supprimés : pas sérialisables en JSON
 }

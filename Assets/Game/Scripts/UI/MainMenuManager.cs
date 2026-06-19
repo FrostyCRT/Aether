@@ -20,7 +20,6 @@ public class MainMenuManager : MonoBehaviour
         {
             SaveData data = SaveSystem.Load();
             _goldDisplay.text = $": {data.totalGold}";
-            _gemsDisplay.text = $": {data.totalGems}";
         }
         else
         {

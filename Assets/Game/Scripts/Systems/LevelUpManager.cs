@@ -104,7 +104,7 @@ public class LevelUpManager : MonoBehaviour
     public string GetUpgradesSummary()
     {
         if (_chosenUpgrades.Count == 0)
-            return "Aucune upgrade pour l'instant.";
+            return "";
 
         // Compte les doublons (ex: Dégâts x3)
         Dictionary<string, int> counts = new Dictionary<string, int>();

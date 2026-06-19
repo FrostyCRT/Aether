@@ -52,6 +52,9 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _victoryStatsText;
     [SerializeField] private TextMeshProUGUI _victoryRecordsText;
     [SerializeField] private TextMeshProUGUI _victoryBuildListText;
+
+    [Header("HUD")]
+    [SerializeField] private GameObject _hudPanel;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -123,6 +126,11 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    public void SetHUDVisible(bool visible)
+    {
+        if (_hudPanel != null)
+            _hudPanel.SetActive(visible);
+    }
     public void ShowUltEffect(bool show)
     {
         Debug.Log(show ? "ULT ACTIF — ennemis ralentis !" : "ULT terminé");

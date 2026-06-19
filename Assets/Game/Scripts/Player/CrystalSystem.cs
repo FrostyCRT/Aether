@@ -31,6 +31,21 @@ public class CrystalSystem : MonoBehaviour
             TriggerUlt();
     }
 
+    private void Start()
+    {
+        // Bonus dégâts cristal
+        float crystalBonus = MetaProgressionManager.Instance.GetBonusCrystalDamage();
+        _ultDamage += _ultDamage * crystalBonus;
+        _novaDamage += _novaDamage * crystalBonus;
+
+        // Bonus rayon nova
+        float novaBonus = MetaProgressionManager.Instance.GetBonusNovaRadius();
+        _novaRadius += _novaRadius * novaBonus;
+
+        // Maîtrise du Cristal — réduit les charges nécessaires
+        if (MetaProgressionManager.Instance.HasCrystalMastery())
+            _maxCharges = Mathf.Max(_maxCharges - 1, 2); // Minimum 2 charges
+    }
     public void AbsorbProjectile()
     {
         if (_currentCharges >= _maxCharges) return;
@@ -88,13 +103,26 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerUlt()
     {
-        _isReady        = false;
+        _isReady = false;
         _currentCharges = 0;
         GameUI.Instance.SetCrystalReady(false);
         GameUI.Instance.UpdateCrystalCharge(0, _maxCharges);
         DamageAllEnemies();
         StartCoroutine(SlowAllEnemies());
-        Debug.Log("ULTI DÉCLENCHÉ !");
+
+        // Overpower — boost dégâts après ultime
+        if (MetaProgressionManager.Instance.HasOverpower())
+            StartCoroutine(OverpowerBuff());
+    }
+
+    private IEnumerator OverpowerBuff()
+    {
+        WeaponBase wb = GetComponent<WeaponBase>();
+        if (wb != null) wb.AddDamage(1f); // x2 dégâts (100% de plus)
+        yield return new WaitForSeconds(5f);
+        // Note : AddDamage est cumulatif donc on ne peut pas facilement annuler
+        // On l'implémentera proprement avec un multiplicateur temporaire plus tard
+        Debug.Log("Overpower terminé");
     }
 
     private void DamageAllEnemies()

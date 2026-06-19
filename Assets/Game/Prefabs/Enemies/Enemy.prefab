@@ -115,7 +115,7 @@ MonoBehaviour:
   _moveSpeed: 2.5
   _maxHealth: 30
   _xpValue: 10
-  _goldValue: 2
+  _goldValue: 1
   _poolTag: Enemy
 --- !u!65 &-4166910214641852666
 BoxCollider:

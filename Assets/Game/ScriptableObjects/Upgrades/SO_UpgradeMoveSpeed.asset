@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: SO_UpgradeMoveSpeed
   m_EditorClassIdentifier: 
   upgradeName: Vitesse+
-  description: "+15% \xE0 la vitesse de d\xE9placement"
+  description: "+20% \xE0 la vitesse de d\xE9placement"
   upgradeType: 0
-  value: 0.15
+  value: 0.2

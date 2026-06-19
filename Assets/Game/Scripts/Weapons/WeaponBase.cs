@@ -20,7 +20,9 @@ public class WeaponBase : MonoBehaviour
     private void Start()
     {
         float bonusDamage = MetaProgressionManager.Instance.GetBonusDamage();
+        float bonusCadence = MetaProgressionManager.Instance.GetBonusCadence();
         _damage += _damage * bonusDamage;
+        _fireRate += _fireRate * bonusCadence;
     }
 
     private void Update()
@@ -70,15 +72,16 @@ public class WeaponBase : MonoBehaviour
     private void FireProjectile(Vector3 direction)
     {
         GameObject projectileGO = ObjectPool.Instance.Get(
-            "Projectile",
-            transform.position,
-            Quaternion.identity
-        );
+            "Projectile", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
 
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
             projectile.Init(direction, _damage);
+
+        // Fragmentation — 20% de chance d'exploser à l'impact
+        if (MetaProgressionManager.Instance.HasFragmentation() && projectile != null)
+            projectile.SetFragmentation(true, _damage * 0.5f, 2f);
     }
 
     private System.Collections.IEnumerator FireDelayed(Vector3 direction)

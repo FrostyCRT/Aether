@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -39,9 +40,14 @@ public class PlayerController : MonoBehaviour
     }
     private void Awake()
     {
-        _rb           = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
         _healthSystem = GetComponent<HealthSystem>();
         _crystalSystem = GetComponent<CrystalSystem>();
+
+        // Bonus méta
+        _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetBonusAgility();
+        _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
+        _dashCooldown = Mathf.Max(_dashCooldown, 1f); // Minimum 1s
     }
 
     private void Update()
@@ -82,18 +88,55 @@ public class PlayerController : MonoBehaviour
 
     private void StartDash(Vector3 direction)
     {
-        // On verrouille la direction au moment du dash
-        _dashDirection     = direction.normalized;
-        _isDashing         = true;
-        _isInvincible      = true;
-        _dashTimer         = _dashDuration;
+        _dashDirection = direction.normalized;
+        _isDashing = true;
+        _isInvincible = true;
+        _dashTimer = _dashDuration;
         _dashCooldownTimer = _dashCooldown;
-        _canAbsorb         = true;
-        _absorptionTimer   = _absorptionWindow;
+        _canAbsorb = true;
+        _absorptionTimer = _absorptionWindow;
 
         if (_healthSystem != null) _healthSystem.SetInvincibleExternal(true);
-
         GameUI.Instance.UpdateDashCooldown(0f);
+
+        // Phantom Dash — clone qui attire les ennemis
+        if (MetaProgressionManager.Instance.HasPhantomDash())
+            StartCoroutine(SpawnPhantomClone());
+    }
+
+    private IEnumerator SpawnPhantomClone()
+    {
+        // Crée un clone visuel simple à la position du dash
+        GameObject clone = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        clone.transform.position = transform.position;
+        clone.transform.localScale = transform.localScale;
+        Destroy(clone.GetComponent<Collider>());
+
+        // Material semi-transparent bleu
+        Renderer rend = clone.GetComponent<Renderer>();
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.color = new Color(0.3f, 0.6f, 1f, 0.4f);
+        rend.material = mat;
+
+        // Attire les ennemis pendant 2s
+        float duration = 2f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            Collider[] nearby = Physics.OverlapSphere(clone.transform.position, 5f);
+            foreach (Collider col in nearby)
+            {
+                if (col.CompareTag("Enemy"))
+                {
+                    Vector3 dir = (clone.transform.position - col.transform.position).normalized;
+                    col.transform.position += dir * 3f * Time.deltaTime;
+                }
+            }
+            yield return null;
+        }
+
+        Destroy(clone);
     }
 
     private void StopDash()

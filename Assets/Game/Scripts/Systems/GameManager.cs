@@ -45,10 +45,7 @@ public class GameManager : MonoBehaviour
     {
         IsPaused = !IsPaused;
         Time.timeScale = IsPaused ? 0f : 1f;
-
-        GameObject hud = GameObject.Find("HUD");
-        if (hud != null) hud.SetActive(!IsPaused);
-
+        GameUI.Instance.SetHUDVisible(!IsPaused);
         GameUI.Instance.ShowPausePanel(IsPaused);
     }
 
@@ -56,10 +53,7 @@ public class GameManager : MonoBehaviour
     {
         IsPaused = false;
         Time.timeScale = 1f;
-
-        GameObject hud = GameObject.Find("HUD");
-        if (hud != null) hud.SetActive(true); // ← toujours réactiver
-
+        GameUI.Instance.SetHUDVisible(true);
         GameUI.Instance.ShowPausePanel(false);
     }
 
@@ -95,7 +89,7 @@ public class GameManager : MonoBehaviour
 
     private void ShowGameOver()
     {
-        HideHUD();
+        GameUI.Instance.SetHUDVisible(false);
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
         GameUI.Instance.ShowGameOver(
             _runTimer,
@@ -125,12 +119,8 @@ public class GameManager : MonoBehaviour
 
     private void ShowVictory()
     {
+        GameUI.Instance.SetHUDVisible(false);
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
-
-        // Cache le HUD
-        GameObject hud = GameObject.Find("HUD");
-        if (hud != null) hud.SetActive(false);
-
         GameUI.Instance.ShowVictory(
             _runTimer,
             _killCount,

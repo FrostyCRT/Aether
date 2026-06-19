@@ -1,5 +1,5 @@
 # AETHER — Documentation Complète du Projet V2
-## Jeu Unity 2021.3.45f2 (URP) — Bullet Heaven Roguelite
+## Jeu Unity version 2021.3.45f2 (URP) — Bullet Heaven Roguelite
 ## Dernière mise à jour : Juin 2026
 
 ---
@@ -2268,5 +2268,6 @@ public class MetaProgressionManager : MonoBehaviour
 
 ---
 
-*Document mis à jour — Projet Aether — Juin 2026*
+*Document mis à jour — Projet Aether — 12 Juin 2026*
 *Cette version remplace AETHER_PROJECT_COMPLET.md*
+*Début du projet : fin Mai

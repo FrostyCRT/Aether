@@ -116,7 +116,7 @@ MonoBehaviour:
   _moveSpeed: 1.5
   _maxHealth: 40
   _xpValue: 20
-  _goldValue: 4
+  _goldValue: 3
   _poolTag: EnemyShooter
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
