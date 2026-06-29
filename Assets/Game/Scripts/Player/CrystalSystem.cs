@@ -7,22 +7,36 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private int _maxCharges = 6;
 
     [Header("Ulti")]
-    [SerializeField] private float _ultDamage   = 50f;
-    [SerializeField] private float _ultRange    = 10f;
-    [SerializeField] private float _slowFactor  = 0.3f;
+    [SerializeField] private float _ultDamage = 50f;
+    [SerializeField] private float _ultRange = 10f;
+    [SerializeField] private float _slowFactor = 0.3f;
     [SerializeField] private float _slowDuration = 3f;
 
     [Header("Nova")]
-    [SerializeField] private float _novaDamage  = 10f;
-    [SerializeField] private float _novaRadius  = 3f;
-    [SerializeField] private GameObject _novaVFXPrefab; // Prefab visuel de la nova
+    [SerializeField] private float _novaDamage = 10f;
+    [SerializeField] private float _novaRadius = 3f;
+    [SerializeField] private GameObject _novaVFXPrefab;
 
-    private int  _currentCharges = 0;
-    private bool _isReady        = false;
+    private int _currentCharges = 0;
+    private bool _isReady = false;
+    private bool _overpowerActive = false; // Empêche les stacks infinis
 
-    public int  CurrentCharges => _currentCharges;
-    public int  MaxCharges     => _maxCharges;
-    public bool IsReady        => _isReady;
+    public int CurrentCharges => _currentCharges;
+    public int MaxCharges => _maxCharges;
+    public bool IsReady => _isReady;
+
+    private void Start()
+    {
+        float crystalBonus = MetaProgressionManager.Instance.GetBonusCrystalDamage();
+        _ultDamage += _ultDamage * crystalBonus;
+        _novaDamage += _novaDamage * crystalBonus;
+
+        float novaBonus = MetaProgressionManager.Instance.GetBonusNovaRadius();
+        _novaRadius += _novaRadius * novaBonus;
+
+        if (MetaProgressionManager.Instance.HasCrystalMastery())
+            _maxCharges = Mathf.Max(_maxCharges - 1, 2);
+    }
 
     private void Update()
     {
@@ -31,28 +45,12 @@ public class CrystalSystem : MonoBehaviour
             TriggerUlt();
     }
 
-    private void Start()
-    {
-        // Bonus dégâts cristal
-        float crystalBonus = MetaProgressionManager.Instance.GetBonusCrystalDamage();
-        _ultDamage += _ultDamage * crystalBonus;
-        _novaDamage += _novaDamage * crystalBonus;
-
-        // Bonus rayon nova
-        float novaBonus = MetaProgressionManager.Instance.GetBonusNovaRadius();
-        _novaRadius += _novaRadius * novaBonus;
-
-        // Maîtrise du Cristal — réduit les charges nécessaires
-        if (MetaProgressionManager.Instance.HasCrystalMastery())
-            _maxCharges = Mathf.Max(_maxCharges - 1, 2); // Minimum 2 charges
-    }
     public void AbsorbProjectile()
     {
         if (_currentCharges >= _maxCharges) return;
         _currentCharges++;
         GameUI.Instance.UpdateCrystalCharge(_currentCharges, _maxCharges);
 
-        // Nova à chaque absorption
         TriggerNova();
 
         if (_currentCharges >= _maxCharges)
@@ -70,7 +68,7 @@ public class CrystalSystem : MonoBehaviour
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorCritical, true); // ← fromNova
+                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorCritical, true);
 
                 BossBase boss = hit.GetComponent<BossBase>();
                 if (boss != null) boss.TakeDamage(_novaDamage);
@@ -78,17 +76,15 @@ public class CrystalSystem : MonoBehaviour
         }
 
         if (_novaVFXPrefab != null)
-
             StartCoroutine(ShowNovaVFX());
     }
 
     private IEnumerator ShowNovaVFX()
     {
         GameObject vfx = Instantiate(_novaVFXPrefab, transform.position, Quaternion.identity);
-        
-        // Animation d'expansion puis disparition
+
         float duration = 0.3f;
-        float elapsed  = 0f;
+        float elapsed = 0f;
 
         while (elapsed < duration)
         {
@@ -107,28 +103,30 @@ public class CrystalSystem : MonoBehaviour
         _currentCharges = 0;
         GameUI.Instance.SetCrystalReady(false);
         GameUI.Instance.UpdateCrystalCharge(0, _maxCharges);
+
         DamageAllEnemies();
         StartCoroutine(SlowAllEnemies());
 
-        // Overpower — boost dégâts après ultime
-        if (MetaProgressionManager.Instance.HasOverpower())
+        if (MetaProgressionManager.Instance.HasOverpower() && !_overpowerActive)
             StartCoroutine(OverpowerBuff());
     }
 
     private IEnumerator OverpowerBuff()
     {
+        _overpowerActive = true;
+
         WeaponBase wb = GetComponent<WeaponBase>();
-        if (wb != null) wb.AddDamage(1f); // x2 dégâts (100% de plus)
+        if (wb != null) wb.SetDamageMultiplier(2f); // x2 dégâts pendant 5s
+
         yield return new WaitForSeconds(5f);
-        // Note : AddDamage est cumulatif donc on ne peut pas facilement annuler
-        // On l'implémentera proprement avec un multiplicateur temporaire plus tard
-        Debug.Log("Overpower terminé");
+
+        if (wb != null) wb.SetDamageMultiplier(1f); // Retour normal
+        _overpowerActive = false;
     }
 
     private void DamageAllEnemies()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
-        int count = 0;
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
@@ -138,32 +136,38 @@ public class CrystalSystem : MonoBehaviour
 
                 BossBase boss = hit.GetComponent<BossBase>();
                 if (boss != null) boss.TakeDamage(_ultDamage);
-                count++;
             }
         }
-        Debug.Log($"Ulti — {count} ennemis touchés dans un rayon de {_ultRange}");
     }
 
     private IEnumerator SlowAllEnemies()
     {
-        SetEnemySpeedMultiplier(_slowFactor);
-        GameUI.Instance.ShowUltEffect(true);
-        yield return new WaitForSeconds(_slowDuration);
-        SetEnemySpeedMultiplier(1f);
-        GameUI.Instance.ShowUltEffect(false);
-    }
-
-    private void SetEnemySpeedMultiplier(float multiplier)
-    {
+        // Récupère exactement les ennemis touchés au moment du cast
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.SetSpeedMultiplier(multiplier);
+                if (eb != null) eb.SetSpeedMultiplier(_slowFactor);
             }
         }
+
+        GameUI.Instance.ShowUltEffect(true);
+        yield return new WaitForSeconds(_slowDuration);
+
+        // Remet uniquement les ennemis qui avaient été ralentis
+        foreach (Collider hit in hits)
+        {
+            if (hit == null) continue; // L'ennemi est peut-être mort entre-temps
+            if (hit.CompareTag("Enemy"))
+            {
+                EnemyBase eb = hit.GetComponent<EnemyBase>();
+                if (eb != null) eb.SetSpeedMultiplier(1f);
+            }
+        }
+
+        GameUI.Instance.ShowUltEffect(false);
     }
 
     private void OnDrawGizmosSelected()

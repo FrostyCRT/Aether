@@ -5,11 +5,13 @@ public class XPGemSpawner : MonoBehaviour
 {
     public static XPGemSpawner Instance { get; private set; }
 
-    [Header("Prefab")]
-    [SerializeField] private GameObject _gemPrefab; // Sphere Unity simple
-
     private Transform _playerTransform;
-    private float _attractionRadius = 0f; // 0 = pas d'attraction
+
+    // Unification du rayon d'attraction (0f par défaut, s'agrandit au fil du jeu)
+    public float AttractionRadius { get; private set; } = 0f;
+
+    // OPTIMISATION : Liste réutilisable mise en cache pour éviter le "new List" à chaque mort
+    private readonly List<XPGem.GemType> _gemsCalculationCache = new List<XPGem.GemType>();
 
     private void Awake()
     {
@@ -25,59 +27,64 @@ public class XPGemSpawner : MonoBehaviour
     }
 
     // Appelé par XPSystem quand le joueur level up
-    public float AttractionRadius { get; private set; } = 0f;
-
     public void OnLevelUp(int level)
     {
         if (level >= 3)
-            AttractionRadius = 4f;
+            AttractionRadius = 4f; // S'active ou s'agrandit
     }
 
-    // Appelé à la mort d'un ennemi — calcule et spawne les gemmes
+    // Appelé à la mort d'un ennemi — calcule et spawne les gemmes via l'ObjectPool
     public void SpawnGems(Vector3 position, float xpValue)
     {
-        List<XPGem.GemType> gems = CalculateGems(xpValue);
+        if (ObjectPool.Instance == null) return;
 
-        foreach (XPGem.GemType gemType in gems)
+        CalculateGems(xpValue); // Remplit le cache interne
+
+        for (int i = 0; i < _gemsCalculationCache.Count; i++)
         {
-            // Offset aléatoire pour que les gemmes ne spawent pas toutes au même endroit
+            XPGem.GemType gemType = _gemsCalculationCache[i];
+
+            // Offset aléatoire pour espacer les gemmes au sol
             Vector3 offset = new Vector3(
-                Random.Range(-1f, 1f), 0f,
-                Random.Range(-1f, 1f));
+                Random.Range(-0.8f, 0.8f),
+                0f,
+                Random.Range(-0.8f, 0.8f)
+            );
 
-            GameObject gemGO = Instantiate(_gemPrefab, position + offset, Quaternion.identity);
+            // CORRECTION CRITIQUE : Utilisation de l'ObjectPool au lieu d'Instantiate
+            GameObject gemGO = ObjectPool.Instance.Get("XPGem", position + offset, Quaternion.identity);
 
-            XPGem gem = gemGO.GetComponent<XPGem>();
-            if (gem != null)
+            if (gemGO != null)
             {
-                gem.Init(gemType, _playerTransform);
-                gem.EnableAttraction(_attractionRadius);
+                XPGem gem = gemGO.GetComponent<XPGem>();
+                if (gem != null)
+                {
+                    gem.Init(gemType, _playerTransform);
+                }
             }
         }
     }
 
-    // Algorithme "rendre la monnaie" — décompose l'XP en gemmes
-    private List<XPGem.GemType> CalculateGems(float xpValue)
+    // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire
+    private void CalculateGems(float xpValue)
     {
-        List<XPGem.GemType> result = new List<XPGem.GemType>();
+        _gemsCalculationCache.Clear(); // On vide le cache de la mort précédente
         int remaining = Mathf.RoundToInt(xpValue);
 
         while (remaining >= 50)
         {
-            result.Add(XPGem.GemType.Large);
+            _gemsCalculationCache.Add(XPGem.GemType.Large);
             remaining -= 50;
         }
         while (remaining >= 20)
         {
-            result.Add(XPGem.GemType.Medium);
+            _gemsCalculationCache.Add(XPGem.GemType.Medium);
             remaining -= 20;
         }
         while (remaining >= 10)
         {
-            result.Add(XPGem.GemType.Small);
+            _gemsCalculationCache.Add(XPGem.GemType.Small);
             remaining -= 10;
         }
-
-        return result;
     }
 }

@@ -3,40 +3,49 @@
 public class BossDeer : BossBase
 {
     [Header("Cerf — Téléportation")]
-    [SerializeField] private float _teleportCooldown  = 8f;
-    [SerializeField] private float _teleportDistance  = 3f;
+    [SerializeField] private float _teleportCooldown = 8f;
+    [SerializeField] private float _teleportDistance = 3f;
 
     [Header("Cerf — Spirale")]
-    [SerializeField] private float _spiralFireRate    = 0.15f;
-    [SerializeField] private int   _spiralBurstCount  = 24;
+    [SerializeField] private float _spiralFireRate = 0.15f;
+    [SerializeField] private int _spiralBurstCount = 24;
 
     [Header("Cerf — Régénération")]
-    [SerializeField] private float _regenAmount       = 100f;
-    [SerializeField] private float _regenCooldown     = 30f;
+    [SerializeField] private float _regenAmount = 100f;
+    [SerializeField] private float _regenCooldown = 30f;
 
     [Header("Cerf — Rage")]
-    [SerializeField] private float _rageThreshold     = 0.3f; // 30% HP
+    [SerializeField] private float _rageThreshold = 0.3f; // 30% HP
     private bool _isRaging = false;
 
     private float _teleportTimer = 0f;
-    private float _regenTimer    = 0f;
-    private float _spiralAngle   = 0f;
-    private float _spiralTimer   = 0f;
-    private bool  _isShooting    = false;
-    private int   _spiralCount   = 0;
+    private float _regenTimer = 0f;
+    private float _spiralAngle = 0f;
+    private float _spiralTimer = 0f;
+    private bool _isShooting = false;
+    private int _spiralCount = 0;
+
+    private bool _isTeleporting = false;
+    private float _teleportFreezeTimer = 0f; // Remplacement de l'Invoke
 
     protected override void Start()
     {
-        base.Start();
-        _bossName  = "Le Cerf Ancestral";
+        // On configure d'abord les variables d'identité AVANT le base.Start() 
+        // pour que _currentHealth = _maxHealth s'initialise correctement.
+        _bossName = "Le Cerf Ancestral";
         _maxHealth = 800f;
         _moveSpeed = 4f;
+
+        base.Start();
     }
 
     protected override void Update()
     {
         if (_playerTransform == null) return;
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance == null) return;
+
+        // CORRECTION PAUSE : Sécurisation complète de l'état du boss
+        if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
         HandleMovement();
         HandleTeleport();
@@ -45,16 +54,28 @@ public class BossDeer : BossBase
         CheckRage();
     }
 
-    // Le Cerf ne charge pas — il se déplace normalement
+    // Le Cerf ne charge pas — Désactivation de l'attaque de charge de la classe mère
+    protected override void HandleCharge() { }
+
+    // Désactivation du tir radial classique de la classe mère pour utiliser la spirale
+    protected override void HandleShooting() { }
+
     protected override void HandleMovement()
     {
-        if (_isTeleporting) return; // Pause après téléportation
+        if (_isTeleporting)
+        {
+            // CORRECTION LOGIQUE : Gestion du freeze de téléportation sans Invoke
+            _teleportFreezeTimer -= Time.deltaTime;
+            if (_teleportFreezeTimer <= 0f)
+            {
+                _isTeleporting = false;
+            }
+            return;
+        }
+
         Vector3 direction = (_playerTransform.position - transform.position).normalized;
         transform.position += direction * _moveSpeed * Time.deltaTime;
     }
-
-    // Téléportation derrière le joueur
-    private bool _isTeleporting = false;
 
     private void HandleTeleport()
     {
@@ -75,17 +96,10 @@ public class BossDeer : BossBase
 
         transform.position = behindPlayer;
 
-        // Freeze le mouvement pendant 0.5s après la téléportation
         _isTeleporting = true;
-        Invoke(nameof(StopTeleport), 0.5f);
+        _teleportFreezeTimer = 0.5f;
     }
 
-    private void StopTeleport()
-    {
-        _isTeleporting = false;
-    }
-
-    // Tir en spirale
     private void HandleSpiral()
     {
         if (!_isShooting)
@@ -93,7 +107,7 @@ public class BossDeer : BossBase
             _spiralTimer += Time.deltaTime;
             if (_spiralTimer >= 1f / _fireRate)
             {
-                _isShooting  = true;
+                _isShooting = true;
                 _spiralCount = 0;
                 _spiralTimer = 0f;
             }
@@ -114,16 +128,12 @@ public class BossDeer : BossBase
 
     private void ShootSpiralProjectile()
     {
-        if (_projectilePrefab == null) return;
-
-        float   angleStep = 360f / _spiralBurstCount;
+        float angleStep = 360f / _spiralBurstCount;
         Vector3 direction = Quaternion.Euler(0, _spiralAngle, 0) * Vector3.forward;
 
-        GameObject projectileGO = Instantiate(
-            _projectilePrefab,
-            transform.position,
-            Quaternion.identity
-        );
+        // CORRECTION PERFORMANCE : Remplacement de l'Instantiate par le Pool global
+        GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
+        if (projectileGO == null) return;
 
         EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
         if (projectile != null)
@@ -132,24 +142,23 @@ public class BossDeer : BossBase
         _spiralAngle += angleStep;
     }
 
-    // Régénération toutes les 30 secondes
     private void HandleRegen()
     {
         _regenTimer += Time.deltaTime;
         if (_regenTimer >= _regenCooldown)
         {
-            _regenTimer     = 0f;
-            _currentHealth  = Mathf.Min(_currentHealth + _regenAmount, _maxHealth);
-            GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
-            Debug.Log("Cerf Ancestral se régénère !");
+            _regenTimer = 0f;
+            _currentHealth = Mathf.Min(_currentHealth + _regenAmount, _maxHealth);
+
+            if (GameUI.Instance != null)
+                GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
         }
     }
 
-    // Rage à 30% HP
     private void CheckRage()
     {
         if (_isRaging) return;
-        if (RageDisabled) return; // ← pas de rage si invoqué
+        if (RageDisabled) return;
         if (_currentHealth / _maxHealth > _rageThreshold) return;
 
         _isRaging = true;

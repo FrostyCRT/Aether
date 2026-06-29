@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class MetaProgressionManager : MonoBehaviour
 {
@@ -12,95 +13,116 @@ public class MetaProgressionManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // On appelle la méthode de chargement sécurisée
+        LoadData();
+    }
+
+    public void LoadData()
+    {
+        // On demande au SaveSystem de lire le fichier JSON
         Data = SaveSystem.Load();
+
+        // SÉCURITÉ : Si le fichier n'existait pas (première partie), 
+        // SaveSystem a renvoyé un nouvel objet, mais au cas où c'est "null", 
+        // on force la création d'un SaveData tout neuf pour éviter les bugs dans le Shop.
+        if (Data == null)
+        {
+            Data = new SaveData();
+        }
     }
 
     public void AddRunGold(int amount)
     {
         RunGold += amount;
-        if (GameUI.Instance != null)
+
+        // CORRECTION SÉCURITÉ UI : Vérification stricte de l'état de l'instance UI
+        if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
+        {
             GameUI.Instance.UpdateGold(RunGold);
+        }
     }
 
     public void SaveRunResults(float runTime, int kills)
     {
+        if (Data == null) LoadData();
+
         Data.totalRuns++;
         Data.totalGold += RunGold;
+
         if (runTime > Data.bestTime) Data.bestTime = runTime;
         if (kills > Data.bestKills) Data.bestKills = kills;
+
         SaveSystem.Save(Data);
-        RunGold = 0;
+        RunGold = 0; // Reset pour la run suivante
     }
 
     // =====================
     // BONUS APPLIQUÉS EN JEU
     // =====================
 
-    // Branche Guerrier
     public float GetBonusDamage()
     {
         float[] values = { 0f, 0.10f, 0.25f, 0.50f };
-        return values[Mathf.Clamp(Data.damageLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.damageLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusCadence()
     {
         float[] values = { 0f, 0.10f, 0.20f, 0.35f };
-        return values[Mathf.Clamp(Data.cadenceLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.cadenceLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusCrystalDamage()
     {
         float[] values = { 0f, 0.25f, 0.50f, 1.00f };
-        return values[Mathf.Clamp(Data.crystalDamageLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.crystalDamageLevel, 0, values.Length - 1)];
     }
 
-    public bool HasFragmentation() => Data.fragmentationUnlocked;
-    public bool HasOverpower() => Data.overpowerUnlocked;
+    public bool HasFragmentation() => Data != null && Data.fragmentationUnlocked;
+    public bool HasOverpower() => Data != null && Data.overpowerUnlocked;
 
-    // Branche Gardien
     public float GetBonusMaxHP()
     {
         float[] values = { 0f, 0.15f, 0.30f, 0.50f };
-        return values[Mathf.Clamp(Data.vitalityLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.vitalityLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusRegen()
     {
         float[] values = { 0f, 1f, 2f, 4f };
-        return values[Mathf.Clamp(Data.regenLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.regenLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusArmor()
     {
         float[] values = { 0f, 0.08f, 0.15f, 0.25f };
-        return values[Mathf.Clamp(Data.armorLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.armorLevel, 0, values.Length - 1)];
     }
 
-    public bool HasSecondWind() => Data.secondWindUnlocked;
-    public bool HasManaShield() => Data.manaShieldUnlocked;
+    public bool HasSecondWind() => Data != null && Data.secondWindUnlocked;
+    public bool HasManaShield() => Data != null && Data.manaShieldUnlocked;
 
-    // Branche Fantôme
     public float GetBonusAgility()
     {
         float[] values = { 0f, 0.08f, 0.18f, 0.30f };
-        return values[Mathf.Clamp(Data.agilityLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.agilityLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusDashCooldown()
     {
         float[] values = { 0f, 0.3f, 0.6f, 1.0f };
-        return values[Mathf.Clamp(Data.dashLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.dashLevel, 0, values.Length - 1)];
     }
 
     public float GetBonusNovaRadius()
     {
         float[] values = { 0f, 0.30f, 0.60f, 1.00f };
-        return values[Mathf.Clamp(Data.novaRadiusLevel, 0, 3)];
+        return values[Mathf.Clamp(Data.novaRadiusLevel, 0, values.Length - 1)];
     }
 
-    public bool HasCrystalMastery() => Data.crystalMasteryUnlocked;
-    public bool HasPhantomDash() => Data.phantomDashUnlocked;
+    public bool HasCrystalMastery() => Data != null && Data.crystalMasteryUnlocked;
+    public bool HasPhantomDash() => Data != null && Data.phantomDashUnlocked;
 
     // =====================
     // ACHAT DES NŒUDS
@@ -108,10 +130,12 @@ public class MetaProgressionManager : MonoBehaviour
 
     public bool TryBuyNode(string nodeId)
     {
+        if (Data == null) return false;
+
         int cost = GetNodeCost(nodeId);
-        if (cost == -1) return false;        // Nœud invalide
-        if (!IsNodeUnlockable(nodeId)) return false; // Prérequis non remplis
-        if (Data.totalGold < cost) return false;     // Pas assez de gold
+        if (cost == -1) return false;
+        if (!IsNodeUnlockable(nodeId)) return false;
+        if (Data.totalGold < cost) return false;
 
         Data.totalGold -= cost;
         ApplyNodePurchase(nodeId);
@@ -121,7 +145,8 @@ public class MetaProgressionManager : MonoBehaviour
 
     public int GetNodeCost(string nodeId)
     {
-        // Nœuds multi-niveaux — coût selon le niveau suivant
+        if (Data == null) return -1;
+
         switch (nodeId)
         {
             case "damage": return GetLevelCost(Data.damageLevel);
@@ -134,7 +159,6 @@ public class MetaProgressionManager : MonoBehaviour
             case "dash": return GetLevelCost(Data.dashLevel);
             case "novaRadius": return GetLevelCost(Data.novaRadiusLevel);
 
-            // Nœuds uniques
             case "fragmentation": return 500;
             case "overpower": return 1000;
             case "secondWind": return 800;
@@ -149,15 +173,16 @@ public class MetaProgressionManager : MonoBehaviour
     private int GetLevelCost(int currentLevel)
     {
         int[] costs = { 100, 300, 700 };
-        if (currentLevel >= 3) return -1; // Déjà au max
+        if (currentLevel >= costs.Length) return -1;
         return costs[currentLevel];
     }
 
     public bool IsNodeUnlockable(string nodeId)
     {
+        if (Data == null) return false;
+
         switch (nodeId)
         {
-            // ── Toujours disponibles (bas de chaque branche) ──
             case "damage": return Data.damageLevel < 3;
             case "cadence": return Data.cadenceLevel < 3;
             case "vitality": return Data.vitalityLevel < 3;
@@ -165,17 +190,14 @@ public class MetaProgressionManager : MonoBehaviour
             case "agility": return Data.agilityLevel < 3;
             case "dash": return Data.dashLevel < 3;
 
-            // ── Milieu droite (nécessite bas droite) ──
             case "fragmentation": return Data.damageLevel >= 1 && !Data.fragmentationUnlocked;
             case "secondWind": return Data.vitalityLevel >= 1 && !Data.secondWindUnlocked;
             case "crystalMastery": return Data.agilityLevel >= 1 && !Data.crystalMasteryUnlocked;
 
-            // ── Milieu gauche (nécessite bas gauche) ──
             case "crystalDamage": return Data.cadenceLevel >= 1 && Data.crystalDamageLevel < 3;
             case "armor": return Data.regenLevel >= 1 && Data.armorLevel < 3;
             case "novaRadius": return Data.dashLevel >= 1 && Data.novaRadiusLevel < 3;
 
-            // ── Sommet (nécessite milieu droite ET milieu gauche) ──
             case "overpower": return Data.fragmentationUnlocked && Data.crystalDamageLevel >= 1 && !Data.overpowerUnlocked;
             case "manaShield": return Data.secondWindUnlocked && Data.armorLevel >= 1 && !Data.manaShieldUnlocked;
             case "phantomDash": return Data.crystalMasteryUnlocked && Data.novaRadiusLevel >= 1 && !Data.phantomDashUnlocked;
@@ -206,9 +228,10 @@ public class MetaProgressionManager : MonoBehaviour
         }
     }
 
-    // Pour affichage dans le shop
     public int GetNodeLevel(string nodeId)
     {
+        if (Data == null) return 0;
+
         switch (nodeId)
         {
             case "damage": return Data.damageLevel;
@@ -226,6 +249,8 @@ public class MetaProgressionManager : MonoBehaviour
 
     public bool IsNodePurchased(string nodeId)
     {
+        if (Data == null) return false;
+
         switch (nodeId)
         {
             case "fragmentation": return Data.fragmentationUnlocked;
@@ -238,10 +263,12 @@ public class MetaProgressionManager : MonoBehaviour
         }
     }
 
-    // Legacy — gardé pour compatibilité
     public float GetBonusXP() => 0f;
+
     public void ResetSkillTree()
     {
+        if (Data == null) Data = new SaveData();
+
         Data.damageLevel = 0;
         Data.cadenceLevel = 0;
         Data.crystalDamageLevel = 0;
@@ -257,8 +284,8 @@ public class MetaProgressionManager : MonoBehaviour
         Data.novaRadiusLevel = 0;
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
-        Data.totalGold = 9999; // Gold de test
+
+        Data.totalGold = 0; // Reset propre de la triche pour la release
         SaveSystem.Save(Data);
     }
-
 }

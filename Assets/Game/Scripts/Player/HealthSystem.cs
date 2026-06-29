@@ -9,11 +9,11 @@ public class HealthSystem : MonoBehaviour
     [SerializeField] private float _invincibilityDuration = 1f;
 
     private float _currentHealth;
-    private bool  _isInvincible         = false;
-    private bool  _isInvincibleExternal = false;
-    private float _invincibilityTimer   = 0f;
-    private float _damageCooldown       = 0.5f;
-    private float _damageTimer          = 0f;
+    private bool _isInvincible = false;
+    private bool _isInvincibleExternal = false;
+    private float _invincibilityTimer = 0f;
+    private float _damageCooldown = 0.5f;
+    private float _damageTimer = 0f;
 
     public bool IsInvincible => _isInvincible || _isInvincibleExternal;
     public float MaxHealth => _maxHealth;
@@ -30,6 +30,8 @@ public class HealthSystem : MonoBehaviour
         _currentHealth = _maxHealth;
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
         _regenPerSecond = MetaProgressionManager.Instance.GetBonusRegen();
+
+        _secondWindUsed = false;
     }
 
     private void Start()
@@ -40,6 +42,11 @@ public class HealthSystem : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance == null) return;
+
+        // CORRECTION PAUSE
+        if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
+
         if (_isInvincible)
         {
             _invincibilityTimer -= Time.deltaTime;
@@ -50,7 +57,6 @@ public class HealthSystem : MonoBehaviour
         if (_damageTimer > 0f)
             _damageTimer -= Time.deltaTime;
 
-        // Régénération passive
         if (_regenPerSecond > 0f && _currentHealth < _maxHealth)
         {
             _regenTimer += Time.deltaTime;
@@ -58,7 +64,9 @@ public class HealthSystem : MonoBehaviour
             {
                 _regenTimer = 0f;
                 _currentHealth = Mathf.Min(_currentHealth + _regenPerSecond, _maxHealth);
-                GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+
+                if (GameUI.Instance != null)
+                    GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
             }
         }
     }
@@ -68,17 +76,11 @@ public class HealthSystem : MonoBehaviour
         if (IsInvincible) return;
         if (_damageTimer > 0f) return;
 
+        // CORRECTION : Seuls les contacts directs avec le corps des ennemis sont gérés ici
         if (other.CompareTag("Enemy"))
         {
             TakeDamage(10f);
             _damageTimer = _damageCooldown;
-        }
-
-        if (other.CompareTag("EnemyProjectile"))
-        {
-            TakeDamage(15f);
-            _damageTimer = _damageCooldown;
-            
         }
     }
 
@@ -96,18 +98,15 @@ public class HealthSystem : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        // Réduction d'armure
+        if (IsInvincible) return;
+
         damage *= (1f - _armorReduction);
 
-        // Second Souffle — survit une fois à un coup fatal
         if (MetaProgressionManager.Instance.HasSecondWind() && !_secondWindUsed)
         {
             if (_currentHealth - damage <= 0f)
             {
-                _secondWindUsed = true;
-                _currentHealth = 1f;
-                GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
-                Debug.Log("Second Souffle activé !");
+                TriggerSecondWind();
                 return;
             }
         }
@@ -119,28 +118,51 @@ public class HealthSystem : MonoBehaviour
             DamageNumberSpawner.Instance.Spawn(
                 transform.position, damage, DamageNumberSpawner.ColorPlayer);
 
-        GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+        if (GameUI.Instance != null)
+            GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
 
-        if (_currentHealth <= 0)
+        if (_currentHealth <= 0f)
             Die();
     }
 
+    private void TriggerSecondWind()
+    {
+        _secondWindUsed = true;
+        _currentHealth = 1f;
+
+        if (GameUI.Instance != null)
+            GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+
+        // Force une invincibilité de 3 secondes
+        _isInvincible = true;
+        _invincibilityTimer = 3f;
+
+        // On prévient le PlayerController d'activer l'invisibilité visuelle
+        PlayerController playerCtrl = GetComponent<PlayerController>();
+        if (playerCtrl != null)
+        {
+            playerCtrl.ActivateInvisibility(3f);
+        }
+    }
+
+    // Utilisé proprement par EnemyProjectile
     public void TakeDamageFromProjectile(float damage)
     {
-        if (IsInvincible) return;
         TakeDamage(damage);
     }
 
     public void Heal(float percent)
     {
         _currentHealth += _maxHealth * percent;
-        _currentHealth  = Mathf.Min(_currentHealth, _maxHealth);
-        GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+        _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
+
+        if (GameUI.Instance != null)
+            GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
     }
 
     public void SetInvincible()
     {
-        _isInvincible       = true;
+        _isInvincible = true;
         _invincibilityTimer = _invincibilityDuration;
     }
 
@@ -151,7 +173,12 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
-        GameManager.Instance.TriggerGameOver();
-        Destroy(gameObject);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TriggerGameOver();
+        }
+
+        // CORRECTION CRASH : Désactivation au lieu de destruction pour préserver les transforms cibles des ennemis
+        gameObject.SetActive(false);
     }
 }

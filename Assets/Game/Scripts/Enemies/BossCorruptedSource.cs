@@ -26,7 +26,7 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _implosionPullForce = 15f;
     [SerializeField] private float _implosionRadius = 10f;
     [SerializeField] private float _implosionDamage = 40f;
-    [SerializeField] private GameObject _implosionWarningPrefab; // Disque rouge au sol
+    [SerializeField] private GameObject _implosionWarningPrefab;
 
     [Header("Phase 2")]
     [SerializeField] private float _phase2Threshold = 0.5f;
@@ -47,6 +47,11 @@ public class BossCorruptedSource : BossBase
 
     private GameObject[] _crystals;
     private GameObject _currentWarning = null;
+
+    // Caching des composants du joueur pour optimiser l'implosion
+    private PlayerController _cachedPlayerController;
+    private Rigidbody _cachedPlayerRigidbody;
+
     protected override void Start()
     {
         base.Start();
@@ -54,13 +59,24 @@ public class BossCorruptedSource : BossBase
         _maxHealth = 1200f;
         _moveSpeed = 0f;
         _currentHealth = _maxHealth;
+
+        // Cache des composants du joueur dès le départ
+        if (_playerTransform != null)
+        {
+            _cachedPlayerController = _playerTransform.GetComponent<PlayerController>();
+            _cachedPlayerRigidbody = _playerTransform.GetComponent<Rigidbody>();
+        }
+
         SpawnCrystals();
     }
 
     protected override void Update()
     {
         if (_playerTransform == null) return;
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance == null) return;
+
+        // CORRECTION BUG : Gestion de la pause et de fin de partie
+        if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
         HandleMovement();
         UpdateWander();
@@ -75,11 +91,10 @@ public class BossCorruptedSource : BossBase
     protected override void HandleMovement()
     {
         if (!_isPhase2) return;
-        if (_isImplosionActive) return; // Immobile pendant l'implosion
+        if (_isImplosionActive) return;
         transform.position += _wanderDirection * _moveSpeed * Time.deltaTime;
     }
 
-    // --- CRISTAUX ORBITAUX ---
     private void SpawnCrystals()
     {
         if (_crystalPrefab == null) return;
@@ -116,25 +131,24 @@ public class BossCorruptedSource : BossBase
         _crystalFireTimer += Time.deltaTime;
         if (_crystalFireTimer < 1f / _crystalFireRate) return;
         _crystalFireTimer = 0f;
-        if (_projectilePrefab == null) return;
 
         foreach (GameObject crystal in _crystals)
         {
             if (crystal == null) continue;
 
-            // Chaque cristal vise le joueur depuis SA PROPRE POSITION
             Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
             dirToPlayer.y = 0f;
 
-            GameObject projectileGO = Instantiate(
-                _projectilePrefab, crystal.transform.position, Quaternion.identity);
+            // CORRECTION PERFORMANCE : Remplacement de l'Instantiate par le Pool global
+            GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
+            if (projectileGO == null) continue;
+
             EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
             if (projectile != null)
                 projectile.Init(dirToPlayer);
         }
     }
 
-    // --- VAGUE DE RALENTISSEMENT ---
     private void HandleSlowWave()
     {
         _slowWaveTimer += Time.deltaTime;
@@ -146,8 +160,8 @@ public class BossCorruptedSource : BossBase
         {
             if (hit.CompareTag("Player"))
             {
-                PlayerController player = hit.GetComponent<PlayerController>();
-                if (player != null) StartCoroutine(SlowPlayer(player));
+                if (_cachedPlayerController != null)
+                    StartCoroutine(SlowPlayer(_cachedPlayerController));
             }
         }
     }
@@ -159,7 +173,6 @@ public class BossCorruptedSource : BossBase
         player.SetSpeedMultiplier(1f);
     }
 
-    // --- INVOCATION ---
     private void HandleSummon()
     {
         _summonTimer += Time.deltaTime;
@@ -193,11 +206,10 @@ public class BossCorruptedSource : BossBase
             boss.InitWithReducedHP(percent);
             boss.transform.localScale = Vector3.one * 0.6f;
             boss.SetXPValue(boss.MaxHealth * 0.3f);
-            boss.RageDisabled = true; // ← pas de rage sur les invocations
+            boss.RageDisabled = true;
         }
     }
 
-    // --- IMPLOSION ---
     private void HandleImplosion()
     {
         if (_isImplosionActive) return;
@@ -211,7 +223,6 @@ public class BossCorruptedSource : BossBase
     {
         _isImplosionActive = true;
 
-        // --- Affichage de la zone d'avertissement ---
         if (_implosionWarningPrefab != null)
         {
             _currentWarning = Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity);
@@ -224,9 +235,15 @@ public class BossCorruptedSource : BossBase
 
         while (elapsed < pullDuration)
         {
+            // Sécurité si le jeu se met en pause pendant la coroutine
+            if (GameManager.Instance != null && GameManager.Instance.IsPaused)
+            {
+                yield return null;
+                continue;
+            }
+
             elapsed += Time.deltaTime;
 
-            // Agrandit le disque rouge progressivement pendant l'aspiration
             if (_currentWarning != null)
             {
                 _currentWarning.transform.position = transform.position;
@@ -234,16 +251,16 @@ public class BossCorruptedSource : BossBase
                 _currentWarning.transform.localScale = new Vector3(scale, 0.05f, scale);
             }
 
-            if (_playerTransform != null)
+            // CORRECTION PERFORMANCE : Utilisation des composants mis en cache (Plus aucun GetComponent en boucle !)
+            if (_playerTransform != null && _cachedPlayerController != null && _cachedPlayerRigidbody != null)
             {
                 float dist = Vector3.Distance(_playerTransform.position, transform.position);
                 if (dist > minDistance)
                 {
-                    PlayerController player = _playerTransform.GetComponent<PlayerController>();
-                    if (player == null || !player.IsDashing)
+                    if (!_cachedPlayerController.IsDashing)
                     {
                         Vector3 pullDir = (transform.position - _playerTransform.position).normalized;
-                        _playerTransform.GetComponent<Rigidbody>().MovePosition(
+                        _cachedPlayerRigidbody.MovePosition(
                             _playerTransform.position + pullDir * _implosionPullForce * Time.deltaTime);
                     }
                 }
@@ -251,7 +268,6 @@ public class BossCorruptedSource : BossBase
             yield return null;
         }
 
-        // Explosion AOE
         if (_currentWarning != null) Destroy(_currentWarning);
 
         Collider[] hits = Physics.OverlapSphere(transform.position, _implosionRadius);
@@ -267,7 +283,6 @@ public class BossCorruptedSource : BossBase
         _isImplosionActive = false;
     }
 
-    // --- PHASE 2 ---
     private void CheckPhase2()
     {
         if (_isPhase2) return;
@@ -293,7 +308,7 @@ public class BossCorruptedSource : BossBase
 
     protected override void Die()
     {
-        if (_currentWarning != null) Destroy(_currentWarning); // ← nettoyage
+        if (_currentWarning != null) Destroy(_currentWarning);
         if (_crystals != null)
             foreach (GameObject crystal in _crystals)
                 if (crystal != null) Destroy(crystal);

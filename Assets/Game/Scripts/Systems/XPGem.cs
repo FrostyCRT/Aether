@@ -2,79 +2,96 @@ using UnityEngine;
 
 public class XPGem : MonoBehaviour
 {
-    [Header("Stats")]
+    // Types de gemmes
+    public enum GemType { Small, Medium, Large }
+    private GemType _gemType;
+
     private float _xpValue = 10f;
-    private float _attractionRadius = 4f;
     private bool _attracted = false;
     private float _moveSpeed = 8f;
 
     private Transform _playerTransform;
-    private Rigidbody _rb;
+    private Renderer _renderer;
 
-    // Types de gemmes
-    public enum GemType { Small, Medium, Large }
-    private GemType _gemType;
+    // Cache de l'ID des propriétés de Shader pour éviter les allocations de string
+    private static readonly int ColorID = Shader.PropertyToID("_Color");
+    private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
+    private static MaterialPropertyBlock _propBlock;
+
+    private void Awake()
+    {
+        _renderer = GetComponent<Renderer>();
+        if (_propBlock == null) _propBlock = new MaterialPropertyBlock();
+    }
 
     public void Init(GemType type, Transform player)
     {
         _gemType = type;
         _playerTransform = player;
+        _attracted = false; // RESET indispensable pour le recyclage du pool
 
+        Color targetColor = Color.blue;
         switch (type)
         {
             case GemType.Small:
                 _xpValue = 10f;
                 transform.localScale = Vector3.one * 0.3f;
-                GetComponent<Renderer>().material.color = new Color(0.2f, 0.6f, 1f); // Bleue
-                GetComponent<Renderer>().material.SetColor("_EmissionColor", new Color(0.2f, 0.6f, 1f) * 2f);
+                targetColor = new Color(0.2f, 0.6f, 1f); // Bleue
                 break;
 
             case GemType.Medium:
                 _xpValue = 20f;
                 transform.localScale = Vector3.one * 0.4f;
-                GetComponent<Renderer>().material.color = new Color(0.7f, 0.2f, 1f); // Violette
-                GetComponent<Renderer>().material.SetColor("_EmissionColor", new Color(0.7f, 0.2f, 1f) * 2f);
+                targetColor = new Color(0.7f, 0.2f, 1f); // Violette
                 break;
 
             case GemType.Large:
                 _xpValue = 50f;
                 transform.localScale = Vector3.one * 0.6f;
-                GetComponent<Renderer>().material.color = new Color(1f, 0.8f, 0.1f); // Dorée
-                GetComponent<Renderer>().material.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.1f) * 2f);
+                targetColor = new Color(1f, 0.8f, 0.1f); // Dorée
                 break;
         }
+
+        // OPTIMISATION CRITIQUE : Modification de la couleur sans dupliquer le Material
+        _renderer.GetPropertyBlock(_propBlock);
+        _propBlock.SetColor(ColorID, targetColor);
+        _propBlock.SetColor(EmissionColorID, targetColor * 2f);
+        _renderer.SetPropertyBlock(_propBlock);
     }
-
-    public void EnableAttraction(float radius)
-    {
-        _attractionRadius = radius;
-    }
-
-    public float AttractionRadius { get; private set; } = 0f;
-
-    
 
     private void Update()
     {
         if (_playerTransform == null) return;
 
+        // Rotation constante simple
         transform.Rotate(0f, 90f * Time.deltaTime, 0f);
 
-        // Récupère le rayon actuel depuis XPGemSpawner — fonctionne même pour les vieilles gemmes
-        float currentRadius = XPGemSpawner.Instance != null ? XPGemSpawner.Instance.AttractionRadius : 0f;
+        // Vecteur vers le joueur
+        Vector3 offset = _playerTransform.position - transform.position;
 
-        float dist = Vector3.Distance(transform.position, _playerTransform.position);
+        // OPTIMISATION : Utilisation du carré de la distance (SqrMagnitude, pas de racine carrée)
+        float sqrDist = offset.sqrMagnitude;
 
-        if (dist <= currentRadius)
-            _attracted = true;
+        if (!_attracted)
+        {
+            float currentRadius = XPGemSpawner.Instance != null ? XPGemSpawner.Instance.AttractionRadius : 0f;
+            if (sqrDist <= currentRadius * currentRadius)
+            {
+                _attracted = true;
+            }
+        }
 
         if (_attracted)
         {
-            Vector3 dir = (_playerTransform.position - transform.position).normalized;
+            // Déplacement vers le joueur
+            Vector3 dir = offset.normalized;
             transform.position += dir * _moveSpeed * Time.deltaTime;
 
-            if (dist <= 0.5f)
+            // Seuil de collecte physique (0.5f au carré = 0.25f)
+            if (sqrDist <= 0.25f)
+            {
                 Collect();
+            }
         }
     }
 
@@ -86,7 +103,15 @@ public class XPGem : MonoBehaviour
 
     private void Collect()
     {
-        XPSystem.Instance.AddXP(_xpValue);
-        Destroy(gameObject);
+        // Sécurité pour éviter un double ramassage à la même frame avant la désactivation
+        if (!gameObject.activeSelf) return;
+
+        if (XPSystem.Instance != null)
+        {
+            XPSystem.Instance.AddXP(_xpValue);
+        }
+
+        // CORRECTION CRITIQUE : Désactivation pour le retour dans l'ObjectPool
+        gameObject.SetActive(false);
     }
 }

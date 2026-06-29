@@ -17,13 +17,16 @@ public class DamageNumber : MonoBehaviour
 
     public void Init(float damage, Color color, bool isCritical = false)
     {
+        // CORRECTION : Reset impératif du timer pour le recyclage du pool
+        _timer = 0f;
+
         _color = color;
         _text.color = color;
         _text.text = isCritical ? $"{Mathf.CeilToInt(damage)}!" : $"{Mathf.CeilToInt(damage)}";
-        _text.fontSize = isCritical ? 10f : 8f; // Plus grand
+        _text.fontSize = isCritical ? 10f : 8f;
         _text.fontStyle = FontStyles.Bold;
 
-        // Légère position aléatoire pour éviter que les chiffres se superposent
+        // Légère variation aléatoire sur l'axe X et Z pour espacer les textes
         transform.position += new Vector3(
             Random.Range(-0.3f, 0.3f),
             0f,
@@ -38,11 +41,19 @@ public class DamageNumber : MonoBehaviour
         // Monte vers le haut
         transform.position += Vector3.up * _moveSpeed * Time.deltaTime;
 
-        // Fade out
-        float alpha = Mathf.Lerp(1f, 0f, _timer / _lifetime);
+        // CORRECTION : Le texte fait toujours face à la caméra pour éviter l'effet écrasé/étiré
+        if (Camera.main != null)
+        {
+            transform.rotation = Camera.main.transform.rotation;
+        }
+
+        // Calcul du fondu (Fade out) progressif
+        float alpha = Mathf.Clamp01(1f - (_timer / _lifetime));
         _text.color = new Color(_color.r, _color.g, _color.b, alpha);
 
         if (_timer >= _lifetime)
-            Destroy(gameObject);
+        {
+            gameObject.SetActive(false);
+        }
     }
 }

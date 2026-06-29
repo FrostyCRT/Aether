@@ -1736,6 +1736,7 @@ GameObject:
   - component: {fileID: 203844589}
   - component: {fileID: 203844588}
   - component: {fileID: 203844587}
+  - component: {fileID: 203844590}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -1774,7 +1775,7 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -1840,6 +1841,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &203844590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203844586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c4e43357b455434aa314a4703b5a82e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _directionalLight: {fileID: 203844588}
 --- !u!1 &241854456
 GameObject:
   m_ObjectHideFlags: 0
@@ -4166,7 +4180,8 @@ AudioSource:
   m_GameObject: {fileID: 748447670}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -237697619665979917, guid: 6dc5d19d3adea404a9dfd21fb9276f19,
+    type: 2}
   m_audioClip: {fileID: 8300000, guid: 3823602707479e74b8766bc143621a57, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.1
@@ -4532,7 +4547,7 @@ MonoBehaviour:
   m_Follow: {fileID: 1115696778}
   m_Lens:
     FieldOfView: 60
-    OrthographicSize: 10
+    OrthographicSize: 12
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -5382,7 +5397,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -6357,6 +6372,7 @@ GameObject:
   - component: {fileID: 1115696779}
   - component: {fileID: 1115696780}
   - component: {fileID: 1115696781}
+  - component: {fileID: 1115696782}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -6381,6 +6397,7 @@ MonoBehaviour:
   _dashDuration: 0.15
   _dashCooldown: 3
   _absorptionWindow: 0.3
+  _blinkInterval: 0.1
 --- !u!54 &1115696774
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6505,9 +6522,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _projectilePrefab: {fileID: 4948786220174907987, guid: 84b001f72cd72f649b7b6035a814cf24,
     type: 3}
-  _fireRate: 0.75
-  _detectionRange: 18
-  _damage: 10
+  _enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _baseFireRate: 1
+  _baseDetectionRange: 15
+  _baseDamage: 10
   _doubleShot: 0
   _doubleShotDelay: 0.1
 --- !u!114 &1115696781
@@ -6531,6 +6551,18 @@ MonoBehaviour:
   _novaRadius: 3
   _novaVFXPrefab: {fileID: 2702546882864918342, guid: 2576f9e80e93d9f448521fccd6d71e8b,
     type: 3}
+--- !u!114 &1115696782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1115696772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c833e990a2f54e946822238cf0e30569, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1131829632
 GameObject:
   m_ObjectHideFlags: 0
@@ -6650,6 +6682,14 @@ MonoBehaviour:
   - tag: EnemyShooter
     prefab: {fileID: 340558044865749687, guid: 4c137a1cb71f8bf42badd9bece732ad2, type: 3}
     size: 10
+  - tag: EnemyProjectile
+    prefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
+      type: 3}
+    size: 50
+  - tag: DamageNumber
+    prefab: {fileID: 3359487387374504140, guid: cfe18a115c3e6d5499bf48e9c09741f5,
+      type: 3}
+    size: 125
 --- !u!4 &1138578642
 Transform:
   m_ObjectHideFlags: 0
@@ -7338,7 +7378,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -490, y: 185}
+  m_AnchoredPosition: {x: -490, y: 150}
   m_SizeDelta: {x: 220, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1336973797
@@ -7543,14 +7583,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a56ff4d93dadcd04b9a86d9caf5ee1ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyPrefab: {fileID: 634348999988113347, guid: 643ac4749096fdb4890d882ca4834b36,
-    type: 3}
   _playerTransform: {fileID: 1115696778}
-  _spawnInterval: 3
-  _spawnRadius: 10
-  _enemiesPerWave: 1
-  _difficultyInterval: 20
-  _enemiesIncrement: 1
+  _phasesDeJeu:
+  - nomPhase: 01_Introduction
+    tempsDebutMinutes: 0
+    maxEnemiesSurMap: 15
+    ennemisParVague: 2
+    intervalleSpawn: 2
+  - nomPhase: 02_La_Meute
+    tempsDebutMinutes: 1
+    maxEnemiesSurMap: 35
+    ennemisParVague: 3
+    intervalleSpawn: 1.5
+  - nomPhase: 03_L_Embuscade
+    tempsDebutMinutes: 3
+    maxEnemiesSurMap: 60
+    ennemisParVague: 5
+    intervalleSpawn: 1.2
+  - nomPhase: 04_Le_Mur_De_Chair
+    tempsDebutMinutes: 5
+    maxEnemiesSurMap: 100
+    ennemisParVague: 8
+    intervalleSpawn: 1
+  - nomPhase: 05_Acalmie_Tactique
+    tempsDebutMinutes: 9
+    maxEnemiesSurMap: 80
+    ennemisParVague: 4
+    intervalleSpawn: 1.5
+  - nomPhase: 06_L_Apocalypse_Finale
+    tempsDebutMinutes: 12
+    maxEnemiesSurMap: 130
+    ennemisParVague: 12
+    intervalleSpawn: 0.6
+  _spawnRadius: 22
 --- !u!4 &1409514535
 Transform:
   m_ObjectHideFlags: 0
@@ -9407,7 +9472,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -14, y: -155}
+  m_AnchoredPosition: {x: -14, y: -120}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1711747179
@@ -11141,7 +11206,7 @@ MonoBehaviour:
     type: 3}
   _bossPrefab3: {fileID: 8352327220285549118, guid: 07f78ac363c6a75408981190b32cbe0f,
     type: 3}
-  _maxEnemiesOnScreen: 18
+  _maxEnemiesOnScreen: 1000000
 --- !u!4 &1938259035
 Transform:
   m_ObjectHideFlags: 0
@@ -11238,8 +11303,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa45d95392a13ca4fa7b987ed66f757b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _damageNumberPrefab: {fileID: 8983267371743663202, guid: cfe18a115c3e6d5499bf48e9c09741f5,
-    type: 3}
 --- !u!4 &1969112948
 Transform:
   m_ObjectHideFlags: 0

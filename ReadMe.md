@@ -2,7 +2,19 @@
 
 
 
+c'est pas réglable parce que on a pas redimensionner, et placer précisément les éléments.
 
+
+
+Il faut que tu me guide à 100% pour avoir une page de paramètre très belle, et comme on a un fond d'écran dans le menu principal, et un fond d'écran pour le menu upgrade, il nous en faut un pour les paramètres, mais il doit être plus sobre, en gris, mais dans la DA je ne sais pas trop comment faire.
+
+
+
+La DA fantasy médiéval -> inspiré de l'anime Mushoku Tensei.
+
+
+
+Pour ce fond je pense qu'on peut être en intérieur, pas en paysage extérieur.
 
 Player :
 
@@ -105,6 +117,8 @@ mature threatening boss design, anime fantasy game art style,
 
 no particle effects, clean topology
 
+
+
 Boss 2 Cerf Ancestral :
 
 Giant ancestral divine corrupted stag boss, low poly game ready,
@@ -124,6 +138,8 @@ top-down game view optimized, T-pose for rigging,
 mature boss design, anime fantasy game art style,
 
 Studio Ghibli Princess Mononoke inspired
+
+
 
 Boss 3 Source Corrompue :
 

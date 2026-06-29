@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
@@ -8,9 +9,9 @@ public class ObjectPool : MonoBehaviour
     [System.Serializable]
     public class Pool
     {
-        public string     tag;        // Identifiant du pool ex: "Enemy", "Projectile"
+        public string tag;        // Identifiant du pool ex: "Enemy", "Projectile"
         public GameObject prefab;     // Le prefab à pooler
-        public int        size;       // Nombre d'objets pré-créés
+        public int size;       // Nombre d'objets pré-créés
     }
 
     [SerializeField] private List<Pool> _pools;
@@ -40,7 +41,6 @@ public class ObjectPool : MonoBehaviour
 
             for (int i = 0; i < pool.size; i++)
             {
-                // On crée l'objet, on le désactive et on le met en file d'attente
                 GameObject obj = Instantiate(pool.prefab);
                 obj.SetActive(false);
                 objectQueue.Enqueue(obj);
@@ -60,19 +60,26 @@ public class ObjectPool : MonoBehaviour
         }
 
         Queue<GameObject> queue = _poolDictionary[tag];
-
-        // Si le pool est vide on prend le premier objet quand même
-        // (il sera actif mais c'est mieux que de lagger)
         GameObject obj = null;
+
         if (queue.Count > 0)
         {
             obj = queue.Dequeue();
         }
         else
         {
-            // Pool épuisé → on en crée un nouveau
-            obj = Instantiate(_pools.Find(p => p.tag == tag).prefab);
-            Debug.Log($"Pool '{tag}' épuisé, création d'un objet supplémentaire");
+            // CORRECTION SÉCURITÉ : Vérification que le pool existe bien dans la liste avant l'instanciation
+            Pool foundPool = _pools.Find(p => p.tag == tag);
+            if (foundPool != null && foundPool.prefab != null)
+            {
+                obj = Instantiate(foundPool.prefab);
+                Debug.Log($"Pool '{tag}' épuisé, création d'un objet supplémentaire");
+            }
+            else
+            {
+                Debug.LogError($"Impossible d'instancier un objet supplémentaire pour le pool '{tag}' car le prefab est manquant !");
+                return null;
+            }
         }
 
         obj.SetActive(true);
@@ -83,6 +90,7 @@ public class ObjectPool : MonoBehaviour
     }
 
     // Remet un objet dans le pool
+    // Remet un objet dans le pool
     public void ReturnToPool(string tag, GameObject obj)
     {
         if (!_poolDictionary.ContainsKey(tag))
@@ -91,7 +99,42 @@ public class ObjectPool : MonoBehaviour
             return;
         }
 
+        // CORRECTION : On récupère d'abord la file d'attente
+        Queue<GameObject> queue = _poolDictionary[tag];
+
+        // Sécurité pour éviter d'ajouter deux fois le même objet dans la file
+        if (queue.Contains(obj)) return;
+
         obj.SetActive(false);
-        _poolDictionary[tag].Enqueue(obj);
+        queue.Enqueue(obj);
+    }
+
+    // AJOUT : Méthode ClearPool requise par le GameManager pour nettoyer l'écran à la victoire
+    public void ClearPool(string tag)
+    {
+        if (!_poolDictionary.ContainsKey(tag)) return;
+
+        if (tag == "EnemyProjectile")
+        {
+            EnemyProjectile[] activeProjectiles = FindObjectsOfType<EnemyProjectile>();
+            foreach (EnemyProjectile proj in activeProjectiles)
+            {
+                if (proj.gameObject.activeSelf)
+                {
+                    ReturnToPool(tag, proj.gameObject);
+                }
+            }
+        }
+        else if (tag == "Projectile")
+        {
+            ProjectileBasic[] activeProjectiles = FindObjectsOfType<ProjectileBasic>();
+            foreach (ProjectileBasic proj in activeProjectiles)
+            {
+                if (proj.gameObject.activeSelf)
+                {
+                    ReturnToPool(tag, proj.gameObject);
+                }
+            }
+        }
     }
 }
