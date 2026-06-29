@@ -23,14 +23,87 @@ public class SettingsManager : MonoBehaviour
     [Header("Gameplay")]
     [SerializeField] private Toggle _autoFireToggle;
 
-
     private const string MUSIC_KEY = "settings_music";
     private const string SFX_KEY = "settings_sfx";
     private const string FULLSCREEN_KEY = "settings_fullscreen";
     private const string SHADOWS_KEY = "settings_shadows";
     private const string AUTOFIRE_KEY = "settings_autofire";
 
-    
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void AutoLoadAudioOnStartup()
+    {
+        GameObject bootloader = new GameObject("[AudioBootloader]");
+        bootloader.AddComponent<AudioBootloaderExecutor>();
+        DontDestroyOnLoad(bootloader);
+    }
+
+    // Exécuteur asynchrone avec gestion du fondu sonore (Fade-In)
+    private class AudioBootloaderExecutor : MonoBehaviour
+    {
+        private System.Collections.IEnumerator Start()
+        {
+            // 1. Chargement ASYNCHRONE pour éviter le freeze au démarrage
+            ResourceRequest request = Resources.LoadAsync<AudioMixer>("MainMixer");
+            while (!request.isDone)
+            {
+                yield return null;
+            }
+
+            AudioMixer mainMixer = request.asset as AudioMixer;
+
+            if (mainMixer == null)
+            {
+                Debug.LogError("[SettingsManager] Impossible de charger l'AudioMixer depuis le dossier Resources.");
+                Destroy(gameObject);
+                yield break;
+            }
+
+            // Attente que le moteur audio soit bien initialisé
+            yield return null;
+            yield return null;
+
+            // Récupération des préférences du joueur
+            float targetMusic = PlayerPrefs.GetFloat("settings_music", 0.75f);
+            float targetSfx = PlayerPrefs.GetFloat("settings_sfx", 0.75f);
+
+            // Applique directement les SFX (pas besoin de fondu sur les bruitages)
+            float sfxdB = targetSfx > 0.0001f ? Mathf.Log10(targetSfx) * 20f : -80f;
+            mainMixer.SetFloat("SFXVolume", sfxdB);
+
+            // 2. Lancement du fondu progressif (Fade-In) pour la musique
+            float duration = 1.0f; // Durée du fondu en secondes
+            float currentTime = 0f;
+            float targetMusicdB = targetMusic > 0.0001f ? Mathf.Log10(targetMusic) * 20f : -80f;
+
+            // Si le joueur a coupé la musique, on reste à -80dB directement
+            if (targetMusicdB <= -80f)
+            {
+                mainMixer.SetFloat("MusicVolume", -80f);
+            }
+            else
+            {
+                while (currentTime < duration)
+                {
+                    currentTime += Time.deltaTime;
+                    // Évolution linéaire entre 0 et 1
+                    float t = currentTime / duration;
+
+                    // Interpolation du volume (de -80dB jusqu'à la valeur cible)
+                    float currentdB = Mathf.Lerp(-80f, targetMusicdB, t);
+                    mainMixer.SetFloat("MusicVolume", currentdB);
+
+                    yield return null;
+                }
+
+                // On s'assure de caler précisément la valeur finale
+                mainMixer.SetFloat("MusicVolume", targetMusicdB);
+            }
+
+            // Nettoyage du bootloader
+            Destroy(gameObject);
+        }
+    }
+
     private void Start()
     {
         LoadSettings();
@@ -55,13 +128,15 @@ public class SettingsManager : MonoBehaviour
         ApplyFullscreen(fullscreen);
         ApplyShadows(shadows);
 
-        // AJOUTE CETTE LIGNE ICI pour rafraîchir l'affichage du bouton au démarrage :
         SetToggleVisual(_autoFireBackground, _autoFireKnob, autoFire);
+        SetToggleVisual(_fullscreenBackground, _fullscreenKnob, fullscreen);
+        SetToggleVisual(_shadowsBackground, _shadowsKnob, shadows);
     }
 
     public void OnMusicSliderChanged(float value)
     {
         PlayerPrefs.SetFloat(MUSIC_KEY, value);
+        PlayerPrefs.Save();
         ApplyMusicVolume(value);
     }
 
@@ -75,6 +150,7 @@ public class SettingsManager : MonoBehaviour
     public void OnSfxSliderChanged(float value)
     {
         PlayerPrefs.SetFloat(SFX_KEY, value);
+        PlayerPrefs.Save();
         ApplySfxVolume(value);
     }
 
@@ -88,6 +164,7 @@ public class SettingsManager : MonoBehaviour
     public void OnFullscreenToggleChanged(bool isOn)
     {
         PlayerPrefs.SetInt(FULLSCREEN_KEY, isOn ? 1 : 0);
+        PlayerPrefs.Save();
         ApplyFullscreen(isOn);
     }
 
@@ -100,6 +177,7 @@ public class SettingsManager : MonoBehaviour
     public void OnShadowsToggleChanged(bool isOn)
     {
         PlayerPrefs.SetInt(SHADOWS_KEY, isOn ? 1 : 0);
+        PlayerPrefs.Save();
         ApplyShadows(isOn);
     }
 
@@ -114,23 +192,22 @@ public class SettingsManager : MonoBehaviour
     public void OnAutoFireToggleChanged(bool isOn)
     {
         PlayerPrefs.SetInt(AUTOFIRE_KEY, isOn ? 1 : 0);
+        PlayerPrefs.Save();
         SetToggleVisual(_autoFireBackground, _autoFireKnob, isOn);
-        
     }
 
     public static bool IsAutoFireEnabled()
     {
-        int value = PlayerPrefs.GetInt(AUTOFIRE_KEY, 1);
-        
-        return value == 1;
+        return PlayerPrefs.GetInt(AUTOFIRE_KEY, 1) == 1;
     }
+
     public static bool AreShadowsEnabled()
     {
         return PlayerPrefs.GetInt(SHADOWS_KEY, 0) == 1;
     }
+
     private void SetToggleVisual(Image background, Image knob, bool isOn)
     {
-        Debug.Log($"[SettingsManager] SetToggleVisual appelée — isOn:{isOn} — background null:{background == null} — knob null:{knob == null}");
         if (background != null)
             background.color = isOn ? new Color(0.36f, 0.48f, 0.58f) : new Color(0.24f, 0.26f, 0.28f);
 

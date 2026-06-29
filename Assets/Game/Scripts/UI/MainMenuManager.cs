@@ -1,7 +1,8 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine;
+using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class MainMenuManager : MonoBehaviour
     private static readonly Vector3 _activeTabScale = new Vector3(1.08f, 1.08f, 1f);
     private static readonly Vector3 _inactiveTabScale = Vector3.one;
 
+    [SerializeField] private AudioMixer _mainAudioMixer; // Pense à glisser ton AudioMixer dans l'inspecteur ici !
+
+ 
     private void Start()
     {
         // Attend que MetaProgressionManager soit prêt

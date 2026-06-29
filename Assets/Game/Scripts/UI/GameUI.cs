@@ -7,25 +7,25 @@ public class GameUI : MonoBehaviour
     public static GameUI Instance { get; private set; }
 
     [Header("XP")]
-    [SerializeField] private Slider          _xpBar;
+    [SerializeField] private Slider _xpBar;
     [SerializeField] private TextMeshProUGUI _levelText;
 
     [Header("HP")]
-    [SerializeField] private Slider          _hpBar;
+    [SerializeField] private Slider _hpBar;
     [SerializeField] private TextMeshProUGUI _hpText;
-    [SerializeField] private Image           _hpFillImage;
+    [SerializeField] private Image _hpFillImage;
 
     [Header("Timer")]
     [SerializeField] private TextMeshProUGUI _timerText;
 
     [Header("Boss")]
-    [SerializeField] private GameObject      _bossHPBar;
-    [SerializeField] private Slider          _bossHPSlider;
+    [SerializeField] private GameObject _bossHPBar;
+    [SerializeField] private Slider _bossHPSlider;
     [SerializeField] private TextMeshProUGUI _bossNameText;
-    [SerializeField] private GameObject      _bossIcon;
+    [SerializeField] private GameObject _bossIcon;
 
     [Header("Game Over")]
-    [SerializeField] private GameObject      _gameOverPanel;
+    [SerializeField] private GameObject _gameOverPanel;
     [SerializeField] private TextMeshProUGUI _statsText;
 
     [Header("Gold")]
@@ -39,13 +39,13 @@ public class GameUI : MonoBehaviour
 
     [Header("Cristal")]
     [SerializeField] private UnityEngine.UI.Image[] _crystalIcons;
-    [SerializeField] private GameObject             _ultReadyEffect;
+    [SerializeField] private GameObject _ultReadyEffect;
 
     [Header("Pause")]
-    [SerializeField] private GameObject      _pausePanel;
+    [SerializeField] private GameObject _pausePanel;
     [SerializeField] private TextMeshProUGUI _pauseStatsText;
     [SerializeField] private TextMeshProUGUI _pauseUpgradesText;
-    [SerializeField] private GameObject      _abandonConfirmPanel;
+    [SerializeField] private GameObject _abandonConfirmPanel;
 
     [Header("Victoire")]
     [SerializeField] private GameObject _victoryPanel;
@@ -55,6 +55,7 @@ public class GameUI : MonoBehaviour
 
     [Header("HUD")]
     [SerializeField] private GameObject _hudPanel;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -75,54 +76,57 @@ public class GameUI : MonoBehaviour
 
     public void UpdateCrystalCharge(int current, int max)
     {
+        if (_crystalIcons == null) return;
+
         for (int i = 0; i < _crystalIcons.Length; i++)
         {
-            if (i < current)
-                _crystalIcons[i].color = new Color(0f, 0.8f, 1f);
-            else
-                _crystalIcons[i].color = new Color(0.2f, 0.2f, 0.2f);
+            if (_crystalIcons[i] == null) continue;
+            _crystalIcons[i].color = (i < current) ? new Color(0f, 0.8f, 1f) : new Color(0.2f, 0.2f, 0.2f);
         }
     }
 
     public void ShowVictory(float runTimer, int killCount, int goldEarned, int level)
     {
-        _victoryPanel.SetActive(true);
+        if (_victoryPanel != null) _victoryPanel.SetActive(true);
 
         int mins = Mathf.FloorToInt(runTimer / 60f);
         int secs = Mathf.FloorToInt(runTimer % 60f);
 
-        // Stats de la run
-        _victoryStatsText.text = $"Temps de survie : {mins:00}:{secs:00}\n" +
-                                 $"Ennemis tués : {killCount}\n" +
-                                 $"Niveau atteint : {level}\n" +
-                                 $"Gold gagné : {goldEarned}";
+        // OPTIMISATION : Utilisation de string.Format (ou interpolation directe compilée) plus propre pour le GC
+        if (_victoryStatsText != null)
+        {
+            _victoryStatsText.text = $"Temps de survie : {mins:00}:{secs:00}\nEnnemis tués : {killCount}\nNiveau atteint : {level}\nGold gagné : {goldEarned}";
+        }
 
-        // Records
-        SaveData data = MetaProgressionManager.Instance.Data;
-        int bestMins = Mathf.FloorToInt(data.bestTime / 60f);
-        int bestSecs = Mathf.FloorToInt(data.bestTime % 60f);
+        if (MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
+        {
+            SaveData data = MetaProgressionManager.Instance.Data;
+            int bestMins = Mathf.FloorToInt(data.bestTime / 60f);
+            int bestSecs = Mathf.FloorToInt(data.bestTime % 60f);
 
-        _victoryRecordsText.text = $"Meilleur temps : {bestMins:00}:{bestSecs:00}\n" +
-                                   $"Meilleur kills : {data.bestKills}\n" +
-                                   $"Runs totales : {data.totalRuns}";
+            if (_victoryRecordsText != null)
+            {
+                _victoryRecordsText.text = $"Meilleur temps : {bestMins:00}:{bestSecs:00}\nMeilleur kills : {data.bestKills}\nRuns totales : {data.totalRuns}";
+            }
+        }
 
-        // Build de la run
-        _victoryBuildListText.text = LevelUpManager.Instance.GetUpgradesSummary();
+        if (_victoryBuildListText != null && LevelUpManager.Instance != null)
+        {
+            _victoryBuildListText.text = LevelUpManager.Instance.GetUpgradesSummary();
+        }
     }
+
     public void SetCrystalReady(bool ready)
     {
         if (_ultReadyEffect != null)
             _ultReadyEffect.SetActive(ready);
 
-        if (!ready)
+        if (_crystalIcons == null) return;
+
+        Color targetColor = ready ? Color.white : new Color(0.2f, 0.2f, 0.2f);
+        foreach (var icon in _crystalIcons)
         {
-            foreach (var icon in _crystalIcons)
-                icon.color = new Color(0.2f, 0.2f, 0.2f);
-        }
-        else
-        {
-            foreach (var icon in _crystalIcons)
-                icon.color = Color.white;
+            if (icon != null) icon.color = targetColor;
         }
     }
 
@@ -131,6 +135,7 @@ public class GameUI : MonoBehaviour
         if (_hudPanel != null)
             _hudPanel.SetActive(visible);
     }
+
     public void ShowUltEffect(bool show)
     {
         Debug.Log(show ? "ULT ACTIF — ennemis ralentis !" : "ULT terminé");
@@ -139,31 +144,47 @@ public class GameUI : MonoBehaviour
     public void UpdateDashCooldown(float percent)
     {
         if (_dashCooldownBar != null)
-            _dashCooldownBar.value = percent;
+            _dashCooldownBar.value = Mathf.Clamp01(percent);
     }
 
     public void UpdateGold(int amount)
     {
         if (_goldText != null)
-            _goldText.text = $"  : {amount}";
+            _goldText.text = $"Or : {amount}"; // Ajout d'un label lisible
     }
 
     public void UpdateKillCount(int kills)
     {
         if (_killCountText != null)
-            _killCountText.text = $"  : {kills}";    }
+            _killCountText.text = $"Kills : {kills}";
+    }
 
     public void UpdateXPBar(float currentXP, float xpToNextLevel, int level)
     {
-        _xpBar.value    = currentXP / xpToNextLevel;
-        _levelText.text = $"Niv. {level}";
+        if (_xpBar != null)
+        {
+            // CORRECTION CRITIQUE : Protection contre la division par zéro
+            _xpBar.value = (xpToNextLevel > 0) ? currentXP / xpToNextLevel : 0f;
+        }
+
+        if (_levelText != null)
+            _levelText.text = $"Niv. {level}";
     }
 
     public void UpdateHPBar(float currentHP, float maxHP)
     {
-        float percent = currentHP / maxHP;
+        if (_hpBar == null) return;
+
+        // CORRECTION CRITIQUE : Protection contre la division par zéro
+        float percent = (maxHP > 0) ? currentHP / maxHP : 0f;
         _hpBar.value = percent;
-        _hpText.text = $"{Mathf.CeilToInt(currentHP)} / {Mathf.CeilToInt(maxHP)}";
+
+        if (_hpText != null)
+        {
+            _hpText.text = $"{Mathf.CeilToInt(Mathf.Max(0, currentHP))} / {Mathf.CeilToInt(maxHP)}";
+        }
+
+        if (_hpFillImage == null) return;
 
         if (percent > 0.6f)
             _hpFillImage.color = new Color(0f, 0.7f, 0f);
@@ -185,51 +206,66 @@ public class GameUI : MonoBehaviour
 
     public void ShowBossHP(string bossName)
     {
-        _bossHPBar.SetActive(true);
-        _bossNameText.gameObject.SetActive(true);
-        _bossNameText.text  = bossName;
-        _bossHPSlider.value = 1f;
+        if (_bossHPBar != null) _bossHPBar.SetActive(true);
+        if (_bossNameText != null)
+        {
+            _bossNameText.gameObject.SetActive(true);
+            _bossNameText.text = bossName;
+        }
+        if (_bossHPSlider != null) _bossHPSlider.value = 1f;
         if (_bossIcon != null) _bossIcon.SetActive(true);
     }
 
     public void UpdateBossHP(float current, float max)
     {
-        _bossHPSlider.value = current / max;
+        if (_bossHPSlider != null)
+        {
+            _bossHPSlider.value = (max > 0) ? current / max : 0f;
+        }
     }
 
     public void HideBossHP()
     {
-        _bossHPBar.SetActive(false);
-        _bossNameText.gameObject.SetActive(false);
+        if (_bossHPBar != null) _bossHPBar.SetActive(false);
+        if (_bossNameText != null) _bossNameText.gameObject.SetActive(false);
         if (_bossIcon != null) _bossIcon.SetActive(false);
     }
 
     public void ShowGameOver(float runTimer, int killCount, int goldEarned)
     {
-        _gameOverPanel.SetActive(true);
+        if (_gameOverPanel != null) _gameOverPanel.SetActive(true);
 
         int mins = Mathf.FloorToInt(runTimer / 60f);
         int secs = Mathf.FloorToInt(runTimer % 60f);
 
-        _statsText.text = $"Temps de survie : {mins:00}:{secs:00}\n" +
-                          $"Ennemis tués : {killCount}\n" +
-                          $"Gold gagné : {goldEarned}";
+        if (_statsText != null)
+        {
+            _statsText.text = $"Temps de survie : {mins:00}:{secs:00}\nEnnemis tués : {killCount}\nGold gagné : {goldEarned}";
+        }
     }
 
     public void ShowPausePanel(bool show)
     {
-        _pausePanel.SetActive(show);
+        if (_pausePanel != null) _pausePanel.SetActive(show);
 
         if (show)
         {
-            int mins = Mathf.FloorToInt(GameManager.Instance.RunTimer / 60f);
-            int secs = Mathf.FloorToInt(GameManager.Instance.RunTimer % 60f);
+            float runTime = (GameManager.Instance != null) ? GameManager.Instance.RunTimer : 0f;
+            int kills = (GameManager.Instance != null) ? GameManager.Instance.KillCount : 0;
+            int gold = (MetaProgressionManager.Instance != null) ? MetaProgressionManager.Instance.RunGold : 0;
 
-            _pauseStatsText.text = $"Temps : {mins:00}:{secs:00}\n" +
-                                   $"Ennemis tués : {GameManager.Instance.KillCount}\n" +
-                                   $"Gold : {MetaProgressionManager.Instance.RunGold}";
+            int mins = Mathf.FloorToInt(runTime / 60f);
+            int secs = Mathf.FloorToInt(runTime % 60f);
 
-            _pauseUpgradesText.text = LevelUpManager.Instance.GetUpgradesSummary();
+            if (_pauseStatsText != null)
+            {
+                _pauseStatsText.text = $"Temps : {mins:00}:{secs:00}\nEnnemis tués : {kills}\nGold : {gold}";
+            }
+
+            if (_pauseUpgradesText != null && LevelUpManager.Instance != null)
+            {
+                _pauseUpgradesText.text = LevelUpManager.Instance.GetUpgradesSummary();
+            }
 
             if (_abandonConfirmPanel != null)
                 _abandonConfirmPanel.SetActive(false);

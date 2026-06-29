@@ -4107,13 +4107,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cards:
-  - nameText: {fileID: 691954529}
+  - cardRoot: {fileID: 0}
+    nameText: {fileID: 691954529}
     descriptionText: {fileID: 1607633435}
     chooseButton: {fileID: 961935857}
-  - nameText: {fileID: 940301643}
+  - cardRoot: {fileID: 0}
+    nameText: {fileID: 940301643}
     descriptionText: {fileID: 642316163}
     chooseButton: {fileID: 42588967}
-  - nameText: {fileID: 1630054846}
+  - cardRoot: {fileID: 0}
+    nameText: {fileID: 1630054846}
     descriptionText: {fileID: 1057422946}
     chooseButton: {fileID: 29380283}
 --- !u!114 &732463671
@@ -6372,7 +6375,6 @@ GameObject:
   - component: {fileID: 1115696779}
   - component: {fileID: 1115696780}
   - component: {fileID: 1115696781}
-  - component: {fileID: 1115696782}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -6551,18 +6553,6 @@ MonoBehaviour:
   _novaRadius: 3
   _novaVFXPrefab: {fileID: 2702546882864918342, guid: 2576f9e80e93d9f448521fccd6d71e8b,
     type: 3}
---- !u!114 &1115696782
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1115696772}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c833e990a2f54e946822238cf0e30569, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1131829632
 GameObject:
   m_ObjectHideFlags: 0
@@ -6690,6 +6680,14 @@ MonoBehaviour:
     prefab: {fileID: 3359487387374504140, guid: cfe18a115c3e6d5499bf48e9c09741f5,
       type: 3}
     size: 125
+  - tag: XPGem
+    prefab: {fileID: 4691050856994466880, guid: 8962d9ecaa199844093aabc7a0d3bb2f,
+      type: 3}
+    size: 75
+  - tag: OrbitalProjectile
+    prefab: {fileID: 6076549467375830856, guid: c96efb4a855bf1a40b968c32cbd21496,
+      type: 3}
+    size: 10
 --- !u!4 &1138578642
 Transform:
   m_ObjectHideFlags: 0
@@ -11257,8 +11255,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a10891c971c05c43b06f16a78d3c51e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gemPrefab: {fileID: 4691050856994466880, guid: 8962d9ecaa199844093aabc7a0d3bb2f,
-    type: 3}
 --- !u!4 &1961463113
 Transform:
   m_ObjectHideFlags: 0

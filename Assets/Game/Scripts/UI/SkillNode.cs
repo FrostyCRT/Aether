@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class SkillNode : MonoBehaviour
 {
@@ -19,18 +18,16 @@ public class SkillNode : MonoBehaviour
     [SerializeField] private Color _colorLocked = new Color(0.3f, 0.3f, 0.3f);
 
     [Header("Référence")]
-    [SerializeField] private SkillTreeUI _skillTreeUI; // ← assigné dans l'Inspector
+    [SerializeField] private SkillTreeUI _skillTreeUI;
 
     private RectTransform _rectTransform;
     private Button _button;
-    private Color _iconOriginalColor;
-    private Color _medalOriginalColor;
+    private Color _iconOriginalColor = Color.white;
+    private Color _medalOriginalColor = Color.white;
+    private bool _colorsCaptured = false;
 
     private void Awake()
     {
-        if (_iconImage != null) _iconOriginalColor = _iconImage.color;
-        if (_medalImage != null) _medalOriginalColor = _medalImage.color;
-
         _rectTransform = GetComponent<RectTransform>();
         _button = GetComponent<Button>();
 
@@ -38,18 +35,41 @@ public class SkillNode : MonoBehaviour
         if (_skillTreeUI == null) { Debug.LogError($"[SkillNode] SkillTreeUI non assigné sur {_nodeId} !"); return; }
 
         _button.onClick.RemoveAllListeners();
-        _button.onClick.AddListener(() => _skillTreeUI.OnNodeClicked(_nodeId, _rectTransform));
+        _button.onClick.AddListener(HandleClick);
+
+        // AJOUT : Le nœud s'inscrit directement dans le cache de l'UI
+        _skillTreeUI.RegisterNode(this);
+    }
+
+    private void OnDestroy()
+    {
+        // AJOUT : Nettoyage sécurisé à la destruction de la scène
+        if (_skillTreeUI != null)
+        {
+            _skillTreeUI.UnregisterNode(this);
+        }
     }
 
     private void OnEnable()
     {
-        StartCoroutine(RefreshAfterFrame());
+        // On capture les couleurs d'origine au tout premier affichage réel pour éviter les erreurs de prefab
+        if (!_colorsCaptured)
+        {
+            if (_iconImage != null) _iconOriginalColor = _iconImage.color;
+            if (_medalImage != null) _medalOriginalColor = _medalImage.color;
+            _colorsCaptured = true;
+        }
+
+        // Plus besoin de Coroutine d'attente d'une frame : on rafraîchit immédiatement à l'activation
+        RefreshVisual();
     }
 
-    private IEnumerator RefreshAfterFrame()
+    private void HandleClick()
     {
-        yield return null;
-        RefreshVisual();
+        if (_skillTreeUI != null)
+        {
+            _skillTreeUI.OnNodeClicked(_nodeId, _rectTransform);
+        }
     }
 
     public void RefreshVisual()
@@ -65,7 +85,6 @@ public class SkillNode : MonoBehaviour
 
         ApplyState(locked, level);
 
-        // Bouton toujours interactable — même au max, on peut cliquer pour voir les stats
         _button.interactable = true;
     }
 

@@ -17,8 +17,6 @@ public class LevelUpManager : MonoBehaviour
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
 
-    private PlayerUpgrades _playerUpgrades;
-
     public bool IsWaitingForChoice => _waitingForChoice;
 
     private void Awake()
@@ -29,15 +27,6 @@ public class LevelUpManager : MonoBehaviour
             return;
         }
         Instance = this;
-    }
-
-    private void Start()
-    {
-        GameObject playerGO = GameObject.FindWithTag("Player");
-        if (playerGO != null)
-        {
-            _playerUpgrades = playerGO.GetComponent<PlayerUpgrades>();
-        }
     }
 
     private void Update()
@@ -72,18 +61,10 @@ public class LevelUpManager : MonoBehaviour
     {
         if (_pendingLevelUps <= 0) return;
 
-        if (_playerUpgrades == null)
-        {
-            GameObject playerGO = GameObject.FindWithTag("Player");
-            if (playerGO != null) _playerUpgrades = playerGO.GetComponent<PlayerUpgrades>();
-        }
-
         _pendingLevelUps--;
         _waitingForChoice = true;
 
-        // CORRECTION PAUSE GLOBAL : On passe par le GameManager pour centraliser l'état du jeu
-        if (GameManager.Instance != null) GameManager.Instance.TogglePause();
-        else Time.timeScale = 0f;
+        Time.timeScale = 0f;
 
         _currentChoices = GetRandomUpgrades(3);
 
@@ -101,24 +82,19 @@ public class LevelUpManager : MonoBehaviour
         _waitingForChoice = false;
         UpgradeData chosen = _currentChoices[index];
 
-        if (_playerUpgrades != null)
-        {
-            _playerUpgrades.ApplyUpgrade(chosen);
-        }
-        else
-        {
-            Debug.LogError("Impossible d'appliquer l'upgrade : PlayerUpgrades introuvable !");
-        }
+        // Application de l'upgrade via la méthode Apply() de ton ScriptableObject
+        chosen.Apply();
 
         _chosenUpgrades.Add(chosen.upgradeName);
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(false);
 
-        // OPTIMISATION : Suppression de FindObjectOfType (Lourd) au profit d'un accès direct sur le joueur mis en cache
-        if (_playerUpgrades != null)
+        // Optionnel : Récupère le joueur pour gérer l'invincibilité si tu veux garder ça ici
+        GameObject playerGO = GameObject.FindWithTag("Player");
+        if (playerGO != null)
         {
-            HealthSystem health = _playerUpgrades.GetComponent<HealthSystem>();
+            HealthSystem health = playerGO.GetComponent<HealthSystem>();
             if (health != null) health.SetInvincible();
         }
 
@@ -129,32 +105,8 @@ public class LevelUpManager : MonoBehaviour
         }
         else
         {
-            // CORRECTION FIN PAUSE GLOBAL : On repasse par le GameManager
-            // CORRECTION : On rappelle TogglePause() pour relancer le temps
-            if (GameManager.Instance != null) GameManager.Instance.TogglePause();
-            else Time.timeScale = 1f;
+            Time.timeScale = 1f;
         }
-    }
-
-    public string GetUpgradesSummary()
-    {
-        if (_chosenUpgrades.Count == 0) return "";
-
-        Dictionary<string, int> counts = new Dictionary<string, int>();
-        foreach (string name in _chosenUpgrades)
-        {
-            if (counts.ContainsKey(name)) counts[name]++;
-            else counts[name] = 1;
-        }
-
-        System.Text.StringBuilder summary = new System.Text.StringBuilder();
-        foreach (var kvp in counts)
-        {
-            if (kvp.Value > 1) summary.AppendLine($"• {kvp.Key} x{kvp.Value}");
-            else summary.AppendLine($"• {kvp.Key}");
-        }
-
-        return summary.ToString().TrimEnd();
     }
 
     private List<UpgradeData> GetRandomUpgrades(int count)
@@ -163,15 +115,9 @@ public class LevelUpManager : MonoBehaviour
 
         foreach (UpgradeData upgrade in _allUpgrades)
         {
-            if (_playerUpgrades != null)
-            {
-                if (_playerUpgrades.IsUpgradeAvailable(upgrade))
-                    pool.Add(upgrade);
-            }
-            else
-            {
+            // On vérifie la disponibilité via la méthode IsAvailable() de l'UpgradeData
+            if (upgrade.IsAvailable())
                 pool.Add(upgrade);
-            }
         }
 
         List<UpgradeData> result = new List<UpgradeData>();
@@ -185,5 +131,24 @@ public class LevelUpManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    // Le résumé reste identique
+    public string GetUpgradesSummary()
+    {
+        if (_chosenUpgrades.Count == 0) return "";
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+        foreach (string name in _chosenUpgrades)
+        {
+            if (counts.ContainsKey(name)) counts[name]++;
+            else counts[name] = 1;
+        }
+        System.Text.StringBuilder summary = new System.Text.StringBuilder();
+        foreach (var kvp in counts)
+        {
+            if (kvp.Value > 1) summary.AppendLine($"• {kvp.Key} x{kvp.Value}");
+            else summary.AppendLine($"• {kvp.Key}");
+        }
+        return summary.ToString().TrimEnd();
     }
 }

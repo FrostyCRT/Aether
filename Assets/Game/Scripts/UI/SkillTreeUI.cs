@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using System.Collections;
+using System.Collections.Generic;
 using TMPro;
-using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class SkillTreeUI : MonoBehaviour
 {
@@ -30,28 +31,57 @@ public class SkillTreeUI : MonoBehaviour
     private bool _isPanelOpen = false;
     private Coroutine _moveCoroutine;
     private Canvas _canvas;
+    private RectTransform _canvasRect;
+
+    // Cache local pour remplacer le FindObjectsOfType très gourmand
+    private readonly List<SkillNode> _registeredNodes = new List<SkillNode>();
 
     private void Start()
     {
         _canvas = GetComponentInParent<Canvas>();
+        if (_canvas != null)
+        {
+            _canvasRect = _canvas.GetComponent<RectTransform>();
+        }
+
         _detailPanel.gameObject.SetActive(false);
 
+        // Liaison sécurisée des boutons par code
         if (_outsideClickCatcher != null)
         {
             _outsideClickCatcher.SetActive(false);
             Button catcherButton = _outsideClickCatcher.GetComponent<Button>();
             if (catcherButton != null)
+            {
+                catcherButton.onClick.RemoveAllListeners();
                 catcherButton.onClick.AddListener(ClosePanel);
+            }
+        }
+
+        if (_buyButton != null)
+        {
+            _buyButton.onClick.RemoveAllListeners();
+            _buyButton.onClick.AddListener(OnBuyClicked);
         }
 
         RefreshGoldDisplay();
+    }
+
+    // Gestion du cache d'enregistrement automatique des nœuds de compétences
+    public void RegisterNode(SkillNode node)
+    {
+        if (!_registeredNodes.Contains(node)) _registeredNodes.Add(node);
+    }
+
+    public void UnregisterNode(SkillNode node)
+    {
+        if (_registeredNodes.Contains(node)) _registeredNodes.Remove(node);
     }
 
     // ─── Clic sur un médaillon ───────────────────────────────────────────────
 
     public void OnNodeClicked(string nodeId, RectTransform nodeRect)
     {
-        // Re-clic sur le même = ferme le panel
         if (_isPanelOpen && _selectedNodeId == nodeId)
         {
             ClosePanel();
@@ -66,7 +96,6 @@ public class SkillTreeUI : MonoBehaviour
 
         if (!wasOpen)
         {
-            // Première ouverture : le panel démarre depuis le nœud cliqué (effet "sortie du médaillon")
             _detailPanel.anchorMin = new Vector2(0.5f, 0.5f);
             _detailPanel.anchorMax = new Vector2(0.5f, 0.5f);
             _detailPanel.anchoredPosition = WorldToPanelLocalPosition(nodeRect);
@@ -93,6 +122,8 @@ public class SkillTreeUI : MonoBehaviour
 
     private void PopulateDetail(string nodeId)
     {
+        if (MetaProgressionManager.Instance == null) return;
+
         SkillTreeData.NodeData data = SkillTreeData.Get(nodeId);
         if (data == null)
         {
@@ -109,7 +140,6 @@ public class SkillTreeUI : MonoBehaviour
         bool isUnlockable = MetaProgressionManager.Instance.IsNodeUnlockable(nodeId);
         bool isPurchased = MetaProgressionManager.Instance.IsNodePurchased(nodeId);
 
-        // Affichage des niveaux
         if (data.isUnique)
         {
             if (_level1Text != null) _level1Text.gameObject.SetActive(false);
@@ -134,7 +164,6 @@ public class SkillTreeUI : MonoBehaviour
             _level3Text.text = FormatLevel(3, currentLevel, data.level3Desc);
         }
 
-        // Coût et bouton
         if (cost == -1)
         {
             _costText.text = "Niveau maximum";
@@ -178,14 +207,11 @@ public class SkillTreeUI : MonoBehaviour
         return $"<color=#555555>○ Niv {level} : {desc}</color>";
     }
 
-    // ─── Achat ──────────────────────────────────────────────────────────────
-
     public void OnBuyClicked()
     {
-        if (string.IsNullOrEmpty(_selectedNodeId)) return;
+        if (string.IsNullOrEmpty(_selectedNodeId) || MetaProgressionManager.Instance == null) return;
 
-        bool success = MetaProgressionManager.Instance.TryBuyNode(_selectedNodeId);
-        if (success)
+        if (MetaProgressionManager.Instance.TryBuyNode(_selectedNodeId))
         {
             PopulateDetail(_selectedNodeId);
             RefreshAllNodes();
@@ -193,30 +219,30 @@ public class SkillTreeUI : MonoBehaviour
         }
     }
 
-    // ─── Refresh visuel ──────────────────────────────────────────────────────
-
     public void RefreshGoldDisplay()
     {
-        if (_goldText != null)
+        if (_goldText != null && MetaProgressionManager.Instance != null)
             _goldText.text = $"Gold : {MetaProgressionManager.Instance.Data.totalGold}";
     }
 
     public void RefreshAllNodes()
     {
-        foreach (SkillNode node in FindObjectsOfType<SkillNode>())
-            node.RefreshVisual();
+        // Remplacement du FindObjectsOfType par une lecture directe du cache O(N) ultra rapide
+        for (int i = 0; i < _registeredNodes.Count; i++)
+        {
+            if (_registeredNodes[i] != null)
+                _registeredNodes[i].RefreshVisual();
+        }
     }
 
     private Vector2 WorldToPanelLocalPosition(RectTransform sourceRect)
     {
         Camera cam = _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
         Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, sourceRect.position);
-        Vector2 localPoint;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _detailPanel.parent as RectTransform, screenPoint, cam, out localPoint);
+            _detailPanel.parent as RectTransform, screenPoint, cam, out Vector2 localPoint);
         return localPoint;
     }
-    // ─── Positionnement du panel ─────────────────────────────────────────────
 
     private Vector2 ComputeTargetPosition(RectTransform nodeRect)
     {
@@ -224,18 +250,17 @@ public class SkillTreeUI : MonoBehaviour
         float panelW = _detailPanel.rect.width;
         float panelH = _detailPanel.rect.height;
         float offsetX = 150f;
-        float halfScreenW = 960f;
-        float halfScreenH = 540f;
         float margin = 20f;
 
-        // Essai à droite du nœud
+        // Récupération dynamique de la taille réelle du Canvas de l'UI
+        float halfScreenW = _canvasRect != null ? _canvasRect.rect.width * 0.5f : 960f;
+        float halfScreenH = _canvasRect != null ? _canvasRect.rect.height * 0.5f : 540f;
+
         float targetX = nodePos.x + offsetX + panelW * 0.5f;
 
-        // Si ça dépasse le bord droit, on retourne le panel à gauche du nœud
         if (targetX + panelW * 0.5f > halfScreenW - margin)
             targetX = nodePos.x - offsetX - panelW * 0.5f;
 
-        // Sécurité finale : on clamp toujours dans l'écran, même pour un nœud collé au bord
         targetX = Mathf.Clamp(targetX, -halfScreenW + panelW * 0.5f + margin, halfScreenW - panelW * 0.5f - margin);
         float targetY = Mathf.Clamp(nodePos.y, -halfScreenH + panelH * 0.5f + margin, halfScreenH - panelH * 0.5f - margin);
 
@@ -264,6 +289,8 @@ public class SkillTreeUI : MonoBehaviour
 
     public void OnResetClicked()
     {
+        if (MetaProgressionManager.Instance == null) return;
+
         MetaProgressionManager.Instance.ResetSkillTree();
         RefreshAllNodes();
         RefreshGoldDisplay();

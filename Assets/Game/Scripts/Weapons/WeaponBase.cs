@@ -5,7 +5,7 @@ public class WeaponBase : MonoBehaviour
 {
     [Header("Références")]
     [SerializeField] private GameObject _projectilePrefab;
-    [SerializeField] private LayerMask _enemyLayer; // À configurer dans l'inspecteur sur "Enemy"
+    [SerializeField] private LayerMask _enemyLayer;
 
     [Header("Stats de Base")]
     [SerializeField] private float _baseFireRate = 1f;
@@ -16,6 +16,10 @@ public class WeaponBase : MonoBehaviour
     [SerializeField] private bool _doubleShot = false;
     [SerializeField] private float _doubleShotDelay = 0.1f;
 
+    // Cache pour les modificateurs d'upgrades (Logique additive saine)
+    private float _upgradeDamageModifier = 0f;
+    private float _upgradeFireRateModifier = 0f;
+
     // Stats réelles calculées
     private float _currentDamage;
     private float _currentFireRate;
@@ -24,18 +28,27 @@ public class WeaponBase : MonoBehaviour
     // Multiplicateur temporaire (pour l'Ulti du CrystalSystem)
     private float _damageMultiplier = 1f;
 
-    // Pour optimiser la recherche d'ennemis sans allouer de mémoire inutilement
-    private Collider[] _detectionBuffer = new Collider[50];
+    // Optimisation : Cache de la caméra principale et du WaitForSeconds du double shot
+    private Camera _mainCamera;
+    private WaitForSeconds _doubleShotWait;
 
-    // Propriété utile pour lire les dégâts actuels (utilisée par ton système d'upgrade au besoin)
+    // Pour optimiser la recherche d'ennemis sans allouer de mémoire inutilement
+    private readonly Collider[] _detectionBuffer = new Collider[50];
+
     public float baseDamage => _baseDamage;
+
+    private void Awake()
+    {
+        _mainCamera = Camera.main;
+        _doubleShotWait = new WaitForSeconds(_doubleShotDelay);
+    }
 
     private void Start()
     {
         float bonusDamage = MetaProgressionManager.Instance.GetBonusDamage();
         float bonusCadence = MetaProgressionManager.Instance.GetBonusCadence();
 
-        // Application de la métaprogression sur les stats de base
+        // Application initiale de la métaprogression
         _baseDamage += _baseDamage * bonusDamage;
         _baseFireRate += _baseFireRate * bonusCadence;
 
@@ -48,7 +61,10 @@ public class WeaponBase : MonoBehaviour
         if (GameManager.Instance.IsPaused) return;
 
         _cooldownTimer += Time.deltaTime;
-        if (_cooldownTimer >= 1f / _currentFireRate)
+
+        float currentCooldownDuration = _currentFireRate > 0f ? (1f / _currentFireRate) : 9999f;
+
+        if (_cooldownTimer >= currentCooldownDuration)
         {
             Vector3 fireDirection = Vector3.zero;
             bool canShoot = false;
@@ -80,7 +96,9 @@ public class WeaponBase : MonoBehaviour
 
     private Vector3 GetMouseWorldPosition()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (_mainCamera == null) _mainCamera = Camera.main;
+
+        Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         Plane groundPlane = new Plane(Vector3.up, new Vector3(0, transform.position.y, 0));
 
         if (groundPlane.Raycast(ray, out float enter))
@@ -90,20 +108,23 @@ public class WeaponBase : MonoBehaviour
         return transform.position;
     }
 
-    // CORRECTION PERFORMANCE : Utilisation de Physics.OverlapSphereNonAlloc (Gros gain de FPS)
     private Transform FindNearestEnemy()
     {
         int numColliders = Physics.OverlapSphereNonAlloc(transform.position, _baseDetectionRange, _detectionBuffer, _enemyLayer);
 
         Transform nearest = null;
-        float minDist = _baseDetectionRange;
+        // On compare avec la distance maximale au carré pour éviter le calcul de racine carrée
+        float minDistSqr = _baseDetectionRange * _baseDetectionRange;
 
         for (int i = 0; i < numColliders; i++)
         {
-            float dist = Vector3.Distance(transform.position, _detectionBuffer[i].transform.position);
-            if (dist < minDist)
+            if (_detectionBuffer[i] == null) continue;
+
+            // .sqrMagnitude au lieu de Vector3.Distance
+            float distSqr = (_detectionBuffer[i].transform.position - transform.position).sqrMagnitude;
+            if (distSqr < minDistSqr)
             {
-                minDist = dist;
+                minDistSqr = distSqr;
                 nearest = _detectionBuffer[i].transform;
             }
         }
@@ -119,56 +140,56 @@ public class WeaponBase : MonoBehaviour
 
     private void FireProjectile(Vector3 direction)
     {
+        if (ObjectPool.Instance == null) return;
+
         GameObject projectileGO = ObjectPool.Instance.Get("Projectile", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
 
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
         {
-            // Prend en compte le multiplicateur de l'Ulti
             float finalDamage = _currentDamage * _damageMultiplier;
             projectile.Init(direction, finalDamage);
-        }
 
-        if (MetaProgressionManager.Instance.HasFragmentation() && projectile != null)
-        {
-            float fragDamage = (_currentDamage * _damageMultiplier) * 0.5f;
-            projectile.SetFragmentation(true, fragDamage, 2f);
+            if (MetaProgressionManager.Instance.HasFragmentation())
+            {
+                float fragDamage = finalDamage * 0.5f;
+                projectile.SetFragmentation(true, fragDamage, 2f);
+            }
         }
     }
 
     private System.Collections.IEnumerator FireDelayed(Vector3 direction)
     {
-        yield return new WaitForSeconds(_doubleShotDelay);
+        // Utilisation du cache pour éviter d'allouer du GC à chaque double tir
+        yield return _doubleShotWait;
         FireProjectile(direction);
     }
 
-    // Recalcule proprement les stats pour éviter les dérives mathématiques
     private void UpdateCalculatedStats()
     {
-        _currentDamage = _baseDamage;
-        _currentFireRate = _baseFireRate;
+        // Formule additive saine : Dégâts = DégâtsDeBase * (1 + SommeDesUpgrades)
+        _currentDamage = _baseDamage * (1f + _upgradeDamageModifier);
+        _currentFireRate = _baseFireRate * (1f + _upgradeFireRateModifier);
     }
 
-    // --- API PUBLIQUE POUR LES AUTRES SCRIPTS ---
+    // --- API PUBLIQUE ---
 
     public void UnlockDoubleShot() => _doubleShot = true;
     public bool IsDoubleShotUnlocked() => _doubleShot;
 
-    // Correction de la logique additive des Upgrades (+10% se basera toujours sur les dégâts de base initials)
     public void AddDamage(float value)
     {
-        _baseDamage += _baseDamage * value;
+        _upgradeDamageModifier += value; // On ajoute le pourcentage (+0.1f pour +10%)
         UpdateCalculatedStats();
     }
 
     public void AddFireRate(float value)
     {
-        _baseFireRate += _baseFireRate * value;
+        _upgradeFireRateModifier += value;
         UpdateCalculatedStats();
     }
 
-    // CORRECTION DU BUG : La méthode réclamée par ton CrystalSystem !
     public void SetDamageMultiplier(float multiplier)
     {
         _damageMultiplier = multiplier;

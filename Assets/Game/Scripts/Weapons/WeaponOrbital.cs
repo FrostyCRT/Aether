@@ -4,14 +4,14 @@ using System.Collections.Generic;
 public class WeaponOrbital : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _damage       = 15f;
-    [SerializeField] private float _orbitRadius  = 3f;
-    [SerializeField] private float _orbitSpeed   = 180f;
-    [SerializeField] private int   _orbitalCount = 2;
+    [SerializeField] private float _baseDamage = 15f;
+    [SerializeField] private float _orbitRadius = 3f;
+    [SerializeField] private float _orbitSpeed = 180f;
+    [SerializeField] private int _orbitalCount = 2;
 
     [Header("Contrôle Range (A/E)")]
-    [SerializeField] private float _minOrbitRadius  = 1f;
-    [SerializeField] private float _maxOrbitRadius  = 6f;
+    [SerializeField] private float _minOrbitRadius = 1f;
+    [SerializeField] private float _maxOrbitRadius = 6f;
     [SerializeField] private float _rangeChangeSpeed = 2f;
 
     [Header("Références")]
@@ -20,28 +20,29 @@ public class WeaponOrbital : MonoBehaviour
     [Header("Limites")]
     [SerializeField] private int _maxOrbitalCount = 4;
 
+    // Cache pour les modificateurs d'upgrades (Logique additive saine)
+    private float _upgradeDamageModifier = 0f;
+    private float _currentDamage;
+
+    private readonly List<GameObject> _orbitals = new List<GameObject>();
+    private readonly List<OrbitalProjectile> _orbitalScriptsCache = new List<OrbitalProjectile>();
+    private float _currentAngle = 0f;
+    private bool _isInitialized = false;
+
     public bool IsMaxOrbital() => _orbitalCount >= _maxOrbitalCount;
 
-    public void AddOrbital()
+    private void Awake()
     {
-        if (_orbitalCount >= _maxOrbitalCount)
-        {
-            Debug.Log("Nombre maximum d'orbitaux atteint !");
-            return;
-        }
-        _orbitalCount++;
-        SpawnOrbitals();
+        UpdateCalculatedStats();
     }
-
-    private List<GameObject> _orbitals = new List<GameObject>();
-    private float            _currentAngle = 0f;
 
     private void Start()
     {
-        if (_orbitalPrefab != null)
+        // Sécurité si Init() n'a pas été appelé par un manager externe
+        if (!_isInitialized && _orbitalPrefab != null)
+        {
             SpawnOrbitals();
-        else
-            Debug.LogWarning("WeaponOrbital : Orbital Prefab non assigné !");
+        }
     }
 
     public void Init(GameObject orbitalPrefab)
@@ -50,23 +51,53 @@ public class WeaponOrbital : MonoBehaviour
         SpawnOrbitals();
     }
 
+    public void AddOrbital()
+    {
+        if (IsMaxOrbital())
+        {
+            Debug.Log("Nombre maximum d'orbitaux atteint !");
+            return;
+        }
+        _orbitalCount++;
+        SpawnOrbitals();
+    }
+
     private void SpawnOrbitals()
     {
+        _isInitialized = true;
+
+        // Nettoyage : au lieu de Destroy, on retourne au pool
         foreach (GameObject orbital in _orbitals)
-            Destroy(orbital);
+        {
+            if (orbital != null) ObjectPool.Instance.ReturnToPool("OrbitalProjectile", orbital);
+        }
+
         _orbitals.Clear();
+        _orbitalScriptsCache.Clear();
 
         for (int i = 0; i < _orbitalCount; i++)
         {
-            GameObject orbital = Instantiate(_orbitalPrefab, transform.position, Quaternion.identity);
-            orbital.transform.SetParent(transform);
-            _orbitals.Add(orbital);
+            // ON APPELLE LE POOL ICI
+            GameObject orbital = ObjectPool.Instance.Get("OrbitalProjectile", transform.position, Quaternion.identity);
+
+            if (orbital != null)
+            {
+                orbital.transform.SetParent(transform);
+                _orbitals.Add(orbital);
+
+                OrbitalProjectile projScript = orbital.GetComponent<OrbitalProjectile>();
+                if (projScript != null)
+                {
+                    _orbitalScriptsCache.Add(projScript);
+                    projScript.SetDamage(_currentDamage);
+                }
+            }
         }
     }
 
     private void Update()
     {
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (_orbitals.Count == 0) return;
 
         // Contrôle de la range au clavier
@@ -81,12 +112,33 @@ public class WeaponOrbital : MonoBehaviour
 
         for (int i = 0; i < _orbitals.Count; i++)
         {
+            if (_orbitals[i] == null) continue;
+
             float angle = (_currentAngle + angleStep * i) * Mathf.Deg2Rad;
             float x = Mathf.Cos(angle) * _orbitRadius;
             float z = Mathf.Sin(angle) * _orbitRadius;
+
             _orbitals[i].transform.localPosition = new Vector3(x, 0f, z);
         }
     }
 
-    public void AddDamage(float value) => _damage += _damage * value;
+    private void UpdateCalculatedStats()
+    {
+        _currentDamage = _baseDamage * (1f + _upgradeDamageModifier);
+
+        // On répercute immédiatement la modification sur tous nos projectiles actifs
+        for (int i = 0; i < _orbitalScriptsCache.Count; i++)
+        {
+            if (_orbitalScriptsCache[i] != null)
+            {
+                _orbitalScriptsCache[i].SetDamage(_currentDamage);
+            }
+        }
+    }
+
+    public void AddDamage(float value)
+    {
+        _upgradeDamageModifier += value; // Logique additive saine (+10% = +0.1f)
+        UpdateCalculatedStats();
+    }
 }

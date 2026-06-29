@@ -16,3 +16,5 @@ MonoBehaviour:
   description: +1 projectile orbital
   upgradeType: 6
   value: 0
+  weaponPrefab: {fileID: 6076549467375830856, guid: c96efb4a855bf1a40b968c32cbd21496,
+    type: 3}
