@@ -73,11 +73,11 @@ public class ObjectPool : MonoBehaviour
             if (foundPool != null && foundPool.prefab != null)
             {
                 obj = Instantiate(foundPool.prefab);
-                Debug.Log($"Pool '{tag}' épuisé, création d'un objet supplémentaire");
+                
             }
             else
             {
-                Debug.LogError($"Impossible d'instancier un objet supplémentaire pour le pool '{tag}' car le prefab est manquant !");
+                
                 return null;
             }
         }

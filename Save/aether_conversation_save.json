@@ -1,0 +1,161 @@
+{
+  "project_name": "AETHER",
+  "save_date": "2026-06-30",
+  "save_type": "conversation_checkpoint",
+  "note": "Cette sauvegarde reprend toute la conversation depuis le précédent checkpoint (aether_conversation_save.json du 2026-06-22) et le document AETHER_PROJECT_COMPLET_V3.md. À utiliser en complément du document markdown V3 mis à jour, pas à sa place.",
+
+  "context": {
+    "developer_profile": "Solo, débutant/intermédiaire en Unity/C#, doit être guidé précisément (fichier + classe + emplacement exact pour chaque modification de code, étapes Editor détaillées clic par clic)",
+    "engine": "Unity 2021.3.45f1, URP",
+    "previous_save_document": "AETHER_PROJECT_COMPLET_V3.md + aether_conversation_save.json (2026-06-22)",
+    "collaboration_rules": [
+      "Toujours préciser fichier + classe + méthode/emplacement exact pour chaque bout de code donné",
+      "Étapes Unity Editor détaillées, chaque clic, chaque menu",
+      "Ne jamais deviner — signaler explicitement l'incertitude",
+      "Critique honnête et sincère sur le visuel, pas de complaisance, comparer objectivement aux meilleurs du genre (Hades, Path of Exile, Vampire Survivors, Hollow Knight)",
+      "S'inspirer des meilleurs jeux du genre tout en restant original",
+      "Vérifier les éléments visuels avec captures d'écran réelles avant de valider une direction",
+      "Avant de regénérer/modifier un asset existant qui plaît à l'utilisateur, bien évaluer le gain réel vs effort"
+    ]
+  },
+
+  "bugs_fixed_this_session": [
+    {
+      "bug": "Carré coloré derrière chaque médaillon de l'arbre de compétences, visible uniquement en Play mode",
+      "cause_finale": "Composant Button avec Transition = Color Tint, qui applique sa propre teinte par-dessus le visuel custom",
+      "fix": "Transition du Button mis sur 'None' sur les 15 nœuds"
+    },
+    {
+      "bug": "Alpha d'un Image de nœud (médaillon d'origine) remis à 255 au lancement malgré une valeur 0 mise manuellement dans l'Editor",
+      "cause_finale": "SkillNode.RefreshVisual() / SetMedalState() réécrivait l'alpha à chaque Start() via le champ _medalImage, qui pointait vers cette vieille Image",
+      "fix": "Image inutile désactivée (case Image décochée dans l'Inspector) au lieu de jouer avec l'alpha"
+    },
+    {
+      "bug": "Les 3 LevelDots passaient en doré au niveau max, se mélangeant visuellement avec la couleur de l'anneau",
+      "cause_finale": "SetDot() réécrivait toute la couleur (1f, 0.85f, 0f) au lieu de ne toucher qu'à l'alpha",
+      "fix": "SetDot() ne modifie plus que le canal alpha (1f actif / 0.25f inactif), la couleur de base du dot reste celle définie dans l'Inspector"
+    },
+    {
+      "bug": "Point unique (nœud upgrade unique) mal centré, callé à la position du point de gauche d'une rangée de 3",
+      "cause_finale": "anchoredPosition = Vector2.zero ne centre que si l'ancre du RectTransform est déjà à 0.5/0.5 — Dot1 avait une ancre à gauche",
+      "fix_v1": "Forçage de anchorMin/anchorMax à 0.5/0.5 avant anchoredPosition = Vector2.zero (solution abandonnée ensuite, voir feature 'Dot unique repensé')",
+      "fix_final": "Repensé entièrement : Dot1 redimensionné en Editor pour faire la même taille que les 3 dots ensemble (forme pilule/rectangle aux bouts ronds, Image Type Sliced), DotsBackground a maintenant une taille fixe identique pour les deux types de nœuds — plus aucun code de repositionnement/redimensionnement dynamique nécessaire"
+    },
+    {
+      "bug": "Couleur de l'icône/médaillon restait figée en gris (couleur 'verrouillé') même après déblocage et achat, pour tous les nœuds situés au-dessus de la première ligne",
+      "cause_finale": "SetAlphaOnly() repartait de la couleur ACTUELLE de l'image (déjà repeinte en gris par un passage verrouillé précédent), pas de sa couleur d'origine",
+      "fix": "Couleur d'origine de _iconImage et _medalImage capturée une seule fois dans Awake() (_iconOriginalColor / _medalOriginalColor), réutilisée à chaque déblocage au lieu de la couleur courante"
+    },
+    {
+      "bug": "Nœud du milieu/sommet s'assombrissait (passait à l'état verrouillé visuel) dès que le joueur n'avait plus assez d'or pour CE nœud précis, alors qu'il restait débloquable (prérequis remplis)",
+      "cause_finale": "RefreshVisual() incluait canAfford dans le calcul de l'état 'locked', mélangeant 'prérequis non rempli' et 'pas assez d'or'",
+      "fix": "locked = !hasProgress && !isUnlockable uniquement — le manque d'or n'affecte plus que le bouton ACHETER du panel de détail, plus l'apparence du médaillon sur l'arbre"
+    },
+    {
+      "bug": "Panel de détail (clic sur un nœud) atterrissait systématiquement au centre de l'écran pour les nœuds des 2 colonnes les plus à droite, au lieu de se positionner relativement au nœud cliqué",
+      "cause_finale": "Formule de retournement à gauche utilisait '- panelW + 80f' au lieu de '- panelW * 0.5f' (le panel est positionné depuis son centre, pas son bord), plus tard doublé d'un 2e bug : nodeRect.anchoredPosition était lu dans le repère local de TreeContainer au lieu du repère du parent du DetailPanel",
+      "fix": "ComputeTargetPosition() corrigée avec le bon calcul de centre + clamp de sécurité, et ajout de WorldToPanelLocalPosition() qui convertit correctement la position du nœud cliqué via RectTransformUtility (WorldToScreenPoint puis ScreenPointToLocalPointInRectangle)"
+    },
+    {
+      "bug": "Panel de détail se téléportait instantanément au lieu d'un mouvement fluide, et ne se fermait pas au clic en dehors",
+      "fix": "Animation fluide via coroutine MovePanelRoutine (SmoothStep sur _panelMoveDuration), démarrage du panel depuis la position du nœud cliqué à la première ouverture ; ajout d'un GameObject ClickOutsideCatcher (Image transparente plein écran + Button) positionné dans la Hierarchy entre le fond et TreeContainer, relié à ClosePanel()"
+    },
+    {
+      "bug": "Warning Console : caractère Unicode ✓ introuvable dans la police LiberationSans SDF, remplacé visuellement par un carré vide",
+      "fix": "Remplacement de ✓ par ● dans FormatLevel() et dans le texte 'Débloqué' de SkillTreeUI (caractère déjà utilisé ailleurs sans problème, donc bien supporté par la police)"
+    },
+    {
+      "bug": "Dans le NodeDetailPanel, pour une upgrade unique, le texte d'état apparaissait dans Level1Text (position gauche d'une rangée de 3), créant un alignement visuellement décentré",
+      "fix": "PopulateDetail() utilise désormais Level2Text (position centrale) pour l'état des nœuds uniques, Level1Text et Level3Text désactivés dans ce cas. DetailDescription non touché, comme demandé explicitement par l'utilisateur"
+    },
+    {
+      "bug": "Toggles du SettingsPanel ne réagissaient pas visuellement au clic (Is On changeait bien dans l'Inspector, mais aucune animation/couleur)",
+      "cause_finale": "Deux causes cumulées : (1) Transition Color Tint du composant Toggle non désactivé, écrasant la couleur posée par script ; (2) erreur utilisateur — les fonctions assignées dans OnValueChanged étaient en mode 'Static' au lieu de 'Dynamic [Type]' dans l'Inspector, donc elles ne recevaient jamais la vraie valeur au clic",
+      "fix": "Transition mis sur None sur les 3 Toggles + reconfiguration des UnityEvent en mode Dynamic par l'utilisateur"
+    },
+    {
+      "bug": "Volume musique/SFX ne changeait jamais malgré le slider qui bouge, et la musique a totalement disparu après avoir assigné Output vers Music (MainMixer) sur l'AudioSource",
+      "diagnostic": "Cause combinée avec le bug des toggles (paramètres Static au lieu de Dynamic sur les OnValueChanged des Slider également) — résolu par l'utilisateur en autonomie",
+      "fix": "Reconfiguration des UnityEvent des Slider en mode Dynamic"
+    },
+    {
+      "bug": "Ombres ne s'appliquaient jamais en jeu réel malgré le toggle Ombres activé dans Settings",
+      "cause_finale": "SettingsManager (scène MainMenu) référence forcément le Directional Light de SA scène — ne peut pas affecter la lumière de la scène Game, chargée séparément",
+      "fix": "Nouveau script GameSceneSettingsApplier.cs posé sur le Directional Light de la scène Game, qui lit SettingsManager.AreShadowsEnabled() (PlayerPrefs) au Start() de cette scène"
+    },
+    {
+      "bug": "Symboles parasites (icône soleil, icône 'T') visibles à l'écran pendant les tests de gameplay",
+      "diagnostic": "Pas un bug — Gizmos activé dans l'onglet Game de l'Éditeur (icônes de Directional Light et de TextMeshPro), n'existe pas dans le jeu exporté",
+      "fix": "Désactiver le bouton Gizmos en haut de l'onglet Game"
+    },
+    {
+      "bug": "Bugs majeurs en lançant le jeu directement depuis la scène Game",
+      "diagnostic": "Pas un bug — les singletons (MetaProgressionManager, SettingsManager, etc.) sont créés dans Awake() de la scène MainMenu avec DontDestroyOnLoad ; ils n'existent jamais si on Play directement depuis Game",
+      "fix": "Toujours tester en partant de la scène MainMenu (piste laissée ouverte : système de bootstrap automatique si besoin plus tard)"
+    }
+  ],
+
+  "features_built_this_session": [
+    {
+      "name": "Polish visuel complet de l'arbre de compétences",
+      "details": "Fond d'écran non assombri (cause possible identifiée : sRGB décoché sur la texture, à vérifier par l'utilisateur), LevelDots colorés par branche avec petit fond 'plaquette' discret (DotsBackground), nœuds uniques avec dot en forme pilule de même taille que les nœuds multi-niveaux, titres de branche (GUERRIER/GARDIEN/FANTÔME) avec Outline + Underlay coloré + petits traits décoratifs façon bannière"
+    },
+    {
+      "name": "Régénération d'icônes incohérentes stylistiquement",
+      "details": "3 icônes identifiées comme trop 'glossy/3D' par rapport au reste (peint, mat) : Fragmentation (cristal violet), Nova Étendue et Maîtrise du Cristal (branche Fantôme). Prompts détaillés fournis avec bloc de style commun. Maîtrise du Cristal régénérée et validée par l'utilisateur ; les 2 autres regénérations jugées pires que l'original par l'utilisateur, donc abandonnées — icônes d'origine conservées. Calque d'harmonisation finale (désaturation -10%, courbes 235/15, grain monochrome en Overlay 20%) expliqué et démontré visuellement, jugé trop subtil pour l'effort actuel — reporté explicitement à la phase de polish final du jeu"
+    },
+    {
+      "name": "Onglet actif mis en valeur dans la TabBar (UPGRADES/MENU/SETTINGS)",
+      "details": "MainMenuManager.ShowPanel() centralisé pour éclaircir/agrandir légèrement (scale 1.08, couleur blanche) l'onglet actif et griser légèrement les 2 autres (scale 1.0, couleur grisée) — fonctionne automatiquement sur les 3 panels (Upgrades/Menu/Settings) car tous passent par la même méthode"
+    },
+    {
+      "name": "SettingsPanel complet, construit de zéro",
+      "details": "Fond d'écran dédié (salle d'étude intérieure en pierre, palette grise/bleue sobre, généré via Leonardo.ai, option 2 sur 4 choisie). SettingsCard centrée avec 3 sections (AUDIO / AFFICHAGE / GAMEPLAY), séparateurs visuels, alignement label-gauche/contrôle-droite sur marge symétrique de 50px. Toggles custom 'pilule' reconstruits à la main (Background + Knob, sans le Graphic par défaut du composant Toggle) avec animation de glissement et changement de couleur via script. Script SettingsManager.cs : volumes Musique/SFX via AudioMixer exposé (MusicVolume/SFXVolume), Plein écran (Screen.fullScreen), Ombres (Directional Light Shadow Type, propagé à la scène Game via GameSceneSettingsApplier), Visée automatique / tir à la souris (toggle géré + code de tir à la souris ajouté par l'utilisateur en autonomie). Toutes les préférences persistées via PlayerPrefs"
+    },
+    {
+      "name": "Cohérence narrative inter-écrans actée comme identité visuelle du jeu",
+      "details": "Décision de concevoir Menu/Upgrades/Settings comme différentes pièces d'un même lieu (tour-sanctuaire) plutôt que des fonds indépendants, avec le cristal bleu comme motif récurrent intentionnel. Fond du Menu Principal généré et validé : vue extérieure de la tour, logo AETHER avec cristal bleu, bouton PLAY, cime de l'arbre des 3 branches visible au loin par-dessus le mur d'enceinte (échelle volontairement réduite vs l'écran Upgrades, jugé acceptable par convention de jeu vidéo standard, option non retouchée pour l'instant)",
+      "todo_en_attente": "Cadre signature à construire (motif de coin sculpté en pierre + cristal, généré une fois et réutilisé x4 par rotation) à appliquer sur SettingsCard puis potentiellement les autres écrans — prompt fourni, pas encore exécuté"
+    }
+  ],
+
+  "skill_tree_final_structure": {
+    "note": "Structure en losange 2+2+1 CONFIRMÉE conforme entre le code (MetaProgressionManager.IsNodeUnlockable) et le design — vérifiée cette session via reconstruction visuelle des 3 branches à partir de la description utilisateur (un seul côté donné par branche, l'autre déduit puis confirmé). Plus aucune action requise sur ce point.",
+    "branche_guerrier": "Cadence + Dégâts (bas) → Dégâts Cristal + Fragmentation (milieu) → Surpuissance (sommet)",
+    "branche_gardien": "Régénération + Vitalité (bas) → Armure + Second Souffle (milieu) → Bouclier de Mana (sommet)",
+    "branche_fantome": "Agilité + Dash amélioré (bas) → Maîtrise du Cristal + Nova Étendue (milieu) → Dash Fantôme (sommet)"
+  },
+
+  "art_pipeline_used_this_session": {
+    "outils_utilises": ["Leonardo.ai", "Photopea"],
+    "assets_generes": [
+      "Fond du SettingsPanel — salle d'étude intérieure en pierre, palette grise/bleue, 4 variantes générées et comparées en détail, option 2 (bureau+fenêtre à gauche, étagère+table à droite, centre dégagé) choisie pour la composition la plus compatible avec une carte UI centrée",
+      "Fond du Menu Principal — vue extérieure de la tour-sanctuaire, cime de l'arbre 3 couleurs visible au loin, validé",
+      "Tentative de régénération de 3 icônes de compétences (Fragmentation, Nova Étendue, Maîtrise du Cristal) — 1 seule conservée (Maîtrise du Cristal), les 2 autres jugées inférieures à l'original par l'utilisateur et abandonnées",
+      "Prompt de calque d'harmonisation finale (désaturation/courbes/grain Photopea) fourni mais non exécuté — reporté au polish final",
+      "Prompt de motif de coin signature (pierre sculptée + cristal bleu) fourni mais non encore généré"
+    ]
+  },
+
+  "ui_ux_lessons_learned": [
+    "Le composant Button ET Toggle ont une Transition par défaut (Color Tint) qui écrase toute couleur posée par script sur leur Target Graphic — toujours la passer sur 'None' dès qu'un visuel custom est géré par code",
+    "anchoredPosition = Vector2.zero ne centre un élément que si son ancre est déjà à 0.5/0.5 — sinon ça repositionne au point d'ancrage existant, pas au centre visuel",
+    "RectTransform.anchoredPosition est exprimé dans le repère local du PARENT de l'objet, pas dans un repère écran global — comparer des anchoredPosition d'objets ayant des parents différents (ex. TreeContainer vs UpgradesPanel) donne des résultats incohérents. Utiliser RectTransformUtility.WorldToScreenPoint + ScreenPointToLocalPointInRectangle pour convertir correctement entre repères",
+    "Quand une couleur ne doit changer QUE l'alpha (pas la teinte), bien repartir de la couleur D'ORIGINE capturée une seule fois (ex. dans Awake), jamais de la couleur courante de l'objet — sinon un état intermédiaire (ex. verrouillé) peut polluer définitivement les états suivants",
+    "AudioMixer.SetFloat(nomParamètre, valeur) échoue SILENCIEUSEMENT (aucune erreur Console) si le nom du paramètre exposé ne correspond pas exactement (casse/espaces compris) à celui défini dans l'Audio Mixer",
+    "Dans l'Inspector d'un UnityEvent (OnValueChanged, OnClick...), une fonction assignée en mode 'Static Parameters' fige la valeur au moment de l'édition et ne reçoit JAMAIS la vraie valeur au runtime — toujours vérifier que le mode est 'Dynamic [Type]' pour les callbacks qui doivent recevoir la valeur actuelle du Slider/Toggle au clic",
+    "Un singleton créé via Awake()+DontDestroyOnLoad dans une scène A n'existe pas si on lance le Play directement depuis une scène B — toujours tester depuis la scène de démarrage réelle (MainMenu)",
+    "Les icônes Gizmos visibles dans l'onglet Game en mode Éditeur (lumières, TextMeshPro, etc.) n'apparaissent jamais dans un build exporté — à ne pas confondre avec un bug visuel réel",
+    "Pour qu'un Toggle ait un style 'pilule' personnalisé propre (façon Hades/mobile), il vaut mieux vider son champ Graphic et piloter Background+Knob entièrement par script plutôt que de essayer de retravailler le Checkmark par défaut",
+    "Quand on compare deux écrans avec le même élément à des échelles très différentes (ex. un arbre vu de loin vs vu de près) sans aucun repère d'échelle commun (mur, personnage), le cerveau perçoit une incohérence diffuse même sans pouvoir la nommer précisément — c'est une convention acceptable en jeu vidéo mais à trancher consciemment plutôt que par accident"
+  ],
+
+  "open_questions_for_next_session": [
+    "Vérifier si la case sRGB (Color Texture) était bien décochée sur la texture de fond de l'arbre de compétences (hypothèse donnée pour le fond 'plus sombre que l'original', jamais confirmée par l'utilisateur)",
+    "Construire le cadre signature (coin en pierre + cristal généré, dupliqué x4 par rotation) sur SettingsCard, prompt déjà fourni",
+    "Décider si le fond du Menu Principal doit être retouché pour un arbre plus imposant (option B proposée) ou laissé tel quel (option A, jugée 'un peu vide' par l'utilisateur mais pas bloquante)",
+    "Le journal de quêtes évoqué par l'utilisateur n'est PAS validé comme feature — à retravailler consciemment si l'envie persiste, en gardant à l'esprit le risque d'éloignement du concept bullet heaven pur. Les features réellement actées pour un futur onglet/contenu du Menu restent : Personnages jouables (Aether/Kael/Lyra) et Défis aléatoires par run (voir doc V3)",
+    "Appliquer le calque d'harmonisation finale Photopea sur les 15 icônes de compétences (reporté volontairement à la phase de polish final du jeu, pas prioritaire maintenant)",
+    "Suite du plan de longévité du doc V3 : Personnages jouables, 3 défis aléatoires par run, Fusions d'armes — aucun commencé ce jour"
+  ]
+}

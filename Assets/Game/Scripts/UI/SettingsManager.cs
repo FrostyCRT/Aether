@@ -23,6 +23,8 @@ public class SettingsManager : MonoBehaviour
     [Header("Gameplay")]
     [SerializeField] private Toggle _autoFireToggle;
 
+
+
     private const string MUSIC_KEY = "settings_music";
     private const string SFX_KEY = "settings_sfx";
     private const string FULLSCREEN_KEY = "settings_fullscreen";
@@ -37,12 +39,12 @@ public class SettingsManager : MonoBehaviour
         DontDestroyOnLoad(bootloader);
     }
 
-    // Exécuteur asynchrone avec gestion du fondu sonore (Fade-In)
+    // Exécuteur asynchrone — applique le volume directement, sans fondu
     private class AudioBootloaderExecutor : MonoBehaviour
     {
         private System.Collections.IEnumerator Start()
         {
-            // 1. Chargement ASYNCHRONE pour éviter le freeze au démarrage
+            // Chargement ASYNCHRONE pour éviter le freeze au démarrage
             ResourceRequest request = Resources.LoadAsync<AudioMixer>("MainMixer");
             while (!request.isDone)
             {
@@ -66,38 +68,12 @@ public class SettingsManager : MonoBehaviour
             float targetMusic = PlayerPrefs.GetFloat("settings_music", 0.75f);
             float targetSfx = PlayerPrefs.GetFloat("settings_sfx", 0.75f);
 
-            // Applique directement les SFX (pas besoin de fondu sur les bruitages)
             float sfxdB = targetSfx > 0.0001f ? Mathf.Log10(targetSfx) * 20f : -80f;
             mainMixer.SetFloat("SFXVolume", sfxdB);
 
-            // 2. Lancement du fondu progressif (Fade-In) pour la musique
-            float duration = 1.0f; // Durée du fondu en secondes
-            float currentTime = 0f;
+            // Applique le volume musique directement, sans fondu
             float targetMusicdB = targetMusic > 0.0001f ? Mathf.Log10(targetMusic) * 20f : -80f;
-
-            // Si le joueur a coupé la musique, on reste à -80dB directement
-            if (targetMusicdB <= -80f)
-            {
-                mainMixer.SetFloat("MusicVolume", -80f);
-            }
-            else
-            {
-                while (currentTime < duration)
-                {
-                    currentTime += Time.deltaTime;
-                    // Évolution linéaire entre 0 et 1
-                    float t = currentTime / duration;
-
-                    // Interpolation du volume (de -80dB jusqu'à la valeur cible)
-                    float currentdB = Mathf.Lerp(-80f, targetMusicdB, t);
-                    mainMixer.SetFloat("MusicVolume", currentdB);
-
-                    yield return null;
-                }
-
-                // On s'assure de caler précisément la valeur finale
-                mainMixer.SetFloat("MusicVolume", targetMusicdB);
-            }
+            mainMixer.SetFloat("MusicVolume", targetMusicdB);
 
             // Nettoyage du bootloader
             Destroy(gameObject);

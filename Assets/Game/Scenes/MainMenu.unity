@@ -2613,19 +2613,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 211759427}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 406843432}
-        m_TargetAssemblyTypeName: SkillTreeUI, Assembly-CSharp
-        m_MethodName: OnBuyClicked
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &211759427
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17577,6 +17565,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1885891800}
   - component: {fileID: 1885891799}
+  - component: {fileID: 1885891801}
   m_Layer: 0
   m_Name: Music_Background
   m_TagString: Untagged
@@ -17596,7 +17585,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: -237697619665979917, guid: 6dc5d19d3adea404a9dfd21fb9276f19,
     type: 2}
   m_audioClip: {fileID: 8300000, guid: e72447ba5093a3a46818acc1ffe137df, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.1
   m_Pitch: 1
   Loop: 1
@@ -17696,6 +17685,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1885891801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885891798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c7f472065d54094092cb9b635797363, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _startDelay: 0.5
 --- !u!1 &1887780391
 GameObject:
   m_ObjectHideFlags: 0

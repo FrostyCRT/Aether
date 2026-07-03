@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviour
         GameObject clone = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         clone.transform.position = transform.position;
         clone.transform.localScale = transform.localScale;
-        clone.layer = LayerMask.NameToLayer("Enemy");
+        clone.layer = LayerMask.NameToLayer("PhantomClone");
 
         ActivePhantomClone = clone.transform;
 

@@ -32,7 +32,8 @@ public class XPGem : MonoBehaviour
     {
         _gemType = type;
         _playerTransform = player;
-        _attracted = false; // RESET indispensable pour le recyclage du pool
+        _attracted = false;
+        _moveSpeed = 8f;
 
         Color targetColor = Color.blue;
         switch (type)
@@ -65,6 +66,16 @@ public class XPGem : MonoBehaviour
         _renderer.SetPropertyBlock(_propBlock);
     }
 
+    public void ForceAttract()
+    {
+        _attracted = true;
+    }
+
+    public void ForceAttractFast(float speedMultiplier = 3f) // NOUVEAU
+    {
+        _attracted = true;
+        _moveSpeed *= speedMultiplier;
+    }
     private void Update()
     {
         // On bloque le mouvement si le jeu est en pause globale ou game over

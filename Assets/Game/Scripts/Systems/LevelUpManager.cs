@@ -150,5 +150,25 @@ public class LevelUpManager : MonoBehaviour
             else summary.AppendLine($"• {kvp.Key}");
         }
         return summary.ToString().TrimEnd();
+
+    }
+    public List<string> GetUpgradesList()
+    {
+        if (_chosenUpgrades.Count == 0) return new List<string>();
+
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+        foreach (string name in _chosenUpgrades)
+        {
+            if (counts.ContainsKey(name)) counts[name]++;
+            else counts[name] = 1;
+        }
+
+        List<string> lines = new List<string>();
+        foreach (var kvp in counts)
+        {
+            lines.Add(kvp.Value > 1 ? $"• {kvp.Key} x{kvp.Value}" : $"• {kvp.Key}");
+        }
+
+        return lines;
     }
 }

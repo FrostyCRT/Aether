@@ -111,15 +111,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249b4e4c3c2cd1449b3f2f6addbca717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 600
-  _moveSpeed: 2.5
-  _xpValue: 400
+  _maxHealth: 1500
+  _moveSpeed: 3
+  _xpValue: 1400
   _goldValue: 40
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
-  _fireRate: 2.5
+  _fireRate: 3
   _projectileCount: 8
-  _chargeCooldown: 4
+  _chargeCooldown: 3.5
   _bossName: Le Sanglier de Mana
 --- !u!54 &4482558440533347634
 Rigidbody:

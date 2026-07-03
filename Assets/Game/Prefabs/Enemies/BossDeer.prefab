@@ -127,20 +127,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b973c80abcb0cd45b749671453c92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 800
-  _moveSpeed: 2.5
-  _xpValue: 700
+  _maxHealth: 5000
+  _moveSpeed: 3
+  _xpValue: 2450
   _goldValue: 70
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
-  _fireRate: 1.5
+  _fireRate: 1.75
   _projectileCount: 12
-  _chargeCooldown: 5
+  _chargeCooldown: 4.5
   _bossName: Cerf Ancestral
-  _teleportCooldown: 8
+  _teleportCooldown: 6
   _teleportDistance: 4
   _spiralFireRate: 0.2
   _spiralBurstCount: 24
   _regenAmount: 100
-  _regenCooldown: 15
-  _rageThreshold: 0.3
+  _regenCooldown: 10
+  _rageThreshold: 0.35

@@ -127,135 +127,80 @@ public class GameManager : MonoBehaviour
     }
 
     public void AbandonRun()
-
     {
-
         IsPaused = false;
-
         Time.timeScale = 1f;
-
         MetaProgressionManager.Instance.SaveRunResults(
-
             _runTimer,
-
             _killCount
-
         );
-
         SceneManager.LoadScene(0);
-
     }
-
 
 
     public void AddKill()
-
     {
-
         _killCount++;
-
         if (GameUI.Instance != null)
-
             GameUI.Instance.UpdateKillCount(_killCount); // ← mise à jour HUD
-
     }
 
 
-
     public void TriggerGameOver()
-
     {
-
         if (_isGameOver) return;
-
         _isGameOver = true;
-
         Invoke(nameof(ShowGameOver), 1.5f);
 
     }
 
 
-
     private void ShowGameOver()
-
     {
-
         GameUI.Instance.SetHUDVisible(false);
+
+        int goldEarned = MetaProgressionManager.Instance.RunGold;
 
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
 
-        GameUI.Instance.ShowGameOver(
-
-            _runTimer,
-
-            _killCount,
-
-            MetaProgressionManager.Instance.RunGold
-
-        );
-
+        GameUI.Instance.ShowGameOver(_runTimer, _killCount, goldEarned);
     }
 
 
 
     public void RestartGame()
-
     {
-
         Time.timeScale = 1f;
-
         SceneManager.LoadScene(1);
-
     }
-
-
 
     public void GoToMainMenu()
-
     {
-
         Time.timeScale = 1f;
-
         SceneManager.LoadScene(0);
-
     }
-
-
 
     public void TriggerVictory()
-
     {
-
         if (_isGameOver) return;
-
         _isGameOver = true;
-
         Invoke(nameof(ShowVictory), 2f); // Délai plus long pour savourer
-
     }
 
-
-
     private void ShowVictory()
-
     {
-
         GameUI.Instance.SetHUDVisible(false);
+
+        int goldEarned = MetaProgressionManager.Instance.RunGold; // capturé AVANT le reset
 
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
 
         GameUI.Instance.ShowVictory(
-
             _runTimer,
-
             _killCount,
-
-            MetaProgressionManager.Instance.RunGold,
-
+            goldEarned,
             XPSystem.Instance.CurrentLevel
-
         );
-
     }
 
 }

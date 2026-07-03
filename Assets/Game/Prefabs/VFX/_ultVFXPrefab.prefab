@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8149126435912968362}
   - component: {fileID: 4197020406329435016}
   m_Layer: 0
-  m_Name: NovaVFX
+  m_Name: _ultVFXPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

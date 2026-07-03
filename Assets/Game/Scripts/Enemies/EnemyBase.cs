@@ -148,7 +148,7 @@ public class EnemyBase : MonoBehaviour
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorProjectile : color;
-            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c);
+            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, transform, false);
         }
 
         if (_currentHealth <= 0)

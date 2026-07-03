@@ -3,7 +3,7 @@ using UnityEngine;
 public class HealthSystem : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _maxHealth = 100f;
+    [SerializeField] private float _maxHealth = 200f; // MODIFIÉ — était 100f
 
     [Header("Invincibilité")]
     [SerializeField] private float _invincibilityDuration = 1f;
@@ -30,7 +30,6 @@ public class HealthSystem : MonoBehaviour
         _currentHealth = _maxHealth;
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
         _regenPerSecond = MetaProgressionManager.Instance.GetBonusRegen();
-
         _secondWindUsed = false;
     }
 
@@ -43,8 +42,6 @@ public class HealthSystem : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null) return;
-
-        // CORRECTION PAUSE
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
         if (_isInvincible)
@@ -76,10 +73,9 @@ public class HealthSystem : MonoBehaviour
         if (IsInvincible) return;
         if (_damageTimer > 0f) return;
 
-        // CORRECTION : Seuls les contacts directs avec le corps des ennemis sont gérés ici
         if (other.CompareTag("Enemy"))
         {
-            TakeDamage(10f);
+            TakeDamage(15f); // MODIFIÉ — était 10f
             _damageTimer = _damageCooldown;
         }
     }
@@ -91,7 +87,7 @@ public class HealthSystem : MonoBehaviour
 
         if (other.CompareTag("Enemy"))
         {
-            TakeDamage(10f);
+            TakeDamage(15f); // MODIFIÉ — était 10f
             _damageTimer = _damageCooldown;
         }
     }
@@ -133,19 +129,14 @@ public class HealthSystem : MonoBehaviour
         if (GameUI.Instance != null)
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
 
-        // Force une invincibilité de 3 secondes
         _isInvincible = true;
         _invincibilityTimer = 3f;
 
-        // On prévient le PlayerController d'activer l'invisibilité visuelle
         PlayerController playerCtrl = GetComponent<PlayerController>();
         if (playerCtrl != null)
-        {
             playerCtrl.ActivateInvisibility(3f);
-        }
     }
 
-    // Utilisé proprement par EnemyProjectile
     public void TakeDamageFromProjectile(float damage)
     {
         TakeDamage(damage);
@@ -174,11 +165,8 @@ public class HealthSystem : MonoBehaviour
     private void Die()
     {
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.TriggerGameOver();
-        }
 
-        // CORRECTION CRASH : Désactivation au lieu de destruction pour préserver les transforms cibles des ennemis
         gameObject.SetActive(false);
     }
 }

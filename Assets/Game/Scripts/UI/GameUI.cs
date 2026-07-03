@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour
 {
@@ -40,6 +41,7 @@ public class GameUI : MonoBehaviour
     [Header("Cristal")]
     [SerializeField] private UnityEngine.UI.Image[] _crystalIcons;
     [SerializeField] private GameObject _ultReadyEffect;
+    [SerializeField] private TextMeshProUGUI _ultStackText;
 
     [Header("Pause")]
     [SerializeField] private GameObject _pausePanel;
@@ -52,6 +54,8 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _victoryStatsText;
     [SerializeField] private TextMeshProUGUI _victoryRecordsText;
     [SerializeField] private TextMeshProUGUI _victoryBuildListText;
+    [SerializeField] private TextMeshProUGUI _victoryBuildListText2; // NOUVEAU
+    [SerializeField] private int _buildListMaxLinesPerColumn = 8;
 
     [Header("HUD")]
     [SerializeField] private GameObject _hudPanel;
@@ -74,14 +78,33 @@ public class GameUI : MonoBehaviour
         UpdateKillCount(0);
     }
 
+    public void UpdateUltStack(int stacks)
+    {
+        if (_ultStackText == null) return;
+
+        if (stacks <= 0)
+        {
+            _ultStackText.gameObject.SetActive(false);
+            return;
+        }
+
+        _ultStackText.gameObject.SetActive(true);
+        _ultStackText.text = stacks == 2
+            ? "<color=#FFD700>ULT x2</color>"
+            : "<color=#00CFFF>ULT x1</color>";
+    }
     public void UpdateCrystalCharge(int current, int max)
     {
         if (_crystalIcons == null) return;
-
         for (int i = 0; i < _crystalIcons.Length; i++)
         {
             if (_crystalIcons[i] == null) continue;
-            _crystalIcons[i].color = (i < current) ? new Color(0f, 0.8f, 1f) : new Color(0.2f, 0.2f, 0.2f);
+
+            bool isWithinMax = i < max;
+            _crystalIcons[i].gameObject.SetActive(isWithinMax);
+
+            if (isWithinMax)
+                _crystalIcons[i].color = (i < current) ? new Color(0f, 0.8f, 1f) : new Color(0.2f, 0.2f, 0.2f);
         }
     }
 
@@ -112,7 +135,24 @@ public class GameUI : MonoBehaviour
 
         if (_victoryBuildListText != null && LevelUpManager.Instance != null)
         {
-            _victoryBuildListText.text = LevelUpManager.Instance.GetUpgradesSummary();
+            List<string> lines = LevelUpManager.Instance.GetUpgradesList();
+
+            if (lines.Count <= _buildListMaxLinesPerColumn)
+            {
+                // Tout tient dans une seule colonne
+                _victoryBuildListText.text = string.Join("\n", lines);
+                if (_victoryBuildListText2 != null)
+                    _victoryBuildListText2.text = "";
+            }
+            else
+            {
+                // Découpage en 2 colonnes, la première reçoit la moitié haute (arrondi vers le haut)
+                int splitIndex = Mathf.CeilToInt(lines.Count / 2f);
+                _victoryBuildListText.text = string.Join("\n", lines.GetRange(0, splitIndex));
+
+                if (_victoryBuildListText2 != null)
+                    _victoryBuildListText2.text = string.Join("\n", lines.GetRange(splitIndex, lines.Count - splitIndex));
+            }
         }
     }
 

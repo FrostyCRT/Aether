@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 1200
+  _maxHealth: 10000
   _moveSpeed: 3
   _xpValue: 0
   _goldValue: 120
@@ -127,14 +127,14 @@ MonoBehaviour:
   _crystalOrbitSpeed: 20
   _crystalFireRate: 0.8
   _slowWaveCooldown: 10
-  _slowDuration: 3
+  _slowDuration: 2.5
   _slowMultiplier: 0.4
   _slowWaveRadius: 8
   _miniBoss1Prefab: {fileID: 7732996451166620575, guid: c8b30a9595b433d46a53ca0171b2836b,
     type: 3}
   _miniBoss2Prefab: {fileID: 8074673154536467952, guid: 0a332bffaf034c1428bcbb4e22eacd3f,
     type: 3}
-  _summonCooldown: 25
+  _summonCooldown: 20
   _implosionCooldown: 15
   _implosionPullForce: 15
   _implosionRadius: 10

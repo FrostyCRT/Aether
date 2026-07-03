@@ -13,34 +13,21 @@ public class MetaProgressionManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        // On appelle la méthode de chargement sécurisée
         LoadData();
     }
 
     public void LoadData()
     {
-        // On demande au SaveSystem de lire le fichier JSON
         Data = SaveSystem.Load();
-
-        // SÉCURITÉ : Si le fichier n'existait pas (première partie), 
-        // SaveSystem a renvoyé un nouvel objet, mais au cas où c'est "null", 
-        // on force la création d'un SaveData tout neuf pour éviter les bugs dans le Shop.
         if (Data == null)
-        {
             Data = new SaveData();
-        }
     }
 
     public void AddRunGold(int amount)
     {
         RunGold += amount;
-
-        // CORRECTION SÉCURITÉ UI : Vérification stricte de l'état de l'instance UI
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
-        {
             GameUI.Instance.UpdateGold(RunGold);
-        }
     }
 
     public void SaveRunResults(float runTime, int kills)
@@ -54,7 +41,7 @@ public class MetaProgressionManager : MonoBehaviour
         if (kills > Data.bestKills) Data.bestKills = kills;
 
         SaveSystem.Save(Data);
-        RunGold = 0; // Reset pour la run suivante
+        RunGold = 0;
     }
 
     // =====================
@@ -90,7 +77,7 @@ public class MetaProgressionManager : MonoBehaviour
 
     public float GetBonusRegen()
     {
-        float[] values = { 0f, 1f, 2f, 4f };
+        float[] values = { 0f, 2f, 4f, 6f }; // MODIFIÉ — était { 0f, 1f, 2f, 4f }
         return values[Mathf.Clamp(Data.regenLevel, 0, values.Length - 1)];
     }
 
@@ -285,7 +272,7 @@ public class MetaProgressionManager : MonoBehaviour
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
 
-        Data.totalGold = 0; // Reset propre de la triche pour la release
+        Data.totalGold = 10000; // MODIFIÉ — gold de test (remettre à 0 pour la release)
         SaveSystem.Save(Data);
     }
 }

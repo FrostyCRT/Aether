@@ -11,7 +11,7 @@ public class WeaponOrbital : MonoBehaviour
 
     [Header("Contrôle Range (A/E)")]
     [SerializeField] private float _minOrbitRadius = 1f;
-    [SerializeField] private float _maxOrbitRadius = 6f;
+    [SerializeField] private float _maxOrbitRadius = 8f;
     [SerializeField] private float _rangeChangeSpeed = 2f;
 
     [Header("Références")]

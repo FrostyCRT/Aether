@@ -2,25 +2,21 @@
 
 
 
-c'est pas réglable parce que on a pas redimensionner, et placer précisément les éléments.
+Player:
 
 
 
-Il faut que tu me guide à 100% pour avoir une page de paramètre très belle, et comme on a un fond d'écran dans le menu principal, et un fond d'écran pour le menu upgrade, il nous en faut un pour les paramètres, mais il doit être plus sobre, en gris, mais dans la DA je ne sais pas trop comment faire.
+Chibi boy apprentice mage, young anime boy with short messy blonde hair
 
+and bright blue eyes, cute face, determined expression. Wearing a light beige
 
+fabric tunic, brown leather vest, small brown boots, and holding a simple
 
-La DA fantasy médiéval -> inspiré de l'anime Mushoku Tensei.
+wooden magic staff with a small glowing blue crystal at the top. Clean low
 
+poly 3D model, ghibli and anime inspired, vibrant colors, game ready asset,
 
-
-Pour ce fond je pense qu'on peut être en intérieur, pas en paysage extérieur.
-
-Player :
-
-
-
-Chibi boy apprentice mage, young anime boy with short messy blonde hair and bright blue eyes, cute face, determined expression. Wearing a light beige fabric tunic, brown leather vest, small brown boots, and holding a simple wooden magic staff with a small glowing blue crystal at the top. Clean low poly 3D model, ghibli and anime inspired, vibrant colors, game ready asset, T-pose for Unity to create a videogame.
+T-pose for Unity to create a videogame.
 
 
 

@@ -30,6 +30,12 @@ public class BossBase : MonoBehaviour
     public bool IsSummoned { get; set; } = false;
     public bool RageDisabled { get; set; } = false;
 
+    protected float _speedMultiplier = 1f; // NOUVEAU
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        _speedMultiplier = multiplier;
+    }
     protected virtual void Start()
     {
         _currentHealth = _maxHealth;
@@ -65,7 +71,7 @@ public class BossBase : MonoBehaviour
     {
         if (_isCharging) return;
         Vector3 direction = (_playerTransform.position - transform.position).normalized;
-        transform.position += direction * _moveSpeed * Time.deltaTime;
+        transform.position += direction * _moveSpeed * _speedMultiplier * Time.deltaTime;
     }
 
     protected virtual void HandleShooting()
@@ -123,7 +129,7 @@ public class BossBase : MonoBehaviour
 
         if (_isCharging)
         {
-            transform.position += _chargeDirection * _moveSpeed * 4f * Time.deltaTime;
+            transform.position += _chargeDirection * _moveSpeed * 4f * _speedMultiplier * Time.deltaTime;
 
             _chargeDurationTimer -= Time.deltaTime;
             if (_chargeDurationTimer <= 0f)
@@ -145,7 +151,7 @@ public class BossBase : MonoBehaviour
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorCritical : color;
-            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, true);
+            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, transform, true);
         }
 
         if (!IsSummoned)

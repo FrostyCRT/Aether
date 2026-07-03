@@ -116,9 +116,9 @@ public static class SkillTreeData
             displayName = "Régénération",
             description = "Régenère des HP chaque seconde.",
             isUnique = false,
-            level1Desc = "+15%",
-            level2Desc = "+30%",
-            level3Desc = "+50%",
+            level1Desc = "+2 HP/sec",
+            level2Desc = "+4 HP/sec",
+            level3Desc = "+6 HP/sec",
             costLevel1 = 50,
             costLevel2 = 100,
             costLevel3 = 200,
@@ -214,7 +214,7 @@ public static class SkillTreeData
             displayName = "Dash Fantôme",
             description = "Le dash laisse un clone qui attire l'ennemi le plus proche pendant 2 secondes.",
             isUnique = true,
-            costLevel1 = 400,
+            costLevel1 = 400,   
             prerequisites = new[] { "crystalMastery", "novaRadius" }
         });
     }
