@@ -118,7 +118,8 @@ public class WeaponOrbital : MonoBehaviour
             float x = Mathf.Cos(angle) * _orbitRadius;
             float z = Mathf.Sin(angle) * _orbitRadius;
 
-            _orbitals[i].transform.localPosition = new Vector3(x, 0f, z);
+            Vector3 orbitOffset = new Vector3(x, 0f, z);
+            _orbitals[i].transform.position = transform.position + orbitOffset;
         }
     }
 

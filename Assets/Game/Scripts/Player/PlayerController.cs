@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _dashCooldown = 2f;
     [SerializeField] private float _absorptionWindow = 0.3f;
 
+    [Header("Rotation")]
+    [SerializeField] private float _rotationSpeed = 700f;
+
     private Rigidbody _rb;
     private HealthSystem _healthSystem;
     private Vector3 _moveDirection;
@@ -27,6 +30,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _dashDirection;
 
     private CrystalSystem _crystalSystem;
+    private PlayerAnimatorController _animatorController;
     public static Transform ActivePhantomClone { get; private set; }
     public static System.Action OnPhantomDestroyed;
     public bool IsDashing => _isDashing;
@@ -52,7 +56,7 @@ public class PlayerController : MonoBehaviour
         // Récupère les composants visuels
         _playerRenderers = GetComponentsInChildren<Renderer>();
 
-        // MODIFICATION : Désactive la collision entre le calque Player et le calque Enemy
+        // Désactive la collision entre le calque Player et le calque Enemy
         int playerLayer = LayerMask.NameToLayer("Player");
         int enemyLayer = LayerMask.NameToLayer("Enemy");
 
@@ -66,15 +70,13 @@ public class PlayerController : MonoBehaviour
     {
         if (!_isInvisible) return;
 
-        // Gestion du temps global de l'effet
         _invisibilityTimer -= Time.deltaTime;
 
-        // LOGIQUE DE CLIGNOTEMENT
         _blinkTimer += Time.deltaTime;
         if (_blinkTimer >= _blinkInterval)
         {
             _blinkTimer = 0f;
-            _renderersEnabled = !_renderersEnabled; // Alterne l'état visuel
+            _renderersEnabled = !_renderersEnabled;
 
             if (_playerRenderers != null)
             {
@@ -86,12 +88,10 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // FIN DE L'EFFET
         if (_invisibilityTimer <= 0f)
         {
             _isInvisible = false;
 
-            // Sécurité : On s'assure que le joueur redevient totalement visible
             if (_playerRenderers != null)
             {
                 for (int i = 0; i < _playerRenderers.Length; i++)
@@ -101,7 +101,6 @@ public class PlayerController : MonoBehaviour
                 }
             }
 
-            // MODIFICATION : On réactive les collisions physiques avec les ennemis
             int playerLayer = LayerMask.NameToLayer("Player");
             int enemyLayer = LayerMask.NameToLayer("Enemy");
 
@@ -111,6 +110,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     public void ResetDashCooldown()
     {
         _dashCooldownTimer = 0f;
@@ -122,6 +122,7 @@ public class PlayerController : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _healthSystem = GetComponent<HealthSystem>();
         _crystalSystem = GetComponent<CrystalSystem>();
+        _animatorController = GetComponent<PlayerAnimatorController>();
 
         _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetBonusAgility();
         _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
@@ -137,7 +138,7 @@ public class PlayerController : MonoBehaviour
         HandleDash();
         HandleAbsorptionWindow();
         UpdateDashCooldown();
-        HandleInvisibilityTimer(); // ← AJOUT ICI
+        HandleInvisibilityTimer();
     }
 
     private void HandleMovementInput()
@@ -145,6 +146,12 @@ public class PlayerController : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
         _moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (_animatorController != null)
+        {
+            bool isMoving = _moveDirection.sqrMagnitude > 0.01f;
+            _animatorController.SetWalking(isMoving);
+        }
     }
 
     private void HandleDash()
@@ -182,7 +189,6 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator SpawnPhantomClone()
     {
-        // 1. Création du clone physique
         GameObject clone = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         clone.transform.position = transform.position;
         clone.transform.localScale = transform.localScale;
@@ -190,7 +196,6 @@ public class PlayerController : MonoBehaviour
 
         ActivePhantomClone = clone.transform;
 
-        // 2. Application du visuel
         Renderer rend = clone.GetComponent<Renderer>();
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         mat.color = new Color(0.3f, 0.6f, 1f, 0.4f);
@@ -199,7 +204,6 @@ public class PlayerController : MonoBehaviour
         float attractRadius = 8f;
         float duration = 2f;
 
-        // 3. Détection et filtrage des 2 ennemis les plus proches
         Collider[] targets = new Collider[20];
         int count = Physics.OverlapSphereNonAlloc(clone.transform.position, attractRadius, targets);
 
@@ -225,7 +229,6 @@ public class PlayerController : MonoBehaviour
             validEnemies[i].SetTarget(clone.transform, 2f);
         }
 
-        // 4. Attente (Timer manuel anti-pause)
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -234,10 +237,8 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
 
-        // 5. CORRECTION : On lève l'événement pour avertir TOUS les ennemis (même ceux qui ont spawn après ou sont loin)
         OnPhantomDestroyed?.Invoke();
 
-        // Reset des variables globales
         ActivePhantomClone = null;
 
         Destroy(mat);
@@ -272,8 +273,16 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // CORRECTION PAUSE FIXEDUPDATE
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+
+        // Rotation instantanée vers la direction du mouvement, dans le pas physique
+        // Rotation progressive vers la direction du mouvement, dans le pas physique
+        if (_moveDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(_moveDirection);
+            Quaternion smoothedRotation = Quaternion.RotateTowards(_rb.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime);
+            _rb.MoveRotation(smoothedRotation);
+        }
 
         if (_isDashing)
             _rb.MovePosition(_rb.position + _dashDirection * _dashSpeed * Time.fixedDeltaTime);

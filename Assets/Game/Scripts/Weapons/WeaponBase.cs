@@ -1,11 +1,9 @@
-using System;
+Ôªøusing System;
 using UnityEngine;
 
 public class WeaponBase : MonoBehaviour
 {
-    [Header("RÈfÈrences")]
-    [SerializeField] private GameObject _projectilePrefab;
-    [SerializeField] private LayerMask _enemyLayer;
+    
 
     [Header("Stats de Base")]
     [SerializeField] private float _baseFireRate = 1f;
@@ -16,11 +14,16 @@ public class WeaponBase : MonoBehaviour
     [SerializeField] private bool _doubleShot = false;
     [SerializeField] private float _doubleShotDelay = 0.1f;
 
+    [Header("R√©f√©rences")]
+    [SerializeField] private GameObject _projectilePrefab;
+    [SerializeField] private LayerMask _enemyLayer;
+    [SerializeField] private Transform _projectileSpawnPoint;
+
     // Cache pour les modificateurs d'upgrades (Logique additive saine)
     private float _upgradeDamageModifier = 0f;
     private float _upgradeFireRateModifier = 0f;
 
-    // Stats rÈelles calculÈes
+    // Stats r√©elles calcul√©es
     private float _currentDamage;
     private float _currentFireRate;
     private float _cooldownTimer = 0f;
@@ -28,11 +31,11 @@ public class WeaponBase : MonoBehaviour
     // Multiplicateur temporaire (pour l'Ulti du CrystalSystem)
     private float _damageMultiplier = 1f;
 
-    // Optimisation : Cache de la camÈra principale et du WaitForSeconds du double shot
+    // Optimisation : Cache de la cam√©ra principale et du WaitForSeconds du double shot
     private Camera _mainCamera;
     private WaitForSeconds _doubleShotWait;
 
-    // Pour optimiser la recherche d'ennemis sans allouer de mÈmoire inutilement
+    // Pour optimiser la recherche d'ennemis sans allouer de m√©moire inutilement
     private readonly Collider[] _detectionBuffer = new Collider[50];
 
     public float baseDamage => _baseDamage;
@@ -48,7 +51,7 @@ public class WeaponBase : MonoBehaviour
         float bonusDamage = MetaProgressionManager.Instance.GetBonusDamage();
         float bonusCadence = MetaProgressionManager.Instance.GetBonusCadence();
 
-        // Application initiale de la mÈtaprogression
+        // Application initiale de la m√©taprogression
         _baseDamage += _baseDamage * bonusDamage;
         _baseFireRate += _baseFireRate * bonusCadence;
 
@@ -69,19 +72,21 @@ public class WeaponBase : MonoBehaviour
             Vector3 fireDirection = Vector3.zero;
             bool canShoot = false;
 
+            Vector3 firingOrigin = _projectileSpawnPoint != null ? _projectileSpawnPoint.position : transform.position;
+
             if (SettingsManager.IsAutoFireEnabled())
             {
                 Transform nearest = FindNearestEnemy();
                 if (nearest != null)
                 {
-                    fireDirection = (nearest.position - transform.position).normalized;
+                    fireDirection = (nearest.position - firingOrigin).normalized;
                     canShoot = true;
                 }
             }
             else
             {
                 Vector3 mouseWorldPosition = GetMouseWorldPosition();
-                fireDirection = (mouseWorldPosition - transform.position).normalized;
+                fireDirection = (mouseWorldPosition - firingOrigin).normalized;
                 canShoot = true;
             }
 
@@ -113,7 +118,7 @@ public class WeaponBase : MonoBehaviour
         int numColliders = Physics.OverlapSphereNonAlloc(transform.position, _baseDetectionRange, _detectionBuffer, _enemyLayer);
 
         Transform nearest = null;
-        // On compare avec la distance maximale au carrÈ pour Èviter le calcul de racine carrÈe
+        // On compare avec la distance maximale au carr√© pour √©viter le calcul de racine carr√©e
         float minDistSqr = _baseDetectionRange * _baseDetectionRange;
 
         for (int i = 0; i < numColliders; i++)
@@ -142,7 +147,11 @@ public class WeaponBase : MonoBehaviour
     {
         if (ObjectPool.Instance == null) return;
 
-        GameObject projectileGO = ObjectPool.Instance.Get("Projectile", transform.position, Quaternion.identity);
+        Vector3 rawSpawnPosition = _projectileSpawnPoint != null ? _projectileSpawnPoint.position : transform.position;
+        // On garde X/Z du b√¢ton (origine visuelle), mais on verrouille Y au niveau de jeu du joueur
+        Vector3 spawnPosition = new Vector3(rawSpawnPosition.x, transform.position.y, rawSpawnPosition.z);
+
+        GameObject projectileGO = ObjectPool.Instance.Get("Projectile", spawnPosition, Quaternion.identity);
         if (projectileGO == null) return;
 
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
@@ -161,14 +170,14 @@ public class WeaponBase : MonoBehaviour
 
     private System.Collections.IEnumerator FireDelayed(Vector3 direction)
     {
-        // Utilisation du cache pour Èviter d'allouer du GC ‡ chaque double tir
+        // Utilisation du cache pour √©viter d'allouer du GC √† chaque double tir
         yield return _doubleShotWait;
         FireProjectile(direction);
     }
 
     private void UpdateCalculatedStats()
     {
-        // Formule additive saine : DÈg‚ts = DÈg‚tsDeBase * (1 + SommeDesUpgrades)
+        // Formule additive saine : D√©g√¢ts = D√©g√¢tsDeBase * (1 + SommeDesUpgrades)
         _currentDamage = _baseDamage * (1f + _upgradeDamageModifier);
         _currentFireRate = _baseFireRate * (1f + _upgradeFireRateModifier);
     }

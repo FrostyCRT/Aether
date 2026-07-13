@@ -7541,7 +7541,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: SETTINGS
+  m_text: Parametres
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 975333bb0c642bc4698e9d96f2919389, type: 2}
   m_sharedMaterial: {fileID: 5110678762567640049, guid: 975333bb0c642bc4698e9d96f2919389,
@@ -8322,9 +8322,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'UPGRADES
-
-'
+  m_text: amelioration
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 975333bb0c642bc4698e9d96f2919389, type: 2}
   m_sharedMaterial: {fileID: 5110678762567640049, guid: 975333bb0c642bc4698e9d96f2919389,
@@ -19546,7 +19544,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Play
+  m_text: Jouer
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 975333bb0c642bc4698e9d96f2919389, type: 2}
   m_sharedMaterial: {fileID: 5110678762567640049, guid: 975333bb0c642bc4698e9d96f2919389,

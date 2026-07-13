@@ -133,7 +133,7 @@ public class CrystalSystem : MonoBehaviour
         foreach (EnemyBase enemy in allEnemies)
         {
             if (enemy != null)
-                enemy.TakeDamage(999999f, DamageNumberSpawner.ColorCritical);
+                enemy.TakeDamage(100f, DamageNumberSpawner.ColorCritical);
         }
 
         // Dégâts x2 sur les boss dans _ultRange
