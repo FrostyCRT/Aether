@@ -77,6 +77,7 @@ public class HealthSystem : MonoBehaviour
         {
             TakeDamage(15f); // MODIFIÉ — était 10f
             _damageTimer = _damageCooldown;
+            
         }
     }
 
@@ -89,8 +90,10 @@ public class HealthSystem : MonoBehaviour
         {
             TakeDamage(15f); // MODIFIÉ — était 10f
             _damageTimer = _damageCooldown;
+            
         }
     }
+
 
     public void TakeDamage(float damage)
     {

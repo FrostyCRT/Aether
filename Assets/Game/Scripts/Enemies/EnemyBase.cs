@@ -13,6 +13,9 @@ public class EnemyBase : MonoBehaviour
     [Header("Pool")]
     [SerializeField] private string _poolTag = "Enemy";
 
+    [Header("Distance Joueur")]
+    [SerializeField] private float _playerContactRadius = 1.2f;
+
     protected float MoveSpeed => _moveSpeed;
 
     private float _currentHealth;
@@ -92,8 +95,25 @@ public class EnemyBase : MonoBehaviour
         UpdateBehaviour(_currentTarget);
     }
 
+
+
+    private EnemyAnimatorController _animatorController;
+
     protected virtual void UpdateBehaviour(Transform target)
     {
+        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+        bool isInContactWithPlayer = target == _playerTransform && distanceToPlayer <= _playerContactRadius;
+
+        if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
+
+        if (isInContactWithPlayer)
+        {
+            if (_animatorController != null) _animatorController.SetAttacking(true);
+            return;
+        }
+
+        if (_animatorController != null) _animatorController.SetAttacking(false);
+
         Vector3 direction = (target.position - transform.position).normalized;
         Vector3 separation = GetBaseSeparation();
         Vector3 final = (direction + separation * 0.3f).normalized;
@@ -102,6 +122,12 @@ public class EnemyBase : MonoBehaviour
             final = direction;
 
         transform.position += final * MoveSpeed * _speedMultiplier * _speedMultiplierTarget * Time.deltaTime;
+
+        if (final.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(final);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 720f * Time.deltaTime);
+        }
     }
 
     public void SetTarget(Transform newTarget, float speedBoost = 1f)

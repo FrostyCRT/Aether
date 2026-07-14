@@ -1740,17 +1740,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: ed47eece69f896d44826381d88c8f6b9,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ed47eece69f896d44826381d88c8f6b9,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ed47eece69f896d44826381d88c8f6b9,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ed47eece69f896d44826381d88c8f6b9,
         type: 3}
@@ -6705,8 +6705,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.6
-  m_Height: 3
+  m_Radius: 0.75
+  m_Height: 2.5
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1115696776
@@ -11717,7 +11717,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c15cd5a496d12446a7564aa915c5055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BossSpawnInterval: 300
+  BossSpawnInterval: 120
   _bossPrefab1: {fileID: 7732996451166620575, guid: c8b30a9595b433d46a53ca0171b2836b,
     type: 3}
   _bossPrefab2: {fileID: 8074673154536467952, guid: 0a332bffaf034c1428bcbb4e22eacd3f,
