@@ -16,6 +16,7 @@ public class EnemyBase : MonoBehaviour
     [Header("Distance Joueur")]
     [SerializeField] private float _playerContactRadius = 1.2f;
 
+
     protected float MoveSpeed => _moveSpeed;
 
     private float _currentHealth;
@@ -39,17 +40,6 @@ public class EnemyBase : MonoBehaviour
 
         _currentTarget = _playerTransform;
 
-        // ÉCOUTE DU FANTÔME
-        if (PlayerController.ActivePhantomClone != null)
-        {
-            float attractRadius = 8f;
-            float sqrDistance = Vector3.SqrMagnitude(transform.position - PlayerController.ActivePhantomClone.position);
-
-            if (sqrDistance <= attractRadius * attractRadius)
-            {
-                SetTarget(PlayerController.ActivePhantomClone, 2f);
-            }
-        }
 
         // AJOUT : On s'abonne à l'événement de destruction du fantôme
         PlayerController.OnPhantomDestroyed += HandlePhantomDestroyed;
@@ -83,14 +73,22 @@ public class EnemyBase : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null) return;
-
-        // CORRECTION BUG PAUSE
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
         if (_currentTarget == null)
-            _currentTarget = _playerTransform;
+            SetTarget(_playerTransform);
 
         if (_currentTarget == null) return;
+
+        // AJOUTÉ — vérifie l'attraction au clone à CHAQUE frame, pas juste au spawn
+        if (PlayerController.ActivePhantomClone != null && _currentTarget == _playerTransform)
+        {
+            float sqrDistance = Vector3.SqrMagnitude(transform.position - PlayerController.ActivePhantomClone.position);
+            if (sqrDistance <= PlayerController.PhantomAttractRadius * PlayerController.PhantomAttractRadius)
+            {
+                PlayerController.TryAttractToPhantom(this);
+            }
+        }
 
         UpdateBehaviour(_currentTarget);
     }
@@ -134,7 +132,6 @@ public class EnemyBase : MonoBehaviour
     {
         _currentTarget = newTarget != null ? newTarget : _playerTransform;
 
-        // CORRECTION : Si la cible repasse sur le joueur, on coupe immédiatement le boost du fantôme
         if (_currentTarget == _playerTransform)
         {
             _speedMultiplierTarget = 1f;
@@ -142,23 +139,27 @@ public class EnemyBase : MonoBehaviour
         else
         {
             _speedMultiplierTarget = speedBoost;
+            Debug.Log($"[PHANTOM DEBUG] {gameObject.name} boosté à {speedBoost}x, target={newTarget.name}", this); // AJOUTÉ TEMPORAIRE
         }
     }
 
+    private static readonly Collider[] _neighbourBuffer = new Collider[16];
+    private static int _enemyLayerMask = -1;
+
     private Vector3 GetBaseSeparation()
     {
+        if (_enemyLayerMask == -1)
+            _enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
+
         Vector3 force = Vector3.zero;
         float separationRadius = 1.5f;
 
-        // OPTIMISATION : Utilisation de OverlapSphereNonAlloc pour éviter d'allouer de la mémoire à chaque frame
-        Collider[] neighbours = new Collider[5];
-        int count = Physics.OverlapSphereNonAlloc(transform.position, separationRadius, neighbours);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, separationRadius, _neighbourBuffer, _enemyLayerMask);
 
         for (int i = 0; i < count; i++)
         {
-            Collider neighbour = neighbours[i];
+            Collider neighbour = _neighbourBuffer[i];
             if (neighbour.gameObject == gameObject) continue;
-            if (!neighbour.CompareTag("Enemy")) continue;
 
             Vector3 pushDirection = transform.position - neighbour.transform.position;
             force += pushDirection.normalized;

@@ -106,6 +106,7 @@ public class WaveManager : MonoBehaviour
 
         GameObject player    = GameObject.FindWithTag("Player");
         Vector3    spawnPos  = player.transform.position + new Vector3(10f, 0f, 0f);
+        spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
 
         GameObject bossPrefab = bossNumber == 1 ? _bossPrefab1 :
                                 bossNumber == 2 ? _bossPrefab2 : _bossPrefab3;
@@ -116,6 +117,18 @@ public class WaveManager : MonoBehaviour
             Debug.LogWarning($"Boss {bossNumber} prefab non assigné !");
 
         Debug.Log($"Boss {bossNumber} spawné !");
+    }
+
+    public static class MapBoundaryUtils
+    {
+        public const float ZoneHalfSize = 55f;
+
+        public static Vector3 ClampToZone(Vector3 position)
+        {
+            position.x = Mathf.Clamp(position.x, -ZoneHalfSize, ZoneHalfSize);
+            position.z = Mathf.Clamp(position.z, -ZoneHalfSize, ZoneHalfSize);
+            return position;
+        }
     }
 
     private void ClearAllEnemies()

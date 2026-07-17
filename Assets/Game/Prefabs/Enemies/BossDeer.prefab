@@ -127,8 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b973c80abcb0cd45b749671453c92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 5000
-  _moveSpeed: 3
+  _maxHealth: 3000
+  _moveSpeed: 4
   _xpValue: 2450
   _goldValue: 70
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,

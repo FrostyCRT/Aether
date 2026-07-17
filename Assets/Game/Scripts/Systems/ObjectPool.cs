@@ -58,33 +58,29 @@ public class ObjectPool : MonoBehaviour
             Debug.LogWarning($"Pool '{tag}' introuvable !");
             return null;
         }
-
         Queue<GameObject> queue = _poolDictionary[tag];
         GameObject obj = null;
-
         if (queue.Count > 0)
         {
             obj = queue.Dequeue();
         }
         else
         {
-            // CORRECTION SÉCURITÉ : Vérification que le pool existe bien dans la liste avant l'instanciation
             Pool foundPool = _pools.Find(p => p.tag == tag);
             if (foundPool != null && foundPool.prefab != null)
             {
                 obj = Instantiate(foundPool.prefab);
-                
             }
             else
             {
-                
                 return null;
             }
         }
 
-        obj.SetActive(true);
+        // MODIFIÉ — position et rotation appliquées AVANT SetActive, pour que OnEnable() voie la bonne position
         obj.transform.position = position;
         obj.transform.rotation = rotation;
+        obj.SetActive(true);
 
         return obj;
     }

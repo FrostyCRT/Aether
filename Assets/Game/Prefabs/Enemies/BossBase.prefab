@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 1500
-  _moveSpeed: 3
+  _moveSpeed: 4
   _xpValue: 1400
   _goldValue: 40
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,

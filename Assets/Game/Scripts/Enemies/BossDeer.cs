@@ -33,7 +33,7 @@ public class BossDeer : BossBase
         // On configure d'abord les variables d'identité AVANT le base.Start() 
         // pour que _currentHealth = _maxHealth s'initialise correctement.
         _bossName = "Le Cerf Ancestral";
-        _maxHealth = 800f;
+        _maxHealth = 3000f;
         _moveSpeed = 4f;
 
         base.Start();

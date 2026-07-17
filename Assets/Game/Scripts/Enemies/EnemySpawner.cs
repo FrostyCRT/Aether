@@ -133,6 +133,18 @@ public class EnemySpawner : MonoBehaviour
         ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity);
     }
 
+    public static class MapBoundaryUtils
+    {
+        public const float ZoneHalfSize = 55f;
+
+        public static Vector3 ClampToZone(Vector3 position)
+        {
+            position.x = Mathf.Clamp(position.x, -ZoneHalfSize, ZoneHalfSize);
+            position.z = Mathf.Clamp(position.z, -ZoneHalfSize, ZoneHalfSize);
+            return position;
+        }
+    }
+
     private Vector3 FindFreeSpawnPosition()
     {
         float minDistance = 1.5f;
@@ -150,6 +162,7 @@ public class EnemySpawner : MonoBehaviour
                 0f,
                 randomCircle.y * _spawnRadius
             );
+            candidatePos = MapBoundaryUtils.ClampToZone(candidatePos);
 
             // Ignore les décors et le sol, vérifie uniquement la superposition d'ennemis
             bool isOccupied = Physics.CheckSphere(candidatePos, minDistance, layerMask, QueryTriggerInteraction.Ignore);

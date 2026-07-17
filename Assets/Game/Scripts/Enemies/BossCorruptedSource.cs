@@ -56,7 +56,7 @@ public class BossCorruptedSource : BossBase
     {
         base.Start();
         _bossName = "La Source Corrompue";
-        _maxHealth = 1200f;
+        _maxHealth = 5000f;
         _moveSpeed = 0f;
         _currentHealth = _maxHealth;
 
