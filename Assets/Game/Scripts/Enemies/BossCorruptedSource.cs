@@ -1,169 +1,348 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
+/// <summary>
+/// Boss final — La Source Corrompue.
+/// Design : un colossal serpent de mana corrompue, ANCRÉ à son rift (ne "marche" jamais
+/// classiquement). Toutes ses attaques suivent une machine à séquence (une seule à la fois,
+/// avec windup + fenêtre "safe" entre chaque) au lieu de timers indépendants qui se chevauchaient
+/// dans la version précédente. Chaque attaque a un tell visuel, cohérent avec la règle établie
+/// sur Golem/Sanglier/Cerf.
+///
+/// Contrainte animation (Mesh2Motion) : seulement 6 clips disponibles — Idle, SideWinding,
+/// Death, Coiled, Bite, Dance. Chacun est réutilisé pour plusieurs attaques distinctes plutôt
+/// que d'avoir un clip dédié par attaque (budget anim limité, cf. deadline 1 mois).
+/// </summary>
 public class BossCorruptedSource : BossBase
 {
-    [Header("Source — Cristaux Orbitaux")]
+    private enum AttackType { CrystalPulse, RearingStrike, CorruptionWave, Summon, Implosion }
+
+    // NOTE : Le champ _animator est déjà déclaré et géré dans BossBase. 
+    // Le redéclarer ici provoquait une erreur de sérialisation (CS0108 / champ dupliqué).
+
+    [Header("Ancrage / Rift")]
+    [SerializeField] private float _anchorLeashRadius = 6f; // distance max avant de devoir se repositionner
+
+    [Header("Cristaux orbitaux — Pulse")]
     [SerializeField] private GameObject _crystalPrefab;
     [SerializeField] private int _crystalCount = 6;
     [SerializeField] private float _crystalOrbitRadius = 4f;
-    [SerializeField] private float _crystalOrbitSpeed = 90f;
-    [SerializeField] private float _crystalFireRate = 0.5f;
+    [SerializeField] private float _crystalOrbitSpeedIdle = 20f;
+    [SerializeField] private float _crystalOrbitSpeedCharging = 180f;
+    [SerializeField] private float _pulseWindupDuration = 1.2f;
 
-    [Header("Source — Vague de Ralentissement")]
-    [SerializeField] private float _slowWaveCooldown = 10f;
+    [Header("Frappe (Coiled -> Slither -> Bite)")]
+    [SerializeField] private float _rearWindupDuration = 1.4f;
+    [SerializeField] private float _strikeLungeDistance = 9f;
+    [SerializeField] private float _strikeLungeSpeed = 22f;
+    [SerializeField] private float _strikeImpactRadius = 2.5f;
+    [SerializeField] private float _strikeDamage = 30f;
+    [SerializeField] private GameObject _strikeTelegraphPrefab; // cercle rouge au sol, position d'impact
+
+    [Header("Vague de Corruption (ex Slow Wave)")]
+    [SerializeField] private float _waveExpandSpeed = 6f;
+    [SerializeField] private float _waveMaxRadius = 9f;
     [SerializeField] private float _slowDuration = 3f;
     [SerializeField] private float _slowMultiplier = 0.4f;
-    [SerializeField] private float _slowWaveRadius = 8f;
+    [SerializeField] private GameObject _waveRingPrefab;
 
-    [Header("Source — Invocation")]
+    [Header("Repositionnement Slither — Phase 2 uniquement")]
+    [SerializeField] private float _diveCheckInterval = 4f;
+    [SerializeField] private float _repositionTelegraphDuration = 0.6f; // fissures avant le départ
+    [SerializeField] private float _repositionTravelDuration = 1f;
+    [SerializeField] private GameObject _crackTrailPrefab; // fissures qui suivent le trajet, purement visuel
+    [SerializeField] private GameObject _resurfaceBurstPrefab;
+    [SerializeField] private float _resurfaceBurstRadius = 3f;
+    [SerializeField] private float _resurfaceBurstDamage = 15f;
+
+    [Header("Invocation d'échos corrompus")]
     [SerializeField] private GameObject _miniBoss1Prefab;
     [SerializeField] private GameObject _miniBoss2Prefab;
-    [SerializeField] private float _summonCooldown = 25f;
+    [SerializeField] private float _summonWindupDuration = 2f;
+    [SerializeField] private GameObject _riftPortalPrefab;
 
-    [Header("Source — Implosion")]
-    [SerializeField] private float _implosionCooldown = 20f;
+    [Header("Implosion — signature Phase 2 (Dance)")]
+    [SerializeField] private float _implosionPullDuration = 1.5f;
     [SerializeField] private float _implosionPullForce = 15f;
     [SerializeField] private float _implosionRadius = 10f;
     [SerializeField] private float _implosionDamage = 40f;
     [SerializeField] private GameObject _implosionWarningPrefab;
 
+    [Header("Rythme du pattern")]
+    [SerializeField] private float _minSafeWindow = 1.5f;
+    [SerializeField] private float _maxSafeWindow = 2.5f;
+
+    [Header("Rotation")]
+    [SerializeField] private float _bodyRotationSpeed = 150f; // degrés/seconde
+
     [Header("Phase 2")]
     [SerializeField] private float _phase2Threshold = 0.5f;
 
-    private float _slowWaveTimer = 0f;
-    private float _summonTimer = 0f;
-    private float _implosionTimer = 0f;
-    private float _crystalAngle = 0f;
-    private float _crystalFireTimer = 0f;
-
     private bool _isPhase2 = false;
-    private bool _isImplosionActive = false;
-    private bool _lastSummonWasBoss1 = false;
-
-    private Vector3 _wanderDirection = Vector3.zero;
-    private float _wanderTimer = 0f;
-    private float _wanderChangeCooldown = 2f;
+    private bool _isAttacking = false;
+    private bool _isRepositioning = false;
+    private bool _lockRotation = false; // true pendant les mouvements directionnels (Frappe, repositionnement)
 
     private GameObject[] _crystals;
-    private GameObject _currentWarning = null;
+    private float _crystalAngle = 0f;
 
-    // Caching des composants du joueur pour optimiser l'implosion
     private PlayerController _cachedPlayerController;
     private Rigidbody _cachedPlayerRigidbody;
+
+    private List<AttackType> _phase1Pool;
+    private List<AttackType> _phase2Pool;
+    private AttackType _lastAttack = AttackType.CrystalPulse;
+
+    private GameObject _activeMiniBossInstance = null;
+    private bool MiniBossAlive => _activeMiniBossInstance != null;
 
     protected override void Start()
     {
         base.Start();
         _bossName = "La Source Corrompue";
-        _maxHealth = 5000f;
-        _moveSpeed = 0f;
+        _maxHealth = 12500f;
+        _moveSpeed = 0f; // ancrée au rift — ne "marche" jamais au sens classique
         _currentHealth = _maxHealth;
 
-        // Cache des composants du joueur dès le départ
         if (_playerTransform != null)
         {
             _cachedPlayerController = _playerTransform.GetComponent<PlayerController>();
             _cachedPlayerRigidbody = _playerTransform.GetComponent<Rigidbody>();
         }
 
+        _phase1Pool = new List<AttackType> { AttackType.CrystalPulse, AttackType.RearingStrike, AttackType.CorruptionWave };
+        _phase2Pool = new List<AttackType> { AttackType.CrystalPulse, AttackType.RearingStrike, AttackType.CorruptionWave, AttackType.Summon, AttackType.Implosion };
+
         SpawnCrystals();
+        StartCoroutine(AttackPatternLoop());
+        StartCoroutine(LeashWatcher());
     }
 
     protected override void Update()
     {
         if (_playerTransform == null) return;
         if (GameManager.Instance == null) return;
-
-        // CORRECTION BUG : Gestion de la pause et de fin de partie
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
-        HandleMovement();
-        UpdateWander();
-        HandleCrystalOrbit();
-        HandleCrystalShooting();
-        HandleSlowWave();
-        HandleSummon();
-        HandleImplosion();
+        HandleCrystalOrbitVisual();
         CheckPhase2();
+        RotateTowardsPlayer();
+
+        if (MiniBossAlive && _activeMiniBossInstance.activeInHierarchy == false)
+            _activeMiniBossInstance = null;
     }
 
-    protected override void HandleMovement()
+    // Pas de mouvement classique : le seul déplacement du corps passe par le repositionnement Slither.
+    protected override void HandleMovement() { }
+
+    // Rotation continue vers le joueur, sauf pendant les mouvements directionnels (Frappe, repositionnement)
+    // où la direction est volontairement figée au moment du windup — cohérent avec le principe
+    // d'attaque "committed" déjà établi sur le Cerf. Rotation en Slerp continu, jamais de bascule
+    // binaire par seuil (cf. le bug de tremblement identifié sur les autres ennemis).
+    private void RotateTowardsPlayer()
     {
-        if (!_isPhase2) return;
-        if (_isImplosionActive) return;
-        transform.position += _wanderDirection * _moveSpeed * Time.deltaTime;
+        if (_lockRotation) return;
+        if (_playerTransform == null) return;
+
+        Vector3 dir = _playerTransform.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.001f) return;
+
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _bodyRotationSpeed * Time.deltaTime);
     }
 
-    private void SpawnCrystals()
+    // ---------- MACHINE À SÉQUENCE ----------
+    private IEnumerator AttackPatternLoop()
     {
-        if (_crystalPrefab == null) return;
-        _crystals = new GameObject[_crystalCount];
-        for (int i = 0; i < _crystalCount; i++)
+        yield return new WaitForSeconds(2f); // laisse le temps au joueur de voir le boss émerger
+
+        while (_currentHealth > 0f)
         {
-            float angle = (360f / _crystalCount) * i * Mathf.Deg2Rad;
-            Vector3 pos = transform.position + new Vector3(
-                Mathf.Cos(angle) * _crystalOrbitRadius, 0f,
-                Mathf.Sin(angle) * _crystalOrbitRadius);
-            _crystals[i] = Instantiate(_crystalPrefab, pos, Quaternion.identity);
-            _crystals[i].transform.SetParent(transform);
+            if (GameManager.Instance == null || GameManager.Instance.IsGameOver)
+                yield break;
+
+            if (GameManager.Instance.IsPaused || _isRepositioning)
+            {
+                yield return null;
+                continue;
+            }
+
+            List<AttackType> pool = _isPhase2 ? _phase2Pool : _phase1Pool;
+            AttackType next = ChooseNextAttack(pool);
+
+            yield return StartCoroutine(RunAttack(next));
+
+            float safeWindow = Random.Range(_minSafeWindow, _maxSafeWindow);
+            yield return new WaitForSeconds(safeWindow);
         }
     }
 
-    private void HandleCrystalOrbit()
+    private AttackType ChooseNextAttack(List<AttackType> pool)
     {
-        if (_crystals == null) return;
-        _crystalAngle += _crystalOrbitSpeed * Time.deltaTime;
-        float angleStep = 360f / _crystalCount;
-        for (int i = 0; i < _crystals.Length; i++)
+        AttackType choice;
+        int guard = 0;
+        do
         {
-            if (_crystals[i] == null) continue;
-            float angle = (_crystalAngle + angleStep * i) * Mathf.Deg2Rad;
-            _crystals[i].transform.localPosition = new Vector3(
-                Mathf.Cos(angle) * _crystalOrbitRadius, 0f,
-                Mathf.Sin(angle) * _crystalOrbitRadius);
-        }
+            choice = pool[Random.Range(0, pool.Count)];
+            guard++;
+        } while (choice == _lastAttack && guard < 10); // évite deux fois la même attaque d'affilée
+
+        if (choice == AttackType.Implosion && MiniBossAlive)
+            choice = AttackType.CrystalPulse;
+        if (choice == AttackType.Summon && MiniBossAlive)
+            choice = AttackType.RearingStrike;
+
+        _lastAttack = choice;
+        return choice;
     }
 
-    private void HandleCrystalShooting()
+    private IEnumerator RunAttack(AttackType type)
     {
-        if (_crystals == null) return;
-        _crystalFireTimer += Time.deltaTime;
-        if (_crystalFireTimer < 1f / _crystalFireRate) return;
-        _crystalFireTimer = 0f;
-
-        foreach (GameObject crystal in _crystals)
+        _isAttacking = true;
+        switch (type)
         {
-            if (crystal == null) continue;
-
-            Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
-            dirToPlayer.y = 0f;
-
-            // CORRECTION PERFORMANCE : Remplacement de l'Instantiate par le Pool global
-            GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
-            if (projectileGO == null) continue;
-
-            EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-            if (projectile != null)
-                projectile.Init(dirToPlayer);
+            case AttackType.CrystalPulse: yield return StartCoroutine(CrystalPulseAttack()); break;
+            case AttackType.RearingStrike: yield return StartCoroutine(RearingStrikeAttack()); break;
+            case AttackType.CorruptionWave: yield return StartCoroutine(CorruptionWaveAttack()); break;
+            case AttackType.Summon: yield return StartCoroutine(SummonAttack()); break;
+            case AttackType.Implosion: yield return StartCoroutine(ImplosionAttack()); break;
         }
+        _isAttacking = false;
     }
 
-    private void HandleSlowWave()
+    // ---------- CRYSTAL PULSE ----------
+    // Coiled (charge) puis salve synchronisée unique, au lieu d'un tir permanent.
+    private IEnumerator CrystalPulseAttack()
     {
-        _slowWaveTimer += Time.deltaTime;
-        if (_slowWaveTimer < _slowWaveCooldown) return;
-        _slowWaveTimer = 0f;
+        if (_animator != null) _animator.SetBool("IsCoiling", true);
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, _slowWaveRadius);
+        yield return new WaitForSeconds(_pulseWindupDuration);
+
+        if (_crystals != null)
+        {
+            foreach (GameObject crystal in _crystals)
+            {
+                if (crystal == null) continue;
+                Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
+                dirToPlayer.y = 0f;
+
+                GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
+                if (projectileGO == null) continue;
+
+                EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+                if (projectile != null) projectile.Init(dirToPlayer);
+            }
+        }
+
+        if (_animator != null) _animator.SetBool("IsCoiling", false);
+        yield return new WaitForSeconds(0.3f);
+    }
+
+    // ---------- FRAPPE (Coiled -> Slither -> Bite) ----------
+    // Se love (tell), vise la position du joueur au moment du windup (comme le saut du Cerf),
+    // glisse rapidement jusqu'à l'impact, puis mord.
+    private IEnumerator RearingStrikeAttack()
+    {
+        _lockRotation = true;
+        if (_animator != null) _animator.SetBool("IsCoiling", true);
+
+        Vector3 targetPos = _playerTransform.position;
+        Vector3 dir = (targetPos - transform.position).normalized;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+
+        GameObject telegraph = null;
+        Vector3 impactPos = transform.position + dir * _strikeLungeDistance;
+        if (_strikeTelegraphPrefab != null)
+        {
+            telegraph = Instantiate(_strikeTelegraphPrefab, impactPos, Quaternion.identity);
+            telegraph.transform.localScale = Vector3.zero;
+        }
+
+        float t = 0f;
+        while (t < _rearWindupDuration)
+        {
+            t += Time.deltaTime;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _bodyRotationSpeed * 2f * Time.deltaTime);
+            if (telegraph != null)
+            {
+                float scale = Mathf.Lerp(0f, _strikeImpactRadius * 2f, t / _rearWindupDuration);
+                telegraph.transform.localScale = new Vector3(scale, 0.02f, scale);
+            }
+            yield return null;
+        }
+
+        transform.rotation = targetRot; // aligne parfaitement avant le lunge, même si le windup était un peu court
+
+        if (_animator != null)
+        {
+            _animator.SetBool("IsCoiling", false);
+            _animator.SetTrigger("Slither");
+        }
+
+        Vector3 startPos = transform.position;
+        Vector3 endPos = startPos + dir * _strikeLungeDistance;
+        float lungeElapsed = 0f;
+        float lungeDuration = _strikeLungeDistance / _strikeLungeSpeed;
+
+        while (lungeElapsed < lungeDuration)
+        {
+            lungeElapsed += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, endPos, lungeElapsed / lungeDuration);
+            yield return null;
+        }
+
+        if (_animator != null) _animator.SetTrigger("Bite");
+
+        Collider[] hits = Physics.OverlapSphere(endPos, _strikeImpactRadius);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Player"))
             {
-                if (_cachedPlayerController != null)
-                    StartCoroutine(SlowPlayer(_cachedPlayerController));
+                HealthSystem health = hit.GetComponent<HealthSystem>();
+                if (health != null) health.TakeDamage(_strikeDamage);
             }
         }
+
+        if (telegraph != null) Destroy(telegraph);
+        _lockRotation = false;
+        yield return new WaitForSeconds(0.4f); // recovery avant la prochaine attaque
+    }
+
+    // ---------- CORRUPTION WAVE (ex Slow Wave) ----------
+    // Anneau visible qui grandit au sol avant d'appliquer le ralentissement.
+    private IEnumerator CorruptionWaveAttack()
+    {
+        if (_animator != null) _animator.SetBool("IsCoiling", true);
+
+        GameObject ring = null;
+        if (_waveRingPrefab != null)
+        {
+            ring = Instantiate(_waveRingPrefab, transform.position, Quaternion.identity);
+            ring.transform.localScale = Vector3.zero;
+        }
+
+        float radius = 0f;
+        while (radius < _waveMaxRadius)
+        {
+            radius += _waveExpandSpeed * Time.deltaTime;
+            if (ring != null)
+                ring.transform.localScale = new Vector3(radius * 2f, 0.02f, radius * 2f);
+
+            float distToPlayer = Vector3.Distance(_playerTransform.position, transform.position);
+            if (distToPlayer <= radius && _cachedPlayerController != null)
+            {
+                StartCoroutine(SlowPlayer(_cachedPlayerController));
+                break;
+            }
+            yield return null;
+        }
+
+        if (ring != null) Destroy(ring);
+        if (_animator != null) _animator.SetBool("IsCoiling", false);
     }
 
     private IEnumerator SlowPlayer(PlayerController player)
@@ -173,23 +352,107 @@ public class BossCorruptedSource : BossBase
         player.SetSpeedMultiplier(1f);
     }
 
-    private void HandleSummon()
+    // ---------- REPOSITIONNEMENT SLITHER ----------
+    // Remplace le wander aléatoire : si le joueur s'éloigne trop du rift en phase 2,
+    // le serpent glisse rapidement (à vue, pas de téléportation/invisibilité) vers une
+    // position proche du joueur. Télégraphié par des fissures qui suivent le trajet.
+    private IEnumerator LeashWatcher()
     {
-        _summonTimer += Time.deltaTime;
-        if (_summonTimer < _summonCooldown) return;
-        _summonTimer = 0f;
+        while (_currentHealth > 0f)
+        {
+            yield return new WaitForSeconds(_diveCheckInterval);
 
-        bool spawnBoss1 = !_lastSummonWasBoss1;
-        _lastSummonWasBoss1 = spawnBoss1;
+            if (!_isPhase2 || _isRepositioning || _isAttacking) continue;
+            if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver)) continue;
 
-        GameObject prefabToSpawn = spawnBoss1 ? _miniBoss1Prefab : _miniBoss2Prefab;
-        if (prefabToSpawn == null) return;
+            float dist = Vector3.Distance(transform.position, _playerTransform.position);
+            if (dist > _anchorLeashRadius)
+                yield return StartCoroutine(RepositionSlither());
+        }
+    }
+
+    private IEnumerator RepositionSlither()
+    {
+        _isRepositioning = true;
+        _lockRotation = true;
+
+        Vector3 offset = Random.insideUnitSphere * 3f;
+        offset.y = 0f;
+        Vector3 targetPos = MapBoundaryUtils.ClampToZone(_playerTransform.position + offset);
+        Quaternion targetRot = Quaternion.LookRotation((targetPos - transform.position).normalized);
+
+        GameObject crackTrail = null;
+        if (_crackTrailPrefab != null)
+            crackTrail = Instantiate(_crackTrailPrefab, transform.position, targetRot);
+
+        float telegraphElapsed = 0f;
+        while (telegraphElapsed < _repositionTelegraphDuration)
+        {
+            telegraphElapsed += Time.deltaTime;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _bodyRotationSpeed * 2f * Time.deltaTime);
+            yield return null;
+        }
+
+        if (_animator != null) _animator.SetTrigger("Slither");
+
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+        while (elapsed < _repositionTravelDuration)
+        {
+            elapsed += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, targetPos, elapsed / _repositionTravelDuration);
+            if (crackTrail != null) crackTrail.transform.position = transform.position;
+            yield return null;
+        }
+
+        if (crackTrail != null) Destroy(crackTrail);
+
+        if (_resurfaceBurstPrefab != null)
+        {
+            GameObject burst = Instantiate(_resurfaceBurstPrefab, transform.position, Quaternion.identity);
+            Destroy(burst, 1f);
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, _resurfaceBurstRadius);
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Player"))
+            {
+                HealthSystem health = hit.GetComponent<HealthSystem>();
+                if (health != null) health.TakeDamage(_resurfaceBurstDamage);
+            }
+        }
+
+        _isRepositioning = false;
+        _lockRotation = false;
+    }
+
+    // ---------- SUMMON (Échos corrompus) ----------
+    // Portail visible avant l'apparition du mini-boss, au lieu d'un pop instantané.
+    private IEnumerator SummonAttack()
+    {
+        if (_animator != null) _animator.SetBool("IsCoiling", true);
 
         Vector3 playerPos = _playerTransform.position;
         Vector3 awayFromPlayer = (transform.position - playerPos).normalized;
         Vector3 spawnPos = playerPos + awayFromPlayer * 10f;
 
+        GameObject portal = null;
+        if (_riftPortalPrefab != null)
+            portal = Instantiate(_riftPortalPrefab, spawnPos, Quaternion.identity);
+
+        yield return new WaitForSeconds(_summonWindupDuration);
+
+        if (portal != null) Destroy(portal);
+        if (_animator != null) _animator.SetBool("IsCoiling", false);
+
+        bool spawnBoss1 = Random.value > 0.5f;
+        GameObject prefabToSpawn = spawnBoss1 ? _miniBoss1Prefab : _miniBoss2Prefab;
+        if (prefabToSpawn == null) yield break;
+
         GameObject mini = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+        _activeMiniBossInstance = mini;
+
         BossBase boss = mini.GetComponent<BossBase>();
         if (boss != null)
         {
@@ -210,32 +473,23 @@ public class BossCorruptedSource : BossBase
         }
     }
 
-    private void HandleImplosion()
+    // ---------- IMPLOSION — signature Phase 2 (Dance) ----------
+    private IEnumerator ImplosionAttack()
     {
-        if (_isImplosionActive) return;
-        _implosionTimer += Time.deltaTime;
-        if (_implosionTimer < _implosionCooldown) return;
-        _implosionTimer = 0f;
-        StartCoroutine(ImplosionSequence());
-    }
+        if (_animator != null) _animator.SetTrigger("Dance");
 
-    private IEnumerator ImplosionSequence()
-    {
-        _isImplosionActive = true;
-
+        GameObject warning = null;
         if (_implosionWarningPrefab != null)
         {
-            _currentWarning = Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity);
-            _currentWarning.transform.localScale = Vector3.zero;
+            warning = Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity);
+            warning.transform.localScale = Vector3.zero;
         }
 
-        float pullDuration = 1.5f;
         float elapsed = 0f;
         float minDistance = 3f;
 
-        while (elapsed < pullDuration)
+        while (elapsed < _implosionPullDuration)
         {
-            // Sécurité si le jeu se met en pause pendant la coroutine
             if (GameManager.Instance != null && GameManager.Instance.IsPaused)
             {
                 yield return null;
@@ -244,31 +498,26 @@ public class BossCorruptedSource : BossBase
 
             elapsed += Time.deltaTime;
 
-            if (_currentWarning != null)
+            if (warning != null)
             {
-                _currentWarning.transform.position = transform.position;
-                float scale = Mathf.Lerp(0f, _implosionRadius * 2f, elapsed / pullDuration);
-                _currentWarning.transform.localScale = new Vector3(scale, 0.05f, scale);
+                float scale = Mathf.Lerp(0f, _implosionRadius * 2f, elapsed / _implosionPullDuration);
+                warning.transform.localScale = new Vector3(scale, 0.05f, scale);
             }
 
-            // CORRECTION PERFORMANCE : Utilisation des composants mis en cache (Plus aucun GetComponent en boucle !)
             if (_playerTransform != null && _cachedPlayerController != null && _cachedPlayerRigidbody != null)
             {
                 float dist = Vector3.Distance(_playerTransform.position, transform.position);
-                if (dist > minDistance)
+                if (dist > minDistance && !_cachedPlayerController.IsDashing)
                 {
-                    if (!_cachedPlayerController.IsDashing)
-                    {
-                        Vector3 pullDir = (transform.position - _playerTransform.position).normalized;
-                        _cachedPlayerRigidbody.MovePosition(
-                            _playerTransform.position + pullDir * _implosionPullForce * Time.deltaTime);
-                    }
+                    Vector3 pullDir = (transform.position - _playerTransform.position).normalized;
+                    _cachedPlayerRigidbody.MovePosition(
+                        _playerTransform.position + pullDir * _implosionPullForce * Time.deltaTime);
                 }
             }
             yield return null;
         }
 
-        if (_currentWarning != null) Destroy(_currentWarning);
+        if (warning != null) Destroy(warning);
 
         Collider[] hits = Physics.OverlapSphere(transform.position, _implosionRadius);
         foreach (Collider hit in hits)
@@ -280,35 +529,55 @@ public class BossCorruptedSource : BossBase
             }
         }
 
-        _isImplosionActive = false;
+        yield return new WaitForSeconds(0.6f);
+    }
+
+    // ---------- Cristaux : orbite visuelle, vitesse liée à l'état de charge ----------
+    private void SpawnCrystals()
+    {
+        if (_crystalPrefab == null) return;
+        _crystals = new GameObject[_crystalCount];
+        for (int i = 0; i < _crystalCount; i++)
+        {
+            float angle = (360f / _crystalCount) * i * Mathf.Deg2Rad;
+            Vector3 pos = transform.position + new Vector3(
+                Mathf.Cos(angle) * _crystalOrbitRadius, 0f,
+                Mathf.Sin(angle) * _crystalOrbitRadius);
+            _crystals[i] = Instantiate(_crystalPrefab, pos, Quaternion.identity);
+            _crystals[i].transform.SetParent(transform);
+        }
+    }
+
+    private void HandleCrystalOrbitVisual()
+    {
+        if (_crystals == null) return;
+        float speed = _isAttacking ? _crystalOrbitSpeedCharging : _crystalOrbitSpeedIdle;
+        _crystalAngle += speed * Time.deltaTime;
+        float angleStep = 360f / _crystalCount;
+        for (int i = 0; i < _crystals.Length; i++)
+        {
+            if (_crystals[i] == null) continue;
+            float angle = (_crystalAngle + angleStep * i) * Mathf.Deg2Rad;
+            _crystals[i].transform.localPosition = new Vector3(
+                Mathf.Cos(angle) * _crystalOrbitRadius, 0f,
+                Mathf.Sin(angle) * _crystalOrbitRadius);
+        }
     }
 
     private void CheckPhase2()
     {
         if (_isPhase2) return;
         if (_currentHealth / _maxHealth > _phase2Threshold) return;
-
         _isPhase2 = true;
-        _moveSpeed = 3f;
-        _crystalFireRate *= 2f;
-        _slowWaveCooldown *= 0.5f;
-    }
-
-    private void UpdateWander()
-    {
-        if (!_isPhase2) return;
-        _wanderTimer += Time.deltaTime;
-        if (_wanderTimer >= _wanderChangeCooldown)
-        {
-            _wanderTimer = 0f;
-            float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            _wanderDirection = new Vector3(Mathf.Cos(randomAngle), 0f, Mathf.Sin(randomAngle));
-        }
+        // Pas de clip dédié à la transition de phase (budget anim limité) : le signal visuel
+        // passe par le pipeline de glow générique (MaterialPropertyBlock) déjà utilisé sur
+        // Golem/Sanglier/Cerf plutôt que par une animation supplémentaire.
     }
 
     protected override void Die()
     {
-        if (_currentWarning != null) Destroy(_currentWarning);
+        StopAllCoroutines();
+        if (_animator != null) _animator.SetTrigger("Death");
         if (_crystals != null)
             foreach (GameObject crystal in _crystals)
                 if (crystal != null) Destroy(crystal);

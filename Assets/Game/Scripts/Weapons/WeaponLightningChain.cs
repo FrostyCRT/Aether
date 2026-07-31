@@ -12,7 +12,7 @@ public class WeaponLightningChain : MonoBehaviour
 
     [Header("Stats")]
 
-    [SerializeField] private float _damage = 20f;
+    [SerializeField] private float _damage = 15f;
 
     [SerializeField] private float _chainRange = 4f;  // Distance de propagation
 

@@ -7,6 +7,11 @@ TagManager:
   - Enemy
   - Projectile
   - EnemyProjectile
+  - EnemyShooter
+  - EnemyTank
+  - EnemyCorbeau
+  - EnemyTisseuse
+  - EnemyKaiju
   layers:
   - Default
   - TransparentFX

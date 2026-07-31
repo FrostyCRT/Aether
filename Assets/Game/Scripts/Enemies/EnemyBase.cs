@@ -16,7 +16,19 @@ public class EnemyBase : MonoBehaviour
     [Header("Distance Joueur")]
     [SerializeField] private float _playerContactRadius = 1.2f;
 
+    [Header("Dégâts de contact")]
+    [SerializeField] private float _contactDamage = 15f;
+    [SerializeField] private float _contactDamageCooldown = 0.5f; // AJOUTÉ — reprend la valeur par défaut d'origine de HealthSystem
 
+    [Header("Scaling difficulté")]
+    private float _healthMultiplier = 1f;
+
+    public void SetHealthMultiplier(float multiplier)
+    {
+        _healthMultiplier = multiplier;
+    }
+
+    private Vector3 _smoothedMoveDirection = Vector3.forward; // AJOUTÉ — remplace le snap binaire par un lissage continu, évite le tremblement
     protected float MoveSpeed => _moveSpeed;
 
     private float _currentHealth;
@@ -26,9 +38,9 @@ public class EnemyBase : MonoBehaviour
     protected float _speedMultiplier = 1f;
     private float _speedMultiplierTarget = 1f; // Multiplicateur temporaire pour l'attraction fantôme
 
-    private void OnEnable()
+    protected virtual void OnEnable() // MODIFIÉ — était private void OnEnable()
     {
-        _currentHealth = _maxHealth;
+        _currentHealth = _maxHealth * _healthMultiplier;
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
 
@@ -40,8 +52,6 @@ public class EnemyBase : MonoBehaviour
 
         _currentTarget = _playerTransform;
 
-
-        // AJOUT : On s'abonne à l'événement de destruction du fantôme
         PlayerController.OnPhantomDestroyed += HandlePhantomDestroyed;
     }
 
@@ -80,7 +90,6 @@ public class EnemyBase : MonoBehaviour
 
         if (_currentTarget == null) return;
 
-        // AJOUTÉ — vérifie l'attraction au clone à CHAQUE frame, pas juste au spawn
         if (PlayerController.ActivePhantomClone != null && _currentTarget == _playerTransform)
         {
             float sqrDistance = Vector3.SqrMagnitude(transform.position - PlayerController.ActivePhantomClone.position);
@@ -91,7 +100,11 @@ public class EnemyBase : MonoBehaviour
         }
 
         UpdateBehaviour(_currentTarget);
+
+        OnEnemyUpdate(); // AJOUTÉ — point d'extension pour les sous-classes, appelé après le comportement de base
     }
+
+    protected virtual void OnEnemyUpdate() { } // AJOUTÉ — vide par défaut, les sous-classes peuvent l'override sans jamais toucher à Update()
 
 
 
@@ -99,14 +112,24 @@ public class EnemyBase : MonoBehaviour
 
     protected virtual void UpdateBehaviour(Transform target)
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
-        bool isInContactWithPlayer = target == _playerTransform && distanceToPlayer <= _playerContactRadius;
+        float distanceToTarget = Vector3.Distance(transform.position, target.position); // MODIFIÉ — mesure la distance à la cible réelle (joueur OU clone), plus seulement au joueur
+        bool isInContactWithTarget = distanceToTarget <= _playerContactRadius; // MODIFIÉ — s'applique peu importe la cible
 
         if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
 
-        if (isInContactWithPlayer)
+        if (isInContactWithTarget)
         {
             if (_animatorController != null) _animatorController.SetAttacking(true);
+
+            // MODIFIÉ — les dégâts ne se déclenchent QUE si la cible est bien le vrai joueur,
+            // jamais le Clone (qui reste un leurre inoffensif, sans conséquence sur le joueur)
+            if (target == _playerTransform)
+            {
+                HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+                if (playerHealth != null)
+                    playerHealth.TryTakeContactDamage(_contactDamage, _contactDamageCooldown);
+            }
+
             return;
         }
 
@@ -114,10 +137,12 @@ public class EnemyBase : MonoBehaviour
 
         Vector3 direction = (target.position - transform.position).normalized;
         Vector3 separation = GetBaseSeparation();
-        Vector3 final = (direction + separation * 0.3f).normalized;
+        Vector3 desiredDirection = (direction + separation * 0.3f).normalized;
 
-        if (Vector3.Dot(final, direction) < 0.1f)
-            final = direction;
+        if (desiredDirection.sqrMagnitude > 0.01f)
+            _smoothedMoveDirection = Vector3.Slerp(_smoothedMoveDirection, desiredDirection, 10f * Time.deltaTime);
+
+        Vector3 final = _smoothedMoveDirection;
 
         transform.position += final * MoveSpeed * _speedMultiplier * _speedMultiplierTarget * Time.deltaTime;
 

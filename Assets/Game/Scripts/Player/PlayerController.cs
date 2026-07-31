@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Modèle 3D")]
     [SerializeField] private string _modelChildName = "stylized_character_3d_model";
+    [SerializeField] private Transform _staffTransform; // AJOUTÉ — référence directe au bâton, à glisser dans l'inspector
 
     [Header("Clone Fantôme (touche dédiée)")] // AJOUTÉ — tout ce bloc
     [SerializeField] private KeyCode _phantomCloneKey = KeyCode.C;
@@ -272,10 +273,8 @@ public class PlayerController : MonoBehaviour
         _canAbsorb = true;
         _absorptionTimer = _absorptionWindow;
 
-        if (_healthSystem != null) _healthSystem.SetInvincibleExternal(true);
+        if (_healthSystem != null) _healthSystem.AddExternalInvincibility(); // MODIFIÉ
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(0f);
-
-        // MODIFIÉ — le clone n'est plus déclenché par le dash, entièrement retiré d'ici
     }
 
     // AJOUTÉ — bloc entier, capacité autonome sur la touche C
@@ -303,7 +302,39 @@ public class PlayerController : MonoBehaviour
 
         if (_modelTransform != null)
         {
-            clone = Instantiate(_modelTransform.gameObject, transform.position, transform.rotation);
+            SkinnedMeshRenderer sourceSkinned = _modelTransform.GetComponentInChildren<SkinnedMeshRenderer>();
+
+            if (sourceSkinned != null)
+            {
+                clone = new GameObject("PhantomCloneSnapshot");
+
+                Mesh bakedMesh = new Mesh();
+                sourceSkinned.BakeMesh(bakedMesh);
+
+                MeshFilter mf = clone.AddComponent<MeshFilter>();
+                mf.mesh = bakedMesh;
+
+                MeshRenderer mr = clone.AddComponent<MeshRenderer>();
+                mr.sharedMaterials = sourceSkinned.sharedMaterials;
+
+                // MODIFIÉ — au lieu de recopier position/rotation/lossyScale à la main,
+                // on parente temporairement sous sourceSkinned (le clone hérite alors
+                // exactement de son repère local, sans risque d'erreur de calcul manuel),
+                // puis on détache en conservant la position monde.
+                clone.transform.SetParent(sourceSkinned.transform, false); // false = clone prend la position/rotation/scale LOCALE identité de son parent = colle exactement sur sourceSkinned
+                clone.transform.SetParent(null, true); // true = détache en gardant la position monde actuelle, donc rien ne bouge visuellement
+
+                if (_staffTransform != null)
+                {
+                    GameObject staffClone = Instantiate(_staffTransform.gameObject);
+                    staffClone.transform.SetParent(_staffTransform, false); // colle exactement sur l'original...
+                    staffClone.transform.SetParent(clone.transform, true);  // ...puis rattaché au clone en gardant la position monde figée
+                }
+            }
+            else
+            {
+                clone = Instantiate(_modelTransform.gameObject, transform.position, transform.rotation);
+            }
         }
         else
         {
@@ -311,7 +342,7 @@ public class PlayerController : MonoBehaviour
             clone.transform.position = transform.position;
         }
 
-        clone.transform.localScale = _modelTransform != null ? _modelTransform.lossyScale : transform.localScale;
+        
         SetLayerRecursively(clone, LayerMask.NameToLayer("PhantomClone"));
 
         ActivePhantomClone = clone.transform;
@@ -335,7 +366,7 @@ public class PlayerController : MonoBehaviour
         // AJOUTÉ — les 3 effets d'échappement du joueur, tous indépendants les uns des autres
         StartCoroutine(PhantomSelfTransparency(duration));
         StartCoroutine(PhantomEscapeSpeedBoost());
-        if (_healthSystem != null) _healthSystem.SetInvincibleExternal(true);
+        if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -351,7 +382,7 @@ public class PlayerController : MonoBehaviour
         PhantomAttractedCount = 0;
         PhantomMaxAttracted = 0;
 
-        if (_healthSystem != null) _healthSystem.SetInvincibleExternal(false); // AJOUTÉ — désactive l'immunité en même temps que le reste
+        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility(); // AJOUTÉ — désactive l'immunité en même temps que le reste
 
         Destroy(clone);
     }
@@ -418,7 +449,7 @@ public class PlayerController : MonoBehaviour
     {
         _isDashing = false;
         _isInvincible = false;
-        if (_healthSystem != null) _healthSystem.SetInvincibleExternal(false);
+        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility(); // MODIFIÉ
     }
 
     private void HandleAbsorptionWindow()
@@ -462,17 +493,6 @@ public class PlayerController : MonoBehaviour
         _rb.MovePosition(nextPosition);
     }
 
-    public static class MapBoundaryUtils
-    {
-        public const float ZoneHalfSize = 55f;
-
-        public static Vector3 ClampToZone(Vector3 position)
-        {
-            position.x = Mathf.Clamp(position.x, -ZoneHalfSize, ZoneHalfSize);
-            position.z = Mathf.Clamp(position.z, -ZoneHalfSize, ZoneHalfSize);
-            return position;
-        }
-    }
 
     public void AddMoveSpeed(float value)
     {
@@ -487,5 +507,34 @@ public class PlayerController : MonoBehaviour
     public void SetSpeedMultiplier(float multiplier)
     {
         _speedMultiplier = multiplier;
+    }
+
+    // Dans PlayerController.cs — nouveau champ + 2 méthodes
+    private Coroutine _slowCoroutine;
+
+    public void ApplyTemporarySlow(float multiplier, float duration)
+    {
+        if (_slowCoroutine != null) StopCoroutine(_slowCoroutine);
+        _slowCoroutine = StartCoroutine(TemporarySlowRoutine(multiplier, duration));
+    }
+
+    private IEnumerator TemporarySlowRoutine(float multiplier, float duration)
+    {
+        SetSpeedMultiplier(multiplier);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (GameManager.Instance == null || GameManager.Instance.IsPaused)
+            {
+                yield return null;
+                continue;
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        SetSpeedMultiplier(1f);
+        _slowCoroutine = null;
     }
 }

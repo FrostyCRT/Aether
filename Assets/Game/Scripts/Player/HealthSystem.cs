@@ -3,19 +3,19 @@ using UnityEngine;
 public class HealthSystem : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _maxHealth = 200f; // MODIFIÉ — était 100f
+    [SerializeField] private float _maxHealth = 200f;
 
     [Header("Invincibilité")]
     [SerializeField] private float _invincibilityDuration = 1f;
 
     private float _currentHealth;
     private bool _isInvincible = false;
-    private bool _isInvincibleExternal = false;
+    private int _externalInvincibilitySources = 0;
     private float _invincibilityTimer = 0f;
-    private float _damageCooldown = 0.5f;
+    
     private float _damageTimer = 0f;
 
-    public bool IsInvincible => _isInvincible || _isInvincibleExternal;
+    public bool IsInvincible => _isInvincible || _externalInvincibilitySources > 0;
     public float MaxHealth => _maxHealth;
 
     private float _armorReduction = 0f;
@@ -68,32 +68,19 @@ public class HealthSystem : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    // SUPPRIMÉ — OnTriggerEnter(Collider other) { ... }
+    // SUPPRIMÉ — OnTriggerStay(Collider other) { ... }
+    // Remplacés par cette méthode, appelée activement depuis EnemyBase.UpdateBehaviour()
+    // sur une base de distance, plus fiable que la détection trigger sur de gros colliders
+    // qui se font repousser par la résolution physique après le premier contact.
+    public void TryTakeContactDamage(float damage, float cooldown)
     {
         if (IsInvincible) return;
         if (_damageTimer > 0f) return;
 
-        if (other.CompareTag("Enemy"))
-        {
-            TakeDamage(15f); // MODIFIÉ — était 10f
-            _damageTimer = _damageCooldown;
-            
-        }
+        TakeDamage(damage);
+        _damageTimer = cooldown;
     }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (IsInvincible) return;
-        if (_damageTimer > 0f) return;
-
-        if (other.CompareTag("Enemy"))
-        {
-            TakeDamage(15f); // MODIFIÉ — était 10f
-            _damageTimer = _damageCooldown;
-            
-        }
-    }
-
 
     public void TakeDamage(float damage)
     {
@@ -160,9 +147,14 @@ public class HealthSystem : MonoBehaviour
         _invincibilityTimer = _invincibilityDuration;
     }
 
-    public void SetInvincibleExternal(bool value)
+    public void AddExternalInvincibility() // MODIFIÉ — remplace SetInvincibleExternal(true)
     {
-        _isInvincibleExternal = value;
+        _externalInvincibilitySources++;
+    }
+
+    public void RemoveExternalInvincibility() // MODIFIÉ — remplace SetInvincibleExternal(false)
+    {
+        _externalInvincibilitySources = Mathf.Max(0, _externalInvincibilitySources - 1); // sécurité anti-passage négatif
     }
 
     private void Die()

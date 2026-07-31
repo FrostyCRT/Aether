@@ -33,21 +33,15 @@ public class GameManager : MonoBehaviour
 
 
     private void Awake()
-
     {
-
         if (Instance != null && Instance != this)
-
         {
-
             Destroy(gameObject);
-
             return;
-
         }
-
         Instance = this;
 
+        EnemyKaiju.ResetRunState(); // AJOUTÉ — remet le flag "a déjà roar" à zéro à chaque nouvelle run
     }
 
 

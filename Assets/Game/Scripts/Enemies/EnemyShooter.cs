@@ -34,21 +34,25 @@ public class EnemyShooter : EnemyBase
 
         if (distanceToTarget < _fleeRange)
         {
-            Vector3 fleeDirection = (transform.position - target.position).normalized;
+            Vector3 fleeDirection = transform.position - target.position;
+            fleeDirection.y = 0f; // AJOUTÉ — empêche toute dérive verticale par accumulation
+            fleeDirection = fleeDirection.normalized;
             moveDirection = (fleeDirection + separationForce).normalized;
             transform.position += moveDirection * MoveSpeed * _speedMultiplier * Time.deltaTime;
             inFiringStance = false;
         }
         else if (distanceToTarget > _preferredRange)
         {
-            Vector3 chaseDirection = (target.position - transform.position).normalized;
+            Vector3 chaseDirection = target.position - transform.position;
+            chaseDirection.y = 0f; // AJOUTÉ — même précaution, cohérence avec la branche fuite
+            chaseDirection = chaseDirection.normalized;
             moveDirection = (chaseDirection + separationForce).normalized;
             transform.position += moveDirection * MoveSpeed * _speedMultiplier * Time.deltaTime;
             inFiringStance = false;
         }
         else
         {
-            transform.position += separationForce * MoveSpeed * _speedMultiplier * Time.deltaTime; // REMIS — léger ajustement de position même à l'arrêt, pour éviter le clipping entre plusieurs shooters
+            
             inFiringStance = true;
 
             if (_fireTimer >= 1f / _fireRate)

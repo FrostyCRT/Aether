@@ -117,33 +117,25 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy()
     {
-        float roll = Random.value;
-        string tag;
-        if (roll < 0.15f) tag = "EnemyTank";
-        else if (roll < 0.35f) tag = "EnemyShooter";
-        else tag = "Enemy";
+        PalierEnnemis palier = GetCurrentPalier();
+        string tag = PickWeightedTag(palier.composition);
+
+        if (string.IsNullOrEmpty(tag))
+        {
+            Debug.LogWarning($"[SPAWNER] Aucun ennemi pondéré valide pour le palier '{palier.nom}' — vérifie la liste _paliersEnnemis dans l'inspector.");
+            return;
+        }
 
         Vector3 spawnPos = FindFreeSpawnPosition();
-
         if (spawnPos == Vector3.zero) return;
-
         if (ObjectPool.Instance == null) return;
 
-        // Déploiement via l'ObjectPool optimisé
-        ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity);
+        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, palier.healthMultiplier);
+
+        if (spawned == null)
+            Debug.LogWarning($"[SPAWNER] Tag de pool '{tag}' introuvable — vérifie l'orthographe dans ObjectPool._pools ET dans _paliersEnnemis.");
     }
 
-    public static class MapBoundaryUtils
-    {
-        public const float ZoneHalfSize = 55f;
-
-        public static Vector3 ClampToZone(Vector3 position)
-        {
-            position.x = Mathf.Clamp(position.x, -ZoneHalfSize, ZoneHalfSize);
-            position.z = Mathf.Clamp(position.z, -ZoneHalfSize, ZoneHalfSize);
-            return position;
-        }
-    }
 
     private Vector3 FindFreeSpawnPosition()
     {
@@ -194,4 +186,61 @@ public class EnemySpawner : MonoBehaviour
     public float GetSpawnInterval() => _spawnInterval;
     public void SetSpawnInterval(float value) => _spawnInterval = value;
     public void SetMaxEnemies(int max) => _maxEnemies = max;
+
+    [System.Serializable]
+    public struct WeightedEnemyEntry
+    {
+        public string poolTag;   // doit correspondre exactement à un tag de ObjectPool._pools
+        public float poids;      // poids relatif, pas besoin de totaliser 100 exactement
+    }
+
+    [System.Serializable]
+    public struct PalierEnnemis
+    {
+        public string nom;
+        public float debutMinutes;
+        public List<WeightedEnemyEntry> composition;
+        public float healthMultiplier; // scaling PV pour ce palier — valeurs à ajuster en playtest
+    }
+
+    [Header("Pool pondéré par palier de temps")]
+    [SerializeField] private List<PalierEnnemis> _paliersEnnemis = new List<PalierEnnemis>();
+
+    private PalierEnnemis GetCurrentPalier()
+    {
+        float minutes = GameManager.Instance != null ? GameManager.Instance.RunTimer / 60f : 0f;
+
+        PalierEnnemis current = _paliersEnnemis.Count > 0 ? _paliersEnnemis[0] : default;
+        for (int i = 0; i < _paliersEnnemis.Count; i++)
+        {
+            if (minutes >= _paliersEnnemis[i].debutMinutes)
+                current = _paliersEnnemis[i];
+        }
+        return current;
+    }
+
+    private string PickWeightedTag(List<WeightedEnemyEntry> composition)
+    {
+        if (composition == null || composition.Count == 0) return null;
+
+        float total = 0f;
+        for (int i = 0; i < composition.Count; i++)
+            total += composition[i].poids;
+
+        if (total <= 0f) return null;
+
+        float roll = Random.Range(0f, total);
+        float cumulative = 0f;
+
+        for (int i = 0; i < composition.Count; i++)
+        {
+            cumulative += composition[i].poids;
+            if (roll <= cumulative)
+                return composition[i].poolTag;
+        }
+
+        return composition[composition.Count - 1].poolTag; // filet de sécurité, arrondi flottant
+    }
+
+    
 }

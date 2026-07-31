@@ -1,128 +1,241 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class BossDeer : BossBase
 {
-    [Header("Cerf — Téléportation")]
-    [SerializeField] private float _teleportCooldown = 8f;
-    [SerializeField] private float _teleportDistance = 3f;
+    [Header("Cerf — Saut d'attaque")]
+    [SerializeField] private float _jumpCooldown = 8f;
+    [SerializeField] private float _jumpWindupDuration = 0.8f;
+    [SerializeField] private float _jumpAirTime = 0.6f;
+    [SerializeField] private float _jumpHopHeight = 4f;
+    [SerializeField] private float _jumpDamage = 80f;
+    [SerializeField] private float _jumpRadius = 4f;
+    [SerializeField] private Color _telegraphColor = new Color(1f, 0.3f, 0.15f, 0.6f);
 
     [Header("Cerf — Spirale")]
-    [SerializeField] private float _spiralFireRate = 0.15f;
-    [SerializeField] private int _spiralBurstCount = 24;
+    [SerializeField] private float _spiralFireRate = 0.08f; // MODIFIÉ — était 0.15
+    [SerializeField] private int _spiralBurstCount = 36;    // MODIFIÉ — était 24
+    [SerializeField] private bool _doubleSpiral = true;     // AJOUTÉ — 2ème couche décalée à 180°
 
     [Header("Cerf — Régénération")]
     [SerializeField] private float _regenAmount = 100f;
     [SerializeField] private float _regenCooldown = 30f;
 
-    [Header("Cerf — Rage")]
-    [SerializeField] private float _rageThreshold = 0.3f; // 30% HP
-    private bool _isRaging = false;
+    [Header("Cerf — Phases")]
+    [SerializeField] private float _phase2Threshold = 0.5f;
+    [SerializeField] private float _rageThreshold = 0.3f;
+    [SerializeField] private float _phase2SpeedMultiplier = 1.4f;
 
-    private float _teleportTimer = 0f;
+    [Header("Cerf — Morsure")] // AJOUTÉ
+    [SerializeField] private float _biteRange = 2f;
+
+    [Header("Cerf — Mort")] // AJOUTÉ
+    [SerializeField] private float _deathAnimDuration = 2f;
+
+    private bool _isPhase2 = false;
+    private bool _isRaging = false;
+    private bool _isDead = false; // AJOUTÉ
+    private bool _isBiting = false; // AJOUTÉ
+
+    private float _jumpTimer = 0f;
     private float _regenTimer = 0f;
     private float _spiralAngle = 0f;
     private float _spiralTimer = 0f;
-    private bool _isShooting = false;
-    private int _spiralCount = 0;
 
-    private bool _isTeleporting = false;
-    private float _teleportFreezeTimer = 0f; // Remplacement de l'Invoke
+    private enum JumpState { None, WindingUp, Airborne }
+    private JumpState _jumpState = JumpState.None;
+    private float _jumpStateTimer = 0f;
+    private Vector3 _jumpTakeoffPosition;
+    private Vector3 _jumpLandingPosition;
+    private GameObject _telegraphObject;
+
+    private Animator _deerAnimator;
 
     protected override void Start()
     {
-        // On configure d'abord les variables d'identité AVANT le base.Start() 
-        // pour que _currentHealth = _maxHealth s'initialise correctement.
         _bossName = "Le Cerf Ancestral";
-        _maxHealth = 3000f;
+        _maxHealth = 5000f;
         _moveSpeed = 4f;
 
         base.Start();
+
+        _deerAnimator = GetComponentInChildren<Animator>();
     }
 
     protected override void Update()
     {
         if (_playerTransform == null) return;
         if (GameManager.Instance == null) return;
-
-        // CORRECTION PAUSE : Sécurisation complète de l'état du boss
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
+        if (_isDead) return; // AJOUTÉ — plus aucune logique pendant la mort
 
+        CheckPhaseTransitions();
         HandleMovement();
-        HandleTeleport();
+        HandleJumpAttack();
         HandleSpiral();
         HandleRegen();
-        CheckRage();
+        UpdateAnimatorState();
     }
 
-    // Le Cerf ne charge pas — Désactivation de l'attaque de charge de la classe mère
     protected override void HandleCharge() { }
-
-    // Désactivation du tir radial classique de la classe mère pour utiliser la spirale
     protected override void HandleShooting() { }
+
+    private void CheckPhaseTransitions()
+    {
+        float hpPercent = _currentHealth / _maxHealth;
+
+        if (!_isPhase2 && hpPercent <= _phase2Threshold)
+        {
+            _isPhase2 = true;
+        }
+
+        if (!_isRaging && !RageDisabled && hpPercent <= _rageThreshold)
+        {
+            _isRaging = true;
+            _spiralFireRate *= 0.7f;
+            _jumpCooldown *= 0.6f;
+            _regenCooldown *= 0.7f;
+        }
+    }
 
     protected override void HandleMovement()
     {
-        if (_isTeleporting)
+        if (_jumpState != JumpState.None) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+
+        // AJOUTÉ — s'arrête net à distance de morsure au lieu de marcher à travers le joueur
+        if (distanceToPlayer <= _biteRange)
         {
-            // CORRECTION LOGIQUE : Gestion du freeze de téléportation sans Invoke
-            _teleportFreezeTimer -= Time.deltaTime;
-            if (_teleportFreezeTimer <= 0f)
+            _isBiting = true;
+            RotateTowards(_playerTransform.position - transform.position);
+            return;
+        }
+        _isBiting = false;
+
+        Vector3 direction = (_playerTransform.position - transform.position).normalized;
+        float speed = _moveSpeed * (_isPhase2 ? _phase2SpeedMultiplier : 1f) * _speedMultiplier;
+        Vector3 nextPosition = transform.position + direction * speed * Time.deltaTime;
+        transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
+        RotateTowards(direction);
+    }
+
+    private void HandleJumpAttack()
+    {
+        if (_isBiting) return; // AJOUTÉ — pas de saut pendant qu'il mord, évite le chevauchement d'états
+
+        if (_jumpState == JumpState.None)
+        {
+            _jumpTimer += Time.deltaTime;
+            if (_jumpTimer >= _jumpCooldown)
             {
-                _isTeleporting = false;
+                _jumpTimer = 0f;
+                StartJumpWindup();
             }
             return;
         }
 
-        Vector3 direction = (_playerTransform.position - transform.position).normalized;
-        transform.position += direction * _moveSpeed * Time.deltaTime;
-    }
+        _jumpStateTimer += Time.deltaTime;
 
-    private void HandleTeleport()
-    {
-        _teleportTimer += Time.deltaTime;
-        if (_teleportTimer >= _teleportCooldown)
+        if (_jumpState == JumpState.WindingUp)
         {
-            _teleportTimer = 0f;
-            TeleportBehindPlayer();
+            float progress = Mathf.Clamp01(_jumpStateTimer / _jumpWindupDuration);
+
+            // MODIFIÉ — le vrai fix : seulement X et Z grandissent, Y reste un disque fin
+            if (_telegraphObject != null)
+            {
+                float diameter = _jumpRadius * 2f * progress;
+                _telegraphObject.transform.localScale = new Vector3(diameter, 0.02f, diameter);
+            }
+
+            RotateTowards(_jumpLandingPosition - transform.position);
+
+            if (_jumpStateTimer >= _jumpWindupDuration)
+            {
+                _jumpState = JumpState.Airborne;
+                _jumpStateTimer = 0f;
+            }
+        }
+        else if (_jumpState == JumpState.Airborne)
+        {
+            float progress = Mathf.Clamp01(_jumpStateTimer / _jumpAirTime);
+
+            Vector3 horizontalPos = Vector3.Lerp(_jumpTakeoffPosition, _jumpLandingPosition, progress);
+            float height = Mathf.Sin(progress * Mathf.PI) * _jumpHopHeight;
+            transform.position = new Vector3(horizontalPos.x, height, horizontalPos.z);
+
+            if (_jumpStateTimer >= _jumpAirTime)
+            {
+                LandJumpAttack();
+            }
         }
     }
 
-    private void TeleportBehindPlayer()
+    private void StartJumpWindup()
     {
-        if (_playerTransform == null) return;
+        _jumpState = JumpState.WindingUp;
+        _jumpStateTimer = 0f;
+        _jumpTakeoffPosition = transform.position;
+        _jumpLandingPosition = MapBoundaryUtils.ClampToZone(_playerTransform.position);
 
-        Vector3 directionTowardsBoss = (transform.position - _playerTransform.position).normalized;
-        Vector3 behindPlayer = _playerTransform.position + directionTowardsBoss * _teleportDistance;
+        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition);
+    }
 
-        transform.position = behindPlayer;
+    private void LandJumpAttack()
+    {
+        transform.position = new Vector3(_jumpLandingPosition.x, 0f, _jumpLandingPosition.z);
 
-        _isTeleporting = true;
-        _teleportFreezeTimer = 0.5f;
+        if (_telegraphObject != null)
+        {
+            Destroy(_telegraphObject);
+            _telegraphObject = null;
+        }
+
+        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+        if (distanceToPlayer <= _jumpRadius)
+        {
+            HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+            if (playerHealth != null)
+                playerHealth.TakeDamage(_jumpDamage);
+        }
+
+        _jumpState = JumpState.None;
+        _jumpStateTimer = 0f;
+    }
+
+    private GameObject CreateTelegraphReticle(Vector3 position)
+    {
+        GameObject reticle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        Destroy(reticle.GetComponent<Collider>());
+
+        reticle.transform.position = new Vector3(position.x, 0.05f, position.z);
+        reticle.transform.localEulerAngles = Vector3.zero;
+        reticle.transform.localScale = new Vector3(0.01f, 0.02f, 0.01f); // MODIFIÉ — Y fixe dès le départ
+
+        Renderer rend = reticle.GetComponent<Renderer>();
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        mat.color = _telegraphColor;
+        mat.SetFloat("_Surface", 1f);
+        mat.SetOverrideTag("RenderType", "Transparent");
+        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+        mat.SetInt("_ZWrite", 0);
+        rend.material = mat;
+
+        return reticle;
     }
 
     private void HandleSpiral()
     {
-        if (!_isShooting)
-        {
-            _spiralTimer += Time.deltaTime;
-            if (_spiralTimer >= 1f / _fireRate)
-            {
-                _isShooting = true;
-                _spiralCount = 0;
-                _spiralTimer = 0f;
-            }
-            return;
-        }
+        if (_jumpState != JumpState.None) return;
+        if (_isBiting) return;
 
+        // MODIFIÉ — plus de logique de salve/pause, tir continu tant qu'aucune autre action ne bloque
         _spiralTimer += Time.deltaTime;
         if (_spiralTimer >= _spiralFireRate)
         {
             _spiralTimer = 0f;
             ShootSpiralProjectile();
-            _spiralCount++;
-
-            if (_spiralCount >= _spiralBurstCount)
-                _isShooting = false;
         }
     }
 
@@ -131,13 +244,26 @@ public class BossDeer : BossBase
         float angleStep = 360f / _spiralBurstCount;
         Vector3 direction = Quaternion.Euler(0, _spiralAngle, 0) * Vector3.forward;
 
-        // CORRECTION PERFORMANCE : Remplacement de l'Instantiate par le Pool global
         GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
-        if (projectileGO == null) return;
+        if (projectileGO != null)
+        {
+            EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+            if (projectile != null)
+                projectile.Init(direction);
+        }
 
-        EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-        if (projectile != null)
-            projectile.Init(direction);
+        // AJOUTÉ — 2ème spirale simultanée, décalée à 180°, pour un motif double plus dense
+        if (_doubleSpiral)
+        {
+            Vector3 direction2 = Quaternion.Euler(0, _spiralAngle + 180f, 0) * Vector3.forward;
+            GameObject projectileGO2 = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
+            if (projectileGO2 != null)
+            {
+                EnemyProjectile projectile2 = projectileGO2.GetComponent<EnemyProjectile>();
+                if (projectile2 != null)
+                    projectile2.Init(direction2);
+            }
+        }
 
         _spiralAngle += angleStep;
     }
@@ -155,15 +281,48 @@ public class BossDeer : BossBase
         }
     }
 
-    private void CheckRage()
+    // AJOUTÉ — override complet : joue Death, gèle tout, puis appelle base.Die() après coup pour les drops/heal/notify existants
+    protected override void Die()
     {
-        if (_isRaging) return;
-        if (RageDisabled) return;
-        if (_currentHealth / _maxHealth > _rageThreshold) return;
+        if (_isDead) return;
+        _isDead = true;
 
-        _isRaging = true;
-        _fireRate *= 1.5f;
-        _moveSpeed *= 1.5f;
-        _teleportCooldown *= 0.5f;
+        if (_telegraphObject != null)
+        {
+            Destroy(_telegraphObject);
+            _telegraphObject = null;
+        }
+
+        Collider col = GetComponent<Collider>();
+        if (col != null) col.enabled = false; // plus de dégâts de contact pendant l'anim de mort
+
+        if (_deerAnimator != null)
+        {
+            _deerAnimator.SetBool("IsJumping", false);
+            _deerAnimator.SetBool("IsBiting", false);
+            _deerAnimator.SetBool("IsMoving", false);
+            _deerAnimator.SetTrigger("Death"); // AJOUTÉ — Trigger, pas Bool, une seule occurrence nécessaire
+        }
+
+        StartCoroutine(DeathSequence());
+    }
+
+    private IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(_deathAnimDuration);
+        base.Die(); // drops XP/gold, heal joueur, notify WaveManager, Destroy(gameObject) — logique déjà existante, réutilisée telle quelle
+    }
+
+    private void UpdateAnimatorState()
+    {
+        if (_deerAnimator == null) return;
+
+        bool isJumping = _jumpState != JumpState.None;
+        bool isMoving = !isJumping && !_isBiting && (_playerTransform.position - transform.position).sqrMagnitude > 0.04f;
+
+        _deerAnimator.SetBool("IsJumping", isJumping);
+        _deerAnimator.SetBool("IsBiting", _isBiting); // AJOUTÉ
+        _deerAnimator.SetBool("IsMoving", isMoving);
+        _deerAnimator.SetBool("IsPhase2", _isPhase2);
     }
 }

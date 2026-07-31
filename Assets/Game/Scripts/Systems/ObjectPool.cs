@@ -133,4 +133,48 @@ public class ObjectPool : MonoBehaviour
             }
         }
     }
+
+    // Dans ObjectPool.cs — nouvelle surcharge, n'entrave pas l'existant
+    public GameObject Get(string tag, Vector3 position, Quaternion rotation, float healthMultiplier)
+    {
+        if (!_poolDictionary.ContainsKey(tag))
+        {
+            Debug.LogWarning($"Pool '{tag}' introuvable !");
+            return null;
+        }
+
+        Queue<GameObject> queue = _poolDictionary[tag];
+        GameObject obj = null;
+        bool isNewInstance = false;
+
+        if (queue.Count > 0)
+        {
+            obj = queue.Dequeue();
+        }
+        else
+        {
+            Pool foundPool = _pools.Find(p => p.tag == tag);
+            if (foundPool != null && foundPool.prefab != null)
+            {
+                obj = Instantiate(foundPool.prefab);
+                isNewInstance = true; // AJOUTÉ
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        if (isNewInstance)
+            obj.SetActive(false); // AJOUTÉ — Instantiate() a pu déjà déclencher OnEnable() une fois si le prefab est actif par défaut ; on repart propre avec le multiplicateur déjà posé avant le prochain SetActive(true)
+
+        obj.transform.position = position;
+        obj.transform.rotation = rotation;
+
+        EnemyBase eb = obj.GetComponent<EnemyBase>();
+        if (eb != null) eb.SetHealthMultiplier(healthMultiplier);
+
+        obj.SetActive(true);
+        return obj;
+    }
 }

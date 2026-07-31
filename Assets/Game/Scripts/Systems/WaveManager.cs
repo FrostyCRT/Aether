@@ -112,7 +112,14 @@ public class WaveManager : MonoBehaviour
                                 bossNumber == 2 ? _bossPrefab2 : _bossPrefab3;
 
         if (bossPrefab != null)
-            Instantiate(bossPrefab, spawnPos, Quaternion.identity);
+        {
+            GameObject bossInstance = Instantiate(bossPrefab, spawnPos, Quaternion.identity); // MODIFIÉ — on garde la référence
+
+            // AJOUTÉ — applique le zoom propre à CE boss, lu directement sur son prefab
+            BossBase bossScript = bossInstance.GetComponent<BossBase>();
+            if (bossScript != null && BossCameraZoom.Instance != null)
+                BossCameraZoom.Instance.SetBossOffset(new Vector3(0f, bossScript.CameraZoomMargin, 0f)); // MODIFIÉ — SetBossZoom() n'existe plus, remplacé par SetBossOffset()
+        }
         else
             Debug.LogWarning($"Boss {bossNumber} prefab non assigné !");
 
@@ -148,6 +155,8 @@ public class WaveManager : MonoBehaviour
     {
         if (enemy.GetComponent<EnemyShooter>() != null) return "EnemyShooter";
         if (enemy.GetComponent<EnemyTank>() != null) return "EnemyTank";
+        if (enemy.GetComponent<EnemyKaiju>() != null) return "EnemyKaiju"; // AJOUTÉ
+                                                                           // même remarque pour Corbeau/Tisseuse une fois leurs classes/tags de pool confirmés
         return "Enemy";
     }
 
@@ -155,6 +164,8 @@ public class WaveManager : MonoBehaviour
     {
         _bossAlive = false;
         _enemySpawner.gameObject.SetActive(true);
+
+        if (BossCameraZoom.Instance != null) BossCameraZoom.Instance.ResetOffset(); // MODIFIÉ — ResetZoom() n'existe plus, remplacé par ResetOffset() // AJOUTÉ
 
         if (_bossCount >= 3)
             GameManager.Instance.TriggerVictory();
