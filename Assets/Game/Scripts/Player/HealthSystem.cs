@@ -29,7 +29,7 @@ public class HealthSystem : MonoBehaviour
         _maxHealth += _maxHealth * bonusHP;
         _currentHealth = _maxHealth;
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
-        _regenPerSecond = MetaProgressionManager.Instance.GetBonusRegen();
+        _regenPerSecond = MetaProgressionManager.Instance.GetReputationBonusRegen();
         _secondWindUsed = false;
     }
 

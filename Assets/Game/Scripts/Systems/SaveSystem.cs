@@ -12,13 +12,8 @@ public static class SaveSystem
         try
         {
             string json = JsonUtility.ToJson(data, true);
-
-            // CORRECTION CRITIQUE : Si une ancienne sauvegarde valide existe, on la garde en backup temporaire
             if (File.Exists(_savePath))
-            {
                 File.Copy(_savePath, _backupPath, true);
-            }
-
             File.WriteAllText(_savePath, json);
             Debug.Log($"Sauvegarde réussie : {_savePath}");
         }
@@ -30,7 +25,6 @@ public static class SaveSystem
 
     public static SaveData Load()
     {
-        // 1. Si le fichier principal n'existe pas, on tente de restaurer le backup
         if (!File.Exists(_savePath))
         {
             if (File.Exists(_backupPath))
@@ -40,26 +34,19 @@ public static class SaveSystem
             }
             else
             {
-                return new SaveData(); // Première partie du joueur
+                return new SaveData();
             }
         }
-
         try
         {
             string json = File.ReadAllText(_savePath);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
-
-            // Sécurité si le JSON était vide ou corrompu (renvoie un objet null)
-            if (data == null)
-            {
-                return AttemptBackupRecovery();
-            }
-
+            if (data == null) return AttemptBackupRecovery();
             return data;
         }
         catch (Exception e)
         {
-            Debug.LogError($"Fichier de sauvegarde principal corrompu : {e.Message}. Tentative de récupération...");
+            Debug.LogError($"Fichier corrompu : {e.Message}");
             return AttemptBackupRecovery();
         }
     }
@@ -74,19 +61,17 @@ public static class SaveSystem
                 SaveData backupData = JsonUtility.FromJson<SaveData>(backupJson);
                 if (backupData != null)
                 {
-                    // On restaure le backup comme fichier principal
                     File.Copy(_backupPath, _savePath, true);
-                    Debug.Log("Récupération de la sauvegarde réussie via le fichier Backup !");
+                    Debug.Log("Récupération via backup réussie !");
                     return backupData;
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Le fichier de backup est également corrompu : {e.Message}");
+                Debug.LogError($"Backup corrompu : {e.Message}");
             }
         }
-
-        Debug.LogError("Impossible de charger la progression. Création d'une nouvelle sauvegarde vierge.");
+        Debug.LogError("Création d'une nouvelle sauvegarde vierge.");
         return new SaveData();
     }
 }
@@ -100,26 +85,32 @@ public class SaveData
     public float bestTime = 0f;
     public int bestKills = 0;
 
+    // AJOUTÉ — Personnage sélectionné (0=Aether, 1=Kael, 2=Lyra), Aether par défaut
+    public int selectedCharacterIndex = 0;
+
     // Branche Guerrier
-    public int damageLevel = 0;
     public int cadenceLevel = 0;
     public int crystalDamageLevel = 0;
     public bool fragmentationUnlocked = false;
     public bool overpowerUnlocked = false;
+    public int concentrationLevel = 0; // AJOUTÉ — remplace damageLevel
 
     // Branche Gardien
     public int vitalityLevel = 0;
-    public int regenLevel = 0;
     public int armorLevel = 0;
     public bool secondWindUnlocked = false;
     public bool manaShieldUnlocked = false;
+    public int recuperationLevel = 0; // AJOUTÉ — remplace regenLevel
 
     // Branche Fantôme
-    public int agilityLevel = 0;
     public int dashLevel = 0;
     public int novaRadiusLevel = 0;
     public bool crystalMasteryUnlocked = false;
     public bool phantomDashUnlocked = false;
+    public bool impulsionNovaUnlocked = false; // AJOUTÉ — remplace agilityLevel
 
-    // ← Dictionary et HashSet supprimés : pas sérialisables en JSON
+    // AJOUTÉ — Réputation (tronc commun meta, indépendant de l'arbre)
+    public int reputationDamageLevel = 0;   // Dégâts+
+    public int reputationSpeedLevel = 0;    // Vitesse+
+    public int reputationRegenLevel = 0;    // Regen PV/sec
 }

@@ -17,6 +17,8 @@ public class SkillNode : MonoBehaviour
     [Header("Couleur état verrouillé")]
     [SerializeField] private Color _colorLocked = new Color(0.3f, 0.3f, 0.3f);
 
+    
+
     [Header("Référence")]
     [SerializeField] private SkillTreeUI _skillTreeUI;
 
@@ -36,41 +38,34 @@ public class SkillNode : MonoBehaviour
 
         _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(HandleClick);
-
-        // AJOUT : Le nœud s'inscrit directement dans le cache de l'UI
         _skillTreeUI.RegisterNode(this);
     }
 
     private void OnDestroy()
     {
-        // AJOUT : Nettoyage sécurisé à la destruction de la scène
         if (_skillTreeUI != null)
-        {
             _skillTreeUI.UnregisterNode(this);
-        }
     }
 
     private void OnEnable()
     {
-        // On capture les couleurs d'origine au tout premier affichage réel pour éviter les erreurs de prefab
         if (!_colorsCaptured)
         {
             if (_iconImage != null) _iconOriginalColor = _iconImage.color;
             if (_medalImage != null) _medalOriginalColor = _medalImage.color;
             _colorsCaptured = true;
         }
-
-        // Plus besoin de Coroutine d'attente d'une frame : on rafraîchit immédiatement à l'activation
         RefreshVisual();
     }
 
     private void HandleClick()
     {
         if (_skillTreeUI != null)
-        {
             _skillTreeUI.OnNodeClicked(_nodeId, _rectTransform);
-        }
     }
+
+    // AJOUTÉ — vérifie si ce nœud appartient à une branche non active pour le perso sélectionné
+    
 
     public void RefreshVisual()
     {
@@ -84,9 +79,9 @@ public class SkillNode : MonoBehaviour
         bool locked = !hasProgress && !isUnlockable;
 
         ApplyState(locked, level);
-
         _button.interactable = true;
     }
+
 
     private void ApplyState(bool locked, int level)
     {
@@ -106,17 +101,14 @@ public class SkillNode : MonoBehaviour
         if (_isUnique)
         {
             bool purchased = MetaProgressionManager.Instance.IsNodePurchased(_nodeId);
-
             if (_dot2 != null) _dot2.gameObject.SetActive(false);
             if (_dot3 != null) _dot3.gameObject.SetActive(false);
-
             SetDot(_dot1, purchased);
         }
         else
         {
             if (_dot2 != null) _dot2.gameObject.SetActive(true);
             if (_dot3 != null) _dot3.gameObject.SetActive(true);
-
             SetDot(_dot1, level >= 1);
             SetDot(_dot2, level >= 2);
             SetDot(_dot3, level >= 3);

@@ -6,37 +6,39 @@ public class BossCameraZoom : MonoBehaviour
     public static BossCameraZoom Instance { get; private set; }
 
     [SerializeField] private CinemachineVirtualCamera _virtualCamera;
-    [SerializeField] private Vector3 _defaultFollowOffset; // AJOUTÉ — à remplir avec la valeur actuelle de ta Follow Offset dans l'inspector Cinemachine
     [SerializeField] private float _transitionSpeed = 3f;
 
-    private Vector3 _targetOffset;
-    private CinemachineTransposer _transposer; // AJOUTÉ — le composant qui gère le Follow Offset sur une Virtual Camera classique
+    private float _defaultOrthoSize;
+    private float _targetOrthoSize;
 
     private void Awake()
     {
         Instance = this;
 
         if (_virtualCamera != null)
-            _transposer = _virtualCamera.GetCinemachineComponent<CinemachineTransposer>();
-
-        _targetOffset = _defaultFollowOffset;
+        {
+            _defaultOrthoSize = _virtualCamera.m_Lens.OrthographicSize;
+            _targetOrthoSize = _defaultOrthoSize;
+        }
     }
 
-    private void Update()
+    private void LateUpdate()
     {
-        if (_transposer == null) return;
+        if (_virtualCamera == null) return;
+        if (Mathf.Abs(_virtualCamera.m_Lens.OrthographicSize - _targetOrthoSize) < 0.01f) return;
 
-        _transposer.m_FollowOffset = Vector3.MoveTowards(_transposer.m_FollowOffset, _targetOffset, _transitionSpeed * Time.deltaTime);
+        LensSettings lens = _virtualCamera.m_Lens;
+        lens.OrthographicSize = Mathf.MoveTowards(lens.OrthographicSize, _targetOrthoSize, _transitionSpeed * Time.deltaTime);
+        _virtualCamera.m_Lens = lens;
     }
 
-    // extraOffset : décalage additionnel, typiquement en avançant/reculant sur l'axe Z ou en montant en Y selon ton setup
-    public void SetBossOffset(Vector3 extraOffset)
+    public void SetBossZoom(float extraSize)
     {
-        _targetOffset = _defaultFollowOffset + extraOffset;
+        _targetOrthoSize = _defaultOrthoSize + extraSize;
     }
 
-    public void ResetOffset()
+    public void ResetZoom()
     {
-        _targetOffset = _defaultFollowOffset;
+        _targetOrthoSize = _defaultOrthoSize;
     }
 }

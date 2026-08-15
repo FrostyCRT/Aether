@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "projet": "AETHER STORM SURVIVOR (anciennement nommé AETHER — renommage acté cette session, nom du personnage Aether inchangé)",
+    "date_session": "session V8, suite directe de la save 4 / doc V7",
+    "raison_du_save": "Conversation trop longue pour le plan gratuit, reprise nécessaire dans une nouvelle conversation",
+    "fichier_doc_associe": "AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V8.md",
+    "instruction_reprise": "Joindre ce JSON + AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V8.md au début de la prochaine conversation. Lire en priorité la section prochaines_etapes_immediates avant de répondre."
+  },
+
+  "priorite_absolue": "Kael et Lyra — Kael est modélisé, riggé et animé mais pas encore branché côté scripts/gameplay. Lyra n'est pas commencée. Le reste du contenu (ennemis, 3 boss) est considéré stable, tous bugs connus corrigés cette session.",
+
+  "renommage_jeu": {
+    "ancien_nom": "AETHER",
+    "nouveau_nom": "AETHER STORM SURVIVOR",
+    "raison": "Le nom 'Aether' seul est trop répandu sur Steam / dans les jeux existants",
+    "impact": "Le personnage jouable Aether garde son nom propre, seul le titre du jeu/projet change. Vérifier si ce renommage doit être répercuté dans des assets visuels (logo, écran titre) non traités cette session."
+  },
+
+  "bugs_non_resolus_a_date": [
+    {
+      "nom": "Clipping visuel entre plusieurs EnemyShooter proches",
+      "statut": "fix simple déjà appliqué (suppression du mouvement en position de tir), jamais confirmé gênant ou non par l'utilisateur en playtest prolongé",
+      "priorite": "très basse, non bloquant"
+    },
+    {
+      "nom": "Alignement des paliers de difficulté à re-vérifier dans le code",
+      "detail": "Décision actée en conversation d'aligner WaveManager.ApplyDifficulty() (0-3/3-5/5-8/8-10/10-13/13+ min) sur les mêmes bornes que le pool pondéré (4/8/12/15 min), mais le code final n'a jamais été redemandé/revu explicitement dans cette conversation — à confirmer que le changement a bien été fait côté projet.",
+      "priorite": "basse, à vérifier rapidement"
+    }
+  ],
+
+  "architecture_personnages_en_cours": {
+    "constat": "PlayerController, HealthSystem, WeaponBase sont génériques, partagés tels quels par tous les personnages jouables. Rien ne distingue actuellement 'quel personnage' joue, ce qui bloque l'attribution de l'upgrade de départ et la construction du menu de sélection.",
+    "approche_proposee_non_implementee": [
+      "1. Dupliquer le prefab Player en un prefab par personnage (Player_Aether, Player_Kael, futur Player_Lyra), modèle 3D et point d'attache d'arme différents, composants de script identiques.",
+      "2. Créer un script CharacterIdentity (non existant) avec enum CharacterType { Aether, Kael, Lyra }, posé sur chaque prefab.",
+      "3. Créer un script StartingUpgradeGranter (non existant) qui donne l'upgrade de départ correspondante au lancement d'une run, en s'appuyant sur le système d'upgrade existant (LevelUpManager ou équivalent — JAMAIS VU dans cette conversation, à fournir avant de coder cette partie).",
+      "4. Construire un nouvel onglet de sélection de personnage dans le menu (non commencé), qui chargerait dynamiquement le bon prefab."
+    ],
+    "etape_immediate_validee": "Pour tester Kael sans attendre le menu complet : remplacer manuellement le prefab Player par Player_Kael dans la scène de jeu (glisser-déposer direct), lancer, valider modèle/arbalète/animations/gameplay de base AVANT de coder l'upgrade de départ ou le menu.",
+    "statut_kael_technique": "Modèle 3D terminé (carrure tank, tête/cou légèrement grossis par l'utilisateur après génération), rig Mixamo swappé et validé, arbalète lourde modélisée séparément (non riggée) et attachée sur bone de main (parentage simple à la main dominante, pas d'IK à deux mains pour l'instant), Animator créé avec clips Mixamo Idle/Walk/Death. AUCUN script de gameplay spécifique encore branché — utilise actuellement les scripts génériques identiques à Aether tels quels."
+  },
+
+  "game_design_kael_lyra": {
+    "repartition_branches_arbre": {
+      "decision": "REMPLACE toute affectation précédente de la doc V6/V7",
+      "Aether": "branche Guerrier (design inspiré de Rudeus Greyrat, Mushoku Tensei saison 2)",
+      "Kael": "branche Gardien (tank/brute, carrure massive)",
+      "Lyra": "branche Fantôme (mobilité/esquive, thème ninja)",
+      "note": "Les noms de branches Guerrier/Gardien/Fantôme sont décoratifs, possibilité de les remplacer par les noms des personnages en version finale. Menu de sélection de personnage prévu (nouvel onglet, non construit) ; dans l'arbre de compétences, mettre en valeur visuellement la branche du personnage sélectionné (non implémenté)."
+    },
+    "differenciation_mecanique": {
+      "principe_acte": "PAS de modification des stats de base entre personnages (déjà couvert par le tronc commun Réputation + l'arbre de compétences, éviter le doublon). Différenciation = trait mécanique inné (déjà défini avant cette session) + upgrade active de départ unique par personnage (nouveau, décidé cette session), pensée pour renforcer le trait plutôt que le contredire.",
+      "traits_innes_existants": {
+        "Aether": "équilibré, aucune particularité",
+        "Kael": "plus de PV, moins de dégâts",
+        "Lyra": "recharge de dash très rapide"
+      },
+      "upgrades_de_depart_decidees": {
+        "Aether": "Boule de Feu — projectile à dégâts directs toutes les X secondes",
+        "Kael": "Aura permanente — dégâts par seconde autour de lui + ralentissement LÉGER des ennemis proches (pas de knockback retenu, pas de ralentissement fort — risque de gameplay statique discuté et écarté à faible intensité). Point de vigilance : distincte du nœud 'mud slow aura' déjà prévu dans le backlog de l'arbre, à surveiller pour éviter un doublon si ce nœud est un jour implémenté.",
+        "Lyra": "Salve de Shuriken — projectiles perforants (traversent plusieurs ennemis) toutes les X secondes"
+      },
+      "idee_ecartee": "Zone AOE ponctuelle type 'frappe sismique' pour Kael — rejetée car recoupe une carte d'upgrade déjà existante dans le pool commun, et jugée moins impressionnante visuellement qu'une boule de feu/salve de shuriken."
+    },
+    "design_visuel_kael": {
+      "arme": "Arbalète lourde, tenue à DEUX mains. Arc écarté (trop associé à la précision/distance/légèreté, contradictoire avec l'identité tank/contact). Mêlée pure écartée d'emblée (bullet heaven, tout passe par WeaponBase/ProjectileBasic).",
+      "silhouette": "Carrure nettement plus large qu'Aether (épaules, torse, avant-bras), posture légèrement penchée en avant, centre de gravité bas, SANS dérive vers un style bodybuilder irréaliste — reste dans les proportions stylisées Ghibli.",
+      "coherence_visage_texture": "Cohérence stricte avec Aether/Rudeus S2 : même famille de traits, même palette, même niveau de stylisation.",
+      "pipeline_generation": "Nouveau canal utilisé cette session : MetaIA (conversation en français, image de référence d'Aether fournie pour ancrer le style) puis Tripo3D pour la 3D — en complément du pipeline Tripo/Meshy habituel, pas en remplacement.",
+      "methode_import": "T-pose, mains vides, arbalète modélisée et importée séparément (non riggée avec le corps), attachée après coup sur bone(s) de main dans Unity — même méthode que le bâton d'Aether.",
+      "attache_deux_mains": "Parentage simple à la main dominante retenu pour commencer, pas de contrainte IK/Two Bone IK (jugée disproportionnée par rapport au gain visuel et au temps disponible) ; à revoir seulement si l'écart de la main secondaire est trop visible en jeu."
+    },
+    "design_visuel_lyra": "Non commencé à ce stade."
+  },
+
+  "bugs_resolus_cette_session_recap_rapide": [
+    "Invincibilité Dash + Clone Fantôme partagée -> compteur _externalInvincibilitySources dans HealthSystem",
+    "Tremblement de rotation générique EnemyBase -> lissage Vector3.Slerp continu",
+    "Ennemis tournoyant autour du Clone Fantôme -> distance calculée sur la vraie cible, dégâts conditionnés au vrai joueur uniquement",
+    "EnemyShooter glissement pendant le tir -> mouvement retiré en position de tir",
+    "EnemyShooter dérive Y en fuite/poursuite -> directions aplaties sur Y",
+    "PV scaling non appliqué sur nouveaux ennemis -> ObjectPool.Get() corrigé pour instance neuve",
+    "OnEnable() masqué silencieusement (Kaiju, Weaver) -> EnemyBase.OnEnable() passé virtual, override + base.OnEnable() ajoutés (cause du bug PV=0/one-shot)",
+    "Slow Tisseuse qui ne se retire jamais -> coroutine déplacée côté PlayerController.ApplyTemporarySlow()",
+    "Golem un seul coup de contact -> système de dégâts de contact actif par distance généralisé (EnemyBase + BossBase), OnTriggerStay ajouté partout où il manquait",
+    "Charge Boss 1 sans dégâts / distance irrégulière -> distance fixe (Lerp), dégâts actifs par distance, distance minimale avant déclenchement (_minChargeDistance)",
+    "Boss dérive verticale progressive Y≈1.55 -> filet de sécurité générique dans BossBase/BossDeer.Update() (cause exacte non confirmée à 100%, probablement résolution de collision Rigidbody)",
+    "Cerf invisibilité partielle pendant le saut -> cause finale = déplacement vertical intégré au clip d'animation lui-même (pas Root Motion, pas bounds/culling) ; fix = _jumpHopHeight plafonné à 0.7 + zone d'angle interdite (-150° à -30° par rapport au joueur)",
+    "Projectiles boss mal placés (Y=1.55) et non absorbables -> EnemyProjectile.Init() force Y=0 et direction.y=0 à la source",
+    "Portée projectiles ennemis trop courte -> _maxRange doublé (20->40)",
+    "Mini-boss invoqués trop petits pour les tirs -> scale appliqué uniquement sur les SkinnedMeshRenderer (pas la racine/Collider), remonté de 0.6 à 0.75",
+    "WaveManager.GetPoolTag() fragile -> EnemyBase.PoolTag exposé publiquement, lecture directe",
+    "Caméra Cinemachine élasticité/recul boss cassés -> confusion CinemachineTransposer vs CinemachineFramingTransposer (le vrai composant utilisé) ; élasticité restaurée via Damping du Framing Transposer ; recul finalement implémenté via LensSettings.OrthographicSize en LateUpdate() après échec de m_FollowOffset puis m_CameraDistance",
+    "Clone Fantôme invisible puis mal dimensionné/orienté -> cause racine = scale erroné sur PlayerTripo (100/100/100 au lieu de 1/1/1) ; fix technique = BakeMesh() + parentage temporaire sous sourceSkinned.transform puis détachement position monde conservée",
+    "Bâton du Clone manquant -> cloné séparément au moment du snapshot, rattaché par le même principe de parentage temporaire",
+    "Golem Slam abandonné -> remplacé par contact renforcé simple (_contactDamage monté), EnemyTank.cs réduit à une classe quasi vide (marqueur de type conservé)"
+  ],
+
+  "lecons_unity_transverses_nouvelles_cette_session": [
+    "Une méthode non-virtual redéclarée à l'identique dans une sous-classe (même sans [SerializeField]) masque silencieusement la version parente, y compris OnEnable()/Start()/Update() — aucun avertissement si le parent n'est pas virtual. Si le parent EST virtual et que la sous-classe omet 'override', warning CS0114 (progrès de sécurité). Vérifier systématiquement la classe parente avant de déclarer une méthode de cycle de vie Unity dans une sous-classe d'EnemyBase/BossBase.",
+    "Le pooling d'objets ne réinitialise pas automatiquement l'état d'un Animator — Animator.Rebind() + Animator.Update(0f) nécessaires dans OnEnable() avant de rejouer un état neutre.",
+    "Un flag 'une fois par run' doit être static ET réinitialisé explicitement (typiquement GameManager.Awake(), réellement recréé à chaque scène de jeu puisque GameManager n'a pas de DontDestroyOnLoad).",
+    "Un bool d'invincibilité externe partagé entre plusieurs sources indépendantes doit être un compteur, pas un bool — deux sources qui écrivent true/false sur le même bool peuvent se marcher dessus.",
+    "OnTriggerEnter seul (sans OnTriggerStay) ne se redéclenche qu'à l'entrée du recouvrement — rester immobile en contact continu ne redéclenche l'événement qu'une fois. Ajouter systématiquement OnTriggerStay en plus, ou passer à une détection par distance active.",
+    "Une attaque rapide qui déplace transform.position directement (sans Rigidbody, sans détection continue) peut 'sauter' par-dessus sa cible en une frame sans jamais déclencher de trigger (tunneling). Préférer une vérification de dégâts par distance active pendant le mouvement plutôt qu'un OnTriggerEnter seul.",
+    "Un scale appliqué sur le GameObject racine d'un ennemi/boss réduit aussi son Collider proportionnellement, pouvant rendre sa hitbox trop petite/basse. Pour réduire uniquement l'apparence visuelle, scaler directement le(s) SkinnedMeshRenderer via GetComponentsInChildren (plus robuste qu'un transform.Find() par nom qui peut échouer silencieusement).",
+    "Un clip d'animation peut déplacer verticalement des os spécifiques bien au-delà de ce que suggère la position Y du transform racine, indépendamment de Root Motion et des bounds/culling. Vérifier visuellement la hauteur atteinte pendant l'animation, pas seulement la valeur Y du script.",
+    "BakeMesh() sur un SkinnedMeshRenderer fige les vertices dans l'espace local du renderer lui-même. Pour repositionner un mesh baké, parenter temporairement sous le Transform du renderer source (SetParent(source, false)) puis détacher en conservant la position monde (SetParent(null, true)) plutôt que de recopier position/rotation/scale manuellement.",
+    "Un scale incohérent entre mesh visuel et squelette externe swappé peut faire dériver silencieusement toute logique dépendant de la transform du mesh (ex: snapshot du Clone Fantôme). Seul le squelette externe doit porter l'échelle non-unitaire, jamais le mesh visuel une fois le rig en place.",
+    "Un script qui écrit en continu sur une propriété caméra Cinemachine (m_FollowOffset, m_CameraDistance) peut être silencieusement écrasé par le recalcul interne de Cinemachine si celui-ci s'exécute après dans le pipeline LateUpdate, notamment avec un Group Framing actif. Lens.OrthographicSize est un point de contrôle plus direct pour un zoom/recul global sur caméra orthographique.",
+    "Le composant Body d'une CinemachineVirtualCamera peut être de plusieurs types distincts (Transposer, FramingTransposer, etc.) — GetCinemachineComponent<T>() retourne null silencieusement si le type ne correspond pas, sans erreur visible. Toujours vérifier le nom du composant affiché dans l'Inspector avant de cibler un type dans un script.",
+    "Toujours vérifier la version installée d'un package tiers avant de diagnostiquer un comportement 'qui marchait avant, plus maintenant' — une mise à jour silencieuse peut restructurer des composants entiers sans erreur de compilation grâce à une rétrocompatibilité partielle.",
+    "Un joueur qui dashe à travers une rafale dense de projectiles a statistiquement plus de chances de rencontrer un raté de détection ponctuel qu'un tir isolé — vérifier en priorité la hauteur/position de spawn avant de suspecter un bug de tunneling complexe."
+  ],
+
+  "fichiers_de_reference_modifies_cette_session": [
+    {"nom": "HealthSystem.cs", "role": "Compteur d'invincibilité externe, TryTakeContactDamage()"},
+    {"nom": "EnemyBase.cs", "role": "Lissage de rotation, contact par distance, PoolTag public, OnEnable() virtual"},
+    {"nom": "EnemyTank.cs", "role": "Réduit à une classe quasi vide (Golem simplifié, Slam abandonné)"},
+    {"nom": "EnemyKaiju.cs", "role": "Roar au premier spawn de run, OnEnable() override, cône + combo queue vs Golem"},
+    {"nom": "EnemyCorruptedWeaver.cs", "role": "Renommage _playerTransform, slow déplacé côté Player, attaque conditionnée au vrai contact"},
+    {"nom": "EnemyShooter.cs", "role": "Suppression mouvement en position de tir, aplatissement Y fuite/poursuite"},
+    {"nom": "EnemyProjectile.cs", "role": "Hauteur et direction forcées à plat, portée doublée"},
+    {"nom": "PlayerController.cs", "role": "ApplyTemporarySlow(), fix Clone Fantôme (BakeMesh + parentage temporaire), bâton cloné séparément"},
+    {"nom": "ObjectPool.cs", "role": "Surcharge Get() avec multiplicateur de PV, fix instance neuve"},
+    {"nom": "WaveManager.cs", "role": "GetPoolTag() simplifié, appels caméra boss"},
+    {"nom": "GameManager.cs", "role": "Reset EnemyKaiju.ResetRunState() à chaque Awake()"},
+    {"nom": "BossBase.cs", "role": "OnTriggerStay, charge à distance fixe avec recovery et distance minimale, filet de sécurité Y, système d'état Animator"},
+    {"nom": "BossDeer.cs", "role": "Filet de sécurité Y conditionnel, zone d'angle interdite pour le saut, télégraphe/dégâts adaptés en mini-boss, override UpdateAnimatorState()"},
+    {"nom": "BossCorruptedSource.cs", "role": "Salves multiples Crystal Pulse, scale mini-boss via SkinnedMeshRenderer"},
+    {"nom": "BossCameraZoom.cs", "role": "Réécrit plusieurs fois, version finale sur LensSettings.OrthographicSize en LateUpdate()"},
+    {"nom": "ProjectileBasic.cs", "role": "Analysé, NON modifié (le blocage Y venait de WeaponBase)"},
+    {"nom": "WeaponBase.cs", "role": "Analysé, NON modifié (blocage Y volontaire conservé)"}
+  ],
+
+  "prochaines_etapes_immediates": [
+    "1. Finaliser l'architecture personnages : créer CharacterIdentity, tester Kael manuellement en jeu (swap de prefab direct dans la scène) AVANT de construire le menu ou l'upgrade de départ",
+    "2. Une fois Kael validé en jeu : brancher l'upgrade de départ (Aura) — nécessite de fournir le script du système d'upgrade existant (LevelUpManager ou équivalent, JAMAIS VU dans cette conversation)",
+    "3. Construire le nouvel onglet de sélection de personnage dans le menu, une fois Kael (et idéalement Lyra) individuellement validés",
+    "4. Démarrer Lyra : génération MetaIA/Tripo3D (même méthode que Kael), arme à définir (cohérent thème ninja/shuriken déjà évoqué), pipeline de rig via SkeletonSwapTool",
+    "5. Mettre en valeur visuellement la branche d'arbre de compétences correspondant au personnage sélectionné (une fois le menu en place)",
+    "6. Vérifier que l'alignement des paliers de difficulté (4/8/12/15 min) a bien été appliqué dans le code — décision actée en conversation mais code non re-vérifié",
+    "7. Reprendre l'Avatar Mask torche du Player (Aether), toujours en attente depuis la V6/V7",
+    "8. Accessibilité 'Sol simplifié' / 'Contraste du décor' : toujours prévue en toute fin de contenu, non commencée"
+  ]
+}

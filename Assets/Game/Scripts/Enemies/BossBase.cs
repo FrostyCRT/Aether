@@ -13,7 +13,7 @@ public class BossBase : MonoBehaviour
     [SerializeField] protected GameObject _projectilePrefab;
     [SerializeField] protected float _fireRate = 1f;
     [SerializeField] protected int _projectileCount = 8;
-    [SerializeField] protected float _chargeCooldown = 5f;
+    [SerializeField] protected float _chargeCooldown = 5f; // À monter dans l'inspector (12-15f suggéré) pour espacer les charges comme demandé
     [SerializeField] protected float _chargeWindupDuration = 1f;
 
     [Header("Identité")]
@@ -30,16 +30,31 @@ public class BossBase : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] protected float _rotationSpeed = 500f;
 
-    [Header("Corps à corps")] // AJOUTÉ
-    [SerializeField] protected float _contactDamage = 30f; // MODIFIÉ — remplace le 30f codé en dur dans OnTriggerEnter
-    [SerializeField] protected float _contactDamageCooldown = 0.6f; // AJOUTÉ
+    [Header("Corps à corps")]
+    [SerializeField] protected float _contactDamage = 30f;
+    [SerializeField] protected float _contactDamageCooldown = 0.6f;
 
-    [Header("Charge")] // AJOUTÉ
-    [SerializeField] protected float _chargeDamage = 45f; // AJOUTÉ — valeur de départ, à ajuster en playtest (la charge ne faisait jamais mal avant)
-    [SerializeField] protected float _chargeHitRadius = 2.5f; // AJOUTÉ
+    [Header("Charge")]
+    [SerializeField] protected float _chargeDamage = 45f;
+    [SerializeField] protected float _chargeHitRadius = 2.5f;
+    [SerializeField] protected float _chargeDistance = 16f; // MODIFIÉ — était 12f, charge plus longue
+    [SerializeField] protected float _chargeDuration = 0.55f; // AJOUTÉ — remplace le 0.8f codé en dur, plus court = plus rapide (distance/duration = vitesse de charge)
+    [SerializeField] protected float _minChargeDistance = 4f; // AJOUTÉ — empêche de déclencher la charge collé au joueur (fix du bug de bug visuel)
+    [SerializeField] protected float _postChargeRecoveryDuration = 1.3f; // AJOUTÉ — vraie pause après la charge, le "temps mort" qui manquait au pattern
+
+    private Vector3 _chargeStartPosition;
+    private Vector3 _chargeEndPosition;
+    private bool _isRecovering = false; // AJOUTÉ
+    private float _recoveryTimer = 0f; // AJOUTÉ
 
     [Header("Caméra")]
-    [SerializeField] protected float _cameraZoomMargin = 0f; // AJOUTÉ — 0 par défaut = pas de zoom (Sanglier au sol n'en a pas besoin)
+    [SerializeField] protected float _cameraZoomMargin = 0f;
+
+    [Header("Animator")]
+    [SerializeField] protected string _isChargingParam = "IsCharging";
+    [SerializeField] protected string _isWindingUpParam = "IsWindingUp";
+    [SerializeField] protected string _isCruisingParam = "IsCruising";
+    [SerializeField] protected string _isRecoveringParam = "IsRecovering"; // AJOUTÉ — nouveau paramètre à créer dans l'Animator
 
     protected float _currentHealth;
     protected Transform _playerTransform;
@@ -48,8 +63,8 @@ public class BossBase : MonoBehaviour
     protected bool _isCharging = false;
     protected Vector3 _chargeDirection;
     protected float _chargeDurationTimer = 0f;
-    private bool _hasDealtChargeDamage = false; // AJOUTÉ
-    public float CameraZoomMargin => _cameraZoomMargin; // AJOUTÉ
+    private bool _hasDealtChargeDamage = false;
+    public float CameraZoomMargin => _cameraZoomMargin;
     public float MaxHealth => _maxHealth;
     public bool IsSummoned { get; set; } = false;
     public bool RageDisabled { get; set; } = false;
@@ -91,17 +106,36 @@ public class BossBase : MonoBehaviour
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
 
-        _isWindingUp = !_isCharging && (_chargeCooldown - _chargeTimer) <= _chargeWindupDuration;
+        Vector3 pos = transform.position;
+        if (Mathf.Abs(pos.y) > 0.001f)
+        {
+            pos.y = 0f;
+            transform.position = pos;
+        }
+
+        // MODIFIÉ — le windup ne se déclenche plus pendant la recovery
+        _isWindingUp = !_isCharging && !_isRecovering && (_chargeCooldown - _chargeTimer) <= _chargeWindupDuration;
 
         HandleMovement();
         HandleShooting();
         HandleCharge();
         UpdateChargeTelegraph();
+        UpdateAnimatorState();
+    }
+
+    protected virtual void UpdateAnimatorState()
+    {
+        if (_animator == null) return;
+
+        _animator.SetBool(_isChargingParam, _isCharging);
+        _animator.SetBool(_isWindingUpParam, _isWindingUp);
+        _animator.SetBool(_isRecoveringParam, _isRecovering); // AJOUTÉ
+        _animator.SetBool(_isCruisingParam, !_isCharging && !_isWindingUp && !_isRecovering); // MODIFIÉ
     }
 
     protected virtual void HandleMovement()
     {
-        if (_isCharging) return;
+        if (_isCharging || _isRecovering) return; // MODIFIÉ — immobile pendant la récupération, cohérent avec "il atterrit et souffle"
         if (_isWindingUp)
         {
             RotateTowards(_playerTransform.position - transform.position);
@@ -116,7 +150,7 @@ public class BossBase : MonoBehaviour
 
     protected virtual void HandleShooting()
     {
-        if (_isCharging) return;
+        if (_isCharging || _isRecovering) return; // MODIFIÉ — pas de tir pendant la récupération, c'est la vraie fenêtre de répit
 
         float timeUntilCharge = _chargeCooldown - _chargeTimer;
         if (timeUntilCharge <= _chargeWindupDuration) return;
@@ -149,31 +183,46 @@ public class BossBase : MonoBehaviour
 
     protected virtual void HandleCharge()
     {
+        // AJOUTÉ — bloc de récupération, la vraie pause qui manquait au pattern
+        if (_isRecovering)
+        {
+            _recoveryTimer -= Time.deltaTime;
+            if (_recoveryTimer <= 0f)
+                _isRecovering = false;
+            return;
+        }
+
         _chargeTimer += Time.deltaTime;
 
         if (_chargeTimer >= _chargeCooldown && !_isCharging)
         {
-            _isCharging = true;
-            _isWindingUp = false;
-            _chargeDirection = (_playerTransform.position - transform.position).normalized;
-            _chargeTimer = 0f;
-            _chargeDurationTimer = 0.8f;
-            _hasDealtChargeDamage = false; // AJOUTÉ — reset à chaque nouvelle charge
+            // AJOUTÉ — n'engage la charge que si assez loin ; sinon le timer continue de courir
+            // et le glow reste au maximum en attendant (se lit comme "il veut charger, recule")
+            float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+            if (distanceToPlayer >= _minChargeDistance)
+            {
+                _isCharging = true;
+                _isWindingUp = false;
+                _chargeDirection = (_playerTransform.position - transform.position).normalized;
+                _chargeTimer = 0f;
+                _chargeDurationTimer = _chargeDuration; // MODIFIÉ
+                _hasDealtChargeDamage = false;
 
-            _fireTimer = 0f;
+                _chargeStartPosition = transform.position;
+                _chargeEndPosition = MapBoundaryUtils.ClampToZone(transform.position + _chargeDirection * _chargeDistance);
 
-            if (_animator != null) _animator.speed = _chargeAnimSpeed;
+                _fireTimer = 0f;
+
+                if (_animator != null) _animator.speed = _chargeAnimSpeed;
+            }
         }
 
         if (_isCharging)
         {
-            Vector3 nextPosition = transform.position + _chargeDirection * _moveSpeed * 4f * _speedMultiplier * Time.deltaTime;
-            transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
+            float progress = 1f - Mathf.Clamp01(_chargeDurationTimer / _chargeDuration); // MODIFIÉ
+            transform.position = Vector3.Lerp(_chargeStartPosition, _chargeEndPosition, progress);
             RotateTowards(_chargeDirection);
 
-            // AJOUTÉ — dégâts actifs par distance, indépendants du trigger physique
-            // (la charge va assez vite pour potentiellement "sauter" par-dessus le joueur
-            // entre deux frames sans jamais déclencher OnTriggerEnter — tunneling classique)
             if (!_hasDealtChargeDamage)
             {
                 float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
@@ -182,7 +231,7 @@ public class BossBase : MonoBehaviour
                     HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
                     if (playerHealth != null)
                         playerHealth.TryTakeContactDamage(_chargeDamage, _contactDamageCooldown);
-                    _hasDealtChargeDamage = true; // un seul coup par charge, pas de spam sur tout le trajet
+                    _hasDealtChargeDamage = true;
                 }
             }
 
@@ -206,12 +255,22 @@ public class BossBase : MonoBehaviour
     protected virtual void StopCharge()
     {
         _isCharging = false;
+        _isRecovering = true; // AJOUTÉ — déclenche la pause après charge
+        _recoveryTimer = _postChargeRecoveryDuration; // AJOUTÉ
         if (_animator != null) _animator.speed = 1f;
     }
 
     protected virtual void UpdateChargeTelegraph()
     {
         if (_isCharging) return;
+
+        // AJOUTÉ — pendant la récupération, pas de tell, glow retombe à zéro
+        if (_isRecovering)
+        {
+            if (_animator != null) _animator.speed = 1f;
+            UpdateGlowEffect(0f);
+            return;
+        }
 
         if (_isWindingUp)
         {
@@ -296,11 +355,11 @@ public class BossBase : MonoBehaviour
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
             if (health != null)
-                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown); // MODIFIÉ
+                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown);
         }
     }
 
-    protected virtual void OnTriggerStay(Collider other) // AJOUTÉ — absente avant, c'était la cause du "un coup et plus rien" au corps-à-corps
+    protected virtual void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player"))
         {

@@ -10,13 +10,21 @@ public static class SkillTreeData
         public string level1Desc;
         public string level2Desc;
         public string level3Desc;
-        public int costLevel1;   // coût du niveau 1 (ou achat unique)
+        public int costLevel1;
         public int costLevel2;
         public int costLevel3;
-        public string[] prerequisites; // IDs des nœuds requis
+        public string[] prerequisites;
+        public CharacterBranch branch; // AJOUTÉ — pour le grisage selon le personnage
     }
 
-    // Cache statique unique pour éviter l'allocation par le Garbage Collector
+    // AJOUTÉ — enum pour identifier la branche de chaque nœud
+    public enum CharacterBranch
+    {
+        Guerrier,
+        Gardien,
+        Fantome
+    }
+
     private static readonly Dictionary<string, NodeData> _nodesCache;
 
     static SkillTreeData()
@@ -28,26 +36,27 @@ public static class SkillTreeData
     public static NodeData Get(string nodeId)
     {
         if (string.IsNullOrEmpty(nodeId)) return null;
-
-        // Recherche instantanée O(1) sans aucune allocation de mémoire
         return _nodesCache.TryGetValue(nodeId, out NodeData node) ? node : null;
     }
 
     private static void PopulateDatabase()
     {
         // ── GUERRIER ────────────────────────────────────────────────────
-        _nodesCache.Add("damage", new NodeData
+
+        // AJOUTÉ — remplace "damage" comme point d'entrée sans prérequis
+        _nodesCache.Add("concentration", new NodeData
         {
-            displayName = "Dégâts",
-            description = "Augmente les dégâts de toutes tes armes.",
+            displayName = "Concentration",
+            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts. Le compteur se réinitialise à chaque coup reçu.",
             isUnique = false,
-            level1Desc = "+10%",
-            level2Desc = "+25%",
-            level3Desc = "+50%",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>() // Optimisation mémoire (.NET standard)
+            level1Desc = "+5% / sec, cap à +15%",
+            level2Desc = "+5% / sec, cap à +25%",
+            level3Desc = "+5% / sec, cap à +40%",
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Guerrier
         });
 
         _nodesCache.Add("cadence", new NodeData
@@ -58,10 +67,11 @@ public static class SkillTreeData
             level1Desc = "+10%",
             level2Desc = "+20%",
             level3Desc = "+35%",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>()
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Guerrier
         });
 
         _nodesCache.Add("fragmentation", new NodeData
@@ -69,8 +79,9 @@ public static class SkillTreeData
             displayName = "Fragmentation",
             description = "Les projectiles ont 20% de chance d'exploser à l'impact.",
             isUnique = true,
-            costLevel1 = 150,
-            prerequisites = new[] { "damage" }
+            costLevel1 = 500,
+            prerequisites = new[] { "concentration" }, // MODIFIÉ — était "damage"
+            branch = CharacterBranch.Guerrier
         });
 
         _nodesCache.Add("crystalDamage", new NodeData
@@ -81,10 +92,11 @@ public static class SkillTreeData
             level1Desc = "+25%",
             level2Desc = "+50%",
             level3Desc = "+100%",
-            costLevel1 = 75,
-            costLevel2 = 150,
-            costLevel3 = 300,
-            prerequisites = new[] { "cadence" }
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = new[] { "cadence" },
+            branch = CharacterBranch.Guerrier
         });
 
         _nodesCache.Add("overpower", new NodeData
@@ -92,11 +104,13 @@ public static class SkillTreeData
             displayName = "Surpuissance",
             description = "Après l'ultime, tes dégâts sont doublés pendant 5 secondes.",
             isUnique = true,
-            costLevel1 = 400,
-            prerequisites = new[] { "fragmentation", "crystalDamage" }
+            costLevel1 = 1000,
+            prerequisites = new[] { "fragmentation", "crystalDamage" },
+            branch = CharacterBranch.Guerrier
         });
 
         // ── GARDIEN ─────────────────────────────────────────────────────
+
         _nodesCache.Add("vitality", new NodeData
         {
             displayName = "Vitalité",
@@ -105,24 +119,27 @@ public static class SkillTreeData
             level1Desc = "+15%",
             level2Desc = "+30%",
             level3Desc = "+50%",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>()
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Gardien
         });
 
-        _nodesCache.Add("regen", new NodeData
+        // AJOUTÉ — remplace "regen" comme point d'entrée sans prérequis
+        _nodesCache.Add("recuperation", new NodeData
         {
-            displayName = "Régénération",
-            description = "Régenère des HP chaque seconde.",
+            displayName = "Récupération",
+            description = "Chaque cristal absorbé par le dash restaure des HP.",
             isUnique = false,
-            level1Desc = "+2 HP/sec",
-            level2Desc = "+4 HP/sec",
-            level3Desc = "+6 HP/sec",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>()
+            level1Desc = "+2 HP par absorption",
+            level2Desc = "+5 HP par absorption",
+            level3Desc = "+8 HP par absorption",
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Gardien
         });
 
         _nodesCache.Add("secondWind", new NodeData
@@ -130,8 +147,9 @@ public static class SkillTreeData
             displayName = "Second Souffle",
             description = "Une fois par partie, survit à un coup fatal avec 1 HP.",
             isUnique = true,
-            costLevel1 = 150,
-            prerequisites = new[] { "vitality" }
+            costLevel1 = 500,
+            prerequisites = new[] { "vitality" },
+            branch = CharacterBranch.Gardien
         });
 
         _nodesCache.Add("armor", new NodeData
@@ -142,10 +160,11 @@ public static class SkillTreeData
             level1Desc = "-8%",
             level2Desc = "-15%",
             level3Desc = "-25%",
-            costLevel1 = 75,
-            costLevel2 = 150,
-            costLevel3 = 300,
-            prerequisites = new[] { "regen" }
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = new[] { "recuperation" }, // MODIFIÉ — était "regen"
+            branch = CharacterBranch.Gardien
         });
 
         _nodesCache.Add("manaShield", new NodeData
@@ -153,23 +172,22 @@ public static class SkillTreeData
             displayName = "Bouclier de Mana",
             description = "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.",
             isUnique = true,
-            costLevel1 = 400,
-            prerequisites = new[] { "secondWind", "armor" }
+            costLevel1 = 900,
+            prerequisites = new[] { "secondWind", "armor" },
+            branch = CharacterBranch.Gardien
         });
 
         // ── FANTÔME ─────────────────────────────────────────────────────
-        _nodesCache.Add("agility", new NodeData
+
+        // AJOUTÉ — remplace "agility" comme point d'entrée sans prérequis
+        _nodesCache.Add("impulsionNova", new NodeData
         {
-            displayName = "Agilité",
-            description = "Augmente ta vitesse de déplacement.",
-            isUnique = false,
-            level1Desc = "+8%",
-            level2Desc = "+18%",
-            level3Desc = "+30%",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>()
+            displayName = "Impulsion Nova",
+            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le cooldown du dash est immédiatement réinitialisé.",
+            isUnique = true,
+            costLevel1 = 500,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Fantome
         });
 
         _nodesCache.Add("dash", new NodeData
@@ -180,10 +198,11 @@ public static class SkillTreeData
             level1Desc = "-0.3s",
             level2Desc = "-0.6s",
             level3Desc = "-1.0s",
-            costLevel1 = 50,
-            costLevel2 = 100,
-            costLevel3 = 200,
-            prerequisites = System.Array.Empty<string>()
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = System.Array.Empty<string>(),
+            branch = CharacterBranch.Fantome
         });
 
         _nodesCache.Add("crystalMastery", new NodeData
@@ -191,8 +210,9 @@ public static class SkillTreeData
             displayName = "Maîtrise du Cristal",
             description = "Réduit le nombre de charges nécessaires pour l'ultime.",
             isUnique = true,
-            costLevel1 = 150,
-            prerequisites = new[] { "agility" }
+            costLevel1 = 600,
+            prerequisites = new[] { "impulsionNova" }, // MODIFIÉ — était "agility"
+            branch = CharacterBranch.Fantome
         });
 
         _nodesCache.Add("novaRadius", new NodeData
@@ -203,19 +223,21 @@ public static class SkillTreeData
             level1Desc = "+30%",
             level2Desc = "+60%",
             level3Desc = "+100%",
-            costLevel1 = 75,
-            costLevel2 = 150,
-            costLevel3 = 300,
-            prerequisites = new[] { "dash" }
+            costLevel1 = 100,
+            costLevel2 = 300,
+            costLevel3 = 700,
+            prerequisites = new[] { "dash" },
+            branch = CharacterBranch.Fantome
         });
 
         _nodesCache.Add("phantomDash", new NodeData
         {
             displayName = "Dash Fantôme",
-            description = "Le dash laisse un clone qui attire l'ennemi le plus proche pendant 2 secondes.",
+            description = "Le dash laisse un clone qui attire les ennemis proches pendant 2 secondes.",
             isUnique = true,
-            costLevel1 = 400,   
-            prerequisites = new[] { "crystalMastery", "novaRadius" }
+            costLevel1 = 1200,
+            prerequisites = new[] { "crystalMastery", "novaRadius" },
+            branch = CharacterBranch.Fantome
         });
     }
 }

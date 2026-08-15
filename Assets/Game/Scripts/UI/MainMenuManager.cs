@@ -10,38 +10,23 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject _upgradesPanel;
     [SerializeField] private GameObject _menuPanel;
     [SerializeField] private GameObject _settingsPanel;
-
-    [Header("TopBar")]
-    [SerializeField] private TextMeshProUGUI _goldDisplay;
-    [SerializeField] private TextMeshProUGUI _gemsDisplay;
+    [SerializeField] private GameObject _characterSelectPanel; // AJOUTÉ
 
     [Header("Onglets (rubans)")]
     [SerializeField] private Image _upgradesTabImage;
     [SerializeField] private Image _menuTabImage;
     [SerializeField] private Image _settingsTabImage;
+    [SerializeField] private Image _characterSelectTabImage; // AJOUTÉ
 
     private static readonly Color _activeTabColor = Color.white;
     private static readonly Color _inactiveTabColor = new Color(0.7f, 0.7f, 0.7f, 1f);
     private static readonly Vector3 _activeTabScale = new Vector3(1.08f, 1.08f, 1f);
     private static readonly Vector3 _inactiveTabScale = Vector3.one;
 
-    [SerializeField] private AudioMixer _mainAudioMixer; // Pense à glisser ton AudioMixer dans l'inspecteur ici !
+    [SerializeField] private AudioMixer _mainAudioMixer;
 
- 
     private void Start()
     {
-        // Attend que MetaProgressionManager soit prêt
-        if (MetaProgressionManager.Instance != null)
-        {
-            SaveData data = SaveSystem.Load();
-            _goldDisplay.text = $": {data.totalGold}";
-        }
-        else
-        {
-            _goldDisplay.text = " : 0";
-            _gemsDisplay.text = " : 0";
-        }
-
         ShowPanel(_menuPanel);
     }
 
@@ -50,11 +35,14 @@ public class MainMenuManager : MonoBehaviour
         _upgradesPanel.SetActive(false);
         _menuPanel.SetActive(false);
         _settingsPanel.SetActive(false);
+        _characterSelectPanel.SetActive(false); // AJOUTÉ
+
         panel.SetActive(true);
 
-        SetTabState(_upgradesTabImage, panel == _upgradesPanel);
-        SetTabState(_menuTabImage, panel == _menuPanel);
-        SetTabState(_settingsTabImage, panel == _settingsPanel);
+        SetTabState(_upgradesTabImage,       panel == _upgradesPanel);
+        SetTabState(_menuTabImage,           panel == _menuPanel);
+        SetTabState(_settingsTabImage,       panel == _settingsPanel);
+        SetTabState(_characterSelectTabImage, panel == _characterSelectPanel); // AJOUTÉ
     }
 
     private void SetTabState(Image tabImage, bool isActive)
@@ -64,13 +52,14 @@ public class MainMenuManager : MonoBehaviour
         tabImage.rectTransform.localScale = isActive ? _activeTabScale : _inactiveTabScale;
     }
 
-    public void ShowUpgrades() => ShowPanel(_upgradesPanel);
-    public void ShowMenu() => ShowPanel(_menuPanel);
-    public void ShowSettings() => ShowPanel(_settingsPanel);
+    public void ShowUpgrades()        => ShowPanel(_upgradesPanel);
+    public void ShowMenu()            => ShowPanel(_menuPanel);
+    public void ShowSettings()        => ShowPanel(_settingsPanel);
+    public void ShowCharacterSelect() => ShowPanel(_characterSelectPanel); // AJOUTÉ
 
     public void PlayGame()
     {
-        SceneManager.LoadScene(1); // 1 = Game dans Build Settings
+        SceneManager.LoadScene(1);
     }
 
     public void QuitGame()

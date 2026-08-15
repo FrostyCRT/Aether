@@ -32,9 +32,15 @@ public class SkillTreeUI : MonoBehaviour
     private Coroutine _moveCoroutine;
     private Canvas _canvas;
     private RectTransform _canvasRect;
-
+    public static SkillTreeUI Instance { get; private set; }
     // Cache local pour remplacer le FindObjectsOfType très gourmand
     private readonly List<SkillNode> _registeredNodes = new List<SkillNode>();
+
+    private void Awake()
+    {
+        Instance = this;
+       
+    }
 
     private void Start()
     {
@@ -196,6 +202,20 @@ public class SkillTreeUI : MonoBehaviour
         }
 
         _playerGoldText.text = $"Ton gold : {gold}";
+
+        // AJOUTÉ — à placer à la fin de PopulateDetail(), juste avant la fermeture de la méthode
+        SkillTreeData.NodeData nodeData = SkillTreeData.Get(nodeId);
+        if (nodeData != null && MetaProgressionManager.Instance != null)
+        {
+            bool isInactiveBranch = nodeData.branch != MetaProgressionManager.Instance.GetActiveBranch();
+            if (isInactiveBranch)
+            {
+                _buyButton.interactable = false;
+                _buyButtonText.text = "Non disponible";
+                _buyButtonText.color = new Color(0.5f, 0.5f, 0.5f);
+                _costText.text = "Sélectionnez ce personnage pour débloquer cette branche";
+            }
+        }
     }
 
     private string FormatLevel(int level, int currentLevel, string desc)

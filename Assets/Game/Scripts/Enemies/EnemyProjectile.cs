@@ -3,7 +3,7 @@
 public class EnemyProjectile : MonoBehaviour
 {
     [SerializeField] private float _speed = 6f;
-    [SerializeField] private float _maxRange = 20f;
+    [SerializeField] private float _maxRange = 40f;
     [SerializeField] private float _damage = 10f; // Ajout de la stat de dégâts manquante
 
     private Vector3 _direction;
@@ -12,7 +12,13 @@ public class EnemyProjectile : MonoBehaviour
 
     public void Init(Vector3 direction)
     {
+        direction.y = 0f; // AJOUTÉ — sécurité, empêche toute trajectoire qui dériverait en hauteur
         _direction = direction.normalized;
+
+        Vector3 spawnPos = transform.position;
+        spawnPos.y = 1.5f;
+        transform.position = spawnPos;
+
         _startPosition = transform.position;
         _hasHit = false;
     }

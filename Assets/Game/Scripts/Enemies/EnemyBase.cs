@@ -12,6 +12,7 @@ public class EnemyBase : MonoBehaviour
 
     [Header("Pool")]
     [SerializeField] private string _poolTag = "Enemy";
+    public string PoolTag => _poolTag;
 
     [Header("Distance Joueur")]
     [SerializeField] private float _playerContactRadius = 1.2f;

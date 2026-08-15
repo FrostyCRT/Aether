@@ -31,6 +31,8 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _crystalOrbitSpeedIdle = 20f;
     [SerializeField] private float _crystalOrbitSpeedCharging = 180f;
     [SerializeField] private float _pulseWindupDuration = 1.2f;
+    [SerializeField] private int _pulseVolleyCount = 4;
+    [SerializeField] private float _pulseVolleyInterval = 0.25f;
 
     [Header("Frappe (Coiled -> Slither -> Bite)")]
     [SerializeField] private float _rearWindupDuration = 1.4f;
@@ -61,6 +63,7 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private GameObject _miniBoss2Prefab;
     [SerializeField] private float _summonWindupDuration = 2f;
     [SerializeField] private GameObject _riftPortalPrefab;
+    [SerializeField] private float _summonedVisualScale = 0.75f; // MODIFIÉ — remplace _miniBossVisualChildName, était 0.6f codé en dur
 
     [Header("Implosion — signature Phase 2 (Dance)")]
     [SerializeField] private float _implosionPullDuration = 1.5f;
@@ -213,30 +216,38 @@ public class BossCorruptedSource : BossBase
     }
 
     // ---------- CRYSTAL PULSE ----------
-    // Coiled (charge) puis salve synchronisée unique, au lieu d'un tir permanent.
+    // Coiled (charge) puis plusieurs salves synchronisées successives, au lieu d'un tir unique
+    // trop faible. Chaque salve retire la position ACTUELLE du joueur (pas figée au windup),
+    // donc rester mobile pendant l'attaque ne désamorce plus complètement les tirs suivants.
     private IEnumerator CrystalPulseAttack()
     {
         if (_animator != null) _animator.SetBool("IsCoiling", true);
 
         yield return new WaitForSeconds(_pulseWindupDuration);
 
-        if (_crystals != null)
+        if (_animator != null) _animator.SetBool("IsCoiling", false);
+
+        for (int volley = 0; volley < _pulseVolleyCount; volley++)
         {
-            foreach (GameObject crystal in _crystals)
+            if (_crystals != null)
             {
-                if (crystal == null) continue;
-                Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
-                dirToPlayer.y = 0f;
+                foreach (GameObject crystal in _crystals)
+                {
+                    if (crystal == null) continue;
+                    Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
+                    dirToPlayer.y = 0f;
 
-                GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
-                if (projectileGO == null) continue;
+                    GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
+                    if (projectileGO == null) continue;
 
-                EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-                if (projectile != null) projectile.Init(dirToPlayer);
+                    EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+                    if (projectile != null) projectile.Init(dirToPlayer);
+                }
             }
+
+            yield return new WaitForSeconds(_pulseVolleyInterval);
         }
 
-        if (_animator != null) _animator.SetBool("IsCoiling", false);
         yield return new WaitForSeconds(0.3f);
     }
 
@@ -467,7 +478,22 @@ public class BossCorruptedSource : BossBase
         if (boss != null)
         {
             boss.InitWithReducedHP(percent);
-            boss.transform.localScale = Vector3.one * 0.6f;
+
+            // MODIFIÉ — recherche par composant plutôt que par nom d'enfant : trouve tout
+            // SkinnedMeshRenderer peu importe sa profondeur/nom dans la hiérarchie (ex: "Skinned Mesh 0"),
+            // évite de deviner un nom qui varie d'un prefab à l'autre (cause du bug précédent où
+            // le fallback scalait toute la racine, y compris le Collider — d'où les tirs qui passaient au-dessus)
+            SkinnedMeshRenderer[] renderers = boss.GetComponentsInChildren<SkinnedMeshRenderer>();
+            if (renderers.Length > 0)
+            {
+                foreach (SkinnedMeshRenderer smr in renderers)
+                    smr.transform.localScale = Vector3.one * _summonedVisualScale;
+            }
+            else
+            {
+                boss.transform.localScale = Vector3.one * _summonedVisualScale; // fallback ultime, seulement si aucun SkinnedMeshRenderer trouvé du tout
+            }
+
             boss.SetXPValue(boss.MaxHealth * 0.3f);
             boss.RageDisabled = true;
         }

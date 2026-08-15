@@ -17,6 +17,11 @@ public class LevelUpManager : MonoBehaviour
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
 
+    // AJOUTÉ — niveau courant de chaque upgrade pour la run en cours.
+    // Vit ici (pas dans le ScriptableObject UpgradeData) car UpgradeData est un asset
+    // partagé entre toutes les runs, pas un état de run individuelle.
+    private readonly Dictionary<UpgradeData, int> _upgradeLevels = new Dictionary<UpgradeData, int>();
+
     public bool IsWaitingForChoice => _waitingForChoice;
 
     private void Awake()
@@ -27,6 +32,27 @@ public class LevelUpManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    // AJOUTÉ — lecture du niveau actuel d'une upgrade (0 si jamais piochée)
+    public int GetLevel(UpgradeData upgrade)
+    {
+        return _upgradeLevels.TryGetValue(upgrade, out int level) ? level : 0;
+    }
+
+    // AJOUTÉ — incrémente et retourne le nouveau niveau, appelé par UpgradeData.Apply()
+    public int IncrementLevel(UpgradeData upgrade)
+    {
+        int newLevel = GetLevel(upgrade) + 1;
+        _upgradeLevels[upgrade] = newLevel;
+        return newLevel;
+    }
+
+    // AJOUTÉ — sécurité si jamais LevelUpManager doit être réutilisé sans recharger la scène
+    // (ex: bouton "Rejouer" qui ne recharge pas la scène de jeu)
+    public void ResetLevels()
+    {
+        _upgradeLevels.Clear();
     }
 
     private void Update()

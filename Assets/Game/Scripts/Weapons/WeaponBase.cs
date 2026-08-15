@@ -48,7 +48,7 @@ public class WeaponBase : MonoBehaviour
 
     private void Start()
     {
-        float bonusDamage = MetaProgressionManager.Instance.GetBonusDamage();
+        float bonusDamage = MetaProgressionManager.Instance.GetReputationBonusDamage();
         float bonusCadence = MetaProgressionManager.Instance.GetBonusCadence();
 
         // Application initiale de la métaprogression
@@ -160,10 +160,18 @@ public class WeaponBase : MonoBehaviour
             float finalDamage = _currentDamage * _damageMultiplier;
             projectile.Init(direction, finalDamage);
 
-            if (MetaProgressionManager.Instance.HasFragmentation())
+            // MODIFIÉ — SetFragmentation prend maintenant une chance (float) plutôt qu'un bool.
+            // On récupère directement la chance déjà exposée par MetaProgressionManager
+            // (GetFragmentationChance() renvoie 0f si le nœud n'est pas débloqué, donc pas
+            // besoin de re-tester HasFragmentation() séparément).
+            float fragChance = MetaProgressionManager.Instance != null
+                ? MetaProgressionManager.Instance.GetFragmentationChance()
+                : 0f;
+
+            if (fragChance > 0f)
             {
                 float fragDamage = finalDamage * 0.5f;
-                projectile.SetFragmentation(true, fragDamage, 2f);
+                projectile.SetFragmentation(fragChance, fragDamage, 2f);
             }
         }
     }

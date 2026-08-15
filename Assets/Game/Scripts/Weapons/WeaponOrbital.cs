@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class WeaponOrbital : MonoBehaviour
@@ -7,18 +7,25 @@ public class WeaponOrbital : MonoBehaviour
     [SerializeField] private float _baseDamage = 15f;
     [SerializeField] private float _orbitRadius = 3f;
     [SerializeField] private float _orbitSpeed = 180f;
+    // Point de départ au déblocage (1er pick de la carte Orbital) = 2 orbitaux.
+    // Les 3 paliers d'amélioration suivants ajoutent +1 chacun via AddOrbital() → max 5.
     [SerializeField] private int _orbitalCount = 2;
 
-    [Header("Contr�le Range (A/E)")]
+    [Header("Contrôle Range (A/E)")]
     [SerializeField] private float _minOrbitRadius = 1f;
     [SerializeField] private float _maxOrbitRadius = 8f;
     [SerializeField] private float _rangeChangeSpeed = 2f;
 
-    [Header("R�f�rences")]
+    [Header("Références")]
     [SerializeField] private GameObject _orbitalPrefab;
 
     [Header("Limites")]
-    [SerializeField] private int _maxOrbitalCount = 4;
+    // MODIFIÉ — 4 → 10 : ce n'était plus le vrai plafond de design (2 au déblocage + 3 paliers
+    // via UpgradeData = 5 max). Ce champ reste un garde-fou théorique généreux, mais le vrai cap
+    // est désormais géré par UpgradeData/LevelUpManager (source de vérité unique). Ne pas
+    // redescendre sous 5, sinon le dernier palier d'amélioration serait bloqué silencieusement
+    // (AddOrbital() se contente d'un Debug.Log et d'un retour anticipé, sans erreur visible).
+    [SerializeField] private int _maxOrbitalCount = 10;
 
     // Cache pour les modificateurs d'upgrades (Logique additive saine)
     private float _upgradeDamageModifier = 0f;
@@ -38,7 +45,7 @@ public class WeaponOrbital : MonoBehaviour
 
     private void Start()
     {
-        // S�curit� si Init() n'a pas �t� appel� par un manager externe
+        // Sécurité si Init() n'a pas été appelé par un manager externe
         if (!_isInitialized && _orbitalPrefab != null)
         {
             SpawnOrbitals();
@@ -55,7 +62,7 @@ public class WeaponOrbital : MonoBehaviour
     {
         if (IsMaxOrbital())
         {
-            Debug.Log("Nombre maximum d'orbitaux atteint !");
+            Debug.LogWarning("[WeaponOrbital] AddOrbital() appelé alors que le plafond interne est atteint — vérifier la config UpgradeData/LevelUpManager, ce cas ne devrait jamais arriver en jeu normal.");
             return;
         }
         _orbitalCount++;
@@ -100,7 +107,7 @@ public class WeaponOrbital : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (_orbitals.Count == 0) return;
 
-        // Contr�le de la range au clavier
+        // Contrôle de la range au clavier
         if (Input.GetKey(KeyCode.A))
             _orbitRadius = Mathf.Max(_minOrbitRadius, _orbitRadius - _rangeChangeSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.E))
@@ -127,7 +134,7 @@ public class WeaponOrbital : MonoBehaviour
     {
         _currentDamage = _baseDamage * (1f + _upgradeDamageModifier);
 
-        // On r�percute imm�diatement la modification sur tous nos projectiles actifs
+        // On répercute immédiatement la modification sur tous nos projectiles actifs
         for (int i = 0; i < _orbitalScriptsCache.Count; i++)
         {
             if (_orbitalScriptsCache[i] != null)

@@ -118,7 +118,7 @@ public class WaveManager : MonoBehaviour
             // AJOUTÉ — applique le zoom propre à CE boss, lu directement sur son prefab
             BossBase bossScript = bossInstance.GetComponent<BossBase>();
             if (bossScript != null && BossCameraZoom.Instance != null)
-                BossCameraZoom.Instance.SetBossOffset(new Vector3(0f, bossScript.CameraZoomMargin, 0f)); // MODIFIÉ — SetBossZoom() n'existe plus, remplacé par SetBossOffset()
+                BossCameraZoom.Instance.SetBossZoom(bossScript.CameraZoomMargin); // MODIFIÉ // MODIFIÉ — SetBossZoom() n'existe plus, remplacé par SetBossOffset()
         }
         else
             Debug.LogWarning($"Boss {bossNumber} prefab non assigné !");
@@ -153,11 +153,8 @@ public class WaveManager : MonoBehaviour
 
     private string GetPoolTag(GameObject enemy)
     {
-        if (enemy.GetComponent<EnemyShooter>() != null) return "EnemyShooter";
-        if (enemy.GetComponent<EnemyTank>() != null) return "EnemyTank";
-        if (enemy.GetComponent<EnemyKaiju>() != null) return "EnemyKaiju"; // AJOUTÉ
-                                                                           // même remarque pour Corbeau/Tisseuse une fois leurs classes/tags de pool confirmés
-        return "Enemy";
+        EnemyBase eb = enemy.GetComponent<EnemyBase>();
+        return eb != null ? eb.PoolTag : "Enemy"; // MODIFIÉ — lit le tag configuré sur le prefab au lieu de deviner via une chaîne de GetComponent<X>()
     }
 
     public void OnBossDied()
@@ -165,7 +162,7 @@ public class WaveManager : MonoBehaviour
         _bossAlive = false;
         _enemySpawner.gameObject.SetActive(true);
 
-        if (BossCameraZoom.Instance != null) BossCameraZoom.Instance.ResetOffset(); // MODIFIÉ — ResetZoom() n'existe plus, remplacé par ResetOffset() // AJOUTÉ
+        if (BossCameraZoom.Instance != null) BossCameraZoom.Instance.ResetZoom(); 
 
         if (_bossCount >= 3)
             GameManager.Instance.TriggerVictory();

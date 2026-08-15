@@ -18,28 +18,34 @@ public class PlayerController : MonoBehaviour
 
     [Header("Modèle 3D")]
     [SerializeField] private string _modelChildName = "stylized_character_3d_model";
-    [SerializeField] private Transform _staffTransform; // AJOUTÉ — référence directe au bâton, à glisser dans l'inspector
+    [SerializeField] private Transform _staffTransform;
 
-    [Header("Clone Fantôme (touche dédiée)")] // AJOUTÉ — tout ce bloc
+    [Header("Clone Fantôme (touche dédiée)")]
     [SerializeField] private KeyCode _phantomCloneKey = KeyCode.C;
     [SerializeField] private float _phantomCloneCooldown = 8f;
     [SerializeField] private float _phantomCloneDuration = 2f;
     [SerializeField] private float _phantomAttractRadius = 10f;
     [SerializeField] private int _phantomMaxAttracted = 14;
-    [SerializeField] private float _phantomEscapeSpeedMultiplier = 1.5f; // +50%
+    [SerializeField] private float _phantomEscapeSpeedMultiplier = 1.5f;
     [SerializeField] private float _phantomEscapeSpeedDuration = 1.2f;
     [SerializeField] private Color _cloneTint = new Color(0.55f, 0.7f, 1f);
     [SerializeField] private float _cloneAlpha = 0.55f;
     [SerializeField] private float _phantomSelfAlpha = 0.45f;
 
+    [Header("Clone Fantôme — overrides par personnage")]
+    [SerializeField] private Renderer _mainBodyRenderer; // AJOUTÉ — glisse le renderer du modèle ici (évite que le bâton contamine les ghost materials)
+    [SerializeField] private SkinnedMeshRenderer _cloneSourceRenderer; // AJOUTÉ — glisse le SkinnedMeshRenderer du modèle ici
+    [SerializeField] private Vector3 _cloneScale = Vector3.one; // AJOUTÉ — force la scale du clone
+    [SerializeField] private Vector3 _cloneStaffScale = Vector3.one;
+
     private float _phantomCloneCooldownTimer = 0f;
-    public float PhantomCloneCooldownPercent => _phantomCloneCooldownTimer / _phantomCloneCooldown; // AJOUTÉ — à toi de le brancher sur une UI si tu veux l'afficher, pas d'équivalent existant côté GameUI
+    public float PhantomCloneCooldownPercent => _phantomCloneCooldownTimer / _phantomCloneCooldown;
 
     private Rigidbody _rb;
     private HealthSystem _healthSystem;
     private Vector3 _moveDirection;
     private float _speedMultiplier = 1f;
-    private float _escapeSpeedMultiplier = 1f; // AJOUTÉ — dédié, séparé de _speedMultiplier pour éviter le même bug que côté ennemi
+    private float _escapeSpeedMultiplier = 1f;
 
     private bool _isDashing = false;
     private bool _isInvincible = false;
@@ -58,7 +64,6 @@ public class PlayerController : MonoBehaviour
     public bool CanAbsorb => _canAbsorb;
     public float DashCooldownPercent => _dashCooldownTimer / _dashCooldown;
 
-    // AJOUTÉ — plafond partagé, utilisé à la fois par le burst initial ET par EnemyBase.OnEnable() pour les spawns tardifs
     public static float PhantomAttractRadius { get; private set; }
     public static int PhantomAttractedCount { get; private set; }
     public static int PhantomMaxAttracted { get; private set; }
@@ -85,7 +90,6 @@ public class PlayerController : MonoBehaviour
     private Material[][] _ghostSelfMaterials;
     private Material[][] _ghostCloneMaterials;
 
-
     public void ActivateInvisibility(float duration)
     {
         _isInvisible = true;
@@ -94,11 +98,8 @@ public class PlayerController : MonoBehaviour
 
         int playerLayer = LayerMask.NameToLayer("Player");
         int enemyLayer = LayerMask.NameToLayer("Enemy");
-
         if (playerLayer != -1 && enemyLayer != -1)
-        {
             Physics.IgnoreLayerCollision(playerLayer, enemyLayer, true);
-        }
     }
 
     private void HandleInvisibilityTimer()
@@ -106,8 +107,8 @@ public class PlayerController : MonoBehaviour
         if (!_isInvisible) return;
 
         _invisibilityTimer -= Time.deltaTime;
-
         _blinkTimer += Time.deltaTime;
+
         if (_blinkTimer >= _blinkInterval)
         {
             _blinkTimer = 0f;
@@ -122,11 +123,8 @@ public class PlayerController : MonoBehaviour
 
             int playerLayer = LayerMask.NameToLayer("Player");
             int enemyLayer = LayerMask.NameToLayer("Enemy");
-
             if (playerLayer != -1 && enemyLayer != -1)
-            {
                 Physics.IgnoreLayerCollision(playerLayer, enemyLayer, false);
-            }
         }
     }
 
@@ -154,19 +152,26 @@ public class PlayerController : MonoBehaviour
         _animatorController = GetComponent<PlayerAnimatorController>();
 
         _modelTransform = transform.Find(_modelChildName);
-        if (_modelTransform != null)
+
+        // MODIFIÉ — si _mainBodyRenderer est assigné dans l'Inspector, on l'utilise seul
+        // pour éviter que le bâton ou d'autres accessoires contaminent les ghost materials
+        if (_mainBodyRenderer != null)
+        {
+            _playerRenderers = new Renderer[] { _mainBodyRenderer };
+        }
+        else if (_modelTransform != null)
         {
             _playerRenderers = _modelTransform.GetComponentsInChildren<Renderer>();
         }
         else
         {
-            Debug.LogWarning($"PlayerController : enfant '{_modelChildName}' introuvable, fallback sur tout le Player (risque de bug capsule).");
+            Debug.LogWarning($"PlayerController : enfant '{_modelChildName}' introuvable, fallback sur tout le Player.");
             _playerRenderers = GetComponentsInChildren<Renderer>();
         }
 
         PrecomputeGhostMaterials();
 
-        _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetBonusAgility();
+        _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetReputationBonusSpeed();
         _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
         _dashCooldown = Mathf.Max(_dashCooldown, 1f);
     }
@@ -175,25 +180,25 @@ public class PlayerController : MonoBehaviour
     {
         if (_playerRenderers == null) return;
 
-        _originalMaterials = new Material[_playerRenderers.Length][];
-        _ghostSelfMaterials = new Material[_playerRenderers.Length][];
-        _ghostCloneMaterials = new Material[_playerRenderers.Length][];
+        _originalMaterials    = new Material[_playerRenderers.Length][];
+        _ghostSelfMaterials   = new Material[_playerRenderers.Length][];
+        _ghostCloneMaterials  = new Material[_playerRenderers.Length][];
 
         for (int i = 0; i < _playerRenderers.Length; i++)
         {
             Material[] originals = _playerRenderers[i].sharedMaterials;
             _originalMaterials[i] = originals;
 
-            Material[] ghostSelf = new Material[originals.Length];
+            Material[] ghostSelf  = new Material[originals.Length];
             Material[] ghostClone = new Material[originals.Length];
 
             for (int j = 0; j < originals.Length; j++)
             {
-                ghostSelf[j] = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f); // pas de teinte pour le joueur, juste l'alpha
-                ghostClone[j] = CreateGhostMaterial(originals[j], _cloneTint, _cloneAlpha, 0.4f); // mélange doux vers le bleu pour le clone
+                ghostSelf[j]  = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f);
+                ghostClone[j] = CreateGhostMaterial(originals[j], _cloneTint, _cloneAlpha, 0.4f);
             }
 
-            _ghostSelfMaterials[i] = ghostSelf;
+            _ghostSelfMaterials[i]  = ghostSelf;
             _ghostCloneMaterials[i] = ghostClone;
         }
     }
@@ -201,11 +206,9 @@ public class PlayerController : MonoBehaviour
     private Material CreateGhostMaterial(Material source, Color tintMultiply, float alpha, float tintBlend)
     {
         Material mat = new Material(source);
-
         Color baseColor = mat.color;
         Color blended = Color.Lerp(baseColor, tintMultiply, tintBlend);
         mat.color = new Color(blended.r, blended.g, blended.b, alpha);
-
         mat.SetFloat("_Surface", 1f);
         mat.SetFloat("_Blend", 0f);
         mat.SetOverrideTag("RenderType", "Transparent");
@@ -214,9 +217,8 @@ public class PlayerController : MonoBehaviour
         mat.EnableKeyword("_ALPHABLEND_ON");
         mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
         mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-        mat.SetInt("_ZWrite", 1); // MODIFIÉ — voir point 2
+        mat.SetInt("_ZWrite", 1);
         mat.SetShaderPassEnabled("DepthOnly", false);
-
         return mat;
     }
 
@@ -227,17 +229,17 @@ public class PlayerController : MonoBehaviour
 
         HandleMovementInput();
         HandleDash();
-        HandlePhantomCloneInput(); // AJOUTÉ
+        HandlePhantomCloneInput();
         HandleAbsorptionWindow();
         UpdateDashCooldown();
-        UpdatePhantomCloneCooldown(); // AJOUTÉ
+        UpdatePhantomCloneCooldown();
         HandleInvisibilityTimer();
     }
 
     private void HandleMovementInput()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
+        float vertical   = Input.GetAxisRaw("Vertical");
         _moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (_animatorController != null)
@@ -258,30 +260,28 @@ public class PlayerController : MonoBehaviour
         if (_isDashing)
         {
             _dashTimer -= Time.deltaTime;
-            if (_dashTimer <= 0f)
-                StopDash();
+            if (_dashTimer <= 0f) StopDash();
         }
     }
 
     private void StartDash(Vector3 direction)
     {
-        _dashDirection = direction.normalized;
-        _isDashing = true;
-        _isInvincible = true;
-        _dashTimer = _dashDuration;
+        _dashDirection    = direction.normalized;
+        _isDashing        = true;
+        _isInvincible     = true;
+        _dashTimer        = _dashDuration;
         _dashCooldownTimer = _dashCooldown;
-        _canAbsorb = true;
-        _absorptionTimer = _absorptionWindow;
+        _canAbsorb        = true;
+        _absorptionTimer  = _absorptionWindow;
 
-        if (_healthSystem != null) _healthSystem.AddExternalInvincibility(); // MODIFIÉ
+        if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(0f);
     }
 
-    // AJOUTÉ — bloc entier, capacité autonome sur la touche C
     private void HandlePhantomCloneInput()
     {
         if (_phantomCloneCooldownTimer > 0f) return;
-        if (!MetaProgressionManager.Instance.HasPhantomDash()) return; // note : nom hérité de l'ancien système, à renommer côté MetaProgressionManager quand tu auras le temps (HasPhantomClone() serait plus clair)
+        if (!MetaProgressionManager.Instance.HasPhantomDash()) return;
 
         if (Input.GetKeyDown(_phantomCloneKey))
         {
@@ -302,7 +302,11 @@ public class PlayerController : MonoBehaviour
 
         if (_modelTransform != null)
         {
-            SkinnedMeshRenderer sourceSkinned = _modelTransform.GetComponentInChildren<SkinnedMeshRenderer>();
+            // MODIFIÉ — référence directe au bon SkinnedMeshRenderer via l'Inspector
+            // évite que GetComponentInChildren prenne le bâton en premier
+            SkinnedMeshRenderer sourceSkinned = _cloneSourceRenderer != null
+                ? _cloneSourceRenderer
+                : _modelTransform.GetComponentInChildren<SkinnedMeshRenderer>();
 
             if (sourceSkinned != null)
             {
@@ -315,20 +319,24 @@ public class PlayerController : MonoBehaviour
                 mf.mesh = bakedMesh;
 
                 MeshRenderer mr = clone.AddComponent<MeshRenderer>();
+                // Prend les materials du bon renderer (modèle principal, pas le bâton)
                 mr.sharedMaterials = sourceSkinned.sharedMaterials;
 
-                // MODIFIÉ — au lieu de recopier position/rotation/lossyScale à la main,
-                // on parente temporairement sous sourceSkinned (le clone hérite alors
-                // exactement de son repère local, sans risque d'erreur de calcul manuel),
-                // puis on détache en conservant la position monde.
-                clone.transform.SetParent(sourceSkinned.transform, false); // false = clone prend la position/rotation/scale LOCALE identité de son parent = colle exactement sur sourceSkinned
-                clone.transform.SetParent(null, true); // true = détache en gardant la position monde actuelle, donc rien ne bouge visuellement
+                clone.transform.SetParent(sourceSkinned.transform, false);
+                clone.transform.SetParent(null, true);
+
+                // AJOUTÉ — force la scale via l'Inspector pour corriger les modèles rescalés
+                clone.transform.localScale = _cloneScale;
 
                 if (_staffTransform != null)
                 {
-                    GameObject staffClone = Instantiate(_staffTransform.gameObject);
-                    staffClone.transform.SetParent(_staffTransform, false); // colle exactement sur l'original...
-                    staffClone.transform.SetParent(clone.transform, true);  // ...puis rattaché au clone en gardant la position monde figée
+                    GameObject staffClone = Instantiate(
+                        _staffTransform.gameObject,
+                        _staffTransform.position,   // position monde exacte du bâton original
+                        _staffTransform.rotation);  // rotation monde exacte
+
+                    staffClone.transform.SetParent(clone.transform, true); // rattache au clone en gardant la position monde
+                    staffClone.transform.localScale = _cloneStaffScale;
                 }
             }
             else
@@ -342,28 +350,26 @@ public class PlayerController : MonoBehaviour
             clone.transform.position = transform.position;
         }
 
-        
         SetLayerRecursively(clone, LayerMask.NameToLayer("PhantomClone"));
 
-        ActivePhantomClone = clone.transform;
-        PhantomAttractRadius = _phantomAttractRadius; // AJOUTÉ
-        PhantomMaxAttracted = _phantomMaxAttracted;   // AJOUTÉ
-        PhantomAttractedCount = 0;                    // AJOUTÉ
+        ActivePhantomClone    = clone.transform;
+        PhantomAttractRadius  = _phantomAttractRadius;
+        PhantomMaxAttracted   = _phantomMaxAttracted;
+        PhantomAttractedCount = 0;
 
-        Renderer[] cloneRenderers = clone.GetComponentsInChildren<Renderer>();
-        for (int i = 0; i < cloneRenderers.Length && i < _ghostCloneMaterials.Length; i++)
-        {
-            cloneRenderers[i].sharedMaterials = _ghostCloneMaterials[i];
-        }
+        // MODIFIÉ — applique les ghost materials uniquement sur le MeshRenderer principal du clone
+        // (pas sur les enfants comme le bâton cloné)
+        MeshRenderer cloneMainRenderer = clone.GetComponent<MeshRenderer>();
+        if (cloneMainRenderer != null && _ghostCloneMaterials.Length > 0)
+            cloneMainRenderer.sharedMaterials = _ghostCloneMaterials[0];
 
         foreach (MonoBehaviour mb in clone.GetComponentsInChildren<MonoBehaviour>())
             mb.enabled = false;
-        foreach (Collider col in clone.GetComponentsInChildren<Collider>()) // sécurité anti-collision fantôme, gardé même si le modèle n'a normalement pas de collider propre
+        foreach (Collider col in clone.GetComponentsInChildren<Collider>())
             col.enabled = false;
 
         float duration = _phantomCloneDuration;
 
-        // AJOUTÉ — les 3 effets d'échappement du joueur, tous indépendants les uns des autres
         StartCoroutine(PhantomSelfTransparency(duration));
         StartCoroutine(PhantomEscapeSpeedBoost());
         if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
@@ -378,16 +384,15 @@ public class PlayerController : MonoBehaviour
 
         OnPhantomDestroyed?.Invoke();
 
-        ActivePhantomClone = null;
+        ActivePhantomClone    = null;
         PhantomAttractedCount = 0;
-        PhantomMaxAttracted = 0;
+        PhantomMaxAttracted   = 0;
 
-        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility(); // AJOUTÉ — désactive l'immunité en même temps que le reste
+        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility();
 
         Destroy(clone);
     }
 
-    // AJOUTÉ — boost de vitesse temporaire pour laisser le temps de fuir
     private IEnumerator PhantomEscapeSpeedBoost()
     {
         _escapeSpeedMultiplier = _phantomEscapeSpeedMultiplier;
@@ -396,10 +401,7 @@ public class PlayerController : MonoBehaviour
         while (elapsed < _phantomEscapeSpeedDuration)
         {
             if (GameManager.Instance == null || GameManager.Instance.IsPaused)
-            {
-                yield return null;
-                continue;
-            }
+            { yield return null; continue; }
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -409,7 +411,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator PhantomSelfTransparency(float duration)
     {
-        if (_isInvisible) yield break; // évite un conflit visuel si Second Souffle est actif en même temps
+        if (_isInvisible) yield break;
 
         SwapPlayerMaterials(_ghostSelfMaterials);
 
@@ -417,10 +419,7 @@ public class PlayerController : MonoBehaviour
         while (elapsed < duration)
         {
             if (GameManager.Instance == null || GameManager.Instance.IsPaused)
-            {
-                yield return null;
-                continue;
-            }
+            { yield return null; continue; }
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -447,18 +446,16 @@ public class PlayerController : MonoBehaviour
 
     private void StopDash()
     {
-        _isDashing = false;
+        _isDashing    = false;
         _isInvincible = false;
-        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility(); // MODIFIÉ
+        if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility();
     }
 
     private void HandleAbsorptionWindow()
     {
         if (!_canAbsorb) return;
-
         _absorptionTimer -= Time.deltaTime;
-        if (_absorptionTimer <= 0f)
-            _canAbsorb = false;
+        if (_absorptionTimer <= 0f) _canAbsorb = false;
     }
 
     private void UpdateDashCooldown()
@@ -477,7 +474,7 @@ public class PlayerController : MonoBehaviour
 
         if (_moveDirection.sqrMagnitude > 0.01f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(_moveDirection);
+            Quaternion targetRotation  = Quaternion.LookRotation(_moveDirection);
             Quaternion smoothedRotation = Quaternion.RotateTowards(_rb.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime);
             _rb.MoveRotation(smoothedRotation);
         }
@@ -486,30 +483,16 @@ public class PlayerController : MonoBehaviour
         if (_isDashing)
             nextPosition = _rb.position + _dashDirection * _dashSpeed * Time.fixedDeltaTime;
         else
-            nextPosition = _rb.position + _moveDirection * _moveSpeed * _speedMultiplier * _escapeSpeedMultiplier * Time.fixedDeltaTime; // MODIFIÉ — ajout du multiplicateur d'échappement
+            nextPosition = _rb.position + _moveDirection * _moveSpeed * _speedMultiplier * _escapeSpeedMultiplier * Time.fixedDeltaTime;
 
         nextPosition = MapBoundaryUtils.ClampToZone(nextPosition);
-
         _rb.MovePosition(nextPosition);
     }
 
+    public void AddMoveSpeed(float value)        => _moveSpeed += _moveSpeed * value;
+    public void ReduceDashCooldown(float value)  => _dashCooldown = Mathf.Max(_dashCooldown - value, 0.5f);
+    public void SetSpeedMultiplier(float multiplier) => _speedMultiplier = multiplier;
 
-    public void AddMoveSpeed(float value)
-    {
-        _moveSpeed += _moveSpeed * value;
-    }
-
-    public void ReduceDashCooldown(float value)
-    {
-        _dashCooldown = Mathf.Max(_dashCooldown - value, 0.5f);
-    }
-
-    public void SetSpeedMultiplier(float multiplier)
-    {
-        _speedMultiplier = multiplier;
-    }
-
-    // Dans PlayerController.cs — nouveau champ + 2 méthodes
     private Coroutine _slowCoroutine;
 
     public void ApplyTemporarySlow(float multiplier, float duration)
@@ -526,10 +509,7 @@ public class PlayerController : MonoBehaviour
         while (elapsed < duration)
         {
             if (GameManager.Instance == null || GameManager.Instance.IsPaused)
-            {
-                yield return null;
-                continue;
-            }
+            { yield return null; continue; }
             elapsed += Time.deltaTime;
             yield return null;
         }

@@ -11,11 +11,16 @@ public class BossDeer : BossBase
     [SerializeField] private float _jumpDamage = 80f;
     [SerializeField] private float _jumpRadius = 4f;
     [SerializeField] private Color _telegraphColor = new Color(1f, 0.3f, 0.15f, 0.6f);
+    [SerializeField] private float _summonedScaleFactor = 0.75f;
+
+    [Header("Cerf — Restriction de saut par angle")] // AJOUTÉ
+    [SerializeField] private float _jumpForbiddenAngleMin = -5f * Mathf.PI / 6f; // AJOUTÉ — -150°
+    [SerializeField] private float _jumpForbiddenAngleMax = -1f * Mathf.PI / 6f; // AJOUTÉ — -30°
 
     [Header("Cerf — Spirale")]
-    [SerializeField] private float _spiralFireRate = 0.08f; // MODIFIÉ — était 0.15
-    [SerializeField] private int _spiralBurstCount = 36;    // MODIFIÉ — était 24
-    [SerializeField] private bool _doubleSpiral = true;     // AJOUTÉ — 2ème couche décalée à 180°
+    [SerializeField] private float _spiralFireRate = 0.08f;
+    [SerializeField] private int _spiralBurstCount = 36;
+    [SerializeField] private bool _doubleSpiral = true;
 
     [Header("Cerf — Régénération")]
     [SerializeField] private float _regenAmount = 100f;
@@ -26,16 +31,16 @@ public class BossDeer : BossBase
     [SerializeField] private float _rageThreshold = 0.3f;
     [SerializeField] private float _phase2SpeedMultiplier = 1.4f;
 
-    [Header("Cerf — Morsure")] // AJOUTÉ
+    [Header("Cerf — Morsure")]
     [SerializeField] private float _biteRange = 2f;
 
-    [Header("Cerf — Mort")] // AJOUTÉ
+    [Header("Cerf — Mort")]
     [SerializeField] private float _deathAnimDuration = 2f;
 
     private bool _isPhase2 = false;
     private bool _isRaging = false;
-    private bool _isDead = false; // AJOUTÉ
-    private bool _isBiting = false; // AJOUTÉ
+    private bool _isDead = false;
+    private bool _isBiting = false;
 
     private float _jumpTimer = 0f;
     private float _regenTimer = 0f;
@@ -67,7 +72,19 @@ public class BossDeer : BossBase
         if (_playerTransform == null) return;
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
-        if (_isDead) return; // AJOUTÉ — plus aucune logique pendant la mort
+        if (_isDead) return;
+
+        // Filet de sécurité Y, cohérent avec le fix appliqué à tous les boss —
+        // seulement hors saut, puisque Y est intentionnellement piloté par l'arc pendant JumpState.Airborne
+        if (_jumpState == JumpState.None)
+        {
+            Vector3 pos = transform.position;
+            if (Mathf.Abs(pos.y) > 0.001f)
+            {
+                pos.y = 0f;
+                transform.position = pos;
+            }
+        }
 
         CheckPhaseTransitions();
         HandleMovement();
@@ -104,7 +121,6 @@ public class BossDeer : BossBase
 
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
 
-        // AJOUTÉ — s'arrête net à distance de morsure au lieu de marcher à travers le joueur
         if (distanceToPlayer <= _biteRange)
         {
             _isBiting = true;
@@ -120,14 +136,28 @@ public class BossDeer : BossBase
         RotateTowards(direction);
     }
 
+    // AJOUTÉ — vérifie si le Cerf se trouve actuellement dans la zone angulaire interdite
+    // par rapport au joueur (zone où le saut fait sortir le mesh du cadre caméra, cf. bug
+    // d'invisibilité qui vient de l'animation elle-même, pas de la trajectoire du script)
+    private bool IsInForbiddenJumpZone()
+    {
+        Vector3 toDeer = transform.position - _playerTransform.position;
+        toDeer.y = 0f;
+        if (toDeer.sqrMagnitude < 0.01f) return false;
+
+        float angle = Mathf.Atan2(toDeer.z, toDeer.x);
+
+        return angle >= _jumpForbiddenAngleMin && angle <= _jumpForbiddenAngleMax;
+    }
+
     private void HandleJumpAttack()
     {
-        if (_isBiting) return; // AJOUTÉ — pas de saut pendant qu'il mord, évite le chevauchement d'états
+        if (_isBiting) return;
 
         if (_jumpState == JumpState.None)
         {
             _jumpTimer += Time.deltaTime;
-            if (_jumpTimer >= _jumpCooldown)
+            if (_jumpTimer >= _jumpCooldown && !IsInForbiddenJumpZone()) // MODIFIÉ — bloque le déclenchement dans la zone interdite
             {
                 _jumpTimer = 0f;
                 StartJumpWindup();
@@ -141,10 +171,10 @@ public class BossDeer : BossBase
         {
             float progress = Mathf.Clamp01(_jumpStateTimer / _jumpWindupDuration);
 
-            // MODIFIÉ — le vrai fix : seulement X et Z grandissent, Y reste un disque fin
             if (_telegraphObject != null)
             {
-                float diameter = _jumpRadius * 2f * progress;
+                float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
+                float diameter = effectiveRadius * 2f * progress; // MODIFIÉ — utilise effectiveRadius au lieu de _jumpRadius
                 _telegraphObject.transform.localScale = new Vector3(diameter, 0.02f, diameter);
             }
 
@@ -178,7 +208,8 @@ public class BossDeer : BossBase
         _jumpTakeoffPosition = transform.position;
         _jumpLandingPosition = MapBoundaryUtils.ClampToZone(_playerTransform.position);
 
-        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition);
+        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
+        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition, effectiveRadius); // MODIFIÉ — passe le rayon en paramètre
     }
 
     private void LandJumpAttack()
@@ -191,8 +222,9 @@ public class BossDeer : BossBase
             _telegraphObject = null;
         }
 
+        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
-        if (distanceToPlayer <= _jumpRadius)
+        if (distanceToPlayer <= effectiveRadius) // MODIFIÉ — cohérent avec le télégraphe affiché
         {
             HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
             if (playerHealth != null)
@@ -203,14 +235,14 @@ public class BossDeer : BossBase
         _jumpStateTimer = 0f;
     }
 
-    private GameObject CreateTelegraphReticle(Vector3 position)
+    private GameObject CreateTelegraphReticle(Vector3 position, float radius) // MODIFIÉ — ajout du paramètre radius
     {
         GameObject reticle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         Destroy(reticle.GetComponent<Collider>());
 
         reticle.transform.position = new Vector3(position.x, 0.05f, position.z);
         reticle.transform.localEulerAngles = Vector3.zero;
-        reticle.transform.localScale = new Vector3(0.01f, 0.02f, 0.01f); // MODIFIÉ — Y fixe dès le départ
+        reticle.transform.localScale = new Vector3(0.01f, 0.02f, 0.01f);
 
         Renderer rend = reticle.GetComponent<Renderer>();
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -222,6 +254,8 @@ public class BossDeer : BossBase
         mat.SetInt("_ZWrite", 0);
         rend.material = mat;
 
+        reticle.name = $"JumpTelegraph_{radius:F1}"; // optionnel, juste pratique pour repérer en jeu/hierarchy pendant les tests
+
         return reticle;
     }
 
@@ -230,7 +264,6 @@ public class BossDeer : BossBase
         if (_jumpState != JumpState.None) return;
         if (_isBiting) return;
 
-        // MODIFIÉ — plus de logique de salve/pause, tir continu tant qu'aucune autre action ne bloque
         _spiralTimer += Time.deltaTime;
         if (_spiralTimer >= _spiralFireRate)
         {
@@ -252,7 +285,6 @@ public class BossDeer : BossBase
                 projectile.Init(direction);
         }
 
-        // AJOUTÉ — 2ème spirale simultanée, décalée à 180°, pour un motif double plus dense
         if (_doubleSpiral)
         {
             Vector3 direction2 = Quaternion.Euler(0, _spiralAngle + 180f, 0) * Vector3.forward;
@@ -281,7 +313,6 @@ public class BossDeer : BossBase
         }
     }
 
-    // AJOUTÉ — override complet : joue Death, gèle tout, puis appelle base.Die() après coup pour les drops/heal/notify existants
     protected override void Die()
     {
         if (_isDead) return;
@@ -294,14 +325,14 @@ public class BossDeer : BossBase
         }
 
         Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false; // plus de dégâts de contact pendant l'anim de mort
+        if (col != null) col.enabled = false;
 
         if (_deerAnimator != null)
         {
             _deerAnimator.SetBool("IsJumping", false);
             _deerAnimator.SetBool("IsBiting", false);
             _deerAnimator.SetBool("IsMoving", false);
-            _deerAnimator.SetTrigger("Death"); // AJOUTÉ — Trigger, pas Bool, une seule occurrence nécessaire
+            _deerAnimator.SetTrigger("Death");
         }
 
         StartCoroutine(DeathSequence());
@@ -310,10 +341,10 @@ public class BossDeer : BossBase
     private IEnumerator DeathSequence()
     {
         yield return new WaitForSeconds(_deathAnimDuration);
-        base.Die(); // drops XP/gold, heal joueur, notify WaveManager, Destroy(gameObject) — logique déjà existante, réutilisée telle quelle
+        base.Die();
     }
 
-    private void UpdateAnimatorState()
+    protected override void UpdateAnimatorState() // MODIFIÉ — ajout du override
     {
         if (_deerAnimator == null) return;
 
@@ -321,8 +352,28 @@ public class BossDeer : BossBase
         bool isMoving = !isJumping && !_isBiting && (_playerTransform.position - transform.position).sqrMagnitude > 0.04f;
 
         _deerAnimator.SetBool("IsJumping", isJumping);
-        _deerAnimator.SetBool("IsBiting", _isBiting); // AJOUTÉ
+        _deerAnimator.SetBool("IsBiting", _isBiting);
         _deerAnimator.SetBool("IsMoving", isMoving);
         _deerAnimator.SetBool("IsPhase2", _isPhase2);
+    }
+
+    // AJOUTÉ — visualise la zone de saut interdite en Scene view (arc rouge autour du joueur).
+    // Purement un outil de calibration, à retirer une fois l'angle confirmé bon en jeu si tu veux nettoyer.
+    private void OnDrawGizmos()
+    {
+        if (_playerTransform == null) return;
+
+        Gizmos.color = Color.red;
+        int segments = 40;
+        float range = _jumpForbiddenAngleMax - _jumpForbiddenAngleMin;
+
+        Vector3 prevPoint = _playerTransform.position;
+        for (int i = 0; i <= segments; i++)
+        {
+            float a = _jumpForbiddenAngleMin + (range * i / segments);
+            Vector3 point = _playerTransform.position + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 8f;
+            Gizmos.DrawLine(i == 0 ? _playerTransform.position : prevPoint, point);
+            prevPoint = point;
+        }
     }
 }
