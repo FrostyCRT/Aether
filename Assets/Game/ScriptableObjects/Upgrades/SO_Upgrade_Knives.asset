@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Couteaux
   description: Envoie des salves de couteaux
-  upgradeType: 12
+  icon: {fileID: 21300000, guid: 4e15047d2b94bea48ae521e0661e57b0, type: 3}
+  upgradeType: 6
   value: 0
   _levelValues:
   - 0.4

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Aura
   description: Zone Aura
-  upgradeType: 11
+  icon: {fileID: 21300000, guid: 6aadc56ad08c97c4f9efa22bd470c7d6, type: 3}
+  upgradeType: 5
   value: 0
   _levelValues:
   - 0.4

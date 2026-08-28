@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Boule de Feu
   description: Lance une boule de feu
-  upgradeType: 10
+  icon: {fileID: 21300000, guid: 65bc1a5858b97b2438c34d7ddcd70d3c, type: 3}
+  upgradeType: 4
   value: 0
   _levelValues:
   - 0.4

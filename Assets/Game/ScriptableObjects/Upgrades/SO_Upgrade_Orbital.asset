@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Orbitaux
   description: "D\xE9bloque les projectiles orbitaux"
-  upgradeType: 13
+  icon: {fileID: 21300000, guid: e4b4cf60165c0604e80e5b39a8f83527, type: 3}
+  upgradeType: 7
   value: 0
   _levelValues: []
   _maxLevel: 3

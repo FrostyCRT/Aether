@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Soin
   description: Restaure 50% des HP maximum
+  icon: {fileID: 21300000, guid: ea8ae58ddc2b8b64eae536dda9d68836, type: 3}
   upgradeType: 2
   value: 0.5
   _levelValues: []

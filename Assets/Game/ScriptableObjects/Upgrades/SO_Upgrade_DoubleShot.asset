@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Double Tir
   description: Tire 2 projectiles en rafale
-  upgradeType: 7
+  icon: {fileID: 21300000, guid: deccc92b146036b4ca2a940cdf2ec321, type: 3}
+  upgradeType: 3
   value: 0
+  _levelValues: []
+  _maxLevel: 1
+  _requiresUnlockPick: 0

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Boue
   description: 
-  upgradeType: 15
+  icon: {fileID: 21300000, guid: 55daf796565e0b243a99e85a048533b0, type: 3}
+  upgradeType: 9
   value: 0
   _levelValues: []
   _maxLevel: 3

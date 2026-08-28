@@ -7,9 +7,32 @@ public class UpgradeData : ScriptableObject
     public string upgradeName;
     public string description;
 
+    [Header("Icône")]
+    // AJOUTÉ — sprite affiché sur la carte de level-up (généré via Meta AI). Un par asset,
+    // à assigner manuellement dans l'Inspector — pas de logique de déduction possible ici,
+    // contrairement à Branch ci-dessous.
+    public Sprite icon;
+
     [Header("Effet")]
     public UpgradeType upgradeType;
     public float value;
+
+    // AJOUTÉ — dérivé directement de upgradeType, pas un champ séparé à configurer sur
+    // chaque asset. Détermine quel parchemin cette upgrade utilise côté UI :
+    // rouge (Aether) / vert (Kael) / bleu (Lyra) / doré (universel).
+    public UpgradeBranch Branch
+    {
+        get
+        {
+            switch (upgradeType)
+            {
+                case UpgradeType.Fireball: return UpgradeBranch.Aether;
+                case UpgradeType.AuraUpgrade: return UpgradeBranch.Kael;
+                case UpgradeType.Knives: return UpgradeBranch.Lyra;
+                default: return UpgradeBranch.Universal;
+            }
+        }
+    }
 
     [Header("Valeurs par palier (Fireball / AuraUpgrade / Knives uniquement)")]
     [Tooltip("Utilisé UNIQUEMENT par Fireball/AuraUpgrade/Knives, dont les 3 paliers ont des effets différents (contrairement aux autres cartes qui répètent le même effet à chaque pick). Index 0 = palier 1, index 1 = palier 2, index 2 = palier 3. Ignoré par tous les autres UpgradeType, qui continuent d'utiliser le champ 'value' ci-dessus.")]
@@ -31,6 +54,10 @@ public class UpgradeData : ScriptableObject
     [Tooltip("Coche cette case UNIQUEMENT pour les capacités qui n'existent pas au spawn et doivent être débloquées par un premier pick (Orbital, Lightning, Boue). Ce premier pick ne compte pas comme un des paliers d'amélioration ci-dessus — il s'ajoute en plus. Laisse décoché pour les armes exclusives personnage (déjà équipées au spawn) et les autres cartes à effet immédiat.")]
     [SerializeField] private bool _requiresUnlockPick = false;
 
+    // AJOUTÉ — accesseur public : l'UI a besoin de savoir si cette upgrade utilise un
+    // pick de déblocage séparé pour afficher (ou non) la pastille dédiée à cet état.
+    public bool RequiresUnlockPick => _requiresUnlockPick;
+
     // Nombre total de picks autorisés sur cette carte pour la run (déblocage + paliers, ou juste paliers)
     private int TotalAllowedPicks => _requiresUnlockPick ? _maxLevel + 1 : _maxLevel;
 
@@ -51,6 +78,17 @@ public class UpgradeData : ScriptableObject
     {
         int raw = GetCurrentLevel();
         return _requiresUnlockPick ? Mathf.Max(0, raw - 1) : raw;
+    }
+
+    // AJOUTÉ — vrai dès que le pick de déblocage a été fait. Sert à distinguer, côté UI,
+    // "vient d'être débloqué, 0 palier encore pris" (IsUnlocked() == true, GetDisplayLevel() == 0)
+    // de "pas encore débloqué du tout" (IsUnlocked() == false) — deux états qui renvoyaient
+    // exactement le même GetDisplayLevel() == 0 et étaient donc indiscernables à l'écran.
+    // Pour les upgrades sans pick de déblocage (_requiresUnlockPick == false), toujours vrai :
+    // la notion de "débloqué" ne s'applique pas à elles.
+    public bool IsUnlocked()
+    {
+        return !_requiresUnlockPick || GetCurrentLevel() >= 1;
     }
 
     private bool IsMaxed()
@@ -199,11 +237,7 @@ public class UpgradeData : ScriptableObject
             case UpgradeType.Heal:
                 return true;
 
-            case UpgradeType.AOERadius:
-                return player.GetComponent<WeaponAOE>() != null;
 
-            case UpgradeType.UnlockAOE:
-                return player.GetComponent<WeaponAOE>() == null;
 
             // AJOUTÉ — cartes filler universelles (touchent toutes les armes actives).
             // Toujours disponibles tant que non maxées ; configure un _maxLevel élevé
@@ -240,22 +274,6 @@ public class UpgradeData : ScriptableObject
             // l'arme directement (comme Fireball/AuraUpgrade/Knives)
             case UpgradeType.BouncingOrb:
                 return !IsMaxed();
-
-            // OBSOLETE — conservés pour compat ascendante si un asset n'a pas encore été migré,
-            // mais ne plus utiliser sur de nouveaux assets (voir UpgradeType.Orbital / .Lightning)
-            case UpgradeType.UnlockOrbital:
-                return player.GetComponent<WeaponOrbital>() == null;
-
-            case UpgradeType.AddOrbital:
-                WeaponOrbital orb = player.GetComponent<WeaponOrbital>();
-                return orb != null && !orb.IsMaxOrbital();
-
-            case UpgradeType.UnlockLightning:
-                return player.GetComponent<WeaponLightningChain>() == null;
-
-            case UpgradeType.AddLightningChain:
-                WeaponLightningChain wlc = player.GetComponent<WeaponLightningChain>();
-                return wlc != null && !wlc.IsMaxChain();
 
             default:
                 return true;
@@ -496,50 +514,7 @@ public class UpgradeData : ScriptableObject
                 if (health != null) health.Heal(value);
                 break;
 
-            case UpgradeType.UnlockAOE:
-                if (aoe == null)
-                {
-                    WeaponAOE newAOE = playerGO.AddComponent<WeaponAOE>();
-                    GameObject prefab = Resources.Load<GameObject>("PulseVisual");
-                    if (prefab != null)
-                        newAOE.Init(prefab);
-                    else
-                        Debug.LogWarning("Prefab PulseVisual introuvable dans Resources !");
-                }
-                break;
 
-            case UpgradeType.AOERadius:
-                if (aoe != null) aoe.AddRadius(value);
-                break;
-
-            // OBSOLETE — compat ascendante, ne plus assigner à de nouveaux assets
-            case UpgradeType.UnlockOrbital:
-                if (playerGO.GetComponent<WeaponOrbital>() == null)
-                {
-                    WeaponOrbital legacyOrbital = playerGO.AddComponent<WeaponOrbital>();
-                    GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
-                    if (prefab != null) legacyOrbital.Init(prefab);
-                }
-                break;
-
-            case UpgradeType.AddOrbital:
-                {
-                    WeaponOrbital legacyOrbital = playerGO.GetComponent<WeaponOrbital>();
-                    if (legacyOrbital != null) legacyOrbital.AddOrbital();
-                    break;
-                }
-
-            case UpgradeType.UnlockLightning:
-                if (playerGO.GetComponent<WeaponLightningChain>() == null)
-                    playerGO.AddComponent<WeaponLightningChain>();
-                break;
-
-            case UpgradeType.AddLightningChain:
-                {
-                    WeaponLightningChain legacyChain = playerGO.GetComponent<WeaponLightningChain>();
-                    if (legacyChain != null) legacyChain.AddChain();
-                    break;
-                }
         }
     }
 }
@@ -549,13 +524,7 @@ public enum UpgradeType
     Damage,
     FireRate,
     Heal,
-    UnlockAOE,
-    UnlockOrbital,      // OBSOLETE — remplacé par Orbital, ne plus assigner à un nouvel asset
-    AddOrbital,         // OBSOLETE — remplacé par Orbital
-    AOERadius,
     DoubleShot,
-    UnlockLightning,    // OBSOLETE — remplacé par Lightning
-    AddLightningChain,  // OBSOLETE — remplacé par Lightning
     Fireball,           // AJOUTÉ — upgrade exclusive Aether
     AuraUpgrade,        // AJOUTÉ — upgrade exclusive Kael
     Knives,             // AJOUTÉ — upgrade exclusive Lyra
@@ -563,4 +532,13 @@ public enum UpgradeType
     Lightning,          // AJOUTÉ — fusion Unlock+Add, cap générique 3
     MudPuddle,          // AJOUTÉ — Boue, même modèle qu'Orbital/Lightning
     BouncingOrb         // AJOUTÉ — Orbe Rebondissant, 3 paliers différenciés sans déblocage séparé
+}
+
+// AJOUTÉ — les 4 branches visuelles utilisées pour choisir le bon parchemin en UI.
+public enum UpgradeBranch
+{
+    Aether,
+    Kael,
+    Lyra,
+    Universal
 }

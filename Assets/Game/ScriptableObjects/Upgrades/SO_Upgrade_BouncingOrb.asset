@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Orbe Rebondissant
   description: 
-  upgradeType: 16
+  icon: {fileID: 21300000, guid: edf5f4280d6ef6c439bfcc36dc059a09, type: 3}
+  upgradeType: 10
   value: 0
   _levelValues:
   - 0.35
   - 0.3
   - 0
   _maxLevel: 3
-  _requiresUnlockPick: 0
+  _requiresUnlockPick: 1

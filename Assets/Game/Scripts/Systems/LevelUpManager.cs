@@ -5,7 +5,7 @@ public class LevelUpManager : MonoBehaviour
 {
     public static LevelUpManager Instance { get; private set; }
 
-    [Header("Références")]
+    [Header("References")]
     [SerializeField] private UpgradeData[] _allUpgrades;
     [SerializeField] private GameObject _levelUpPanel;
     [SerializeField] private UpgradeUI _upgradeUI;
@@ -17,9 +17,9 @@ public class LevelUpManager : MonoBehaviour
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
 
-    // AJOUTÉ — niveau courant de chaque upgrade pour la run en cours.
+    // Niveau courant de chaque upgrade pour la run en cours.
     // Vit ici (pas dans le ScriptableObject UpgradeData) car UpgradeData est un asset
-    // partagé entre toutes les runs, pas un état de run individuelle.
+    // partage entre toutes les runs, pas un etat de run individuelle.
     private readonly Dictionary<UpgradeData, int> _upgradeLevels = new Dictionary<UpgradeData, int>();
 
     public bool IsWaitingForChoice => _waitingForChoice;
@@ -34,13 +34,13 @@ public class LevelUpManager : MonoBehaviour
         Instance = this;
     }
 
-    // AJOUTÉ — lecture du niveau actuel d'une upgrade (0 si jamais piochée)
+    // Lecture du niveau actuel d'une upgrade (0 si jamais piochee)
     public int GetLevel(UpgradeData upgrade)
     {
         return _upgradeLevels.TryGetValue(upgrade, out int level) ? level : 0;
     }
 
-    // AJOUTÉ — incrémente et retourne le nouveau niveau, appelé par UpgradeData.Apply()
+    // Incremente et retourne le nouveau niveau, appele par UpgradeData.Apply()
     public int IncrementLevel(UpgradeData upgrade)
     {
         int newLevel = GetLevel(upgrade) + 1;
@@ -48,8 +48,8 @@ public class LevelUpManager : MonoBehaviour
         return newLevel;
     }
 
-    // AJOUTÉ — sécurité si jamais LevelUpManager doit être réutilisé sans recharger la scène
-    // (ex: bouton "Rejouer" qui ne recharge pas la scène de jeu)
+    // Securite si jamais LevelUpManager doit etre reutilise sans recharger la scene
+    // (ex: bouton "Rejouer" qui ne recharge pas la scene de jeu)
     public void ResetLevels()
     {
         _upgradeLevels.Clear();
@@ -97,6 +97,18 @@ public class LevelUpManager : MonoBehaviour
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(true);
 
+        // AJOUTE - le script UpgradeUI vit sur un GameObject distinct de _levelUpPanel
+        // dans la Hierarchy actuelle (confirme via debug : les deux objets s'appellent
+        // tous les deux "LevelUpPanel" mais ne sont PAS le meme objet). Ce second objet
+        // doit lui aussi etre actif, sinon StartCoroutine() echoue silencieusement dans
+        // UpgradeUI (Unity refuse de demarrer une coroutine sur un GameObject inactif),
+        // ce qui empechait tout le systeme de delai/animation au clic de fonctionner,
+        // meme si l'affichage des cartes et les clics eux-memes marchaient normalement
+        // (un appel de methode direct, contrairement a StartCoroutine, fonctionne sur
+        // un GameObject inactif).
+        if (_upgradeUI != null)
+            _upgradeUI.gameObject.SetActive(true);
+
         _upgradeUI.DisplayUpgrades(_currentChoices);
     }
 
@@ -108,7 +120,7 @@ public class LevelUpManager : MonoBehaviour
         _waitingForChoice = false;
         UpgradeData chosen = _currentChoices[index];
 
-        // Application de l'upgrade via la méthode Apply() de ton ScriptableObject
+        // Application de l'upgrade via la methode Apply() de ton ScriptableObject
         chosen.Apply();
 
         _chosenUpgrades.Add(chosen.upgradeName);
@@ -116,7 +128,15 @@ public class LevelUpManager : MonoBehaviour
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(false);
 
-        // Optionnel : Récupère le joueur pour gérer l'invincibilité si tu veux garder ça ici
+        // AJOUTE - desactive l'objet UpgradeUI en meme temps que le panel visuel, en
+        // symetrie avec l'activation ajoutee dans DisplayLevelUp() ci-dessus. Sans
+        // danger pour l'animation en cours : SelectUpgrade() est appele en DERNIERE
+        // ligne de la coroutine AnimatePickThenConfirm() dans UpgradeUI, donc la
+        // coroutine a deja fini de s'executer au moment ou cette desactivation a lieu.
+        if (_upgradeUI != null)
+            _upgradeUI.gameObject.SetActive(false);
+
+        // Optionnel : Recupere le joueur pour gerer l'invincibilite si tu veux garder ca ici
         GameObject playerGO = GameObject.FindWithTag("Player");
         if (playerGO != null)
         {
@@ -141,7 +161,7 @@ public class LevelUpManager : MonoBehaviour
 
         foreach (UpgradeData upgrade in _allUpgrades)
         {
-            // On vérifie la disponibilité via la méthode IsAvailable() de l'UpgradeData
+            // On verifie la disponibilite via la methode IsAvailable() de l'UpgradeData
             if (upgrade.IsAvailable())
                 pool.Add(upgrade);
         }
@@ -159,7 +179,7 @@ public class LevelUpManager : MonoBehaviour
         return result;
     }
 
-    // Le résumé reste identique
+    // Le resume reste identique
     public string GetUpgradesSummary()
     {
         if (_chosenUpgrades.Count == 0) return "";
@@ -172,8 +192,8 @@ public class LevelUpManager : MonoBehaviour
         System.Text.StringBuilder summary = new System.Text.StringBuilder();
         foreach (var kvp in counts)
         {
-            if (kvp.Value > 1) summary.AppendLine($"• {kvp.Key} x{kvp.Value}");
-            else summary.AppendLine($"• {kvp.Key}");
+            if (kvp.Value > 1) summary.AppendLine($"\u2022 {kvp.Key} x{kvp.Value}");
+            else summary.AppendLine($"\u2022 {kvp.Key}");
         }
         return summary.ToString().TrimEnd();
 
@@ -192,7 +212,7 @@ public class LevelUpManager : MonoBehaviour
         List<string> lines = new List<string>();
         foreach (var kvp in counts)
         {
-            lines.Add(kvp.Value > 1 ? $"• {kvp.Key} x{kvp.Value}" : $"• {kvp.Key}");
+            lines.Add(kvp.Value > 1 ? $"\u2022 {kvp.Key} x{kvp.Value}" : $"\u2022 {kvp.Key}");
         }
 
         return lines;
