@@ -7,13 +7,24 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private int _maxCharges = 6;
 
     [Header("Ulti")]
-    [SerializeField] private float _ultDamage = 50f;
+    [SerializeField] private float _ultDamage = 500f; // MODIFIE - x10, cf. rescale global des degats/PV
     [SerializeField] private float _ultRange = 10f;
     [SerializeField] private float _slowFactor = 0.3f;
     [SerializeField] private float _slowDuration = 3f;
 
+    // AJOUTE - l'ultime devenait mecaniquement de moins en moins efficace au fil
+    // d'une run, puisque les degats etaient fixes alors que les PV ennemis
+    // scalent jusqu'a x5. Scaling lineaire x1 -> x4 sur 15 minutes (duree de run
+    // de reference), plafonne au-dela pour eviter une inflation infinie sur une
+    // run anormalement longue. x4 plutot que x5 pile pour rester legerement sous
+    // le scaling des PV ennemis - l'ultime reste un vrai temps fort, pas un
+    // bouton qui trivialise tout.
+    [Header("Scaling de l'ultime dans le temps")]
+    [SerializeField] private float _ultScaleRampDuration = 900f; // 15 minutes
+    [SerializeField] private float _ultScaleMaxMultiplier = 4f;
+
     [Header("Nova")]
-    [SerializeField] private float _novaDamage = 10f;
+    [SerializeField] private float _novaDamage = 100f; // MODIFIE - x10, cf. rescale global des degats/PV
     [SerializeField] private float _novaRadius = 3f;
     [SerializeField] private GameObject _novaVFXPrefab;
 
@@ -26,7 +37,7 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private float _gemAttractRange = 14f;
 
     private int _currentCharges = 0;
-    private int _storedUlts = 0; // 0 = rien, 1 = ULT x1 dispo, 2 = ULT x2 dispo
+    private int _storedUlts = 0;
     private bool _overpowerActive = false;
 
     public int CurrentCharges => _currentCharges;
@@ -48,11 +59,21 @@ public class CrystalSystem : MonoBehaviour
         GameUI.Instance.UpdateUltStack(0);
     }
 
+    // AJOUTE - multiplicateur de degats de l'ultime selon le temps de survie
+    // ecoule cette run. 1f au debut, monte lineairement jusqu'a
+    // _ultScaleMaxMultiplier a _ultScaleRampDuration secondes, plafonne ensuite.
+    private float GetUltDamageScale()
+    {
+        if (GameManager.Instance == null || _ultScaleRampDuration <= 0f) return 1f;
+
+        float t = Mathf.Clamp01(GameManager.Instance.RunTimer / _ultScaleRampDuration);
+        return Mathf.Lerp(1f, _ultScaleMaxMultiplier, t);
+    }
+
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
 
-        // Peut déclencher l'ult dès qu'on a au moins 1 ult stocké
         if (_storedUlts >= 1 && Input.GetKeyDown(KeyCode.F))
             TriggerUlt();
     }
@@ -61,25 +82,21 @@ public class CrystalSystem : MonoBehaviour
     {
         TriggerNova();
 
-        // Déjà au max (2 barres remplies) → nova seulement, rien d'autre
         if (_storedUlts >= 2) return;
 
         _currentCharges++;
 
         if (_currentCharges >= _maxCharges)
         {
-            // Barre complétée → on stocke un ult, on remet la jauge à 0
             _storedUlts++;
             _currentCharges = 0;
 
-            // Affiche la barre pleine/blanche
             GameUI.Instance.UpdateCrystalCharge(_maxCharges, _maxCharges);
             GameUI.Instance.SetCrystalReady(true);
-            GameUI.Instance.UpdateUltStack(_storedUlts); // "ULT x1" ou "ULT x2"
+            GameUI.Instance.UpdateUltStack(_storedUlts);
         }
         else
         {
-            // En train de charger la 2ème barre : retire le visuel "prêt" blanc
             if (_storedUlts == 1)
                 GameUI.Instance.SetCrystalReady(false);
 
@@ -93,7 +110,6 @@ public class CrystalSystem : MonoBehaviour
 
         if (isEmpowered)
         {
-            // Ult x2 : reset complet
             _storedUlts = 0;
             _currentCharges = 0;
             GameUI.Instance.SetCrystalReady(false);
@@ -103,7 +119,6 @@ public class CrystalSystem : MonoBehaviour
         }
         else
         {
-            // Ult x1 : on garde la progression de la 2ème barre
             int savedCharges = _currentCharges;
             _storedUlts = 0;
             GameUI.Instance.SetCrystalReady(false);
@@ -119,7 +134,9 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerNormalUlt()
     {
-        DamageAllEnemies(1f);
+        // MODIFIE - passe le multiplicateur de scaling temporel a DamageAllEnemies,
+        // au lieu du 1f fixe d'avant (qui ne faisait donc jamais rien).
+        DamageAllEnemies(GetUltDamageScale());
         StartCoroutine(SlowAllEnemies());
         AttractGems(_gemAttractRange, fast: false);
         StartCoroutine(ShowUltVFX());
@@ -128,24 +145,32 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerEmpoweredUlt()
     {
-        // Tue TOUS les ennemis de la map
+        // MODIFIE - remplace le 100f fixe, completement deconnecte de _ultDamage
+        // et du scaling temporel, par une vraie formule basee sur _ultDamage :
+        // x5 de base (un vrai "wipe" garanti tot dans la run) multiplie par le
+        // meme scaling temporel que le reste de l'ultime, pour rester efficace
+        // contre des ennemis a PV scales en fin de run.
+        float scale = GetUltDamageScale();
+        float empoweredDamage = _ultDamage * 5f * scale;
+
         EnemyBase[] allEnemies = FindObjectsOfType<EnemyBase>();
         foreach (EnemyBase enemy in allEnemies)
         {
             if (enemy != null)
-                enemy.TakeDamage(100f, DamageNumberSpawner.ColorCritical);
+                enemy.TakeDamage(empoweredDamage, DamageNumberSpawner.ColorCritical);
         }
 
-        // Dégâts x2 sur les boss dans _ultRange
+        // MODIFIE - x2 sur les boss, desormais lui aussi multiplie par le scaling
+        // temporel (avant : x2 fixe, ne bougeait jamais avec la progression de la run).
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
         foreach (Collider hit in hits)
         {
             BossBase boss = hit.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(_ultDamage * 2f);
+            if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale);
         }
 
         StartCoroutine(SlowAllEnemies());
-        AttractGems(float.MaxValue, fast: true); // toutes les gemmes, vitesse augmentée
+        AttractGems(float.MaxValue, fast: true);
         StartCoroutine(ShowUltVFX());
         StartCoroutine(HitstopRoutine());
     }

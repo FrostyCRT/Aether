@@ -15,10 +15,15 @@ public class MudPuddleZone : MonoBehaviour
     private const float TickRate = 0.25f;
 
     private static readonly Collider[] _overlapBuffer = new Collider[32];
-    // Réutilisé d'un cycle de vie à l'autre (l'objet est poolé, jamais détruit) — vidé
-    // explicitement dans Init() pour ne pas hériter de l'état du cycle de vie précédent.
     private readonly Dictionary<int, EnemyBase> _currentlySlowed = new Dictionary<int, EnemyBase>();
     private readonly HashSet<int> _inRangeThisTick = new HashSet<int>();
+
+    // AJOUTE - les boss n'etaient jamais ralentis, seulement endommages : la
+    // branche BossBase de Tick() ne faisait que TakeDamage(), jamais
+    // SetSpeedMultiplier() (que BossBase possede pourtant deja). Un seul boss actif
+    // a la fois en pratique, donc une reference simple suffit plutot que
+    // d'etendre le dictionnaire generique.
+    private BossBase _currentlySlowedBoss = null;
 
     private string _poolKey;
     private bool _isActive = false;
@@ -40,10 +45,6 @@ public class MudPuddleZone : MonoBehaviour
         _currentlySlowed.Clear();
         _isActive = true;
 
-        // HYPOTHÈSE — suppose que le prefab visuel est modélisé pour un diamètre de 1 unité
-        // à l'échelle (1,1,1). Si ton prefab a une taille de base différente, ajuste le facteur
-        // ci-dessous (ou mieux : ajuste directement le mesh/prefab pour matcher cette convention,
-        // plus simple à maintenir si tu ajoutes d'autres zones circulaires plus tard).
         transform.localScale = new Vector3(radius * 2f, transform.localScale.y, radius * 2f);
     }
 
@@ -85,6 +86,11 @@ public class MudPuddleZone : MonoBehaviour
             EnemyBase enemy = hit.GetComponent<EnemyBase>();
             if (enemy != null)
             {
+                // AJOUTE - immunite totale des ennemis volants (Corbeau) : ni degats,
+                // ni ralentissement. La boue est au sol, un volant ne la touche jamais.
+                // Verifie avant tout le reste, y compris les degats.
+                if (enemy.IsFlying) continue;
+
                 if (_damagePerSecond > 0f)
                     enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorAOE);
 
@@ -96,10 +102,20 @@ public class MudPuddleZone : MonoBehaviour
                 continue;
             }
 
-            // Les boss subissent les dégâts mais pas le ralentissement (cohérent avec WeaponAura)
+            // MODIFIE - les boss subissent maintenant AUSSI le ralentissement, pas
+            // seulement les degats. _inRangeThisTick.Add(enemyId) plus haut couvre
+            // deja les boss (GetInstanceID fonctionne sur n'importe quel Collider),
+            // donc la restauration de vitesse ci-dessous les detecte correctement
+            // quand ils sortent du rayon.
             BossBase boss = hit.GetComponent<BossBase>();
-            if (boss != null && _damagePerSecond > 0f)
-                boss.TakeDamage(tickDamage);
+            if (boss != null)
+            {
+                if (_damagePerSecond > 0f)
+                    boss.TakeDamage(tickDamage);
+
+                boss.SetSpeedMultiplier(_slowMultiplier);
+                _currentlySlowedBoss = boss;
+            }
         }
 
         // Restaure la vitesse normale des ennemis sortis du rayon depuis le tick précédent
@@ -112,21 +128,37 @@ public class MudPuddleZone : MonoBehaviour
         }
         if (toRemove != null)
             foreach (int id in toRemove) _currentlySlowed.Remove(id);
+
+        // AJOUTE - meme restauration pour le boss, s'il en avait un ralenti et
+        // qu'il n'est plus dans le rayon ce tick (compare par instance ID, comme
+        // les ennemis normaux, mais tracke a part faute de type commun EnemyBase/BossBase).
+        if (_currentlySlowedBoss != null)
+        {
+            int bossId = _currentlySlowedBoss.GetInstanceID();
+            if (!_inRangeThisTick.Contains(bossId))
+            {
+                _currentlySlowedBoss.SetSpeedMultiplier(1f);
+                _currentlySlowedBoss = null;
+            }
+        }
     }
 
     private void ReturnToPool()
     {
         _isActive = false;
 
-        // IMPORTANT — restaure la vitesse de TOUS les ennemis encore ralentis avant de
-        // disparaître. Sans ça, un ennemi qui reste dans la flaque jusqu'à son expiration
-        // garderait son SetSpeedMultiplier(_slowMultiplier) appliqué indéfiniment (bug de
-        // ralentissement permanent, silencieux, difficile à repérer en playtest).
         foreach (var kvp in _currentlySlowed)
         {
             if (kvp.Value != null) kvp.Value.SetSpeedMultiplier(1f);
         }
         _currentlySlowed.Clear();
+
+        // AJOUTE - meme securite pour le boss que pour les ennemis normaux.
+        if (_currentlySlowedBoss != null)
+        {
+            _currentlySlowedBoss.SetSpeedMultiplier(1f);
+            _currentlySlowedBoss = null;
+        }
 
         if (ObjectPool.Instance != null)
             ObjectPool.Instance.ReturnToPool(_poolKey, gameObject);
@@ -134,26 +166,28 @@ public class MudPuddleZone : MonoBehaviour
             Destroy(gameObject);
     }
 
-    // AJOUTÉ — appelé par WeaponMudPuddle quand une nouvelle vague démarre alors que
-    // cette flaque n'a pas encore atteint sa durée de vie naturelle. Réutilise exactement
-    // la même logique de nettoyage que l'expiration normale (restauration de vitesse incluse),
-    // juste déclenchée en avance plutôt qu'au bout du timer.
     public void ForceExpire()
     {
         if (!_isActive) return;
         ReturnToPool();
     }
 
-    // Sécurité supplémentaire : si l'objet est désactivé par un autre chemin que ReturnToPool()
-    // (ex: ClearAllEnemies-like cleanup, changement de scène), on ne laisse jamais un ennemi
-    // ralenti orphelin.
     private void OnDisable()
     {
-        if (_currentlySlowed.Count == 0) return;
-        foreach (var kvp in _currentlySlowed)
+        if (_currentlySlowed.Count > 0)
         {
-            if (kvp.Value != null) kvp.Value.SetSpeedMultiplier(1f);
+            foreach (var kvp in _currentlySlowed)
+            {
+                if (kvp.Value != null) kvp.Value.SetSpeedMultiplier(1f);
+            }
+            _currentlySlowed.Clear();
         }
-        _currentlySlowed.Clear();
+
+        // AJOUTE
+        if (_currentlySlowedBoss != null)
+        {
+            _currentlySlowedBoss.SetSpeedMultiplier(1f);
+            _currentlySlowedBoss = null;
+        }
     }
 }

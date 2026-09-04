@@ -96,7 +96,7 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5184907456140866790}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 2, y: 3, z: 1}
@@ -114,12 +114,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 4
-  _maxHealth: 30
+  _maxHealth: 300
+  _isFlying: 1
   _xpValue: 25
   _goldValue: 3
   _poolTag: EnemyCorbeau
   _playerContactRadius: 1.2
-  _contactDamage: 15
+  _contactDamage: 150
+  _contactDamageCooldown: 0.5
+  _burnTickInterval: 0.5
+  _burnTintIntensity: 0.55
 --- !u!54 &7349068747216593275
 Rigidbody:
   m_ObjectHideFlags: 0

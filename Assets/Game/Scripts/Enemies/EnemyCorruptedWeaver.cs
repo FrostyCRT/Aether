@@ -13,7 +13,7 @@ public class EnemyCorruptedWeaver : EnemyBase
 {
     [Header("Saut d'attaque")]
     [SerializeField] private float _jumpTriggerRange = 5f;
-    [SerializeField] private float _jumpAnticipationDuration = 0.15f; // juste le temps que l'anim Jump démarre proprement, pas un tell délibéré
+    [SerializeField] private float _jumpAnticipationDuration = 0.15f;
     [SerializeField] private float _jumpDuration = 0.4f;
     [SerializeField] private float _jumpCooldown = 3f;
     [SerializeField] private float _jumpImpactRadius = 1.5f;
@@ -26,13 +26,11 @@ public class EnemyCorruptedWeaver : EnemyBase
     private bool _isJumping = false;
     private float _jumpCooldownTimer = 0f;
 
-    // EnemyBase._playerTransform est private, donc on garde notre propre référence,
-    // peuplée de la même façon (FindWithTag) que le fait EnemyBase en interne.
     private Transform _weaverPlayerTransform;
 
-    protected override void OnEnable() // MODIFIÉ — était private void OnEnable()
+    protected override void OnEnable()
     {
-        base.OnEnable(); // AJOUTÉ — même raison, sans ça la Tisseuse spawnait avec 0 PV
+        base.OnEnable();
 
         if (_weaverPlayerTransform == null)
         {
@@ -41,14 +39,16 @@ public class EnemyCorruptedWeaver : EnemyBase
         }
         _isJumping = false;
         _jumpCooldownTimer = 0f;
+
+        // AJOUTE - securite au cas ou l'objet reviendrait du pool avec IsJumping
+        // encore a true depuis sa vie precedente (ex: desactive en plein saut).
+        if (_weaverAnimator != null)
+            _weaverAnimator.SetBool("IsJumping", false);
     }
 
-    // UpdateBehaviour tourne CHAQUE frame dans EnemyBase.Update(), indépendamment de
-    // OnEnemyUpdate() — sans cet override, le mouvement de marche par défaut entrerait en
-    // conflit avec le contrôle manuel de la position pendant le saut.
     protected override void UpdateBehaviour(Transform target)
     {
-        if (_isJumping) return; // on gère nous-mêmes la position pendant le saut
+        if (_isJumping) return;
         base.UpdateBehaviour(target);
     }
 
@@ -74,15 +74,20 @@ public class EnemyCorruptedWeaver : EnemyBase
         _isJumping = true;
         _jumpCooldownTimer = _jumpCooldown;
 
-        // Coordonnées figées ici, une fois pour toutes — elle ne poursuit jamais le joueur
-        // en vol, elle saute vers ce point précis, fixe, peu importe où le joueur bouge ensuite.
         Vector3 targetPos = _weaverPlayerTransform.position;
 
-        // Anticipation courte, juste pour laisser l'anim Jump s'enclencher proprement
-        // (pas un cercle au sol, pas de délai pensé comme un tell).
         yield return new WaitForSeconds(_jumpAnticipationDuration);
 
-        if (_weaverAnimator != null) _weaverAnimator.SetTrigger("Jump");
+        if (_weaverAnimator != null)
+        {
+            // AJOUTE - IsJumping passe a true EN MEME TEMPS que le Trigger Jump.
+            // C'est cette valeur que la transition de retour vers Locomotion dans
+            // l'Animator Controller doit utiliser comme condition (IsJumping ==
+            // false), plutot que de compter uniquement sur un Exit Time qui peut se
+            // desynchroniser de la duree reelle du saut.
+            _weaverAnimator.SetBool("IsJumping", true);
+            _weaverAnimator.SetTrigger("Jump");
+        }
 
         Vector3 startPos = transform.position;
         float jumpElapsed = 0f;
@@ -114,8 +119,14 @@ public class EnemyCorruptedWeaver : EnemyBase
                 if (player != null) player.ApplyTemporarySlow(_jumpSlowMultiplier, _jumpSlowDuration);
             }
         }
-        if (_weaverAnimator != null && hitPlayer) 
+        if (_weaverAnimator != null && hitPlayer)
             _weaverAnimator.SetTrigger("Attack");
+
+        // AJOUTE - repasse IsJumping a false a la toute fin, une fois l'atterrissage
+        // et l'eventuel Attack geres - c'est le signal que la transition de retour
+        // vers Locomotion attend dans l'Animator Controller.
+        if (_weaverAnimator != null)
+            _weaverAnimator.SetBool("IsJumping", false);
 
         _isJumping = false;
     }

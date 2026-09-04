@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class XPGem : MonoBehaviour
 {
-    // Types de gemmes
     public enum GemType { Small, Medium, Large }
     private GemType _gemType;
 
@@ -14,7 +13,6 @@ public class XPGem : MonoBehaviour
     private Renderer _renderer;
     private string _poolKey;
 
-    // Cache de l'ID des propriétés de Shader pour éviter les allocations de string
     private static readonly int ColorID = Shader.PropertyToID("_BaseColor");
     private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
     private static MaterialPropertyBlock _propBlock;
@@ -24,7 +22,6 @@ public class XPGem : MonoBehaviour
         _renderer = GetComponent<Renderer>();
         if (_propBlock == null) _propBlock = new MaterialPropertyBlock();
 
-        // On mémorise proprement le nom d'origine pour l'ObjectPool
         _poolKey = name.Replace("(Clone)", "").Trim();
     }
 
@@ -41,23 +38,22 @@ public class XPGem : MonoBehaviour
             case GemType.Small:
                 _xpValue = 10f;
                 transform.localScale = Vector3.one * 0.3f;
-                targetColor = new Color(0.2f, 0.6f, 1f); // Bleue
+                targetColor = new Color(0.2f, 0.6f, 1f);
                 break;
 
             case GemType.Medium:
                 _xpValue = 20f;
                 transform.localScale = Vector3.one * 0.4f;
-                targetColor = new Color(0.7f, 0.2f, 1f); // Violette
+                targetColor = new Color(0.7f, 0.2f, 1f);
                 break;
 
             case GemType.Large:
                 _xpValue = 50f;
                 transform.localScale = Vector3.one * 0.6f;
-                targetColor = new Color(1f, 0.8f, 0.1f); // Dorée
+                targetColor = new Color(1f, 0.8f, 0.1f);
                 break;
         }
 
-        // OPTIMISATION CRITIQUE : Modification de la couleur sans dupliquer le Material
         if (_renderer == null) _renderer = GetComponent<Renderer>();
 
         _renderer.GetPropertyBlock(_propBlock);
@@ -71,24 +67,20 @@ public class XPGem : MonoBehaviour
         _attracted = true;
     }
 
-    public void ForceAttractFast(float speedMultiplier = 3f) // NOUVEAU
+    public void ForceAttractFast(float speedMultiplier = 3f)
     {
         _attracted = true;
         _moveSpeed *= speedMultiplier;
     }
     private void Update()
     {
-        // On bloque le mouvement si le jeu est en pause globale ou game over
         if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver)) return;
         if (_playerTransform == null) return;
 
-        // Rotation constante simple
         transform.Rotate(0f, 90f * Time.deltaTime, 0f);
 
-        // Vecteur vers le joueur
         Vector3 offset = _playerTransform.position - transform.position;
 
-        // OPTIMISATION : Utilisation du carré de la distance (SqrMagnitude, pas de racine carrée)
         float sqrDist = offset.sqrMagnitude;
 
         if (!_attracted)
@@ -102,11 +94,9 @@ public class XPGem : MonoBehaviour
 
         if (_attracted)
         {
-            // Déplacement vers le joueur
             Vector3 dir = offset.normalized;
             transform.position += dir * _moveSpeed * Time.deltaTime;
 
-            // Seuil de collecte physique (0.5f au carré = 0.25f)
             if (sqrDist <= 0.25f)
             {
                 Collect();
@@ -114,15 +104,24 @@ public class XPGem : MonoBehaviour
         }
     }
 
+    // MODIFIE - garde-fou ajoute : ce chemin (contact physique direct) ne
+    // verifiait auparavant AUCUN etat de pause, contrairement a Update(). Empeche
+    // une collecte (et donc potentiellement un nouveau LevelUp en cascade) de se
+    // declencher si le jeu est deja en pause au moment du contact. Ne resout pas
+    // le tout premier pas de physique qui declenche le TOUT PREMIER level-up
+    // (limite Unity : un changement de pause en plein milieu d'un callback
+    // physique ne peut pas annuler retroactivement ce meme pas de physique), mais
+    // protege contre tout ramassage en cascade APRES coup, pendant que le panel
+    // est deja ouvert.
     private void OnTriggerEnter(Collider other)
     {
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
         if (other.CompareTag("Player"))
             Collect();
     }
 
     private void Collect()
     {
-        // Sécurité pour éviter un double ramassage à la même frame avant la désactivation
         if (!gameObject.activeSelf) return;
 
         if (XPSystem.Instance != null)
@@ -130,7 +129,6 @@ public class XPGem : MonoBehaviour
             XPSystem.Instance.AddXP(_xpValue);
         }
 
-        // CORRECTION COMPLÈTE DU POOL : On désactive ET on retourne au pool proprement
         gameObject.SetActive(false);
         if (ObjectPool.Instance != null)
         {

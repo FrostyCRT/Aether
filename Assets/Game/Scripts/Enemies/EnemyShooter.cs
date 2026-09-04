@@ -10,13 +10,13 @@ public class EnemyShooter : EnemyBase
 
     [Header("Visuel")]
     [SerializeField] private GameObject _blowgunObject;
-    [SerializeField] private Transform _projectileSpawnPoint; // AJOUTÉ — glisser ProjectileSpawnPoint ici
+    [SerializeField] private Transform _projectileSpawnPoint;
 
     private float _fireTimer = 0f;
     private EnemyAnimatorController _shooterAnimatorController;
 
-    private static readonly Collider[] _shooterNeighbourBuffer = new Collider[8]; // REMIS
-    private static int _shooterEnemyLayerMask = -1; // REMIS
+    private static readonly Collider[] _shooterNeighbourBuffer = new Collider[8];
+    private static int _shooterEnemyLayerMask = -1;
 
     protected override void UpdateBehaviour(Transform target)
     {
@@ -26,7 +26,7 @@ public class EnemyShooter : EnemyBase
             _shooterAnimatorController = GetComponentInChildren<EnemyAnimatorController>();
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
-        Vector3 separationForce = GetSeparationForce(); // REMIS
+        Vector3 separationForce = GetSeparationForce();
         _fireTimer += Time.deltaTime;
 
         Vector3 moveDirection = Vector3.zero;
@@ -35,7 +35,7 @@ public class EnemyShooter : EnemyBase
         if (distanceToTarget < _fleeRange)
         {
             Vector3 fleeDirection = transform.position - target.position;
-            fleeDirection.y = 0f; // AJOUTÉ — empêche toute dérive verticale par accumulation
+            fleeDirection.y = 0f;
             fleeDirection = fleeDirection.normalized;
             moveDirection = (fleeDirection + separationForce).normalized;
             transform.position += moveDirection * MoveSpeed * _speedMultiplier * Time.deltaTime;
@@ -44,7 +44,7 @@ public class EnemyShooter : EnemyBase
         else if (distanceToTarget > _preferredRange)
         {
             Vector3 chaseDirection = target.position - transform.position;
-            chaseDirection.y = 0f; // AJOUTÉ — même précaution, cohérence avec la branche fuite
+            chaseDirection.y = 0f;
             chaseDirection = chaseDirection.normalized;
             moveDirection = (chaseDirection + separationForce).normalized;
             transform.position += moveDirection * MoveSpeed * _speedMultiplier * Time.deltaTime;
@@ -52,7 +52,7 @@ public class EnemyShooter : EnemyBase
         }
         else
         {
-            
+
             inFiringStance = true;
 
             if (_fireTimer >= 1f / _fireRate)
@@ -80,7 +80,15 @@ public class EnemyShooter : EnemyBase
         }
     }
 
-    private Vector3 GetSeparationForce() // REMIS, avec le fix layer mask qu'on avait déjà validé sur EnemyBase
+    // MODIFIE - pushDirection n'etait jamais aplati en Y, contrairement a
+    // fleeDirection/chaseDirection juste a cote dans UpdateBehaviour. Comme
+    // moveDirection = (fleeDirection + separationForce).normalized, une
+    // composante Y residuelle ici pouvait reintroduire une derive verticale meme
+    // si fleeDirection/chaseDirection etaient propres - d'autant plus visible avec
+    // beaucoup de voisins proches, puisque chaque terme non-aplati s'additionne
+    // (force += ...). C'est la cause des sauts aleatoires en Y signales, plus
+    // frequents avec beaucoup d'ennemis en meme temps.
+    private Vector3 GetSeparationForce()
     {
         if (_shooterEnemyLayerMask == -1)
             _shooterEnemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
@@ -96,6 +104,7 @@ public class EnemyShooter : EnemyBase
             if (neighbour.gameObject == gameObject) continue;
 
             Vector3 pushDirection = transform.position - neighbour.transform.position;
+            pushDirection.y = 0f;
             force += pushDirection.normalized;
         }
 
@@ -106,7 +115,6 @@ public class EnemyShooter : EnemyBase
     {
         if (ObjectPool.Instance == null) return;
 
-        // MODIFIÉ — origine du tir et direction basées sur le point de spawn, pas le centre du gobelin
         Vector3 origin = _projectileSpawnPoint != null ? _projectileSpawnPoint.position : transform.position;
         Vector3 direction = (target.position - origin).normalized;
 

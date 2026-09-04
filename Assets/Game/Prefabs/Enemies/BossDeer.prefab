@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b973c80abcb0cd45b749671453c92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 1
+  _maxHealth: 50000
   _moveSpeed: 4
   _xpValue: 2450
   _goldValue: 70
@@ -146,9 +146,11 @@ MonoBehaviour:
   _windupAnimSpeed: 0.35
   _chargeAnimSpeed: 3
   _rotationSpeed: 500
-  _contactDamage: 30
-  _contactDamageCooldown: 0.6
-  _chargeDamage: 45
+  _chargeTelegraphColor: {r: 1, g: 0, b: 0, a: 0.4}
+  _chargeTelegraphHeightOffset: 0.05
+  _contactDamage: 300
+  _contactDamageCooldown: 0.8
+  _chargeDamage: 450
   _chargeHitRadius: 2.5
   _chargeDistance: 16
   _chargeDuration: 0.55
@@ -163,7 +165,7 @@ MonoBehaviour:
   _jumpWindupDuration: 0.8
   _jumpAirTime: 0.6
   _jumpHopHeight: 0.7
-  _jumpDamage: 80
+  _jumpDamage: 800
   _jumpRadius: 4
   _telegraphColor: {r: 1, g: 0.3, b: 0.15, a: 0.6}
   _summonedScaleFactor: 0.6
@@ -172,13 +174,13 @@ MonoBehaviour:
   _spiralFireRate: 0.2
   _spiralBurstCount: 24
   _doubleSpiral: 1
-  _regenAmount: 100
+  _regenAmount: 1000
   _regenCooldown: 10
   _phase2Threshold: 0.5
   _rageThreshold: 0.35
   _phase2SpeedMultiplier: 1.4
-  _biteRange: 2
-  _deathAnimDuration: 2
+  _biteRange: 2.5
+  _deathAnimDuration: 1
 --- !u!1001 &1042701517578024386
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -219,7 +221,7 @@ PrefabInstance:
     - target: {fileID: -6601043233671942095, guid: e062d7de5658c1d4eb6c943e72915cc6,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.034
+      value: 0.176
       objectReference: {fileID: 0}
     - target: {fileID: -6601043233671942095, guid: e062d7de5658c1d4eb6c943e72915cc6,
         type: 3}

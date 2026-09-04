@@ -1,10 +1,21 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class EnemyBase : MonoBehaviour
 {
     [Header("Stats")]
     [SerializeField] private float _moveSpeed = 2f;
-    [SerializeField] private float _maxHealth = 30f;
+    [SerializeField] private float _maxHealth = 300f; // MODIFIE - x10, cf. rescale global des degats/PV
+
+    // AJOUTE - coche cette case sur les ennemis volants (ex: le Corbeau). Utilise
+    // par les effets de zone au sol (Boue) pour accorder une immunite totale -
+    // logique puisqu'un volant ne touche jamais le sol. Champ generique plutot
+    // qu'un script dedie au Corbeau, pour rester reutilisable si d'autres ennemis
+    // volants sont ajoutes plus tard, sans rien casser pour tous les ennemis
+    // existants (false par defaut, aucun changement de comportement pour eux).
+    [Header("Vol")]
+    [SerializeField] private bool _isFlying = false;
+    public bool IsFlying => _isFlying;
 
     [Header("Drops")]
     [SerializeField] private float _xpValue = 10f;
@@ -18,18 +29,33 @@ public class EnemyBase : MonoBehaviour
     [SerializeField] private float _playerContactRadius = 1.2f;
 
     [Header("Dégâts de contact")]
-    [SerializeField] private float _contactDamage = 15f;
-    [SerializeField] private float _contactDamageCooldown = 0.5f; // AJOUTÉ — reprend la valeur par défaut d'origine de HealthSystem
+    [SerializeField] private float _contactDamage = 150f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _contactDamageCooldown = 0.5f;
 
     [Header("Scaling difficulté")]
     private float _healthMultiplier = 1f;
+
+    // AJOUTE - systeme de Brulure (palier 3 Fireball). Un seul stack actif a la
+    // fois : reapplique = redemarre la duree plutot que d'additionner plusieurs
+    // brulures en parallele, pour eviter un scaling degats hors de controle si le
+    // joueur touche le meme ennemi plusieurs fois pendant qu'il brule deja.
+    [Header("Brulure (visuel + degats sur la duree)")]
+    [SerializeField] private float _burnTickInterval = 0.5f;
+    [Tooltip("Intensite du pulse de teinte orange sur le sprite pendant la brulure (0 = invisible, 1 = teinte plein orange).")]
+    [SerializeField] private float _burnTintIntensity = 0.55f;
+    private static readonly Color BurnTintColor = new Color(1f, 0.45f, 0.12f);
+    private static readonly Color BurnDamageNumberColor = new Color(1f, 0.55f, 0.15f);
+    private Coroutine _burnCoroutine;
+    private SpriteRenderer _spriteRenderer;
+    private Color _spriteBaseColor = Color.white;
+    private bool _spriteBaseColorCaptured = false;
 
     public void SetHealthMultiplier(float multiplier)
     {
         _healthMultiplier = multiplier;
     }
 
-    private Vector3 _smoothedMoveDirection = Vector3.forward; // AJOUTÉ — remplace le snap binaire par un lissage continu, évite le tremblement
+    private Vector3 _smoothedMoveDirection = Vector3.forward;
     protected float MoveSpeed => _moveSpeed;
 
     private float _currentHealth;
@@ -37,9 +63,9 @@ public class EnemyBase : MonoBehaviour
     private Transform _currentTarget;
 
     protected float _speedMultiplier = 1f;
-    private float _speedMultiplierTarget = 1f; // Multiplicateur temporaire pour l'attraction fantôme
+    private float _speedMultiplierTarget = 1f;
 
-    protected virtual void OnEnable() // MODIFIÉ — était private void OnEnable()
+    protected virtual void OnEnable()
     {
         _currentHealth = _maxHealth * _healthMultiplier;
         _speedMultiplier = 1f;
@@ -54,20 +80,48 @@ public class EnemyBase : MonoBehaviour
         _currentTarget = _playerTransform;
 
         PlayerController.OnPhantomDestroyed += HandlePhantomDestroyed;
+
+        // AJOUTE - un ennemi qui revient du pool doit repartir avec son Animator a
+        // vitesse normale, au cas ou il aurait ete fige (speed = 0) a la fin de sa
+        // vie precedente via HandleGameEnded ci-dessous.
+        GameManager.OnGameEnded += HandleGameEnded;
+        if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
+        if (_animatorController != null) _animatorController.SetAnimatorPaused(false);
+
+        // AJOUTE - un ennemi qui revient du pool avec une brulure encore active de sa
+        // vie precedente serait un bug (coroutine orpheline, teinte qui reste collee).
+        // On repart toujours propre a chaque reutilisation.
+        StopBurnAndResetTint();
     }
 
     private void OnDisable()
     {
-        // AJOUT CRITIQUE : Toujours se désabonner dans le OnDisable pour éviter les fuites de mémoire !
         PlayerController.OnPhantomDestroyed -= HandlePhantomDestroyed;
+        GameManager.OnGameEnded -= HandleGameEnded;
+
+        // AJOUTE - coupe la coroutine de brulure si l'ennemi est desactive/retourne
+        // au pool en pleine brulure (ex: tue par une autre source de degats pendant
+        // qu'il brule), pour eviter une coroutine qui tourne dans le vide.
+        StopBurnAndResetTint();
+    }
+
+    // AJOUTE - appele UNE SEULE FOIS, exactement quand la partie se termine
+    // (victoire ou game over), via GameManager.OnGameEnded. C'est ce qui manquait
+    // pour que les ennemis arretent proprement leur animation de marche au lieu de
+    // rester figes a mi-boucle : Update() (et donc UpdateBehaviour) s'arrete net a
+    // IsGameOver, donc plus rien n'appelait jamais SetAttacking(false) ou
+    // n'indiquait a l'Animator qu'il fallait s'arreter.
+    private void HandleGameEnded()
+    {
+        if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
+        if (_animatorController != null) _animatorController.SetAnimatorPaused(true);
     }
 
     private void HandlePhantomDestroyed()
     {
-        // Si l'ennemi suivait le fantôme, on le renvoie vers le joueur et on reset sa vitesse
         if (_currentTarget != null && _currentTarget == PlayerController.ActivePhantomClone)
         {
-            SetTarget(_playerTransform); // Repasse la vitesse cible à 1f automatiquement
+            SetTarget(_playerTransform);
         }
     }
 
@@ -102,19 +156,27 @@ public class EnemyBase : MonoBehaviour
 
         UpdateBehaviour(_currentTarget);
 
-        OnEnemyUpdate(); // AJOUTÉ — point d'extension pour les sous-classes, appelé après le comportement de base
+        OnEnemyUpdate();
     }
 
-    protected virtual void OnEnemyUpdate() { } // AJOUTÉ — vide par défaut, les sous-classes peuvent l'override sans jamais toucher à Update()
-
-
+    protected virtual void OnEnemyUpdate() { }
 
     private EnemyAnimatorController _animatorController;
 
     protected virtual void UpdateBehaviour(Transform target)
     {
-        float distanceToTarget = Vector3.Distance(transform.position, target.position); // MODIFIÉ — mesure la distance à la cible réelle (joueur OU clone), plus seulement au joueur
-        bool isInContactWithTarget = distanceToTarget <= _playerContactRadius; // MODIFIÉ — s'applique peu importe la cible
+        // MODIFIE - meme raisonnement que pour la direction de deplacement plus bas :
+        // Vector3.Distance() mesurait la distance 3D COMPLETE, Y inclus. Tant que la
+        // cible etait le joueur (meme hauteur), ca ne changeait rien. Mais avec le
+        // Clone Fantome a une hauteur Y differente, un ennemi pouvait arriver pile
+        // a cote horizontalement sans jamais que cette distance ne descende sous
+        // _playerContactRadius (l'ecart vertical restait bloque dans le calcul) :
+        // le seuil de contact n'etait donc jamais atteint, l'ennemi ne s'arretait
+        // jamais et tournait indefiniment autour du Clone sans attaquer.
+        Vector3 toTargetFlat = target.position - transform.position;
+        toTargetFlat.y = 0f;
+        float distanceToTarget = toTargetFlat.magnitude;
+        bool isInContactWithTarget = distanceToTarget <= _playerContactRadius;
 
         if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
 
@@ -122,8 +184,6 @@ public class EnemyBase : MonoBehaviour
         {
             if (_animatorController != null) _animatorController.SetAttacking(true);
 
-            // MODIFIÉ — les dégâts ne se déclenchent QUE si la cible est bien le vrai joueur,
-            // jamais le Clone (qui reste un leurre inoffensif, sans conséquence sur le joueur)
             if (target == _playerTransform)
             {
                 HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
@@ -136,7 +196,9 @@ public class EnemyBase : MonoBehaviour
 
         if (_animatorController != null) _animatorController.SetAttacking(false);
 
-        Vector3 direction = (target.position - transform.position).normalized;
+        // Reutilise toTargetFlat calcule en haut de la methode (deja aplati en Y),
+        // au lieu de recalculer target.position - transform.position ici.
+        Vector3 direction = toTargetFlat.normalized;
         Vector3 separation = GetBaseSeparation();
         Vector3 desiredDirection = (direction + separation * 0.3f).normalized;
 
@@ -165,13 +227,19 @@ public class EnemyBase : MonoBehaviour
         else
         {
             _speedMultiplierTarget = speedBoost;
-            Debug.Log($"[PHANTOM DEBUG] {gameObject.name} boosté à {speedBoost}x, target={newTarget.name}", this); // AJOUTÉ TEMPORAIRE
         }
     }
 
     private static readonly Collider[] _neighbourBuffer = new Collider[16];
     private static int _enemyLayerMask = -1;
 
+    // MODIFIE - pushDirection n'etait jamais aplati en Y. Meme cause que le bug de
+    // sauts aleatoires en Y trouve sur les gobelins (EnemyShooter.GetSeparationForce,
+    // qui a une copie separee de cette meme logique) : une composante Y residuelle
+    // ici pouvait se propager dans desiredDirection puis final, faisant deriver
+    // n'importe quel type d'ennemi verticalement des qu'il a des voisins proches -
+    // corrige ici de facon preventive pour tous les types d'ennemis qui utilisent
+    // EnemyBase.UpdateBehaviour() directement, pas seulement les gobelins.
     private Vector3 GetBaseSeparation()
     {
         if (_enemyLayerMask == -1)
@@ -188,6 +256,7 @@ public class EnemyBase : MonoBehaviour
             if (neighbour.gameObject == gameObject) continue;
 
             Vector3 pushDirection = transform.position - neighbour.transform.position;
+            pushDirection.y = 0f;
             force += pushDirection.normalized;
         }
 
@@ -206,6 +275,81 @@ public class EnemyBase : MonoBehaviour
 
         if (_currentHealth <= 0)
             Die(fromNova);
+    }
+
+    // AJOUTE - point d'entree public de la Brulure, appele par ProjectileBasic quand
+    // une upgrade Fireball avec Brulure debloquee touche cet ennemi (direct ou via
+    // l'explosion). Redemarre la coroutine si une brulure est deja en cours plutot
+    // que d'en empiler une deuxieme.
+    public void ApplyBurn(float damagePerSecond, float duration)
+    {
+        if (damagePerSecond <= 0f || duration <= 0f) return;
+
+        CacheSpriteRenderer();
+
+        if (_burnCoroutine != null)
+            StopCoroutine(_burnCoroutine);
+
+        _burnCoroutine = StartCoroutine(BurnRoutine(damagePerSecond, duration));
+    }
+
+    private void CacheSpriteRenderer()
+    {
+        if (_spriteRenderer != null) return;
+        _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (_spriteRenderer != null && !_spriteBaseColorCaptured)
+        {
+            _spriteBaseColor = _spriteRenderer.color;
+            _spriteBaseColorCaptured = true;
+        }
+    }
+
+    private IEnumerator BurnRoutine(float damagePerSecond, float duration)
+    {
+        float elapsed = 0f;
+        float tickTimer = 0f;
+        float tickDamage = damagePerSecond * _burnTickInterval;
+
+        while (elapsed < duration)
+        {
+            float dt = Time.deltaTime;
+            elapsed += dt;
+            tickTimer += dt;
+
+            if (_spriteRenderer != null)
+            {
+                // Pulsation rapide plutot qu'une teinte fixe : plus lisible comme
+                // "effet actif en ce moment" qu'une simple couleur statique.
+                float pulse = (Mathf.Sin(elapsed * 10f) + 1f) * 0.5f;
+                float blend = _burnTintIntensity * (0.6f + 0.4f * pulse);
+                _spriteRenderer.color = Color.Lerp(_spriteBaseColor, BurnTintColor, blend);
+            }
+
+            if (tickTimer >= _burnTickInterval)
+            {
+                tickTimer -= _burnTickInterval;
+                TakeDamage(tickDamage, BurnDamageNumberColor);
+            }
+
+            yield return null;
+        }
+
+        if (_spriteRenderer != null)
+            _spriteRenderer.color = _spriteBaseColor;
+
+        _burnCoroutine = null;
+    }
+
+    private void StopBurnAndResetTint()
+    {
+        if (_burnCoroutine != null)
+        {
+            StopCoroutine(_burnCoroutine);
+            _burnCoroutine = null;
+        }
+
+        if (_spriteRenderer != null && _spriteBaseColorCaptured)
+            _spriteRenderer.color = _spriteBaseColor;
     }
 
     private void Die(bool fromNova = false)

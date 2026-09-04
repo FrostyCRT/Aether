@@ -95,10 +95,10 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 104720677467609853}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1.7, z: 1}
+  m_Size: {x: 1, y: 2, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6156145411955042561
 MonoBehaviour:
@@ -113,13 +113,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 1.5
-  _maxHealth: 70
+  _maxHealth: 700
+  _isFlying: 0
   _xpValue: 30
   _goldValue: 5
   _poolTag: EnemyTank
-  _playerContactRadius: 1.2
-  _contactDamage: 30
+  _playerContactRadius: 1.4
+  _contactDamage: 300
   _contactDamageCooldown: 1.2
+  _burnTickInterval: 0.5
+  _burnTintIntensity: 0.55
 --- !u!54 &5642038682667198314
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -171,7 +174,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bbb89d74d9c45ae43bf49b916f4f6c66,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.781
+      value: -0.761
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bbb89d74d9c45ae43bf49b916f4f6c66,
         type: 3}

@@ -18,5 +18,5 @@ MonoBehaviour:
   upgradeType: 0
   value: 0.2
   _levelValues: []
-  _maxLevel: 8
+  _maxLevel: 5
   _requiresUnlockPick: 0

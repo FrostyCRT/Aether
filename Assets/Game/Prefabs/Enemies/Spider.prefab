@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5184907456140866795}
   - component: {fileID: 5184907456140866794}
   - component: {fileID: 5184907456140866789}
-  - component: {fileID: 5184907456140866788}
   - component: {fileID: 58613156422480723}
   - component: {fileID: 7349068747216593275}
   - component: {fileID: 6397336637896928064}
@@ -31,7 +30,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5184907456140866790}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 0.464, z: 5}
+  m_LocalPosition: {x: 5, y: 0.427, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -89,19 +88,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5184907456140866788
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5184907456140866790}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1.2, z: 1.5}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &58613156422480723
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -113,7 +99,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1.2, z: 1.5}
+  m_Size: {x: 1, y: 1, z: 1.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &7349068747216593275
 Rigidbody:
@@ -144,20 +130,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 2
-  _maxHealth: 30
+  _maxHealth: 300
+  _isFlying: 0
   _xpValue: 20
   _goldValue: 3
   _poolTag: EnemyTisseuse
   _playerContactRadius: 1.2
+  _contactDamage: 150
+  _contactDamageCooldown: 0.5
+  _burnTickInterval: 0.5
+  _burnTintIntensity: 0.55
   _jumpTriggerRange: 6.5
   _jumpAnticipationDuration: 0.15
   _jumpDuration: 0.4
-  _jumpCooldown: 3
+  _jumpCooldown: 5
   _jumpImpactRadius: 1.5
-  _jumpDamage: 10
+  _jumpDamage: 100
   _jumpArcHeight: 1.5
-  _jumpSlowMultiplier: 0.5
-  _jumpSlowDuration: 1.5
+  _jumpSlowMultiplier: 0.6
+  _jumpSlowDuration: 1.2
   _weaverAnimator: {fileID: 4082528814592517635}
 --- !u!114 &7267693646133443466
 MonoBehaviour:
@@ -196,7 +187,7 @@ PrefabInstance:
     - target: {fileID: -6601043233671942095, guid: 52e25639012e42f44a52e66d31c7f081,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.347
+      value: -0.397
       objectReference: {fileID: 0}
     - target: {fileID: -6601043233671942095, guid: 52e25639012e42f44a52e66d31c7f081,
         type: 3}

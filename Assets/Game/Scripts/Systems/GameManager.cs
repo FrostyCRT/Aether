@@ -10,7 +10,14 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver => _isGameOver;
     public bool IsPaused { get; private set; } = false;
 
-    // AJOUTÉ — spawn du bon personnage selon la sélection
+    // AJOUTE - evenement global declenche UNE SEULE FOIS des que la partie se
+    // termine (victoire OU game over). Sert aux systemes qui doivent reagir
+    // exactement a ce moment precis (ex: figer l'Animator des ennemis) plutot que
+    // de compter sur leur propre Update(), qui s'arrete justement des que
+    // IsGameOver devient vrai - sans cet evenement, rien ne les prevenait jamais
+    // que la partie venait de se terminer, ils restaient figes a mi-animation.
+    public static System.Action OnGameEnded;
+
     [Header("Spawn Personnage")]
     [SerializeField] private Transform _playerSpawnPoint;
     [SerializeField] private GameObject _prefabAether;
@@ -22,6 +29,17 @@ public class GameManager : MonoBehaviour
     public int KillCount => _killCount;
     public float RunTimer => _runTimer;
 
+    // AJOUTE - compte les VRAIS boss vaincus cette run (BossBase.Die() incremente
+    // via AddBossKill(), uniquement si !IsSummoned). Sert au calcul des Eclats en
+    // fin de run (niveau atteint + boss vaincus + bonus de victoire).
+    private int _bossKillCount = 0;
+    public int BossKillCount => _bossKillCount;
+
+    public void AddBossKill()
+    {
+        _bossKillCount++;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -31,10 +49,9 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         EnemyKaiju.ResetRunState();
-        SpawnSelectedCharacter(); // remet ici
+        SpawnSelectedCharacter();
     }
 
-    // AJOUTÉ — instancie le bon prefab au bon endroit selon MetaProgressionManager
     private void SpawnSelectedCharacter()
     {
         if (MetaProgressionManager.Instance == null)
@@ -45,21 +62,17 @@ public class GameManager : MonoBehaviour
         }
 
         int index = MetaProgressionManager.Instance.GetSelectedCharacterIndex();
-        Debug.Log($"[SPAWN] Index sélectionné : {index}"); // TEMP
 
         switch (index)
         {
-            case 1:  
-                Debug.Log("[SPAWN] Spawn Kael"); // TEMP
-                SpawnPrefab(_prefabKael);  
+            case 1:
+                SpawnPrefab(_prefabKael);
                 break;
-            case 2:  
-                Debug.Log("[SPAWN] Spawn Lyra"); // TEMP
-                SpawnPrefab(_prefabLyra);  
+            case 2:
+                SpawnPrefab(_prefabLyra);
                 break;
-            default: 
-                Debug.Log("[SPAWN] Spawn Aether"); // TEMP
-                SpawnPrefab(_prefabAether); 
+            default:
+                SpawnPrefab(_prefabAether);
                 break;
         }
     }
@@ -78,7 +91,6 @@ public class GameManager : MonoBehaviour
 
         GameObject playerInstance = Instantiate(prefab, spawnPos, Quaternion.identity);
 
-        // AJOUTÉ — assigne automatiquement la cible à la Cinemachine après spawn
         AssignCinemachineTarget(playerInstance.transform);
     }
 
@@ -126,11 +138,28 @@ public class GameManager : MonoBehaviour
         GameUI.Instance.ShowPausePanel(false);
     }
 
+    // AJOUTE - permet a d'autres systemes de gel temporaire du jeu (actuellement :
+    // LevelUpManager pendant un level-up) de synchroniser IsPaused SANS passer par
+    // TogglePause()/ResumePause(), qui ouvriraient/fermeraient en plus le panel de
+    // pause manuel et le HUD - deux effets de bord qu'on ne veut PAS pendant un
+    // level-up. Ne touche pas a Time.timeScale : chaque appelant reste responsable
+    // du sien (LevelUpManager gere deja le sien de son cote).
+    public void SetPausedFlag(bool paused)
+    {
+        IsPaused = paused;
+    }
+
     public void AbandonRun()
     {
         IsPaused = false;
         Time.timeScale = 1f;
-        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
+
+        // CORRIGE - troisieme site d'appel a SaveRunResults() rate lors de
+        // l'extension de la signature (les 2 autres, ShowGameOver/ShowVictory,
+        // avaient bien ete mis a jour). Abandon = pas une victoire.
+        int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
+
         SceneManager.LoadScene(0);
     }
 
@@ -145,6 +174,7 @@ public class GameManager : MonoBehaviour
     {
         if (_isGameOver) return;
         _isGameOver = true;
+        OnGameEnded?.Invoke();
         Invoke(nameof(ShowGameOver), 1.5f);
     }
 
@@ -152,7 +182,13 @@ public class GameManager : MonoBehaviour
     {
         GameUI.Instance.SetHUDVisible(false);
         int goldEarned = MetaProgressionManager.Instance.RunGold;
-        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
+
+        // MODIFIE - SaveRunResults prend desormais aussi le niveau atteint, le
+        // nombre de boss vaincus et si la run s'est terminee en victoire, pour
+        // calculer les Eclats gagnes (independants de l'or ramasse).
+        int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
+
         GameUI.Instance.ShowGameOver(_runTimer, _killCount, goldEarned);
     }
 
@@ -172,6 +208,7 @@ public class GameManager : MonoBehaviour
     {
         if (_isGameOver) return;
         _isGameOver = true;
+        OnGameEnded?.Invoke();
         Invoke(nameof(ShowVictory), 2f);
     }
 
@@ -179,12 +216,17 @@ public class GameManager : MonoBehaviour
     {
         GameUI.Instance.SetHUDVisible(false);
         int goldEarned = MetaProgressionManager.Instance.RunGold;
-        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount);
+        int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+
+        // MODIFIE - meme extension que ShowGameOver(), avec victory = true cette
+        // fois (bonus de victoire applique dans le calcul des Eclats).
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, true);
+
         GameUI.Instance.ShowVictory(
             _runTimer,
             _killCount,
             goldEarned,
-            XPSystem.Instance.CurrentLevel
+            levelReached
         );
     }
 }

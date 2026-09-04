@@ -20,6 +20,6 @@ MonoBehaviour:
   _levelValues:
   - 0.4
   - 0.4
-  - 0.1
+  - 0.5
   _maxLevel: 3
-  _requiresUnlockPick: 0
+  _requiresUnlockPick: 1

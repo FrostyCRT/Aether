@@ -242,7 +242,7 @@ public class SkillTreeUI : MonoBehaviour
     public void RefreshGoldDisplay()
     {
         if (_goldText != null && MetaProgressionManager.Instance != null)
-            _goldText.text = $"Gold : {MetaProgressionManager.Instance.Data.totalGold}";
+            _goldText.text = $"{MetaProgressionManager.Instance.Data.totalGold}";
     }
 
     public void RefreshAllNodes()

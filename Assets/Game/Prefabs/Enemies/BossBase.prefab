@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249b4e4c3c2cd1449b3f2f6addbca717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 1
+  _maxHealth: 20000
   _moveSpeed: 4.5
   _xpValue: 1400
   _goldValue: 40
@@ -122,7 +122,7 @@ MonoBehaviour:
   _projectileCount: 12
   _chargeCooldown: 3.5
   _chargeWindupDuration: 1
-  _bossName: "Le Vestige Ail\xE9"
+  _bossName: Le Dragon de Mana
   _bodyRenderer: {fileID: 2006856479019548746}
   _emissionColorProperty: _EmissionColor
   _manaGlowColor: {r: 0.3, g: 0.6, b: 1, a: 1}
@@ -130,9 +130,11 @@ MonoBehaviour:
   _windupAnimSpeed: 0.35
   _chargeAnimSpeed: 3
   _rotationSpeed: 500
-  _contactDamage: 30
-  _contactDamageCooldown: 0.6
-  _chargeDamage: 45
+  _chargeTelegraphColor: {r: 1, g: 0, b: 0, a: 0.4}
+  _chargeTelegraphHeightOffset: 0.05
+  _contactDamage: 300
+  _contactDamageCooldown: 0.8
+  _chargeDamage: 450
   _chargeHitRadius: 2.5
   _chargeDistance: 12
   _chargeDuration: 0.55

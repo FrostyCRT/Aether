@@ -126,10 +126,10 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7538710292021152406}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
+  m_Radius: 0.6
+  m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &-1000920038165024954
@@ -161,13 +161,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 2
-  _maxHealth: 30
+  _maxHealth: 300
+  _isFlying: 0
   _xpValue: 10
   _goldValue: 2
   _poolTag: EnemyShooter
   _playerContactRadius: 1.2
-  _contactDamage: 15
+  _contactDamage: 150
   _contactDamageCooldown: 0.5
+  _burnTickInterval: 0.5
+  _burnTintIntensity: 0.55
   _fireRate: 1.5
   _preferredRange: 8
   _fleeRange: 4
@@ -310,7 +313,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: cd31ee7c5d0c87a41a5ccee7105956ed,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.975
+      value: -1.26
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cd31ee7c5d0c87a41a5ccee7105956ed,
         type: 3}

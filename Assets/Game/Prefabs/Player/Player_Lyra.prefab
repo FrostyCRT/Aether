@@ -154,8 +154,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76bad4b21ff8bd34496a65d9df597c3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 200
+  _maxHealth: 2000
   _invincibilityDuration: 1
+  _deathFallTargetY: 0.4
+  _deathFallDuration: 1.2
 --- !u!114 &3231473435229140614
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,12 +171,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxCharges: 6
-  _ultDamage: 50
+  _ultDamage: 500
   _ultRange: 10
   _slowFactor: 0.4
   _slowDuration: 4
-  _novaDamage: 10
-  _novaRadius: 3
+  _ultScaleRampDuration: 900
+  _ultScaleMaxMultiplier: 4
+  _novaDamage: 100
+  _novaRadius: 4
   _novaVFXPrefab: {fileID: 2702546882864918342, guid: 2576f9e80e93d9f448521fccd6d71e8b,
     type: 3}
   _ultVFXPrefab: {fileID: 2702546882864918342, guid: 434d10f952cfec84881df90357deaadf,
@@ -218,7 +222,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3829602211802709019}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: df2fa8e7e210d6142b1fe949ee96756f, type: 3}
   m_Name: 
@@ -249,7 +253,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _baseFireRate: 1
   _baseDetectionRange: 15
-  _baseDamage: 10
+  _baseDamage: 100
   _doubleShot: 0
   _doubleShotDelay: 0.1
   _projectilePrefab: {fileID: 4948786220174907987, guid: 84b001f72cd72f649b7b6035a814cf24,

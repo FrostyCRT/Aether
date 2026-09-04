@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 5000
+  _maxHealth: 125000
   _moveSpeed: 4
   _xpValue: 0
   _goldValue: 120
@@ -116,9 +116,11 @@ MonoBehaviour:
   _windupAnimSpeed: 0.35
   _chargeAnimSpeed: 3
   _rotationSpeed: 500
-  _contactDamage: 30
-  _contactDamageCooldown: 0.6
-  _chargeDamage: 45
+  _chargeTelegraphColor: {r: 1, g: 0, b: 0, a: 0.4}
+  _chargeTelegraphHeightOffset: 0.05
+  _contactDamage: 300
+  _contactDamageCooldown: 0.8
+  _chargeDamage: 450
   _chargeHitRadius: 2.5
   _chargeDistance: 12
   _chargeDuration: 0.55
@@ -143,7 +145,7 @@ MonoBehaviour:
   _strikeLungeDistance: 9
   _strikeLungeSpeed: 22
   _strikeImpactRadius: 2.5
-  _strikeDamage: 30
+  _strikeDamage: 300
   _strikeTelegraphPrefab: {fileID: 4439751606259745131, guid: 978e702dc5a27a34f8e2c773f6ce90f8,
     type: 3}
   _waveExpandSpeed: 6
@@ -160,7 +162,7 @@ MonoBehaviour:
   _resurfaceBurstPrefab: {fileID: 5196147696218930488, guid: a99eeb3cc49a1144094c735dd5290bda,
     type: 3}
   _resurfaceBurstRadius: 3
-  _resurfaceBurstDamage: 15
+  _resurfaceBurstDamage: 150
   _miniBoss1Prefab: {fileID: 7732996451166620575, guid: c8b30a9595b433d46a53ca0171b2836b,
     type: 3}
   _miniBoss2Prefab: {fileID: 8074673154536467952, guid: 0a332bffaf034c1428bcbb4e22eacd3f,
@@ -168,11 +170,11 @@ MonoBehaviour:
   _summonWindupDuration: 2
   _riftPortalPrefab: {fileID: 8271196632911656928, guid: c6cb0e421f6f5694884e323347ba59cf,
     type: 3}
-  _miniBossVisualChildName: BossCorruptedMesh
+  _summonedVisualScale: 0.75
   _implosionPullDuration: 1.5
   _implosionPullForce: 15
   _implosionRadius: 10
-  _implosionDamage: 40
+  _implosionDamage: 400
   _implosionWarningPrefab: {fileID: 4439751606259745131, guid: 978e702dc5a27a34f8e2c773f6ce90f8,
     type: 3}
   _minSafeWindow: 0.6

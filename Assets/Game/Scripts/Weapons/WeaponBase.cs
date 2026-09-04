@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class WeaponBase : MonoBehaviour
 {
-    
+
 
     [Header("Stats de Base")]
     [SerializeField] private float _baseFireRate = 1f;
     [SerializeField] private float _baseDetectionRange = 15f;
-    [SerializeField] private float _baseDamage = 10f;
+    [SerializeField] private float _baseDamage = 100f; // MODIFIE - x10, cf. rescale global des degats/PV
 
     [Header("Double tir")]
     [SerializeField] private bool _doubleShot = false;

@@ -8,14 +8,15 @@ public class BossDeer : BossBase
     [SerializeField] private float _jumpWindupDuration = 0.8f;
     [SerializeField] private float _jumpAirTime = 0.6f;
     [SerializeField] private float _jumpHopHeight = 4f;
-    [SerializeField] private float _jumpDamage = 80f;
+    // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _jumpDamage = 800f;
     [SerializeField] private float _jumpRadius = 4f;
     [SerializeField] private Color _telegraphColor = new Color(1f, 0.3f, 0.15f, 0.6f);
     [SerializeField] private float _summonedScaleFactor = 0.75f;
 
-    [Header("Cerf — Restriction de saut par angle")] // AJOUTÉ
-    [SerializeField] private float _jumpForbiddenAngleMin = -5f * Mathf.PI / 6f; // AJOUTÉ — -150°
-    [SerializeField] private float _jumpForbiddenAngleMax = -1f * Mathf.PI / 6f; // AJOUTÉ — -30°
+    [Header("Cerf — Restriction de saut par angle")]
+    [SerializeField] private float _jumpForbiddenAngleMin = -5f * Mathf.PI / 6f;
+    [SerializeField] private float _jumpForbiddenAngleMax = -1f * Mathf.PI / 6f;
 
     [Header("Cerf — Spirale")]
     [SerializeField] private float _spiralFireRate = 0.08f;
@@ -23,7 +24,8 @@ public class BossDeer : BossBase
     [SerializeField] private bool _doubleSpiral = true;
 
     [Header("Cerf — Régénération")]
-    [SerializeField] private float _regenAmount = 100f;
+    // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _regenAmount = 1000f;
     [SerializeField] private float _regenCooldown = 30f;
 
     [Header("Cerf — Phases")]
@@ -59,7 +61,8 @@ public class BossDeer : BossBase
     protected override void Start()
     {
         _bossName = "Le Cerf Ancestral";
-        _maxHealth = 5000f;
+        // MODIFIE - x10, cf. rescale global des degats/PV
+        _maxHealth = 50000f;
         _moveSpeed = 4f;
 
         base.Start();
@@ -74,8 +77,6 @@ public class BossDeer : BossBase
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
         if (_isDead) return;
 
-        // Filet de sécurité Y, cohérent avec le fix appliqué à tous les boss —
-        // seulement hors saut, puisque Y est intentionnellement piloté par l'arc pendant JumpState.Airborne
         if (_jumpState == JumpState.None)
         {
             Vector3 pos = transform.position;
@@ -136,9 +137,6 @@ public class BossDeer : BossBase
         RotateTowards(direction);
     }
 
-    // AJOUTÉ — vérifie si le Cerf se trouve actuellement dans la zone angulaire interdite
-    // par rapport au joueur (zone où le saut fait sortir le mesh du cadre caméra, cf. bug
-    // d'invisibilité qui vient de l'animation elle-même, pas de la trajectoire du script)
     private bool IsInForbiddenJumpZone()
     {
         Vector3 toDeer = transform.position - _playerTransform.position;
@@ -157,7 +155,7 @@ public class BossDeer : BossBase
         if (_jumpState == JumpState.None)
         {
             _jumpTimer += Time.deltaTime;
-            if (_jumpTimer >= _jumpCooldown && !IsInForbiddenJumpZone()) // MODIFIÉ — bloque le déclenchement dans la zone interdite
+            if (_jumpTimer >= _jumpCooldown && !IsInForbiddenJumpZone())
             {
                 _jumpTimer = 0f;
                 StartJumpWindup();
@@ -173,8 +171,8 @@ public class BossDeer : BossBase
 
             if (_telegraphObject != null)
             {
-                float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
-                float diameter = effectiveRadius * 2f * progress; // MODIFIÉ — utilise effectiveRadius au lieu de _jumpRadius
+                float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
+                float diameter = effectiveRadius * 2f * progress;
                 _telegraphObject.transform.localScale = new Vector3(diameter, 0.02f, diameter);
             }
 
@@ -208,8 +206,8 @@ public class BossDeer : BossBase
         _jumpTakeoffPosition = transform.position;
         _jumpLandingPosition = MapBoundaryUtils.ClampToZone(_playerTransform.position);
 
-        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
-        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition, effectiveRadius); // MODIFIÉ — passe le rayon en paramètre
+        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
+        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition, effectiveRadius);
     }
 
     private void LandJumpAttack()
@@ -222,9 +220,9 @@ public class BossDeer : BossBase
             _telegraphObject = null;
         }
 
-        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius; // AJOUTÉ
+        float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
-        if (distanceToPlayer <= effectiveRadius) // MODIFIÉ — cohérent avec le télégraphe affiché
+        if (distanceToPlayer <= effectiveRadius)
         {
             HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
             if (playerHealth != null)
@@ -235,7 +233,7 @@ public class BossDeer : BossBase
         _jumpStateTimer = 0f;
     }
 
-    private GameObject CreateTelegraphReticle(Vector3 position, float radius) // MODIFIÉ — ajout du paramètre radius
+    private GameObject CreateTelegraphReticle(Vector3 position, float radius)
     {
         GameObject reticle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         Destroy(reticle.GetComponent<Collider>());
@@ -254,7 +252,7 @@ public class BossDeer : BossBase
         mat.SetInt("_ZWrite", 0);
         rend.material = mat;
 
-        reticle.name = $"JumpTelegraph_{radius:F1}"; // optionnel, juste pratique pour repérer en jeu/hierarchy pendant les tests
+        reticle.name = $"JumpTelegraph_{radius:F1}";
 
         return reticle;
     }
@@ -344,7 +342,7 @@ public class BossDeer : BossBase
         base.Die();
     }
 
-    protected override void UpdateAnimatorState() // MODIFIÉ — ajout du override
+    protected override void UpdateAnimatorState()
     {
         if (_deerAnimator == null) return;
 
@@ -357,8 +355,6 @@ public class BossDeer : BossBase
         _deerAnimator.SetBool("IsPhase2", _isPhase2);
     }
 
-    // AJOUTÉ — visualise la zone de saut interdite en Scene view (arc rouge autour du joueur).
-    // Purement un outil de calibration, à retirer une fois l'angle confirmé bon en jeu si tu veux nettoyer.
     private void OnDrawGizmos()
     {
         if (_playerTransform == null) return;

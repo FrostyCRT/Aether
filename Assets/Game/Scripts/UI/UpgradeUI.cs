@@ -37,10 +37,6 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private float _progressionRowOffsetWithoutUnlockDot = 0f;
 
     [Header("Delai et animation apres un pick - s'applique a TOUS les picks")]
-    // MODIFIE - ne se limite plus au palier max. Chaque clic sur une carte declenche
-    // maintenant ce delai, pendant lequel les pastilles/icones s'animent, avant que
-    // le pick soit confirme et la carte fermee. Objectif : donner au joueur le temps
-    // de VOIR ce qu'il vient de choisir, ce qui manquait totalement avant.
     [Tooltip("Duree totale entre le clic et la confirmation du pick (fermeture du panel). Vise 1 a 1.5s.")]
     [SerializeField] private float _pickConfirmDelay = 1.3f;
 
@@ -65,39 +61,41 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private AudioSource _sfxSource;
     [SerializeField] private AudioClip _maxTierSfx;
 
-    // AJOUTE - remplace l'ancien _willReachMaxOnPick (bool[]) par un contexte plus
-    // riche par carte, necessaire pour savoir QUOI animer au clic (quelle pastille,
-    // faut-il aussi animer le losange de deblocage, etc.), pas seulement SI on doit
-    // flasher. Recalcule a chaque DisplayUpgrades() via UpdateTierDots().
     private struct PickAnimContext
     {
-        public bool showDots;              // ce type d'upgrade affiche-t-il des pastilles de palier ?
-        public int currentLevel;           // palier actuel AVANT ce pick
-        public int maxLevel;                // palier maximum de cette upgrade
-        public bool willReachMax;          // ce pick amene-t-il au palier max ?
-        public bool requiresUnlockDot;     // cette upgrade a-t-elle un losange de deblocage ?
-        public bool wasUnlockedBeforePick; // etait-elle deja debloquee AVANT ce pick ?
+        public bool showDots;
+        public int currentLevel;
+        public int maxLevel;
+        public bool willReachMax;
+        public bool requiresUnlockDot;
+        public bool wasUnlockedBeforePick;
     }
     private PickAnimContext[] _pickContext;
 
     [System.Serializable]
     public class UpgradeCard
     {
-        public GameObject cardRoot; // <- Assigne le conteneur parent de la carte ici
+        public GameObject cardRoot;
         public TextMeshProUGUI nameText;
         public TextMeshProUGUI descriptionText;
         public Button chooseButton;
 
         [Header("Fond et icone")]
-        public Image backgroundImage; // fond parchemin, sprite swappe selon la branche de l'upgrade
-        public Image iconImage; // icone de l'upgrade, sprite pris directement sur l'asset UpgradeData
+        public Image backgroundImage;
+        public Image iconImage;
 
         [Header("Pastilles de palier (3 max)")]
-        public GameObject tierDotsContainer; // <- Conteneur horizontal des 3 pastilles
-        public Image[] tierDots; // <- Assigne les 3 Image dans l'ordre : palier 1, 2, 3
+        public GameObject tierDotsContainer;
+        public Image[] tierDots;
+
+        [Header("Compteur x1/x2/x3 (upgrades sans pastilles : Degats/FireRate/Heal)")]
+        // AJOUTE - meme emplacement que tierDotsContainer dans le prefab, affiche
+        // a la place quand l'upgrade n'a pas de pastilles (cap eleve/illimite),
+        // pour ne plus laisser cet espace vide en bas de carte.
+        public TextMeshProUGUI stackCountText;
 
         [Header("Pastille de deblocage (upgrades a debloquer uniquement)")]
-        public Image unlockDot; // <- Assigne l'Image seule, pas besoin de container separe
+        public Image unlockDot;
 
         [Header("Repositionnement de la ligne selon presence du losange")]
         public RectTransform progressionRow;
@@ -107,12 +105,11 @@ public class UpgradeUI : MonoBehaviour
     {
         _pickContext = new PickAnimContext[_cards.Length];
 
-        // On lie les boutons une seule fois au demarrage pour eviter toute allocation de GC
         for (int i = 0; i < _cards.Length; i++)
         {
             if (_cards[i].chooseButton != null)
             {
-                int index = i; // Capture locale securisee pour le scope du Awake
+                int index = i;
                 _cards[i].chooseButton.onClick.RemoveAllListeners();
                 _cards[i].chooseButton.onClick.AddListener(() => OnCardSelected(index));
             }
@@ -136,9 +133,6 @@ public class UpgradeUI : MonoBehaviour
                 if (_cards[i].iconImage != null)
                     _cards[i].iconImage.sprite = upgrades[i].icon;
 
-                // Reinitialise l'echelle des elements animables : une carte peut etre
-                // reutilisee d'un level-up a l'autre, et pourrait garder un scale
-                // residuel si DisplayUpgrades() est rappele pendant qu'une anim tournait.
                 ResetCardScales(_cards[i]);
 
                 UpdateTierDots(i, _cards[i], upgrades[i]);
@@ -161,8 +155,6 @@ public class UpgradeUI : MonoBehaviour
         }
     }
 
-    // AJOUTE - remet a Vector3.one l'echelle de l'icone et de la rangee de pastilles,
-    // par securite entre deux affichages de cartes.
     private void ResetCardScales(UpgradeCard card)
     {
         if (card.iconImage != null)
@@ -195,9 +187,6 @@ public class UpgradeUI : MonoBehaviour
         }
     }
 
-    // Pastilles de palier (1/2/3) affichees en bas de la carte. N'affiche les
-    // pastilles que pour les upgrades a 3 paliers max. Les fillers a cap eleve ou
-    // illimites (Damage, FireRate, Heal, DoubleShot) masquent le conteneur entier.
     private void UpdateTierDots(int index, UpgradeCard card, UpgradeData upgrade)
     {
         bool requiresUnlockDot = upgrade.RequiresUnlockPick;
@@ -223,11 +212,24 @@ public class UpgradeUI : MonoBehaviour
         if (card.tierDotsContainer != null)
             card.tierDotsContainer.SetActive(showDots);
 
+        // AJOUTE - compteur x1/x2/x3 : uniquement pour les upgrades a cap eleve/
+        // illimite (Degats/Cadence/Soin, maxLevel > 3 ou tres grand), PAS pour
+        // Tir x2 (maxLevel == 1, deblocage binaire ou "x1" n'aurait aucun sens).
+        // Ne s'affiche qu'a partir du 1er pick deja effectue (jamais "x0" sur une
+        // carte encore jamais prise, pour ne pas alourdir un premier choix).
+        int rawLevelForStack = upgrade.GetCurrentLevel();
+        bool showStackCount = !showDots && maxLevel > 1 && rawLevelForStack >= 1;
+        if (card.stackCountText != null)
+        {
+            card.stackCountText.gameObject.SetActive(showStackCount);
+            if (showStackCount)
+                card.stackCountText.text = $"x{rawLevelForStack}";
+        }
+
         int currentLevel = showDots ? upgrade.GetDisplayLevel() : 0;
         bool alreadyMaxed = showDots && currentLevel >= maxLevel;
         bool willReachMax = showDots && (currentLevel + 1 >= maxLevel);
 
-        // Enregistre tout le contexte necessaire pour l'animation au clic.
         if (index < _pickContext.Length)
         {
             _pickContext[index] = new PickAnimContext
@@ -273,20 +275,32 @@ public class UpgradeUI : MonoBehaviour
         }
         else
         {
-            // Filet de securite : si le panel est deja inactif au moment du clic
-            // (cas limite), on confirme directement sans animation plutot que de
-            // risquer un crash StartCoroutine sur un objet desactive.
             LevelUpManager.Instance.SelectUpgrade(index);
         }
     }
 
-    // MODIFIE - remplace FlashMaxTierThenConfirm(). Tourne desormais sur CHAQUE
-    // pick (pas seulement le palier max) : anime la pastille (ou le losange) qui
-    // vient de changer d'etat avec un remplissage fluide + un pop, fait toujours
-    // un petit pop sur l'icone de la carte (meme sans pastilles), et si ce pick
-    // atteint le palier max, ajoute un pop plus ample sur toute la rangee + le son
-    // optionnel. Utilise Time.unscaledDeltaTime car Time.timeScale est
-    // probablement a 0 pendant l'ecran de level-up.
+    // AJOUTE - point d'entree public pour une selection par CLAVIER (touches 1/2/3
+    // dans LevelUpManager.Update()). Avant ce correctif, le clavier appelait
+    // LevelUpManager.SelectUpgrade() directement, court-circuitant entierement
+    // cette classe - meme probleme que l'ancien listener persistant sur les boutons
+    // qu'on avait corrige plus tot : un deuxieme point d'entree qui ignore le delai
+    // et l'animation. Desormais le clavier passe par le MEME chemin que le clic
+    // souris (OnCardSelected), donc la meme coroutine d'animation se declenche.
+    public void SelectCardByIndex(int index)
+    {
+        if (index < 0 || index >= _cards.Length) return;
+
+        // Une carte non affichee actuellement (ex: touche "3" pressee alors qu'il
+        // n'y a que 2 upgrades disponibles ce level-up) ne doit rien declencher.
+        bool cardVisible = _cards[index].cardRoot != null
+            ? _cards[index].cardRoot.activeSelf
+            : (_cards[index].chooseButton != null && _cards[index].chooseButton.gameObject.activeSelf);
+
+        if (!cardVisible) return;
+
+        OnCardSelected(index);
+    }
+
     private System.Collections.IEnumerator AnimatePickThenConfirm(int index)
     {
         UpgradeCard card = _cards[index];
@@ -297,13 +311,6 @@ public class UpgradeUI : MonoBehaviour
 
         // --- Preparation des elements a animer ---
 
-        // Pastille de palier qui vient d'etre obtenue par ce pick (s'il y en a une).
-        // MODIFIE - sur les upgrades a deblocage separe (Orbital, Lightning, MudPuddle),
-        // le PREMIER pick (celui qui debloque, wasUnlockedBeforePick == false) ne fait
-        // QUE debloquer : il n'avance aucun palier, seul le losange doit s'animer. Sans
-        // cette condition, la pastille de palier 1 s'animait aussi des le deblocage,
-        // donnant l'impression (a tort) d'avoir gagne 2 choses en un seul pick, alors
-        // que la donnee reelle (GetDisplayLevel()) ne bouge qu'au pick SUIVANT.
         bool animateDot = ctx.showDots && ctx.currentLevel < ctx.maxLevel
             && card.tierDots != null && ctx.currentLevel < card.tierDots.Length
             && card.tierDots[ctx.currentLevel] != null
@@ -312,15 +319,27 @@ public class UpgradeUI : MonoBehaviour
         Color dotTargetColor = ctx.willReachMax ? _dotColorMax : _dotColorFilled;
         Vector3 dotOriginalScale = animateDot ? dotToFill.rectTransform.localScale : Vector3.one;
 
-        // Losange de deblocage, uniquement si ce pick est celui qui debloque l'upgrade.
+        // AJOUTE - liste des pastilles DEJA remplies avant ce pick (donc cyan), qui
+        // doivent elles aussi basculer au dore EN MEME TEMPS que la nouvelle pastille,
+        // uniquement quand ce pick atteint le palier max. Sans ca, seule la derniere
+        // pastille change de couleur pendant l'animation, et les precedentes restent
+        // cyan jusqu'au prochain affichage de la carte - donnant l'impression fausse
+        // que le palier max n'est pas encore vraiment atteint dans son ensemble.
+        List<Image> additionalGoldDots = new List<Image>();
+        if (ctx.willReachMax && card.tierDots != null)
+        {
+            for (int d = 0; d < ctx.currentLevel && d < card.tierDots.Length; d++)
+            {
+                if (card.tierDots[d] != null) additionalGoldDots.Add(card.tierDots[d]);
+            }
+        }
+
         bool animateUnlock = ctx.requiresUnlockDot && !ctx.wasUnlockedBeforePick && card.unlockDot != null;
         Vector3 unlockOriginalScale = animateUnlock ? card.unlockDot.rectTransform.localScale : Vector3.one;
 
-        // Icone de la carte : pop joue sur TOUS les picks, avec ou sans pastilles.
         bool animateIcon = card.iconImage != null;
         Vector3 iconOriginalScale = animateIcon ? card.iconImage.rectTransform.localScale : Vector3.one;
 
-        // Rangee entiere de pastilles : pop supplementaire, reserve au palier max.
         bool animateRow = ctx.willReachMax && card.tierDotsContainer != null;
         Vector3 rowOriginalScale = animateRow ? card.tierDotsContainer.transform.localScale : Vector3.one;
 
@@ -334,21 +353,32 @@ public class UpgradeUI : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
 
-            // Remplissage fluide de la pastille de palier : couleur + pop, sur _dotFillAnimDuration.
+            // MODIFIE - fillT calcule une seule fois par frame, partage entre la
+            // pastille qui se remplit ET les pastilles precedentes a recolorer,
+            // pour que toutes progressent exactement en synchro vers le dore.
+            float fillT = Mathf.Clamp01(elapsed / _dotFillAnimDuration);
+
             if (animateDot)
             {
-                float fillT = Mathf.Clamp01(elapsed / _dotFillAnimDuration);
                 dotToFill.color = Color.Lerp(_dotColorEmpty, dotTargetColor, fillT);
 
-                float popFactor = Mathf.Sin(fillT * Mathf.PI); // 0 -> 1 -> 0, pic a mi-parcours du remplissage
+                float popFactor = Mathf.Sin(fillT * Mathf.PI);
                 float scale = 1f + (_dotFillPopScale - 1f) * popFactor;
                 dotToFill.rectTransform.localScale = dotOriginalScale * scale;
             }
 
-            // Meme traitement pour le losange de deblocage, s'il vient d'etre debloque.
+            // AJOUTE - recolore en parallele toutes les pastilles deja remplies,
+            // cyan -> dore, en synchro avec la nouvelle pastille ci-dessus.
+            if (additionalGoldDots.Count > 0)
+            {
+                foreach (Image dot in additionalGoldDots)
+                {
+                    dot.color = Color.Lerp(_dotColorFilled, _dotColorMax, fillT);
+                }
+            }
+
             if (animateUnlock)
             {
-                float fillT = Mathf.Clamp01(elapsed / _dotFillAnimDuration);
                 card.unlockDot.color = Color.Lerp(_dotColorEmpty, _dotColorFilled, fillT);
 
                 float popFactor = Mathf.Sin(fillT * Mathf.PI);
@@ -356,8 +386,6 @@ public class UpgradeUI : MonoBehaviour
                 card.unlockDot.rectTransform.localScale = unlockOriginalScale * scale;
             }
 
-            // Pop de l'icone, sur CHAQUE pick - c'est le seul feedback anime pour
-            // les upgrades sans pastilles (Degats, Cadence, Soin, Tir x2...).
             if (animateIcon)
             {
                 float iconT = Mathf.Clamp01(elapsed / _iconPopDuration);
@@ -366,8 +394,6 @@ public class UpgradeUI : MonoBehaviour
                 card.iconImage.rectTransform.localScale = iconOriginalScale * scale;
             }
 
-            // Pop plus ample de toute la rangee de pastilles, reserve au palier max,
-            // etale sur la totalite du delai pour bien marquer le moment.
             if (animateRow)
             {
                 float rowT = Mathf.Clamp01(elapsed / _pickConfirmDelay);
@@ -379,8 +405,7 @@ public class UpgradeUI : MonoBehaviour
             yield return null;
         }
 
-        // --- Fin d'anim : on fige les etats finaux avant de confirmer, pour eviter
-        // tout artefact d'arrondi flottant (ex: couleur pas tout a fait a 100%). ---
+        // --- Fin d'anim : on fige les etats finaux avant de confirmer ---
 
         if (animateDot)
         {
@@ -388,6 +413,17 @@ public class UpgradeUI : MonoBehaviour
             dotToFill.rectTransform.localScale = dotOriginalScale;
             if (_dotSpriteFilled != null) dotToFill.sprite = _dotSpriteFilled;
         }
+
+        // AJOUTE - fige aussi les pastilles precedentes en dore (securite anti-arrondi
+        // flottant, meme raison que pour dotToFill juste au-dessus).
+        if (additionalGoldDots.Count > 0)
+        {
+            foreach (Image dot in additionalGoldDots)
+            {
+                dot.color = _dotColorMax;
+            }
+        }
+
         if (animateUnlock)
         {
             card.unlockDot.color = _dotColorFilled;

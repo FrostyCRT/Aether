@@ -17,12 +17,24 @@ public class LevelUpManager : MonoBehaviour
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
 
-    // Niveau courant de chaque upgrade pour la run en cours.
-    // Vit ici (pas dans le ScriptableObject UpgradeData) car UpgradeData est un asset
-    // partage entre toutes les runs, pas un etat de run individuelle.
     private readonly Dictionary<UpgradeData, int> _upgradeLevels = new Dictionary<UpgradeData, int>();
 
+    private readonly List<UpgradeData> _obtainedOrder = new List<UpgradeData>();
+
+    // AJOUTE - garantit que la carte de deblocage de l'arme exclusive du
+    // personnage (Fireball/AuraUpgrade/Knives) apparait parmi les 3 choix du TOUT
+    // PREMIER level-up ou elle est proposable, UNE SEULE FOIS par run - que le
+    // joueur la prenne ou non ensuite, elle repasse dans le pool aleatoire normal.
+    // Objectif : le joueur decouvre son identite de personnage tot dans la run,
+    // sans dependre de la chance, tout en gardant un vrai choix (elle n'est que
+    // 1 des 3 cartes, pas imposee).
+    private bool _hasOfferedCharacterUnlock = false;
+
     public bool IsWaitingForChoice => _waitingForChoice;
+
+    public UpgradeData[] AllUpgrades => _allUpgrades;
+
+    public IReadOnlyList<UpgradeData> ObtainedOrder => _obtainedOrder;
 
     private void Awake()
     {
@@ -34,25 +46,28 @@ public class LevelUpManager : MonoBehaviour
         Instance = this;
     }
 
-    // Lecture du niveau actuel d'une upgrade (0 si jamais piochee)
     public int GetLevel(UpgradeData upgrade)
     {
         return _upgradeLevels.TryGetValue(upgrade, out int level) ? level : 0;
     }
 
-    // Incremente et retourne le nouveau niveau, appele par UpgradeData.Apply()
     public int IncrementLevel(UpgradeData upgrade)
     {
-        int newLevel = GetLevel(upgrade) + 1;
+        int previousLevel = GetLevel(upgrade);
+        int newLevel = previousLevel + 1;
         _upgradeLevels[upgrade] = newLevel;
+
+        if (previousLevel == 0)
+            _obtainedOrder.Add(upgrade);
+
         return newLevel;
     }
 
-    // Securite si jamais LevelUpManager doit etre reutilise sans recharger la scene
-    // (ex: bouton "Rejouer" qui ne recharge pas la scene de jeu)
     public void ResetLevels()
     {
         _upgradeLevels.Clear();
+        _obtainedOrder.Clear();
+        _hasOfferedCharacterUnlock = false;
     }
 
     private void Update()
@@ -70,9 +85,18 @@ public class LevelUpManager : MonoBehaviour
 
         if (_waitingForChoice)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1)) SelectUpgrade(0);
-            if (Input.GetKeyDown(KeyCode.Alpha2)) SelectUpgrade(1);
-            if (Input.GetKeyDown(KeyCode.Alpha3)) SelectUpgrade(2);
+            // MODIFIE - les raccourcis clavier passent maintenant par
+            // UpgradeUI.SelectCardByIndex() plutot que d'appeler SelectUpgrade()
+            // directement. Avant ce correctif, le clavier confirmait le pick
+            // instantanement, en ignorant completement le delai et l'animation
+            // qui fonctionnaient pourtant normalement au clic souris - meme
+            // symptome que l'ancien listener persistant sur les boutons.
+            if (_upgradeUI != null)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1)) _upgradeUI.SelectCardByIndex(0);
+                if (Input.GetKeyDown(KeyCode.Alpha2)) _upgradeUI.SelectCardByIndex(1);
+                if (Input.GetKeyDown(KeyCode.Alpha3)) _upgradeUI.SelectCardByIndex(2);
+            }
         }
     }
 
@@ -92,20 +116,22 @@ public class LevelUpManager : MonoBehaviour
 
         Time.timeScale = 0f;
 
+        // AJOUTE - synchronise GameManager.IsPaused avec le gel du level-up.
+        // Avant ce correctif, seul Time.timeScale passait a 0 ici ; or PlayerController
+        // et CrystalSystem se basent sur GameManager.Instance.IsPaused (pas sur
+        // Time.timeScale directement) pour savoir s'ils doivent s'arreter. Resultat :
+        // ces scripts continuaient de traiter leur logique par frame pendant un
+        // level-up, meme si le temps etait par ailleurs bien fige. On utilise
+        // SetPausedFlag() plutot que TogglePause()/ResumePause() pour ne PAS
+        // declencher en plus l'ouverture du menu pause manuel ou le HUD.
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetPausedFlag(true);
+
         _currentChoices = GetRandomUpgrades(3);
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(true);
 
-        // AJOUTE - le script UpgradeUI vit sur un GameObject distinct de _levelUpPanel
-        // dans la Hierarchy actuelle (confirme via debug : les deux objets s'appellent
-        // tous les deux "LevelUpPanel" mais ne sont PAS le meme objet). Ce second objet
-        // doit lui aussi etre actif, sinon StartCoroutine() echoue silencieusement dans
-        // UpgradeUI (Unity refuse de demarrer une coroutine sur un GameObject inactif),
-        // ce qui empechait tout le systeme de delai/animation au clic de fonctionner,
-        // meme si l'affichage des cartes et les clics eux-memes marchaient normalement
-        // (un appel de methode direct, contrairement a StartCoroutine, fonctionne sur
-        // un GameObject inactif).
         if (_upgradeUI != null)
             _upgradeUI.gameObject.SetActive(true);
 
@@ -120,7 +146,6 @@ public class LevelUpManager : MonoBehaviour
         _waitingForChoice = false;
         UpgradeData chosen = _currentChoices[index];
 
-        // Application de l'upgrade via la methode Apply() de ton ScriptableObject
         chosen.Apply();
 
         _chosenUpgrades.Add(chosen.upgradeName);
@@ -128,15 +153,9 @@ public class LevelUpManager : MonoBehaviour
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(false);
 
-        // AJOUTE - desactive l'objet UpgradeUI en meme temps que le panel visuel, en
-        // symetrie avec l'activation ajoutee dans DisplayLevelUp() ci-dessus. Sans
-        // danger pour l'animation en cours : SelectUpgrade() est appele en DERNIERE
-        // ligne de la coroutine AnimatePickThenConfirm() dans UpgradeUI, donc la
-        // coroutine a deja fini de s'executer au moment ou cette desactivation a lieu.
         if (_upgradeUI != null)
             _upgradeUI.gameObject.SetActive(false);
 
-        // Optionnel : Recupere le joueur pour gerer l'invincibilite si tu veux garder ca ici
         GameObject playerGO = GameObject.FindWithTag("Player");
         if (playerGO != null)
         {
@@ -152,6 +171,13 @@ public class LevelUpManager : MonoBehaviour
         else
         {
             Time.timeScale = 1f;
+
+            // AJOUTE - symetrique de l'activation ci-dessus : ne re-synchronise
+            // IsPaused a false que lorsque TOUS les level-up en attente sont
+            // traites (donc que le jeu reprend vraiment), pas entre deux cartes
+            // d'une meme rafale de level-up.
+            if (GameManager.Instance != null)
+                GameManager.Instance.SetPausedFlag(false);
         }
     }
 
@@ -161,13 +187,27 @@ public class LevelUpManager : MonoBehaviour
 
         foreach (UpgradeData upgrade in _allUpgrades)
         {
-            // On verifie la disponibilite via la methode IsAvailable() de l'UpgradeData
             if (upgrade.IsAvailable())
                 pool.Add(upgrade);
         }
 
         List<UpgradeData> result = new List<UpgradeData>();
         count = Mathf.Min(count, pool.Count);
+
+        // AJOUTE - force une des 3 places a etre la carte de deblocage de l'arme
+        // exclusive du personnage, une seule fois par run, tant qu'elle est
+        // disponible dans le pool courant.
+        if (!_hasOfferedCharacterUnlock)
+        {
+            UpgradeData characterUnlock = FindCharacterExclusiveUnlock(pool);
+            if (characterUnlock != null && count > 0)
+            {
+                result.Add(characterUnlock);
+                pool.Remove(characterUnlock);
+                count--;
+            }
+            _hasOfferedCharacterUnlock = true;
+        }
 
         for (int i = 0; i < count; i++)
         {
@@ -179,7 +219,29 @@ public class LevelUpManager : MonoBehaviour
         return result;
     }
 
-    // Le resume reste identique
+    // AJOUTE - retrouve, dans le pool disponible, l'UpgradeData correspondant a
+    // l'arme exclusive du personnage actuellement joue (via CharacterIdentity,
+    // deja utilise par StartingUpgradeGranter pour le meme mapping).
+    private UpgradeData FindCharacterExclusiveUnlock(List<UpgradeData> pool)
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player == null) return null;
+
+        CharacterIdentity identity = player.GetComponent<CharacterIdentity>();
+        if (identity == null) return null;
+
+        UpgradeType targetType;
+        switch (identity.Type)
+        {
+            case CharacterType.Aether: targetType = UpgradeType.Fireball; break;
+            case CharacterType.Kael: targetType = UpgradeType.AuraUpgrade; break;
+            case CharacterType.Lyra: targetType = UpgradeType.Knives; break;
+            default: return null;
+        }
+
+        return pool.Find(u => u.upgradeType == targetType);
+    }
+
     public string GetUpgradesSummary()
     {
         if (_chosenUpgrades.Count == 0) return "";

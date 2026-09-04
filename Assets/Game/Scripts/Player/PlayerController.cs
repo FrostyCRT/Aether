@@ -33,9 +33,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _phantomSelfAlpha = 0.45f;
 
     [Header("Clone Fantôme — overrides par personnage")]
-    [SerializeField] private Renderer _mainBodyRenderer; // AJOUTÉ — glisse le renderer du modèle ici (évite que le bâton contamine les ghost materials)
-    [SerializeField] private SkinnedMeshRenderer _cloneSourceRenderer; // AJOUTÉ — glisse le SkinnedMeshRenderer du modèle ici
-    [SerializeField] private Vector3 _cloneScale = Vector3.one; // AJOUTÉ — force la scale du clone
+    [SerializeField] private Renderer _mainBodyRenderer;
+    [SerializeField] private SkinnedMeshRenderer _cloneSourceRenderer;
+    [SerializeField] private Vector3 _cloneScale = Vector3.one;
     [SerializeField] private Vector3 _cloneStaffScale = Vector3.one;
 
     private float _phantomCloneCooldownTimer = 0f;
@@ -144,6 +144,14 @@ public class PlayerController : MonoBehaviour
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(1f);
     }
 
+    // AJOUTE - appele par HealthSystem.Die() : le baton reste visible et gene
+    // l'animation de mort, puisque rien ne le desactivait auparavant a ce moment.
+    public void HideStaff()
+    {
+        if (_staffTransform != null)
+            _staffTransform.gameObject.SetActive(false);
+    }
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
@@ -153,8 +161,6 @@ public class PlayerController : MonoBehaviour
 
         _modelTransform = transform.Find(_modelChildName);
 
-        // MODIFIÉ — si _mainBodyRenderer est assigné dans l'Inspector, on l'utilise seul
-        // pour éviter que le bâton ou d'autres accessoires contaminent les ghost materials
         if (_mainBodyRenderer != null)
         {
             _playerRenderers = new Renderer[] { _mainBodyRenderer };
@@ -180,25 +186,25 @@ public class PlayerController : MonoBehaviour
     {
         if (_playerRenderers == null) return;
 
-        _originalMaterials    = new Material[_playerRenderers.Length][];
-        _ghostSelfMaterials   = new Material[_playerRenderers.Length][];
-        _ghostCloneMaterials  = new Material[_playerRenderers.Length][];
+        _originalMaterials = new Material[_playerRenderers.Length][];
+        _ghostSelfMaterials = new Material[_playerRenderers.Length][];
+        _ghostCloneMaterials = new Material[_playerRenderers.Length][];
 
         for (int i = 0; i < _playerRenderers.Length; i++)
         {
             Material[] originals = _playerRenderers[i].sharedMaterials;
             _originalMaterials[i] = originals;
 
-            Material[] ghostSelf  = new Material[originals.Length];
+            Material[] ghostSelf = new Material[originals.Length];
             Material[] ghostClone = new Material[originals.Length];
 
             for (int j = 0; j < originals.Length; j++)
             {
-                ghostSelf[j]  = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f);
+                ghostSelf[j] = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f);
                 ghostClone[j] = CreateGhostMaterial(originals[j], _cloneTint, _cloneAlpha, 0.4f);
             }
 
-            _ghostSelfMaterials[i]  = ghostSelf;
+            _ghostSelfMaterials[i] = ghostSelf;
             _ghostCloneMaterials[i] = ghostClone;
         }
     }
@@ -239,7 +245,7 @@ public class PlayerController : MonoBehaviour
     private void HandleMovementInput()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical   = Input.GetAxisRaw("Vertical");
+        float vertical = Input.GetAxisRaw("Vertical");
         _moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (_animatorController != null)
@@ -266,13 +272,13 @@ public class PlayerController : MonoBehaviour
 
     private void StartDash(Vector3 direction)
     {
-        _dashDirection    = direction.normalized;
-        _isDashing        = true;
-        _isInvincible     = true;
-        _dashTimer        = _dashDuration;
+        _dashDirection = direction.normalized;
+        _isDashing = true;
+        _isInvincible = true;
+        _dashTimer = _dashDuration;
         _dashCooldownTimer = _dashCooldown;
-        _canAbsorb        = true;
-        _absorptionTimer  = _absorptionWindow;
+        _canAbsorb = true;
+        _absorptionTimer = _absorptionWindow;
 
         if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(0f);
@@ -302,8 +308,6 @@ public class PlayerController : MonoBehaviour
 
         if (_modelTransform != null)
         {
-            // MODIFIÉ — référence directe au bon SkinnedMeshRenderer via l'Inspector
-            // évite que GetComponentInChildren prenne le bâton en premier
             SkinnedMeshRenderer sourceSkinned = _cloneSourceRenderer != null
                 ? _cloneSourceRenderer
                 : _modelTransform.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -319,23 +323,21 @@ public class PlayerController : MonoBehaviour
                 mf.mesh = bakedMesh;
 
                 MeshRenderer mr = clone.AddComponent<MeshRenderer>();
-                // Prend les materials du bon renderer (modèle principal, pas le bâton)
                 mr.sharedMaterials = sourceSkinned.sharedMaterials;
 
                 clone.transform.SetParent(sourceSkinned.transform, false);
                 clone.transform.SetParent(null, true);
 
-                // AJOUTÉ — force la scale via l'Inspector pour corriger les modèles rescalés
                 clone.transform.localScale = _cloneScale;
 
                 if (_staffTransform != null)
                 {
                     GameObject staffClone = Instantiate(
                         _staffTransform.gameObject,
-                        _staffTransform.position,   // position monde exacte du bâton original
-                        _staffTransform.rotation);  // rotation monde exacte
+                        _staffTransform.position,
+                        _staffTransform.rotation);
 
-                    staffClone.transform.SetParent(clone.transform, true); // rattache au clone en gardant la position monde
+                    staffClone.transform.SetParent(clone.transform, true);
                     staffClone.transform.localScale = _cloneStaffScale;
                 }
             }
@@ -352,13 +354,11 @@ public class PlayerController : MonoBehaviour
 
         SetLayerRecursively(clone, LayerMask.NameToLayer("PhantomClone"));
 
-        ActivePhantomClone    = clone.transform;
-        PhantomAttractRadius  = _phantomAttractRadius;
-        PhantomMaxAttracted   = _phantomMaxAttracted;
+        ActivePhantomClone = clone.transform;
+        PhantomAttractRadius = _phantomAttractRadius;
+        PhantomMaxAttracted = _phantomMaxAttracted;
         PhantomAttractedCount = 0;
 
-        // MODIFIÉ — applique les ghost materials uniquement sur le MeshRenderer principal du clone
-        // (pas sur les enfants comme le bâton cloné)
         MeshRenderer cloneMainRenderer = clone.GetComponent<MeshRenderer>();
         if (cloneMainRenderer != null && _ghostCloneMaterials.Length > 0)
             cloneMainRenderer.sharedMaterials = _ghostCloneMaterials[0];
@@ -384,9 +384,9 @@ public class PlayerController : MonoBehaviour
 
         OnPhantomDestroyed?.Invoke();
 
-        ActivePhantomClone    = null;
+        ActivePhantomClone = null;
         PhantomAttractedCount = 0;
-        PhantomMaxAttracted   = 0;
+        PhantomMaxAttracted = 0;
 
         if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility();
 
@@ -446,7 +446,7 @@ public class PlayerController : MonoBehaviour
 
     private void StopDash()
     {
-        _isDashing    = false;
+        _isDashing = false;
         _isInvincible = false;
         if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility();
     }
@@ -470,11 +470,20 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        // MODIFIE - manquait la verification IsGameOver (ne verifiait que IsPaused).
+        // Ni TriggerVictory() ni ShowVictory() dans GameManager ne mettent IsPaused a
+        // true - ils ne touchent qu'a _isGameOver. Resultat : Update() s'arretait bien
+        // (IsGameOver == true), donc _moveDirection ne se rafraichissait plus et
+        // gardait sa DERNIERE valeur (celle du moment ou une touche etait encore
+        // maintenue) - mais FixedUpdate() continuait de tourner et d'appliquer ce
+        // _moveDirection fige indefiniment, puisque rien ne l'arretait. D'ou le
+        // joueur qui continue d'avancer en arriere-plan apres l'ouverture du panel
+        // de victoire, meme touche relachee.
+        if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver)) return;
 
         if (_moveDirection.sqrMagnitude > 0.01f)
         {
-            Quaternion targetRotation  = Quaternion.LookRotation(_moveDirection);
+            Quaternion targetRotation = Quaternion.LookRotation(_moveDirection);
             Quaternion smoothedRotation = Quaternion.RotateTowards(_rb.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime);
             _rb.MoveRotation(smoothedRotation);
         }
@@ -489,8 +498,8 @@ public class PlayerController : MonoBehaviour
         _rb.MovePosition(nextPosition);
     }
 
-    public void AddMoveSpeed(float value)        => _moveSpeed += _moveSpeed * value;
-    public void ReduceDashCooldown(float value)  => _dashCooldown = Mathf.Max(_dashCooldown - value, 0.5f);
+    public void AddMoveSpeed(float value) => _moveSpeed += _moveSpeed * value;
+    public void ReduceDashCooldown(float value) => _dashCooldown = Mathf.Max(_dashCooldown - value, 0.5f);
     public void SetSpeedMultiplier(float multiplier) => _speedMultiplier = multiplier;
 
     private Coroutine _slowCoroutine;

@@ -112,10 +112,10 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 104720677467609853}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1.5, y: 2.2, z: 1.8}
+  m_Size: {x: 1.5, y: 2, z: 1.8}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4193158548293416752
 MonoBehaviour:
@@ -141,22 +141,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 646aa1a2239378546a699e22ec1bd55e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 2
-  _maxHealth: 80
+  _moveSpeed: 2.5
+  _maxHealth: 800
+  _isFlying: 0
   _xpValue: 50
   _goldValue: 8
   _poolTag: EnemyKaiju
   _playerContactRadius: 1.2
-  _contactDamage: 15
+  _contactDamage: 200
   _contactDamageCooldown: 0.5
+  _burnTickInterval: 0.5
+  _burnTintIntensity: 0.55
   _attackRange: 2.8
   _attackConeAngle: 75
-  _attackDamage: 18
+  _attackDamage: 300
   _attackWindup: 0.35
   _attackRecovery: 0.4
   _attackCooldown: 2.5
   _tailSweepRadius: 4.2
-  _tailSweepDamage: 26
+  _tailSweepDamage: 500
   _tailSweepWindup: 0.85
   _comboWindow: 1.3
   _tailSweepRecovery: 0.6
@@ -204,7 +207,7 @@ PrefabInstance:
     - target: {fileID: -6601043233671942095, guid: 501fade56cafb6e48add5ea1bd78de42,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.772
+      value: -0.749
       objectReference: {fileID: 0}
     - target: {fileID: -6601043233671942095, guid: 501fade56cafb6e48add5ea1bd78de42,
         type: 3}
