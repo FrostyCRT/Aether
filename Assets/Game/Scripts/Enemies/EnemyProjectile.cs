@@ -59,6 +59,17 @@ public class EnemyProjectile : MonoBehaviour
                 return;
             }
 
+            // AJOUTE - nœud capstone Gardien "Bouclier de Mana" : si le joueur n'est
+            // pas déjà invincible et qu'une charge de bouclier est disponible, le
+            // projectile est absorbé (0 dégât) et alimente le Cristal.
+            ManaShield shield = other.GetComponent<ManaShield>();
+            if (shield != null && shield.TryAbsorb())
+            {
+                _hasHit = true;
+                Despawn();
+                return;
+            }
+
             // CORRECTION LOGIQUE : Application des dégâts si le joueur n'est pas invincible
             HealthSystem health = other.GetComponent<HealthSystem>();
             if (health != null)

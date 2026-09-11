@@ -10,12 +10,18 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver => _isGameOver;
     public bool IsPaused { get; private set; } = false;
 
-    // AJOUTE - evenement global declenche UNE SEULE FOIS des que la partie se
-    // termine (victoire OU game over). Sert aux systemes qui doivent reagir
-    // exactement a ce moment precis (ex: figer l'Animator des ennemis) plutot que
-    // de compter sur leur propre Update(), qui s'arrete justement des que
-    // IsGameOver devient vrai - sans cet evenement, rien ne les prevenait jamais
-    // que la partie venait de se terminer, ils restaient figes a mi-animation.
+    // AJOUTE - retient la cause de la mort transmise par HealthSystem.Die(),
+    // pour le message d'ambiance contextuel du Game Over.
+    private string _deathCause = "horde";
+
+    // MODIFIE - ne se contente plus de verifier que le panel est visible : passe
+    // a vrai uniquement quand GameUI signale (OnEndScreenRevealComplete) que
+    // TOUTE la sequence de reveal est terminee (comptage de l'Or, defi eventuel,
+    // apercu de palier). Avant ce changement, le raccourci se debloquait des
+    // l'affichage du panel, ce qui permettait de sauter par-dessus le message
+    // de defi/record en spammant Entree - exactement ce qu'on veut eviter.
+    private bool _replayShortcutReady = false;
+
     public static System.Action OnGameEnded;
 
     [Header("Spawn Personnage")]
@@ -29,9 +35,6 @@ public class GameManager : MonoBehaviour
     public int KillCount => _killCount;
     public float RunTimer => _runTimer;
 
-    // AJOUTE - compte les VRAIS boss vaincus cette run (BossBase.Die() incremente
-    // via AddBossKill(), uniquement si !IsSummoned). Sert au calcul des Eclats en
-    // fin de run (niveau atteint + boss vaincus + bonus de victoire).
     private int _bossKillCount = 0;
     public int BossKillCount => _bossKillCount;
 
@@ -97,7 +100,7 @@ public class GameManager : MonoBehaviour
     private void AssignCinemachineTarget(Transform playerTransform)
     {
         Cinemachine.CinemachineVirtualCamera vcam =
-            FindObjectOfType<Cinemachine.CinemachineVirtualCamera>();
+            FindFirstObjectByType<Cinemachine.CinemachineVirtualCamera>();
 
         if (vcam == null)
         {
@@ -109,9 +112,41 @@ public class GameManager : MonoBehaviour
         vcam.LookAt = playerTransform;
     }
 
+    // AJOUTE - s'abonne/se desabonne proprement a l'evenement statique de GameUI :
+    // necessaire car GameManager n'est PAS en DontDestroyOnLoad (une nouvelle
+    // instance existe a chaque rechargement de scene) - sans desabonnement dans
+    // OnDisable, chaque nouvelle instance s'accumulerait comme abonne
+    // supplementaire sur l'evenement statique, jamais nettoye.
+    private void OnEnable()
+    {
+        GameUI.OnEndScreenRevealComplete += HandleEndScreenRevealComplete;
+    }
+
+    private void OnDisable()
+    {
+        GameUI.OnEndScreenRevealComplete -= HandleEndScreenRevealComplete;
+    }
+
+    private void HandleEndScreenRevealComplete()
+    {
+        _replayShortcutReady = true;
+    }
+
     private void Update()
     {
-        if (_isGameOver) return;
+        // MODIFIE - raccourci de relance instantanee (Entree/Espace), desormais
+        // verrouille tant que _replayShortcutReady n'est pas passe a vrai par
+        // HandleEndScreenRevealComplete().
+        if (_isGameOver)
+        {
+            if (_replayShortcutReady &&
+                (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space)))
+            {
+                RestartGame();
+            }
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice) return;
@@ -138,12 +173,6 @@ public class GameManager : MonoBehaviour
         GameUI.Instance.ShowPausePanel(false);
     }
 
-    // AJOUTE - permet a d'autres systemes de gel temporaire du jeu (actuellement :
-    // LevelUpManager pendant un level-up) de synchroniser IsPaused SANS passer par
-    // TogglePause()/ResumePause(), qui ouvriraient/fermeraient en plus le panel de
-    // pause manuel et le HUD - deux effets de bord qu'on ne veut PAS pendant un
-    // level-up. Ne touche pas a Time.timeScale : chaque appelant reste responsable
-    // du sien (LevelUpManager gere deja le sien de son cote).
     public void SetPausedFlag(bool paused)
     {
         IsPaused = paused;
@@ -154,13 +183,10 @@ public class GameManager : MonoBehaviour
         IsPaused = false;
         Time.timeScale = 1f;
 
-        // CORRIGE - troisieme site d'appel a SaveRunResults() rate lors de
-        // l'extension de la signature (les 2 autres, ShowGameOver/ShowVictory,
-        // avaient bien ete mis a jour). Abandon = pas une victoire.
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     public void AddKill()
@@ -168,12 +194,18 @@ public class GameManager : MonoBehaviour
         _killCount++;
         if (GameUI.Instance != null)
             GameUI.Instance.UpdateKillCount(_killCount);
+
+        // AJOUTE - rafraichit la progression des defis bases sur les kills
+        // (ex. "Tuer 150 ennemis") en temps reel, pas seulement en fin de run.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.RefreshDisplay();
     }
 
-    public void TriggerGameOver()
+    public void TriggerGameOver(string deathCause = "horde")
     {
         if (_isGameOver) return;
         _isGameOver = true;
+        _deathCause = deathCause;
         OnGameEnded?.Invoke();
         Invoke(nameof(ShowGameOver), 1.5f);
     }
@@ -181,27 +213,44 @@ public class GameManager : MonoBehaviour
     private void ShowGameOver()
     {
         GameUI.Instance.SetHUDVisible(false);
-        int goldEarned = MetaProgressionManager.Instance.RunGold;
 
-        // MODIFIE - SaveRunResults prend desormais aussi le niveau atteint, le
-        // nombre de boss vaincus et si la run s'est terminee en victoire, pour
-        // calculer les Eclats gagnes (independants de l'or ramasse).
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
-        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
-        GameUI.Instance.ShowGameOver(_runTimer, _killCount, goldEarned);
+        // MODIFIE - baseGold capture AVANT le bonus de defi, totalGold APRES -
+        // les deux sont necessaires pour l'animation en 2 temps (compte jusqu'a
+        // baseGold, puis si defi reussi, reprend jusqu'a totalGold).
+        int baseGold = MetaProgressionManager.Instance.RunGold;
+
+        bool challengeCompleted = false;
+        float challengeRewardPercent = 0f;
+
+        if (ChallengeManager.Instance != null)
+        {
+            ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, baseGold);
+            challengeCompleted = ChallengeManager.Instance.IsCompleted;
+            challengeRewardPercent = ChallengeManager.Instance.GetCurrentRewardPercent();
+        }
+
+        int totalGold = MetaProgressionManager.Instance.RunGold;
+
+        MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
+        int eclatsEarned = MetaProgressionManager.Instance.LastRunEclatsEarned;
+
+        // MODIFIE - ajout de levelReached, meme ordre de parametres que ShowVictory
+        // desormais que GameUI.ShowGameOver() affiche aussi le niveau atteint.
+        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause);
     }
 
     public void RestartGame()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
     }
 
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     public void TriggerVictory()
@@ -215,18 +264,37 @@ public class GameManager : MonoBehaviour
     private void ShowVictory()
     {
         GameUI.Instance.SetHUDVisible(false);
-        int goldEarned = MetaProgressionManager.Instance.RunGold;
+
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 
-        // MODIFIE - meme extension que ShowGameOver(), avec victory = true cette
-        // fois (bonus de victoire applique dans le calcul des Eclats).
+        // MODIFIE - meme logique que ShowGameOver() : baseGold/totalGold separes
+        // pour l'animation en 2 temps.
+        int baseGold = MetaProgressionManager.Instance.RunGold;
+
+        bool challengeCompleted = false;
+        float challengeRewardPercent = 0f;
+
+        if (ChallengeManager.Instance != null)
+        {
+            ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, baseGold);
+            challengeCompleted = ChallengeManager.Instance.IsCompleted;
+            challengeRewardPercent = ChallengeManager.Instance.GetCurrentRewardPercent();
+        }
+
+        int totalGold = MetaProgressionManager.Instance.RunGold;
+
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, true);
+        int eclatsEarned = MetaProgressionManager.Instance.LastRunEclatsEarned;
 
         GameUI.Instance.ShowVictory(
             _runTimer,
             _killCount,
-            goldEarned,
-            levelReached
+            baseGold,
+            totalGold,
+            levelReached,
+            eclatsEarned,
+            challengeCompleted,
+            challengeRewardPercent
         );
     }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 public class OrbitalProjectile : MonoBehaviour
@@ -6,7 +6,7 @@ public class OrbitalProjectile : MonoBehaviour
     [SerializeField] private float _damage = 15f;
     private readonly float _hitCooldown = 0.5f;
 
-    // Cache des timestamps de dernière frappe : ZÉRO UPDATE requis pour nettoyer
+    // Cache des timestamps de derniÃ¨re frappe : ZÃ‰RO UPDATE requis pour nettoyer
     private readonly Dictionary<int, float> _lastHitTimestamps = new Dictionary<int, float>();
 
     public void SetDamage(float damage)
@@ -18,7 +18,7 @@ public class OrbitalProjectile : MonoBehaviour
     {
         if (!other.CompareTag("Enemy")) return;
 
-        // Utilisation de l'InstanceID unique (int) au lieu du GameObject complet pour éviter les fuites de mémoire
+        // Utilisation de l'InstanceID unique (int) au lieu du GameObject complet pour Ã©viter les fuites de mÃ©moire
         int enemyId = other.GetInstanceID();
         float currentTime = Time.time;
 
@@ -30,11 +30,14 @@ public class OrbitalProjectile : MonoBehaviour
             }
         }
 
+        // Buffs dynamiques du joueur (Concentration) lus Ã  l'impact. 1f si inactif.
+        float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
+
         // On cherche d'abord la base commune d'ennemi normal
         EnemyBase enemy = other.GetComponent<EnemyBase>();
         if (enemy != null)
         {
-            enemy.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
+            enemy.TakeDamage(dmg, DamageNumberSpawner.ColorOrbital);
             _lastHitTimestamps[enemyId] = currentTime;
             return;
         }
@@ -43,12 +46,12 @@ public class OrbitalProjectile : MonoBehaviour
         BossBase boss = other.GetComponent<BossBase>();
         if (boss != null)
         {
-            boss.TakeDamage(_damage, DamageNumberSpawner.ColorOrbital);
+            boss.TakeDamage(dmg, DamageNumberSpawner.ColorOrbital);
             _lastHitTimestamps[enemyId] = currentTime;
         }
     }
 
-    // Si le projectile est désactivé ou replacé dans un Object Pool, on nettoie son dictionnaire
+    // Si le projectile est dÃ©sactivÃ© ou replacÃ© dans un Object Pool, on nettoie son dictionnaire
     private void OnDisable()
     {
         _lastHitTimestamps.Clear();

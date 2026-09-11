@@ -21,4 +21,9 @@ public class UpgradeSlotRefs : MonoBehaviour
     [Tooltip("Assigne Dot1, Dot2, Dot3 dans cet ordre exact.")]
     public Image[] tierDots;
     public Image unlockDot;
+
+    [Header("Compteur x1/x2/x3 (upgrades sans pastilles : Degats/Cadence/Soin)")]
+    // AJOUTE - meme principe que sur les cartes de level-up : affiche a la place
+    // des pastilles pour les upgrades qui n'en ont pas (cap eleve/illimite).
+    public TextMeshProUGUI stackCountText;
 }

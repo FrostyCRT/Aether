@@ -62,7 +62,7 @@ public class BossDeer : BossBase
     {
         _bossName = "Le Cerf Ancestral";
         // MODIFIE - x10, cf. rescale global des degats/PV
-        _maxHealth = 50000f;
+        _maxHealth = 500f;
         _moveSpeed = 4f;
 
         base.Start();

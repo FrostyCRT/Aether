@@ -34,7 +34,7 @@ public class WaveManager : MonoBehaviour
 
     private void Start()
     {
-        _enemySpawner = FindObjectOfType<EnemySpawner>();
+        _enemySpawner = FindFirstObjectByType<EnemySpawner>();
         ApplyDifficulty();
     }
 
@@ -100,6 +100,11 @@ public class WaveManager : MonoBehaviour
     {
         _bossCount++;
         _bossAlive = true;
+
+        // Déblocage de Kael : atteindre le Boss 2 en une partie (le fait de le
+        // faire apparaître suffit — mourir dessus juste après compte quand même).
+        if (bossNumber == 2 && MetaProgressionManager.Instance != null)
+            MetaProgressionManager.Instance.UnlockCharacter(1);
 
         ClearAllEnemies();
         _enemySpawner.gameObject.SetActive(false);

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 public class DashCircleUI : MonoBehaviour
@@ -41,7 +41,7 @@ public class DashCircleUI : MonoBehaviour
             _dashFillImage.color = _colorCooldown;
         }
 
-        // Fond légèrement plus visible pendant le cooldown
+        // Fond lÃ©gÃ¨rement plus visible pendant le cooldown
         if (_dashBGImage != null)
             _dashBGImage.color = isReady
                 ? new Color(0.1f, 0.1f, 0.1f, 0.3f)

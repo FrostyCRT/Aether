@@ -91,14 +91,19 @@ public class WeaponFireball : MonoBehaviour
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
         {
-            projectile.Init(direction, _damage);
+            // Buffs dynamiques (Concentration) : appliqués à l'impact direct, à
+            // l'explosion ET à la Brûlure — tout ça, c'est "tes dégâts". Vaut 1f
+            // si aucun buff actif.
+            float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
+
+            projectile.Init(direction, dmg);
 
             // MODIFIE - explosion toujours a 100%, plus de chance meta/carte a combiner.
-            projectile.SetFragmentation(1f, _damage * _fragmentDamageRatio, _fragmentRadius);
+            projectile.SetFragmentation(1f, dmg * _fragmentDamageRatio, _fragmentRadius);
 
             if (_burnEnabled)
             {
-                projectile.SetBurn(_damage * _burnDamagePerSecondRatio, _burnDuration);
+                projectile.SetBurn(dmg * _burnDamagePerSecondRatio, _burnDuration);
             }
         }
     }

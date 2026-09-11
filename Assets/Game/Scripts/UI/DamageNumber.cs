@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 
 public class DamageNumber : MonoBehaviour
@@ -29,7 +29,7 @@ public class DamageNumber : MonoBehaviour
 
         UpdateText();
 
-        // Légère variation aléatoire sur l'axe X et Z pour espacer les textes
+        // LÃ©gÃ¨re variation alÃ©atoire sur l'axe X et Z pour espacer les textes
         transform.position += new Vector3(
             Random.Range(-0.3f, 0.3f),
             0f,
@@ -37,7 +37,7 @@ public class DamageNumber : MonoBehaviour
         );
     }
 
-    // NOUVEAU — appelé quand un nouveau coup arrive sur la même cible pendant la fenêtre de fusion
+    // NOUVEAU â€” appelÃ© quand un nouveau coup arrive sur la mÃªme cible pendant la fenÃªtre de fusion
     public void AddDamage(float damage, bool isCritical)
     {
         _totalDamage += damage;
@@ -48,7 +48,7 @@ public class DamageNumber : MonoBehaviour
             _color = DamageNumberSpawner.ColorCritical;
         }
 
-        _timer = 0f; // relance la durée de vie pour laisser le temps de lire le total
+        _timer = 0f; // relance la durÃ©e de vie pour laisser le temps de lire le total
         UpdateText();
     }
 

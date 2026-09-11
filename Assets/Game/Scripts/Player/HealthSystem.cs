@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class HealthSystem : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _maxHealth = 2000f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _maxHealth = 2000f;
 
-    [Header("Invincibilit�")]
+    [Header("Invincibilité")]
     [SerializeField] private float _invincibilityDuration = 1f;
 
     private float _currentHealth;
@@ -15,10 +15,6 @@ public class HealthSystem : MonoBehaviour
 
     private float _damageTimer = 0f;
 
-    // AJOUTE - le corps reste fige a la hauteur du bassin (Y=1.5, pivot du rig)
-    // pendant l'animation de mort au lieu de descendre au sol : rien ne fait
-    // jamais bouger transform.position.y a ce moment-la, la position racine ne
-    // suit pas la pose couchee de l'animation.
     [Header("Chute a la mort")]
     [SerializeField] private float _deathFallTargetY = 0.4f;
     [SerializeField] private float _deathFallDuration = 1.2f;
@@ -31,6 +27,18 @@ public class HealthSystem : MonoBehaviour
     private float _regenTimer = 0f;
     private bool _secondWindUsed = false;
 
+    // AJOUTE - retient la source du DERNIER coup encaisse, pour remonter la
+    // cause de la mort jusqu'au Game Over (messages d'ambiance contextuels).
+    // Defaut "horde" : la plupart des degats du jeu viennent d'ennemis normaux
+    // qui n'ont pas encore ete mis a jour pour preciser une source (EnemyBase/
+    // EnemyProjectile, non vus) - ce defaut reste donc pertinent tant que ces
+    // scripts n'auront pas ete etendus, sans rien casser en attendant.
+    private string _lastDamageSource = "horde";
+
+    // AJOUTE - cache pour réinitialiser la Concentration (nœud Guerrier) à chaque
+    // coup reçu. Null si le composant n'est pas sur le prefab → no-op.
+    private PlayerBuffs _playerBuffs;
+
     private void Awake()
     {
         float bonusHP = MetaProgressionManager.Instance.GetBonusMaxHP();
@@ -39,6 +47,7 @@ public class HealthSystem : MonoBehaviour
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
         _regenPerSecond = MetaProgressionManager.Instance.GetReputationBonusRegen();
         _secondWindUsed = false;
+        _playerBuffs = GetComponent<PlayerBuffs>();
     }
 
     private void Start()
@@ -72,22 +81,44 @@ public class HealthSystem : MonoBehaviour
 
                 if (GameUI.Instance != null)
                     GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+
+                // AJOUTE - la regen peut faire remonter le HP mais ne peut jamais
+                // faire baisser le minimum deja enregistre (NotifyHealthChanged
+                // ne garde que la plus basse valeur vue) - appel sans risque ici.
+                if (ChallengeManager.Instance != null)
+                    ChallengeManager.Instance.NotifyHealthChanged(_currentHealth, _maxHealth);
             }
         }
     }
 
-    public void TryTakeContactDamage(float damage, float cooldown)
+    public void TryTakeContactDamage(float damage, float cooldown, string source = "horde")
     {
         if (IsInvincible) return;
         if (_damageTimer > 0f) return;
 
-        TakeDamage(damage);
+        TakeDamage(damage, source);
         _damageTimer = cooldown;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, string source = "horde")
     {
         if (IsInvincible) return;
+
+        // AJOUTE - retient la source de CE coup ; si c'est le coup fatal, Die()
+        // (plus bas, appele de facon synchrone dans la meme execution) lira
+        // cette valeur exactement telle qu'elle est ici, au moment du coup qui
+        // tue - jamais un coup anterieur ni un coup encaisse apres coup.
+        _lastDamageSource = source;
+
+        // A ce point, un vrai coup va etre encaisse (normal ou attenue
+        // par Second Souffle plus bas) - notifie le defi "Sans-Faute" ici, avant
+        // toute branche, pour ne jamais le manquer.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.NotifyDamageTaken();
+
+        // AJOUTE - même point : réinitialise la Concentration (nœud Guerrier).
+        if (_playerBuffs != null)
+            _playerBuffs.NotifyDamaged();
 
         damage *= (1f - _armorReduction);
 
@@ -110,6 +141,11 @@ public class HealthSystem : MonoBehaviour
         if (GameUI.Instance != null)
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
 
+        // AJOUTE - tracke le minimum de vie atteint pour le defi "Sang-Froid"
+        // (ne jamais descendre sous 30%).
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.NotifyHealthChanged(_currentHealth, _maxHealth);
+
         if (_currentHealth <= 0f)
             Die();
     }
@@ -122,6 +158,11 @@ public class HealthSystem : MonoBehaviour
         if (GameUI.Instance != null)
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
 
+        // AJOUTE - le Second Souffle ramene la vie a 1 PV, largement sous 30% -
+        // doit compter pour "Sang-Froid" comme n'importe quelle autre chute de vie.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.NotifyHealthChanged(_currentHealth, _maxHealth);
+
         _isInvincible = true;
         _invincibilityTimer = 3f;
 
@@ -130,15 +171,28 @@ public class HealthSystem : MonoBehaviour
             playerCtrl.ActivateInvisibility(3f);
     }
 
-    public void TakeDamageFromProjectile(float damage)
+    public void TakeDamageFromProjectile(float damage, string source = "horde")
     {
-        TakeDamage(damage);
+        TakeDamage(damage, source);
     }
 
     public void Heal(float percent)
     {
         _currentHealth += _maxHealth * percent;
         _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
+
+        if (GameUI.Instance != null)
+            GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+    }
+
+    // AJOUTE - soin d'une valeur PLATE (pas un pourcentage), utilisé par le nœud
+    // "Récupération" (Gardien) qui restaure X PV fixes à chaque absorption de dash.
+    // Cappe à _maxHealth (pas d'overheal). Ignoré si le joueur est déjà mort.
+    public void HealFlat(float amount)
+    {
+        if (amount <= 0f || _currentHealth <= 0f) return;
+
+        _currentHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
 
         if (GameUI.Instance != null)
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
@@ -160,18 +214,6 @@ public class HealthSystem : MonoBehaviour
         _externalInvincibilitySources = Mathf.Max(0, _externalInvincibilitySources - 1);
     }
 
-    // MODIFIE - retire gameObject.SetActive(false), qui desactivait TOUT le joueur
-    // (modele, Animator, tout) sur la meme frame que la mort, avant que la moindre
-    // animation ne puisse s'afficher. Le joueur reste maintenant visible, immobile
-    // (PlayerController.Update()/FixedUpdate() s'arretent deja via IsGameOver),
-    // le temps que GameManager.TriggerGameOver() affiche l'ecran de Game Over
-    // 1.5s plus tard - fenetre pendant laquelle l'animation de mort peut jouer.
-    // AJOUTE - declenche l'animation de mort via PlayerAnimatorController.TriggerDeath()
-    // (deja prete, SetTrigger("IsDead") sur l'Animator), qui n'etait jamais appelee
-    // nulle part avant ce correctif.
-    // MODIFIE - cache aussi le baton en plus de declencher l'animation. Rien ne
-    // le desactivait avant, il restait visible et genait visuellement l'animation
-    // de mort.
     private void Die()
     {
         PlayerAnimatorController animatorController = GetComponent<PlayerAnimatorController>();
@@ -182,14 +224,12 @@ public class HealthSystem : MonoBehaviour
         if (playerController != null)
             playerController.HideStaff();
 
-        // AJOUTE - fait descendre la racine du personnage jusqu'au sol en meme
-        // temps que l'animation de mort joue, plutot que de rester fige a hauteur
-        // du bassin. _deathFallDuration (1.2s) tient dans les 1.5s avant que
-        // GameManager.ShowGameOver() n'affiche l'ecran de Game Over par-dessus.
         StartCoroutine(LowerBodyOnDeath());
 
+        // MODIFIE - transmet la cause du coup fatal, pour le message d'ambiance
+        // contextuel du Game Over.
         if (GameManager.Instance != null)
-            GameManager.Instance.TriggerGameOver();
+            GameManager.Instance.TriggerGameOver(_lastDamageSource);
     }
 
     private System.Collections.IEnumerator LowerBodyOnDeath()

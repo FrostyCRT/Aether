@@ -4,6 +4,11 @@ public static class SkillTreeData
 {
     public class NodeData
     {
+        // AJOUTE - chaque noeud connait desormais son propre id (auparavant
+        // seule la clef du Dictionary le connaissait) - necessaire pour pouvoir
+        // enumerer tous les noeuds (via All) et retrouver leur id d'origine,
+        // par exemple pour chercher "le noeud le plus proche d'etre debloque".
+        public string id;
         public string displayName;
         public string description;
         public bool isUnique;
@@ -39,19 +44,35 @@ public static class SkillTreeData
         return _nodesCache.TryGetValue(nodeId, out NodeData node) ? node : null;
     }
 
+    // AJOUTE - enumere tous les noeuds enregistres, toutes branches confondues.
+    // Sert par exemple a MetaProgressionManager.GetNextUnlockPreview() pour
+    // chercher le noeud le plus proche d'etre debloque, sans dupliquer la
+    // liste des ids ailleurs.
+    public static IEnumerable<NodeData> All => _nodesCache.Values;
+
+    // AJOUTE - petit wrapper qui assigne automatiquement l'id sur le NodeData
+    // au moment de l'enregistrement, pour ne jamais desynchroniser la clef du
+    // Dictionary et le champ NodeData.id (une seule ecriture de l'id, ici,
+    // plutot que de le dupliquer a la main sur chacune des entrees ci-dessous).
+    private static void AddNode(string id, NodeData node)
+    {
+        node.id = id;
+        _nodesCache.Add(id, node);
+    }
+
     private static void PopulateDatabase()
     {
         // ── GUERRIER ────────────────────────────────────────────────────
 
         // AJOUTÉ — remplace "damage" comme point d'entrée sans prérequis
-        _nodesCache.Add("concentration", new NodeData
+        AddNode("concentration", new NodeData
         {
             displayName = "Concentration",
-            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts. Le compteur se réinitialise à chaque coup reçu.",
+            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu.",
             isUnique = false,
-            level1Desc = "+5% / sec, cap à +15%",
-            level2Desc = "+5% / sec, cap à +25%",
-            level3Desc = "+5% / sec, cap à +40%",
+            level1Desc = "+8% / sec, plafond +15%",
+            level2Desc = "+8% / sec, plafond +30%",
+            level3Desc = "+8% / sec, plafond +50%",
             costLevel1 = 100,
             costLevel2 = 300,
             costLevel3 = 700,
@@ -59,7 +80,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Guerrier
         });
 
-        _nodesCache.Add("cadence", new NodeData
+        AddNode("cadence", new NodeData
         {
             displayName = "Cadence",
             description = "Augmente la vitesse de tir de toutes tes armes.",
@@ -74,7 +95,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Guerrier
         });
 
-        _nodesCache.Add("fragmentation", new NodeData
+        AddNode("fragmentation", new NodeData
         {
             displayName = "Fragmentation",
             description = "Les projectiles ont 20% de chance d'exploser à l'impact.",
@@ -84,7 +105,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Guerrier
         });
 
-        _nodesCache.Add("crystalDamage", new NodeData
+        AddNode("crystalDamage", new NodeData
         {
             displayName = "Dégâts Cristal",
             description = "Augmente les dégâts de l'ultime et de la Nova.",
@@ -99,7 +120,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Guerrier
         });
 
-        _nodesCache.Add("overpower", new NodeData
+        AddNode("overpower", new NodeData
         {
             displayName = "Surpuissance",
             description = "Après l'ultime, tes dégâts sont doublés pendant 5 secondes.",
@@ -111,7 +132,7 @@ public static class SkillTreeData
 
         // ── GARDIEN ─────────────────────────────────────────────────────
 
-        _nodesCache.Add("vitality", new NodeData
+        AddNode("vitality", new NodeData
         {
             displayName = "Vitalité",
             description = "Augmente tes points de vie maximum.",
@@ -127,14 +148,14 @@ public static class SkillTreeData
         });
 
         // AJOUTÉ — remplace "regen" comme point d'entrée sans prérequis
-        _nodesCache.Add("recuperation", new NodeData
+        AddNode("recuperation", new NodeData
         {
             displayName = "Récupération",
-            description = "Chaque cristal absorbé par le dash restaure des HP.",
+            description = "Chaque projectile absorbé par le dash restaure des PV.",
             isUnique = false,
-            level1Desc = "+2 HP par absorption",
-            level2Desc = "+5 HP par absorption",
-            level3Desc = "+8 HP par absorption",
+            level1Desc = "+20 PV par absorption",
+            level2Desc = "+50 PV par absorption",
+            level3Desc = "+80 PV par absorption",
             costLevel1 = 100,
             costLevel2 = 300,
             costLevel3 = 700,
@@ -142,7 +163,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Gardien
         });
 
-        _nodesCache.Add("secondWind", new NodeData
+        AddNode("secondWind", new NodeData
         {
             displayName = "Second Souffle",
             description = "Une fois par partie, survit à un coup fatal avec 1 HP.",
@@ -152,7 +173,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Gardien
         });
 
-        _nodesCache.Add("armor", new NodeData
+        AddNode("armor", new NodeData
         {
             displayName = "Armure",
             description = "Réduit les dégâts reçus de tous les ennemis.",
@@ -167,7 +188,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Gardien
         });
 
-        _nodesCache.Add("manaShield", new NodeData
+        AddNode("manaShield", new NodeData
         {
             displayName = "Bouclier de Mana",
             description = "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.",
@@ -180,7 +201,7 @@ public static class SkillTreeData
         // ── FANTÔME ─────────────────────────────────────────────────────
 
         // AJOUTÉ — remplace "agility" comme point d'entrée sans prérequis
-        _nodesCache.Add("impulsionNova", new NodeData
+        AddNode("impulsionNova", new NodeData
         {
             displayName = "Impulsion Nova",
             description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le cooldown du dash est immédiatement réinitialisé.",
@@ -190,7 +211,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Fantome
         });
 
-        _nodesCache.Add("dash", new NodeData
+        AddNode("dash", new NodeData
         {
             displayName = "Dash Amélioré",
             description = "Réduit le temps de recharge du dash.",
@@ -205,7 +226,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Fantome
         });
 
-        _nodesCache.Add("crystalMastery", new NodeData
+        AddNode("crystalMastery", new NodeData
         {
             displayName = "Maîtrise du Cristal",
             description = "Réduit le nombre de charges nécessaires pour l'ultime.",
@@ -215,7 +236,7 @@ public static class SkillTreeData
             branch = CharacterBranch.Fantome
         });
 
-        _nodesCache.Add("novaRadius", new NodeData
+        AddNode("novaRadius", new NodeData
         {
             displayName = "Nova Étendue",
             description = "Augmente le rayon de la Nova de Cristal.",
@@ -230,10 +251,14 @@ public static class SkillTreeData
             branch = CharacterBranch.Fantome
         });
 
-        _nodesCache.Add("phantomDash", new NodeData
+        AddNode("phantomDash", new NodeData
         {
             displayName = "Dash Fantôme",
-            description = "Le dash laisse un clone qui attire les ennemis proches pendant 2 secondes.",
+            // MODIFIE - l'ancien texte ("le dash laisse un clone") decrivait un
+            // declenchement automatique via le dash, qui ne correspond plus a
+            // l'implementation actuelle (touche dediee, independante du dash).
+            // Pas de nom de touche ici : depend des futurs parametres de remapping.
+            description = "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.",
             isUnique = true,
             costLevel1 = 1200,
             prerequisites = new[] { "crystalMastery", "novaRadius" },

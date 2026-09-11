@@ -1,22 +1,22 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class EnemyKaiju : EnemyBase
 {
     private enum AttackPhase { Idle, Windup, Combo, Recovery }
 
-    [Header("Attaque frontale — Attack")]
+    [Header("Attaque frontale â€” Attack")]
     [SerializeField] private float _attackRange = 2.8f;
-    [SerializeField] private float _attackConeAngle = 75f; // cône devant lui, PAS omnidirectionnel
+    [SerializeField] private float _attackConeAngle = 75f; // cÃ´ne devant lui, PAS omnidirectionnel
     [SerializeField] private float _attackDamage = 18f;
-    [SerializeField] private float _attackWindup = 0.35f;   // rapide, punit le facetank immédiat
+    [SerializeField] private float _attackWindup = 0.35f;   // rapide, punit le facetank immÃ©diat
     [SerializeField] private float _attackRecovery = 0.4f;
     [SerializeField] private float _attackCooldown = 2.5f;
 
-    [Header("Balayage de queue — Attack Queue (combo, pas indépendant)")]
-    [SerializeField] private float _tailSweepRadius = 4.2f; // 360°, plus large que le cône
+    [Header("Balayage de queue â€” Attack Queue (combo, pas indÃ©pendant)")]
+    [SerializeField] private float _tailSweepRadius = 4.2f; // 360Â°, plus large que le cÃ´ne
     [SerializeField] private float _tailSweepDamage = 26f;
-    [SerializeField] private float _tailSweepWindup = 0.85f; // plus lent = plus lisible, en échange d'être plus fort
-    [SerializeField] private float _comboWindow = 1.3f;      // fenêtre pour rester au contact et déclencher le combo
+    [SerializeField] private float _tailSweepWindup = 0.85f; // plus lent = plus lisible, en Ã©change d'Ãªtre plus fort
+    [SerializeField] private float _comboWindow = 1.3f;      // fenÃªtre pour rester au contact et dÃ©clencher le combo
     [SerializeField] private float _tailSweepRecovery = 0.6f;
 
     [Header("Visuel de charge (tell rouge/orange, distinct du bleu du Golem)")]
@@ -35,13 +35,13 @@ public class EnemyKaiju : EnemyBase
     private bool _comboAvailable = false;
     private float _comboTimer = 0f;
 
-    // Même pattern que EnemyTank : override du hook, pas de 2e Update()
+    // MÃªme pattern que EnemyTank : override du hook, pas de 2e Update()
     protected override void OnEnemyUpdate()
     {
         if (_animator == null)
             _animator = GetComponentInChildren<Animator>();
 
-        // _playerTransform est private dans EnemyBase (leçon connue) -> référence locale dupliquée
+        // _playerTransform est private dans EnemyBase (leÃ§on connue) -> rÃ©fÃ©rence locale dupliquÃ©e
         if (_bruteTarget == null)
         {
             GameObject player = GameObject.FindWithTag("Player");
@@ -91,7 +91,7 @@ public class EnemyKaiju : EnemyBase
 
         _comboTimer -= Time.deltaTime;
 
-        // Le joueur est resté au contact après l'Attack -> le combo se déclenche
+        // Le joueur est restÃ© au contact aprÃ¨s l'Attack -> le combo se dÃ©clenche
         if (distance <= _tailSweepRadius)
         {
             _comboAvailable = false;
@@ -100,7 +100,7 @@ public class EnemyKaiju : EnemyBase
         }
 
         if (_comboTimer <= 0f)
-            _comboAvailable = false; // le joueur a reculé à temps, pas de combo
+            _comboAvailable = false; // le joueur a reculÃ© Ã  temps, pas de combo
     }
 
     private void StartWindup()
@@ -148,7 +148,7 @@ public class EnemyKaiju : EnemyBase
     {
         UpdateGlow(0f);
 
-        // 360°, contrairement au cône de l'Attack — punit d'être resté au contact, peu importe l'angle
+        // 360Â°, contrairement au cÃ´ne de l'Attack â€” punit d'Ãªtre restÃ© au contact, peu importe l'angle
         if (distance <= _tailSweepRadius)
         {
             HealthSystem playerHealth = _bruteTarget.GetComponent<HealthSystem>();
@@ -172,8 +172,8 @@ public class EnemyKaiju : EnemyBase
         _bodyRenderer.SetPropertyBlock(_propBlock);
     }
 
-    // Reset au niveau run, pas juste au niveau instance — TODO: appeler EnemyKaiju.ResetRunState()
-    // depuis GameManager au début d'une run (je n'ai pas encore ce script)
+    // Reset au niveau run, pas juste au niveau instance â€” TODO: appeler EnemyKaiju.ResetRunState()
+    // depuis GameManager au dÃ©but d'une run (je n'ai pas encore ce script)
     private static bool _hasRoaredThisRun = false;
 
     public static void ResetRunState()
@@ -181,13 +181,13 @@ public class EnemyKaiju : EnemyBase
         _hasRoaredThisRun = false;
     }
 
-    // Séparé du OnEnable() privé d'EnemyBase — Unity appelle les deux indépendamment
-    // (ce ne sont pas des méthodes virtuelles, donc pas d'override classique possible ici).
-    // À vérifier une fois en jeu avec un Debug.Log de chaque côté, je préfère te le dire
-    // plutôt que de l'affirmer à 100% sans que tu l'aies vu tourner sur CE projet précis.
-    protected override void OnEnable() // MODIFIÉ — était private void OnEnable()
+    // SÃ©parÃ© du OnEnable() privÃ© d'EnemyBase â€” Unity appelle les deux indÃ©pendamment
+    // (ce ne sont pas des mÃ©thodes virtuelles, donc pas d'override classique possible ici).
+    // Ã€ vÃ©rifier une fois en jeu avec un Debug.Log de chaque cÃ´tÃ©, je prÃ©fÃ¨re te le dire
+    // plutÃ´t que de l'affirmer Ã  100% sans que tu l'aies vu tourner sur CE projet prÃ©cis.
+    protected override void OnEnable() // MODIFIÃ‰ â€” Ã©tait private void OnEnable()
     {
-        base.OnEnable(); // AJOUTÉ — indispensable, sinon _currentHealth (et l'abonnement à OnPhantomDestroyed) ne sont plus jamais initialisés
+        base.OnEnable(); // AJOUTÃ‰ â€” indispensable, sinon _currentHealth (et l'abonnement Ã  OnPhantomDestroyed) ne sont plus jamais initialisÃ©s
 
         if (_animator == null)
             _animator = GetComponentInChildren<Animator>();

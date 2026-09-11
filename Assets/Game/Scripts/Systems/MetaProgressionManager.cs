@@ -2,6 +2,18 @@
 
 public class MetaProgressionManager : MonoBehaviour
 {
+    // AJOUTE - resultat de GetNextUnlockPreview(), utilise par l'ecran de Game
+    // Over pour afficher "Encore X Or pour debloquer [Noeud]".
+    public class NextUnlockPreview
+    {
+        public bool HasPreview;
+        public string NodeName;
+        public int Cost;
+        public int CurrentAmount;
+        public bool IsGoldCurrency; // true = Or, false = Eclats
+        public int AmountStillNeeded => Mathf.Max(0, Cost - CurrentAmount);
+    }
+
     public static MetaProgressionManager Instance { get; private set; }
 
     public SaveData Data { get; private set; }
@@ -10,17 +22,28 @@ public class MetaProgressionManager : MonoBehaviour
     [Header("Personnages jouables")]
     [SerializeField] private GameObject[] _characterPrefabs;
 
-    // AJOUTE - calcul des Eclats gagnes en fin de run, independant de l'or
-    // ramasse. Valeurs de depart calibrees pour ~35-40 runs solides afin de
-    // maxer completement les 3 stats de Reputation (5 paliers chacune, cout
-    // total 5600 x 3 = 16800 Eclats) - a ajuster une fois de vraies donnees de
-    // partie disponibles (niveau moyen atteint, frequence des boss vaincus).
     [Header("Eclats (calcul de fin de run)")]
     [SerializeField] private int _eclatsPerLevel = 15;
     [SerializeField] private int _eclatsPerBossKill = 60;
     [SerializeField] private int _eclatsVictoryBonus = 200;
 
+    [Header("Déblocage des personnages (filet Éclats)")]
+    [SerializeField] private int _kaelUnlockEclatsCost = 500;
+    [SerializeField] private int _lyraUnlockEclatsCost = 1200;
+
     public int TotalEclats => Data?.totalEclats ?? 0;
+
+    // AJOUTE - nom du dernier personnage débloqué cette session (condition en jeu
+    // OU achat Éclats). Lu et remis à null par l'écran de fin de partie pour
+    // afficher "Nouveau personnage débloqué : X !". null si rien à annoncer.
+    public string PendingUnlockNotification { get; private set; }
+
+    // AJOUTE - expose le nombre d'Eclats gagnes lors du DERNIER appel a
+    // SaveRunResults(), pour que GameManager puisse le transmettre a
+    // GameUI.ShowVictory()/ShowGameOver() pour l'animation de comptage - avant
+    // ça, seul le total cumule (Data.totalEclats) etait accessible, pas le
+    // montant de cette run precise.
+    public int LastRunEclatsEarned { get; private set; } = 0;
 
     private void Awake()
     {
@@ -41,12 +64,13 @@ public class MetaProgressionManager : MonoBehaviour
         RunGold += amount;
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
             GameUI.Instance.UpdateGold(RunGold);
+
+        // AJOUTE - rafraichit la progression du defi "Fortune" (3000 Or) en
+        // temps reel, pas seulement en fin de run.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.RefreshDisplay();
     }
 
-    // MODIFIE - signature enrichie : level/bossKills/victory servent uniquement
-    // au calcul des Eclats (voir CalculateEclatsEarned), separe de l'or (qui
-    // continue de financer les arbres de competence par personnage, logique
-    // inchangee ci-dessous).
     public void SaveRunResults(float runTime, int kills, int levelReached, int bossKills, bool victory)
     {
         if (Data == null) LoadData();
@@ -54,17 +78,27 @@ public class MetaProgressionManager : MonoBehaviour
         Data.totalGold += RunGold;
         if (runTime > Data.bestTime) Data.bestTime = runTime;
         if (kills > Data.bestKills) Data.bestKills = kills;
+        // AJOUTE - 2 records supplementaires. RunGold est lu AVANT d'etre remis a
+        // 0 plus bas, et reflete deja le bonus de defi eventuel (deja applique
+        // par ChallengeManager avant l'appel a SaveRunResults) - donc "meilleur
+        // or en une partie" inclut logiquement le bonus, comme le montant reel
+        // que le joueur repart avec.
+        if (levelReached > Data.bestLevel) Data.bestLevel = levelReached;
+        if (RunGold > Data.bestGoldInRun) Data.bestGoldInRun = RunGold;
 
         int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory);
         Data.totalEclats += eclatsEarned;
+        LastRunEclatsEarned = eclatsEarned;
 
         SaveSystem.Save(Data);
         RunGold = 0;
+
+        // Déblocage de Lyra : gagner une partie complète (Boss 3). Idempotent,
+        // se sauvegarde lui-même si c'est un nouveau déblocage.
+        if (victory)
+            UnlockCharacter(2);
     }
 
-    // AJOUTE - formule des Eclats : niveau atteint + boss vaincus + bonus de
-    // victoire. Volontairement independante de l'or/kills, pour recompenser la
-    // PERFORMANCE de la run plutot que la collecte.
     private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory)
     {
         int total = (levelReached * _eclatsPerLevel) + (bossKills * _eclatsPerBossKill);
@@ -76,12 +110,126 @@ public class MetaProgressionManager : MonoBehaviour
     // PERSONNAGE SÉLECTIONNÉ
     // =====================
 
-    public int GetSelectedCharacterIndex() => Data?.selectedCharacterIndex ?? 0;
+    // MODIFIE - retombe sur Aether (0) si l'index sauvegardé pointe vers un
+    // personnage qui n'est pas / plus débloqué (save édité, ordre des conditions
+    // changé...). Filet de sécurité : GetActiveBranch(), le spawn, etc. en dépendent.
+    public int GetSelectedCharacterIndex()
+    {
+        int idx = Data?.selectedCharacterIndex ?? 0;
+        return IsCharacterUnlocked(idx) ? idx : 0;
+    }
 
     public void SetSelectedCharacter(int index)
     {
         if (Data == null) return;
-        Data.selectedCharacterIndex = Mathf.Clamp(index, 0, 2);
+        index = Mathf.Clamp(index, 0, 2);
+        if (!IsCharacterUnlocked(index)) return; // sécurité : on ne sélectionne pas un perso verrouillé
+        Data.selectedCharacterIndex = index;
+        SaveSystem.Save(Data);
+    }
+
+    // =====================
+    // DÉBLOCAGE DES PERSONNAGES
+    // =====================
+
+    public bool IsCharacterUnlocked(int index)
+    {
+        if (Data == null) return index == 0;
+        switch (index)
+        {
+            case 1: return Data.kaelUnlocked;
+            case 2: return Data.lyraUnlocked;
+            default: return true; // Aether, toujours disponible
+        }
+    }
+
+    public int GetCharacterUnlockEclatsCost(int index)
+    {
+        switch (index)
+        {
+            case 1: return _kaelUnlockEclatsCost;
+            case 2: return _lyraUnlockEclatsCost;
+            default: return 0;
+        }
+    }
+
+    public static string GetCharacterDisplayName(int index)
+    {
+        switch (index)
+        {
+            case 1: return "Kael";
+            case 2: return "Lyra";
+            default: return "Aether";
+        }
+    }
+
+    // Déblocage par condition en jeu (Boss 2 atteint, partie gagnée). Idempotent.
+    // Retourne true seulement si c'est un NOUVEAU déblocage.
+    public bool UnlockCharacter(int index)
+    {
+        if (Data == null || IsCharacterUnlocked(index)) return false;
+
+        switch (index)
+        {
+            case 1: Data.kaelUnlocked = true; break;
+            case 2: Data.lyraUnlocked = true; break;
+            default: return false;
+        }
+
+        PendingUnlockNotification = GetCharacterDisplayName(index);
+        SaveSystem.Save(Data);
+        return true;
+    }
+
+    // Déblocage payé en Éclats depuis la page de sélection (filet anti-blocage).
+    public bool TryUnlockCharacterWithEclats(int index)
+    {
+        if (Data == null || IsCharacterUnlocked(index)) return false;
+
+        int cost = GetCharacterUnlockEclatsCost(index);
+        if (cost <= 0 || Data.totalEclats < cost) return false;
+
+        Data.totalEclats -= cost;
+        switch (index)
+        {
+            case 1: Data.kaelUnlocked = true; break;
+            case 2: Data.lyraUnlocked = true; break;
+            default: return false;
+        }
+
+        SaveSystem.Save(Data);
+        return true;
+    }
+
+    // Lu par l'écran de fin de partie : renvoie le nom du perso débloqué cette
+    // session (une seule fois), null ensuite.
+    public string ConsumePendingUnlockNotification()
+    {
+        string s = PendingUnlockNotification;
+        PendingUnlockNotification = null;
+        return s;
+    }
+
+    // DEBUG - à retirer avant release (cf. NOTES.md). Débloque tout, utile après
+    // avoir ajouté le système de déblocage sur un save existant.
+    public void DebugUnlockAllCharacters()
+    {
+        if (Data == null) LoadData();
+        Data.kaelUnlocked = true;
+        Data.lyraUnlocked = true;
+        SaveSystem.Save(Data);
+    }
+
+    // DEBUG - à retirer avant release. Remet les déblocages à l'état "première
+    // partie" : seul Aether disponible, sélection ramenée sur Aether. Ne touche
+    // PAS aux arbres / à l'Or / aux Éclats (resets séparés).
+    public void DebugResetCharacterUnlocks()
+    {
+        if (Data == null) LoadData();
+        Data.kaelUnlocked = false;
+        Data.lyraUnlocked = false;
+        Data.selectedCharacterIndex = 0;
+        PendingUnlockNotification = null;
         SaveSystem.Save(Data);
     }
 
@@ -112,10 +260,15 @@ public class MetaProgressionManager : MonoBehaviour
     // BONUS ARBRE — GUERRIER
     // =====================
 
+    // Plafond du bonus de dégâts de "Concentration" (branche Guerrier).
+    // MODIFIE - 0.25/0.40 -> 0.30/0.50 aux paliers 2/3 : le bonus se réinitialise à
+    // chaque coup reçu (fragile en fin de partie), le plafond doit donc être assez
+    // gros pour donner envie de jouer proprement. Montée effective : +8%/s (voir
+    // PlayerBuffs._concentrationRampPerSecond).
     public float GetBonusConcentrationCap()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
-        float[] values = { 0f, 0.15f, 0.25f, 0.40f };
+        float[] values = { 0f, 0.15f, 0.30f, 0.50f };
         return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
     }
 
@@ -164,10 +317,13 @@ public class MetaProgressionManager : MonoBehaviour
         return values[Mathf.Clamp(Data.vitalityLevel, 0, values.Length - 1)];
     }
 
+    // PV plats restaurés à chaque projectile absorbé (dash) — nœud "Récupération".
+    // MODIFIE - 2/5/8 -> 20/50/80 : avec le rescale ×10 des PV (joueur ~2000 PV),
+    // 2/5/8 représentait 0,1-0,4 % de la vie, imperceptible en jeu.
     public float GetBonusRecuperation()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Gardien)) return 0f;
-        float[] values = { 0f, 2f, 5f, 8f };
+        float[] values = { 0f, 20f, 50f, 80f };
         return values[Mathf.Clamp(Data.recuperationLevel, 0, values.Length - 1)];
     }
 
@@ -229,10 +385,6 @@ public class MetaProgressionManager : MonoBehaviour
     // =====================
     // RÉPUTATION — tronc commun, aucun filtre de branche
     // =====================
-    // MODIFIE - Vitesse plafonnee a +25% au lieu de +30% au palier 5 : seul
-    // stat de Reputation sans "plafond naturel" contrairement aux degats
-    // (butent vite sur "l'ennemi meurt deja en 1 coup"), donc traite avec plus
-    // de prudence a l'approche du palier maximal.
 
     public float GetReputationBonusDamage()
     {
@@ -248,10 +400,6 @@ public class MetaProgressionManager : MonoBehaviour
         return values[Mathf.Clamp(Data.reputationSpeedLevel, 0, values.Length - 1)];
     }
 
-    // MODIFIE - x10, cf. rescale global des degats/PV. Contrairement a
-    // Degats/Vitesse (des pourcentages, valides peu importe l'echelle des
-    // nombres de base), la Regen est un montant FIXE en PV/sec - elle doit
-    // suivre le rescale explicitement.
     public float GetReputationBonusRegen()
     {
         if (Data == null) return 0f;
@@ -263,10 +411,6 @@ public class MetaProgressionManager : MonoBehaviour
     // ACHAT DES NOEUDS
     // =====================
 
-    // AJOUTE - les 3 noeuds de Reputation payent en Eclats (Data.totalEclats),
-    // tous les autres noeuds (arbres de personnage) continuent de payer en Or
-    // (Data.totalGold). Centralise ici pour eviter de dupliquer cette liste a
-    // plusieurs endroits.
     private bool IsReputationNode(string nodeId)
     {
         return nodeId == "reputationDamage" || nodeId == "reputationSpeed" || nodeId == "reputationRegen";
@@ -316,10 +460,6 @@ public class MetaProgressionManager : MonoBehaviour
             case "novaRadius": return GetLevelCost(Data.novaRadiusLevel);
             case "crystalMastery": return Data.crystalMasteryUnlocked ? -1 : 600;
             case "phantomDash": return Data.phantomDashUnlocked ? -1 : 1200;
-            // MODIFIE - les 3 noeuds de Reputation utilisent desormais leur propre
-            // table de couts a 5 paliers (GetReputationLevelCost), plus l'ancienne
-            // table a 3 paliers (GetLevelCost) qui bloquait silencieusement tout
-            // achat au-dela du palier 3 (cout -1 des que currentLevel >= 3).
             case "reputationDamage": return GetReputationLevelCost(Data.reputationDamageLevel);
             case "reputationSpeed": return GetReputationLevelCost(Data.reputationSpeedLevel);
             case "reputationRegen": return GetReputationLevelCost(Data.reputationRegenLevel);
@@ -334,11 +474,6 @@ public class MetaProgressionManager : MonoBehaviour
         return costs[currentLevel];
     }
 
-    // AJOUTE - table de couts dediee a la Reputation, 5 paliers au lieu de 3.
-    // Progression volontairement plus agressive que la table generique (x2 a x3
-    // par palier comme avant, mais etendue) pour que les 2 derniers paliers
-    // restent un vrai objectif de fin de progression, pas un a-cote acquis sans
-    // y penser.
     private int GetReputationLevelCost(int currentLevel)
     {
         int[] costs = { 100, 300, 700, 1500, 3000 };
@@ -457,24 +592,11 @@ public class MetaProgressionManager : MonoBehaviour
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
 
-        // NOTE (non modifiee) - reste un artefact de test a corriger avant la
-        // release, deja signale precedemment : remettre a 0 (ou retirer cette
-        // ligne) avant de sortir le jeu. Volontairement pas touche ici, ce
-        // n'est pas dans le perimetre de la Reputation.
         Data.totalGold = 10000; // remettre à 0 pour la release
-
-        // NOTE - ResetSkillTree() ne touche NI la Reputation NI les Eclats,
-        // volontairement : ce sont deux systemes de progression distincts des
-        // arbres de personnage, un reset de branche ne doit pas faire perdre
-        // une progression de long terme separee.
 
         SaveSystem.Save(Data);
     }
 
-    // AJOUTE - bouton reserve au developpement/debug, PAS destine a la version
-    // finale (demande explicitement comme outil de test). Remet les 3 stats de
-    // Reputation a 0 et donne largement de quoi tout re-maxer immediatement,
-    // pour tester des valeurs sans devoir enchainer des dizaines de vraies runs.
     public void DebugResetReputation()
     {
         if (Data == null) LoadData();
@@ -486,4 +608,74 @@ public class MetaProgressionManager : MonoBehaviour
     }
 
     public float GetBonusXP() => 0f;
+
+    // AJOUTE - cherche, parmi les noeuds de la branche du personnage actif (Or)
+    // et les 3 noeuds de Reputation (Eclats), celui qui necessite le MOINS de
+    // monnaie manquante pour etre debloque - tous types de monnaie confondus.
+    // Sert au message "encore X pour debloquer..." de l'ecran de Game Over,
+    // pense pour retourner le regard du joueur vers l'avant plutot que vers
+    // l'echec qu'il vient de vivre.
+    public NextUnlockPreview GetNextUnlockPreview()
+    {
+        NextUnlockPreview best = new NextUnlockPreview { HasPreview = false };
+        if (Data == null) return best;
+
+        int bestGap = int.MaxValue;
+        SkillTreeData.CharacterBranch activeBranch = GetActiveBranch();
+
+        foreach (SkillTreeData.NodeData node in SkillTreeData.All)
+        {
+            if (node.branch != activeBranch) continue;
+            if (!IsNodeUnlockable(node.id)) continue;
+
+            int cost = GetNodeCost(node.id);
+            if (cost < 0) continue;
+
+            int gap = Mathf.Max(0, cost - Data.totalGold);
+            if (gap < bestGap)
+            {
+                bestGap = gap;
+                best = new NextUnlockPreview
+                {
+                    HasPreview = true,
+                    NodeName = node.displayName,
+                    Cost = cost,
+                    CurrentAmount = Data.totalGold,
+                    IsGoldCurrency = true
+                };
+            }
+        }
+
+        // Les 3 noeuds de Reputation ne vivent pas dans SkillTreeData (ils sont
+        // geres entierement ici, cf. IsReputationNode) - traites a part, avec
+        // des noms d'affichage a confirmer si ReputationUI.cs utilise deja un
+        // intitule etabli different de celui-ci.
+        string[] reputationIds = { "reputationDamage", "reputationSpeed", "reputationRegen" };
+        string[] reputationNames = { "Réputation : Dégâts", "Réputation : Vitesse", "Réputation : Régénération" };
+
+        for (int i = 0; i < reputationIds.Length; i++)
+        {
+            string id = reputationIds[i];
+            if (!IsNodeUnlockable(id)) continue;
+
+            int cost = GetNodeCost(id);
+            if (cost < 0) continue;
+
+            int gap = Mathf.Max(0, cost - Data.totalEclats);
+            if (gap < bestGap)
+            {
+                bestGap = gap;
+                best = new NextUnlockPreview
+                {
+                    HasPreview = true,
+                    NodeName = reputationNames[i],
+                    Cost = cost,
+                    CurrentAmount = Data.totalEclats,
+                    IsGoldCurrency = false
+                };
+            }
+        }
+
+        return best;
+    }
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,7 +30,7 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private Color _dotColorMax = new Color(1f, 0.788f, 0.302f, 1f);        // #FFC94D
 
     [Header("Position de TierDotsRow selon presence du losange")]
-    // AJOUTE - meme principe que _progressionRowOffsetWithUnlockDot/WithoutUnlockDot
+    // Meme principe que _progressionRowOffsetWithUnlockDot/WithoutUnlockDot
     // sur UpgradeUI : la rangee (losange + 3 dots, ou juste 3 dots) doit se recentrer
     // differemment selon que le losange de deblocage est visible ou non, sinon les 3
     // dots seuls paraissent decales par rapport au centre du slot.
@@ -43,6 +43,14 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _timeText;
     [SerializeField] private TextMeshProUGUI _killsText;
     [SerializeField] private TextMeshProUGUI _goldText;
+
+    [Header("Défi (Header)")]
+    // AJOUTE - affichage detaille du defi de la run dans le menu pause : nom,
+    // difficulte, description complete, recompense chiffree, et statut (En
+    // cours / Echoue). Complementaire au rappel court deja affiche dans le HUD
+    // (GameUI.UpdateChallengeDisplay) - ici c'est la version detaillee, lue
+    // uniquement quand le joueur ouvre la pause.
+    [SerializeField] private TextMeshProUGUI _challengeInfoText;
 
     [Header("Animation d'ouverture - fond et panneau")]
     [SerializeField] private Image _dimBackground;
@@ -85,6 +93,7 @@ public class PauseMenuUI : MonoBehaviour
     {
         PopulateGrid();
         PullLiveStats();
+        PullChallengeInfo();
 
         if (_openAnimCoroutine != null)
             StopCoroutine(_openAnimCoroutine);
@@ -121,7 +130,7 @@ public class PauseMenuUI : MonoBehaviour
         if (LevelUpManager.Instance == null || _gridContent == null || _upgradeSlotPrefab == null)
             return;
 
-        // MODIFIE - suit desormais ObtainedOrder (ordre chronologique reel de pick)
+        // Suit desormais ObtainedOrder (ordre chronologique reel de pick)
         // plutot que AllUpgrades (ordre fixe du tableau de l'Inspector). Cette liste
         // ne contient deja que des upgrades reellement obtenues au moins une fois,
         // donc plus besoin de filtrer nous-memes ici.
@@ -179,7 +188,19 @@ public class PauseMenuUI : MonoBehaviour
             }
         }
 
-        // MODIFIE - requiresUnlock calcule une seule fois, reutilise a la fois pour
+        // Compteur x1/x2/x3, meme condition que sur les cartes de
+        // level-up : uniquement pour les upgrades sans pastilles (cap eleve/
+        // illimite comme Degats/Cadence/Soin), jamais pour Tir x2 (maxLevel==1),
+        // et seulement si deja pris au moins une fois.
+        bool showStackCount = !showDots && maxLevel > 1 && currentLevel >= 1;
+        if (refs.stackCountText != null)
+        {
+            refs.stackCountText.gameObject.SetActive(showStackCount);
+            if (showStackCount)
+                refs.stackCountText.text = $"x{currentLevel}";
+        }
+
+        // requiresUnlock calcule une seule fois, reutilise a la fois pour
         // le losange ET pour repositionner TierDotsRow, meme si l'un des deux
         // champs n'est pas assigne dans l'Inspector (les deux restent independants).
         bool requiresUnlock = upgrade.RequiresUnlockPick;
@@ -222,12 +243,11 @@ public class PauseMenuUI : MonoBehaviour
     // Stats (Temps / Kills / Or) - a brancher depuis ton systeme existant
     // ------------------------------------------------------------------
 
-    // AJOUTE - va chercher les valeurs directement sur GameManager (RunTimer,
+    // Va chercher les valeurs directement sur GameManager (RunTimer,
     // KillCount, deja publics) et MetaProgressionManager (RunGold) a chaque
     // ouverture du menu pause. Aucun cablage externe necessaire : PauseMenuUI se
     // sert lui-meme, plutot que d'attendre qu'un autre script lui pousse les
-    // valeurs. Si MetaProgressionManager.RunGold n'existe pas exactement sous ce
-    // nom/cette signature chez toi, ce sera la seule ligne a corriger ici.
+    // valeurs.
     private void PullLiveStats()
     {
         if (GameManager.Instance == null) return;
@@ -255,6 +275,47 @@ public class PauseMenuUI : MonoBehaviour
 
         if (_goldText != null)
             _goldText.text = gold.ToString();
+    }
+
+    // ------------------------------------------------------------------
+    // Défi de la run - affichage détaillé
+    // ------------------------------------------------------------------
+
+    // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte,
+    // description complete, recompense chiffree (via
+    // ChallengeManager.GetCurrentRewardPercent()), et statut actuel. Appele a
+    // chaque ouverture du menu pause, comme PullLiveStats().
+    private void PullChallengeInfo()
+    {
+        if (_challengeInfoText == null) return;
+
+        if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
+        {
+            _challengeInfoText.text = "";
+            return;
+        }
+
+        ChallengeDefinition challenge = ChallengeManager.Instance.CurrentChallenge;
+        string difficultyLabel = GetDifficultyLabel(challenge.difficulty);
+        int rewardPercent = Mathf.RoundToInt(ChallengeManager.Instance.GetCurrentRewardPercent() * 100f);
+        string statusLabel = ChallengeManager.Instance.IsFailed ? "Échoué" : "En cours";
+
+        _challengeInfoText.text =
+            $"{challenge.displayName} ({difficultyLabel})\n" +
+            $"{challenge.description}\n" +
+            $"Récompense : +{rewardPercent}% de l'Or ramassé\n" +
+            $"Statut : {statusLabel}";
+    }
+
+    private string GetDifficultyLabel(ChallengeDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return "Facile";
+            case ChallengeDifficulty.Medium: return "Moyen";
+            case ChallengeDifficulty.Hard: return "Difficile";
+            default: return "";
+        }
     }
 
     // ------------------------------------------------------------------

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
@@ -118,7 +118,7 @@ public class ReputationUI : MonoBehaviour
             card.currentValueText.text = FormatCurrentValue(card.nodeId);
 
         if (card.nextCostText != null)
-            card.nextCostText.text = isMaxed ? "Palier maximum atteint" : $"Suivant : {cost} Éclats";
+            card.nextCostText.text = isMaxed ? "Palier maximum atteint" : $"Suivant : {cost} Ã‰clats";
 
         if (card.buyButton != null)
         {
@@ -133,11 +133,11 @@ public class ReputationUI : MonoBehaviour
                 }
                 else if (!canAfford)
                 {
-                    card.buyButtonText.text = "Éclats insuffisants";
+                    card.buyButtonText.text = "Ã‰clats insuffisants";
                 }
                 else
                 {
-                    card.buyButtonText.text = "AMÉLIORER";
+                    card.buyButtonText.text = "AMÃ‰LIORER";
                 }
             }
         }
@@ -170,7 +170,7 @@ public class ReputationUI : MonoBehaviour
         switch (nodeId)
         {
             case "reputationDamage":
-                return $"+{Mathf.RoundToInt(MetaProgressionManager.Instance.GetReputationBonusDamage() * 100f)}% Dégâts";
+                return $"+{Mathf.RoundToInt(MetaProgressionManager.Instance.GetReputationBonusDamage() * 100f)}% DÃ©gÃ¢ts";
             case "reputationSpeed":
                 return $"+{Mathf.RoundToInt(MetaProgressionManager.Instance.GetReputationBonusSpeed() * 100f)}% Vitesse";
             case "reputationRegen":

@@ -157,7 +157,10 @@ public class WeaponBase : MonoBehaviour
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
         {
-            float finalDamage = _currentDamage * _damageMultiplier;
+            // PlayerBuffs.OutgoingDamageMultiplier = buffs dynamiques du joueur
+            // (Concentration). Vaut 1f si aucun buff actif → sans effet pour les
+            // autres personnages.
+            float finalDamage = _currentDamage * _damageMultiplier * PlayerBuffs.OutgoingDamageMultiplier;
             projectile.Init(direction, finalDamage);
 
             // MODIFIÉ — SetFragmentation prend maintenant une chance (float) plutôt qu'un bool.

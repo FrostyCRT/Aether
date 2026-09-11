@@ -4,11 +4,9 @@ using System.Collections.Generic;
 public class WeaponOrbital : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _baseDamage = 15f;
+    [SerializeField] private float _baseDamage = 150f; // MODIFIE - x10, cf. rescale global des degats/PV
     [SerializeField] private float _orbitRadius = 3f;
     [SerializeField] private float _orbitSpeed = 180f;
-    // Point de départ au déblocage (1er pick de la carte Orbital) = 2 orbitaux.
-    // Les 3 paliers d'amélioration suivants ajoutent +1 chacun via AddOrbital() → max 5.
     [SerializeField] private int _orbitalCount = 2;
 
     [Header("Contrôle Range (A/E)")]
@@ -20,14 +18,8 @@ public class WeaponOrbital : MonoBehaviour
     [SerializeField] private GameObject _orbitalPrefab;
 
     [Header("Limites")]
-    // MODIFIÉ — 4 → 10 : ce n'était plus le vrai plafond de design (2 au déblocage + 3 paliers
-    // via UpgradeData = 5 max). Ce champ reste un garde-fou théorique généreux, mais le vrai cap
-    // est désormais géré par UpgradeData/LevelUpManager (source de vérité unique). Ne pas
-    // redescendre sous 5, sinon le dernier palier d'amélioration serait bloqué silencieusement
-    // (AddOrbital() se contente d'un Debug.Log et d'un retour anticipé, sans erreur visible).
     [SerializeField] private int _maxOrbitalCount = 10;
 
-    // Cache pour les modificateurs d'upgrades (Logique additive saine)
     private float _upgradeDamageModifier = 0f;
     private float _currentDamage;
 
@@ -38,14 +30,20 @@ public class WeaponOrbital : MonoBehaviour
 
     public bool IsMaxOrbital() => _orbitalCount >= _maxOrbitalCount;
 
+    // MODIFIE - applique le bonus de Reputation Degats AVANT le premier calcul de
+    // _currentDamage, meme trou que Fireball/Aura/Knives corrige plus tot.
     private void Awake()
     {
+        if (MetaProgressionManager.Instance != null)
+        {
+            float bonusDamage = MetaProgressionManager.Instance.GetReputationBonusDamage();
+            _baseDamage += _baseDamage * bonusDamage;
+        }
         UpdateCalculatedStats();
     }
 
     private void Start()
     {
-        // Sécurité si Init() n'a pas été appelé par un manager externe
         if (!_isInitialized && _orbitalPrefab != null)
         {
             SpawnOrbitals();
@@ -73,7 +71,6 @@ public class WeaponOrbital : MonoBehaviour
     {
         _isInitialized = true;
 
-        // Nettoyage : au lieu de Destroy, on retourne au pool
         foreach (GameObject orbital in _orbitals)
         {
             if (orbital != null) ObjectPool.Instance.ReturnToPool("OrbitalProjectile", orbital);
@@ -84,7 +81,6 @@ public class WeaponOrbital : MonoBehaviour
 
         for (int i = 0; i < _orbitalCount; i++)
         {
-            // ON APPELLE LE POOL ICI
             GameObject orbital = ObjectPool.Instance.Get("OrbitalProjectile", transform.position, Quaternion.identity);
 
             if (orbital != null)
@@ -107,13 +103,11 @@ public class WeaponOrbital : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (_orbitals.Count == 0) return;
 
-        // Contrôle de la range au clavier
         if (Input.GetKey(KeyCode.A))
             _orbitRadius = Mathf.Max(_minOrbitRadius, _orbitRadius - _rangeChangeSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.E))
             _orbitRadius = Mathf.Min(_maxOrbitRadius, _orbitRadius + _rangeChangeSpeed * Time.deltaTime);
 
-        // Rotation des orbitaux
         _currentAngle += _orbitSpeed * Time.deltaTime;
         float angleStep = 360f / _orbitalCount;
 
@@ -134,7 +128,6 @@ public class WeaponOrbital : MonoBehaviour
     {
         _currentDamage = _baseDamage * (1f + _upgradeDamageModifier);
 
-        // On répercute immédiatement la modification sur tous nos projectiles actifs
         for (int i = 0; i < _orbitalScriptsCache.Count; i++)
         {
             if (_orbitalScriptsCache[i] != null)
@@ -146,7 +139,7 @@ public class WeaponOrbital : MonoBehaviour
 
     public void AddDamage(float value)
     {
-        _upgradeDamageModifier += value; // Logique additive saine (+10% = +0.1f)
+        _upgradeDamageModifier += value;
         UpdateCalculatedStats();
     }
 }

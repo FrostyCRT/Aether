@@ -7,24 +7,17 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private int _maxCharges = 6;
 
     [Header("Ulti")]
-    [SerializeField] private float _ultDamage = 500f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _ultDamage = 500f;
     [SerializeField] private float _ultRange = 10f;
     [SerializeField] private float _slowFactor = 0.3f;
     [SerializeField] private float _slowDuration = 3f;
 
-    // AJOUTE - l'ultime devenait mecaniquement de moins en moins efficace au fil
-    // d'une run, puisque les degats etaient fixes alors que les PV ennemis
-    // scalent jusqu'a x5. Scaling lineaire x1 -> x4 sur 15 minutes (duree de run
-    // de reference), plafonne au-dela pour eviter une inflation infinie sur une
-    // run anormalement longue. x4 plutot que x5 pile pour rester legerement sous
-    // le scaling des PV ennemis - l'ultime reste un vrai temps fort, pas un
-    // bouton qui trivialise tout.
     [Header("Scaling de l'ultime dans le temps")]
-    [SerializeField] private float _ultScaleRampDuration = 900f; // 15 minutes
+    [SerializeField] private float _ultScaleRampDuration = 900f;
     [SerializeField] private float _ultScaleMaxMultiplier = 4f;
 
     [Header("Nova")]
-    [SerializeField] private float _novaDamage = 100f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _novaDamage = 100f;
     [SerializeField] private float _novaRadius = 3f;
     [SerializeField] private GameObject _novaVFXPrefab;
 
@@ -40,11 +33,16 @@ public class CrystalSystem : MonoBehaviour
     private int _storedUlts = 0;
     private bool _overpowerActive = false;
 
+    // AJOUTE - cache pour le soin du nœud "Récupération" (Gardien) sur absorption.
+    private HealthSystem _healthSystem;
+
     public int CurrentCharges => _currentCharges;
     public int MaxCharges => _maxCharges;
 
     private void Start()
     {
+        _healthSystem = GetComponent<HealthSystem>();
+
         float crystalBonus = MetaProgressionManager.Instance.GetBonusCrystalDamage();
         _ultDamage += _ultDamage * crystalBonus;
         _novaDamage += _novaDamage * crystalBonus;
@@ -59,9 +57,6 @@ public class CrystalSystem : MonoBehaviour
         GameUI.Instance.UpdateUltStack(0);
     }
 
-    // AJOUTE - multiplicateur de degats de l'ultime selon le temps de survie
-    // ecoule cette run. 1f au debut, monte lineairement jusqu'a
-    // _ultScaleMaxMultiplier a _ultScaleRampDuration secondes, plafonne ensuite.
     private float GetUltDamageScale()
     {
         if (GameManager.Instance == null || _ultScaleRampDuration <= 0f) return 1f;
@@ -82,6 +77,14 @@ public class CrystalSystem : MonoBehaviour
     {
         TriggerNova();
 
+        // AJOUTE - nœud "Récupération" (Gardien) : chaque projectile absorbé au dash
+        // rend des PV plats (20/50/80 selon le palier). GetBonusRecuperation() renvoie
+        // 0 hors branche Gardien, donc l'appel est sûr pour tous les personnages.
+        // Placé avant l'early-return ci-dessous : le soin s'applique même si la jauge
+        // de Cristal est déjà pleine (le projectile est absorbé dans tous les cas).
+        if (_healthSystem != null && MetaProgressionManager.Instance != null)
+            _healthSystem.HealFlat(MetaProgressionManager.Instance.GetBonusRecuperation());
+
         if (_storedUlts >= 2) return;
 
         _currentCharges++;
@@ -92,13 +95,13 @@ public class CrystalSystem : MonoBehaviour
             _currentCharges = 0;
 
             GameUI.Instance.UpdateCrystalCharge(_maxCharges, _maxCharges);
-            GameUI.Instance.SetCrystalReady(true);
+            GameUI.Instance.SetCrystalReady(_storedUlts);
             GameUI.Instance.UpdateUltStack(_storedUlts);
         }
         else
         {
             if (_storedUlts == 1)
-                GameUI.Instance.SetCrystalReady(false);
+                GameUI.Instance.SetCrystalReady(0);
 
             GameUI.Instance.UpdateCrystalCharge(_currentCharges, _maxCharges);
         }
@@ -106,13 +109,18 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerUlt()
     {
+        // AJOUTE - notifie le systeme de defis a chaque VRAI declenchement de
+        // l'Ultime (defi "Sans Cristal" = ne jamais l'utiliser).
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.NotifyUltimateUsed();
+
         bool isEmpowered = _storedUlts >= 2;
 
         if (isEmpowered)
         {
             _storedUlts = 0;
             _currentCharges = 0;
-            GameUI.Instance.SetCrystalReady(false);
+            GameUI.Instance.SetCrystalReady(0);
             GameUI.Instance.UpdateCrystalCharge(0, _maxCharges);
             GameUI.Instance.UpdateUltStack(0);
             TriggerEmpoweredUlt();
@@ -121,7 +129,7 @@ public class CrystalSystem : MonoBehaviour
         {
             int savedCharges = _currentCharges;
             _storedUlts = 0;
-            GameUI.Instance.SetCrystalReady(false);
+            GameUI.Instance.SetCrystalReady(0);
             GameUI.Instance.UpdateUltStack(0);
             _currentCharges = savedCharges;
             GameUI.Instance.UpdateCrystalCharge(_currentCharges, _maxCharges);
@@ -134,8 +142,6 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerNormalUlt()
     {
-        // MODIFIE - passe le multiplicateur de scaling temporel a DamageAllEnemies,
-        // au lieu du 1f fixe d'avant (qui ne faisait donc jamais rien).
         DamageAllEnemies(GetUltDamageScale());
         StartCoroutine(SlowAllEnemies());
         AttractGems(_gemAttractRange, fast: false);
@@ -145,23 +151,16 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerEmpoweredUlt()
     {
-        // MODIFIE - remplace le 100f fixe, completement deconnecte de _ultDamage
-        // et du scaling temporel, par une vraie formule basee sur _ultDamage :
-        // x5 de base (un vrai "wipe" garanti tot dans la run) multiplie par le
-        // meme scaling temporel que le reste de l'ultime, pour rester efficace
-        // contre des ennemis a PV scales en fin de run.
         float scale = GetUltDamageScale();
         float empoweredDamage = _ultDamage * 5f * scale;
 
-        EnemyBase[] allEnemies = FindObjectsOfType<EnemyBase>();
+        EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         foreach (EnemyBase enemy in allEnemies)
         {
             if (enemy != null)
                 enemy.TakeDamage(empoweredDamage, DamageNumberSpawner.ColorCritical);
         }
 
-        // MODIFIE - x2 sur les boss, desormais lui aussi multiplie par le scaling
-        // temporel (avant : x2 fixe, ne bougeait jamais avec la progression de la run).
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
         foreach (Collider hit in hits)
         {
@@ -193,7 +192,7 @@ public class CrystalSystem : MonoBehaviour
 
     private void AttractGems(float range, bool fast = false)
     {
-        XPGem[] allGems = FindObjectsOfType<XPGem>();
+        XPGem[] allGems = FindObjectsByType<XPGem>(FindObjectsSortMode.None);
         foreach (XPGem gem in allGems)
         {
             if (gem == null) continue;

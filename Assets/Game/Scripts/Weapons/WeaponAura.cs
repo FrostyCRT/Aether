@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 public class WeaponAura : MonoBehaviour
 {
@@ -10,7 +10,7 @@ public class WeaponAura : MonoBehaviour
     // corresponde a une taille qui se voit clairement a l'ecran.
     [SerializeField] private float _radius = 6f;
     [SerializeField] private float _tickRate = 0.25f;
-    [Header("Ralentissement léger")]
+    [Header("Ralentissement lÃ©ger")]
     [SerializeField] private float _slowMultiplier = 0.85f; // -15%
     [SerializeField] private float _minSlowMultiplier = 0.4f;
     private float _tickTimer = 0f;
@@ -146,7 +146,7 @@ public class WeaponAura : MonoBehaviour
                 _currentlySlowedBoss = boss;
             }
         }
-        // Restaure la vitesse normale des ennemis sortis du rayon depuis le tick précédent
+        // Restaure la vitesse normale des ennemis sortis du rayon depuis le tick prÃ©cÃ©dent
         List<int> toRemove = null;
         foreach (var kvp in _currentlySlowed)
         {

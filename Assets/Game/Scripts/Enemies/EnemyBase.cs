@@ -360,7 +360,14 @@ public class EnemyBase : MonoBehaviour
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
 
-        if (fromNova)
+        // MODIFIE - reset du dash reserve au noeud "Impulsion Nova" (branche Fantome/Lyra).
+        // Avant, ce reset se declenchait pour n'importe quel joueur des qu'une Nova
+        // tuait un ennemi, sans verifier l'achat du noeud - l'effet payant etait donc
+        // gratuit pour tout le monde. HasImpulsionNova() renvoie deja false hors branche
+        // Fantome ou si le noeud n'est pas achete.
+        if (fromNova
+            && MetaProgressionManager.Instance != null
+            && MetaProgressionManager.Instance.HasImpulsionNova())
         {
             if (_playerTransform != null)
             {

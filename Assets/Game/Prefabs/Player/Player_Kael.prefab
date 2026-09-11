@@ -51,6 +51,8 @@ GameObject:
   - component: {fileID: -1291769656698404093}
   - component: {fileID: -3288808272404640226}
   - component: {fileID: 7636261514543520060}
+  - component: {fileID: 9201023500813058828}
+  - component: {fileID: -592619043681063100}
   m_Layer: 3
   m_Name: Player_Kael
   m_TagString: Player
@@ -293,6 +295,39 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _projectileSpawnPoint: {fileID: 3330307567939706715}
+--- !u!114 &9201023500813058828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2360155309410710616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 833a11ce60761234db73f4da813ba363, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _maxCharges: 3
+  _rechargeInterval: 3
+  _breakLockoutDuration: 4
+  _bubbleColor: {r: 0.176, g: 0.831, b: 0.812, a: 0}
+  _bubbleRadius: 1.1
+  _bubbleCenterOffset: {x: 0, y: 1, z: 0}
+  _bubbleEmptyAlpha: 0.05
+--- !u!114 &-592619043681063100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2360155309410710616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e663d0ec7bdc6e45bda2923acdd4ec6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _concentrationRampPerSecond: 0.08
+  _concentrationGraceAfterHit: 0.5
 --- !u!1001 &4949446379330212088
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -173,14 +173,17 @@ public class BouncingOrbProjectile : MonoBehaviour
 
         _recentHits[id] = Time.time;
 
+        // Buffs dynamiques du joueur (Concentration) lus à l'impact. 1f si inactif.
+        float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
+
         EnemyBase enemy = other.GetComponent<EnemyBase>();
         if (enemy != null)
         {
-            enemy.TakeDamage(_damage, DamageNumberSpawner.ColorProjectile);
+            enemy.TakeDamage(dmg, DamageNumberSpawner.ColorProjectile);
             return;
         }
         BossBase boss = other.GetComponent<BossBase>();
-        if (boss != null) boss.TakeDamage(_damage);
+        if (boss != null) boss.TakeDamage(dmg);
     }
 
     // Nettoie régulièrement le dictionnaire de cooldowns pour éviter qu'il ne grossisse

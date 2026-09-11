@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 public class BossBase : MonoBehaviour
@@ -16,8 +16,13 @@ public class BossBase : MonoBehaviour
     [SerializeField] protected float _chargeCooldown = 5f;
     [SerializeField] protected float _chargeWindupDuration = 1f;
 
-    [Header("Identité")]
+    [Header("IdentitÃ©")]
     [SerializeField] protected string _bossName = "BOSS";
+
+    // AJOUTE - clip a jouer pendant ce combat de boss specifique. Laisse vide
+    // si tu veux garder la musique normale de la scene pour ce boss.
+    [Header("Musique")]
+    [SerializeField] protected AudioClip _bossMusicClip;
 
     [Header("Visuel Charge")]
     [SerializeField] protected Renderer _bodyRenderer;
@@ -30,16 +35,12 @@ public class BossBase : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] protected float _rotationSpeed = 500f;
 
-    // AJOUTE - zone de telegraphe au sol pendant la charge : grandit
-    // progressivement pendant le windup, disparait exactement au moment ou
-    // _isCharging devient vrai. Procedural (Cube aplati), faute d'asset dedie
-    // pour l'instant - meme logique que les autres visuels temporaires du projet.
     [Header("Telegraphe de charge (zone rouge au sol)")]
     [SerializeField] protected Color _chargeTelegraphColor = new Color(1f, 0f, 0f, 0.4f);
     [SerializeField] protected float _chargeTelegraphHeightOffset = 0.05f;
     private GameObject _chargeTelegraphInstance;
 
-    [Header("Corps à corps")]
+    [Header("Corps Ã  corps")]
     [SerializeField] protected float _contactDamage = 300f; // MODIFIE - x10, cf. rescale global des degats/PV
     [SerializeField] protected float _contactDamageCooldown = 0.6f;
 
@@ -56,7 +57,7 @@ public class BossBase : MonoBehaviour
     private bool _isRecovering = false;
     private float _recoveryTimer = 0f;
 
-    [Header("Caméra")]
+    [Header("CamÃ©ra")]
     [SerializeField] protected float _cameraZoomMargin = 0f;
 
     [Header("Animator")]
@@ -106,7 +107,21 @@ public class BossBase : MonoBehaviour
     {
         yield return null;
         if (!IsSummoned)
+        {
             GameUI.Instance.ShowBossHP(_bossName);
+
+            // AJOUTE - bascule sur la musique de ce boss, seulement pour un vrai
+            // boss (pas une invocation) et seulement si un clip est assigne.
+            if (MusicStarter.Instance != null && _bossMusicClip != null)
+                MusicStarter.Instance.SwitchTo(_bossMusicClip);
+
+            // AJOUTE - demarre le chrono du defi "Eclair" (vaincre un boss en
+            // moins de 30 secondes). Utilise Time.time cote ChallengeManager,
+            // jamais GameManager.RunTimer (qui ne progresse pas tant qu'un boss
+            // est en vie).
+            if (ChallengeManager.Instance != null)
+                ChallengeManager.Instance.NotifyBossSpawned();
+        }
     }
 
     protected virtual void Update()
@@ -234,8 +249,9 @@ public class BossBase : MonoBehaviour
                 if (distanceToPlayer <= _chargeHitRadius)
                 {
                     HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+                    // MODIFIE - meme source "boss" pour les degats de charge.
                     if (playerHealth != null)
-                        playerHealth.TryTakeContactDamage(_chargeDamage, _contactDamageCooldown);
+                        playerHealth.TryTakeContactDamage(_chargeDamage, _contactDamageCooldown, "boss");
                     _hasDealtChargeDamage = true;
                 }
             }
@@ -267,8 +283,6 @@ public class BossBase : MonoBehaviour
 
     protected virtual void UpdateChargeTelegraph()
     {
-        // MODIFIE - la zone au sol doit disparaitre EXACTEMENT au moment ou la
-        // charge demarre, donc verifiee ici avant le "return" existant.
         if (_isCharging)
         {
             DestroyTelegraphZone();
@@ -299,11 +313,6 @@ public class BossBase : MonoBehaviour
         }
     }
 
-    // AJOUTE - cree/redimensionne la zone rouge au sol, orientee vers le joueur,
-    // longueur = _chargeDistance * progress (grandit avec le windup), largeur =
-    // _chargeHitRadius * 2 (correspond exactement au rayon d'impact reel de la
-    // charge, pas une valeur arbitraire - le joueur apprend a lire la vraie zone
-    // de danger, pas une approximation).
     protected virtual void UpdateTelegraphZone(float progress)
     {
         if (_playerTransform == null) return;
@@ -385,10 +394,6 @@ public class BossBase : MonoBehaviour
 
     protected virtual void Die()
     {
-        // AJOUTE - le boss peut mourir en plein milieu du windup (zone en train de
-        // grandir). Comme la zone est un objet totalement separe du boss (jamais
-        // mis en enfant), Destroy(gameObject) plus bas ne la detruit pas avec lui -
-        // elle restait orpheline sur la map indefiniment.
         DestroyTelegraphZone();
 
         if (XPGemSpawner.Instance != null)
@@ -397,12 +402,6 @@ public class BossBase : MonoBehaviour
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
 
-        // AJOUTE - comptabilise ce boss pour le calcul des Eclats en fin de run
-        // (niveau atteint + boss vaincus + bonus de victoire). Seuls les VRAIS
-        // boss comptent, pas les invocations (IsSummoned) - coherent avec le
-        // reste du fichier qui traite deja les invocations differemment
-        // (ShowBossHP/HideBossHP, WaveManager.OnBossDied ne se declenchent pas
-        // non plus pour elles).
         if (!IsSummoned && GameManager.Instance != null)
             GameManager.Instance.AddBossKill();
 
@@ -410,6 +409,16 @@ public class BossBase : MonoBehaviour
         {
             GameUI.Instance.HideBossHP();
             WaveManager.Instance.OnBossDied();
+
+            // AJOUTE - revient a la musique normale de la scene a la mort du
+            // boss, meme filtre !IsSummoned que le reste de ce bloc.
+            if (MusicStarter.Instance != null)
+                MusicStarter.Instance.RevertToDefault();
+
+            // AJOUTE - notifie le systeme de defis (chrono "Eclair" + compteur
+            // de boss vaincus pour "Double Chasse").
+            if (ChallengeManager.Instance != null)
+                ChallengeManager.Instance.NotifyBossDefeated();
 
             HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
             if (playerHP != null)
@@ -431,9 +440,6 @@ public class BossBase : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // AJOUTE - filet de securite : quel que soit le chemin par lequel ce boss est
-    // detruit (pas seulement via Die()), la zone de warning ne doit jamais rester
-    // orpheline sur la map.
     protected virtual void OnDestroy()
     {
         DestroyTelegraphZone();
@@ -444,8 +450,10 @@ public class BossBase : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
+            // MODIFIE - precise "boss" comme source du degat, pour le message
+            // d'ambiance contextuel du Game Over.
             if (health != null)
-                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown);
+                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown, "boss");
         }
     }
 
@@ -455,7 +463,7 @@ public class BossBase : MonoBehaviour
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
             if (health != null)
-                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown);
+                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown, "boss");
         }
     }
 

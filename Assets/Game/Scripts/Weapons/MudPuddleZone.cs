@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
-// Instance poolée spawnée par WeaponMudPuddle. Reste statique au sol pendant _duration,
-// applique un ralentissement + DPS léger aux ennemis dans son rayon, puis retourne au pool.
+// Instance poolÃ©e spawnÃ©e par WeaponMudPuddle. Reste statique au sol pendant _duration,
+// applique un ralentissement + DPS lÃ©ger aux ennemis dans son rayon, puis retourne au pool.
 public class MudPuddleZone : MonoBehaviour
 {
     private float _duration;
@@ -72,7 +72,8 @@ public class MudPuddleZone : MonoBehaviour
     {
         _inRangeThisTick.Clear();
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _overlapBuffer);
-        float tickDamage = _damagePerSecond * TickRate;
+        // Buffs dynamiques du joueur (Concentration) relus Ã  chaque tick. 1f si inactif.
+        float tickDamage = _damagePerSecond * TickRate * PlayerBuffs.OutgoingDamageMultiplier;
 
         for (int i = 0; i < hitCount; i++)
         {
@@ -118,7 +119,7 @@ public class MudPuddleZone : MonoBehaviour
             }
         }
 
-        // Restaure la vitesse normale des ennemis sortis du rayon depuis le tick précédent
+        // Restaure la vitesse normale des ennemis sortis du rayon depuis le tick prÃ©cÃ©dent
         List<int> toRemove = null;
         foreach (var kvp in _currentlySlowed)
         {

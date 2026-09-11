@@ -98,7 +98,8 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
-                    ? "Débloque la foudre en chaîne (2 rebonds)."
+                    ? "Débloque la foudre en chaîne" +
+                    "."
                     : "+1 rebond de foudre supplémentaire.";
 
             case UpgradeType.MudPuddle:

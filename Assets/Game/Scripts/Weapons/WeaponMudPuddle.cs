@@ -34,6 +34,18 @@ public class WeaponMudPuddle : MonoBehaviour
     private float _waveTimer = 0f;
     private readonly List<GameObject> _activePuddles = new List<GameObject>();
 
+    // AJOUTE - dernier des 7 armes exclusives/universelles a manquer le bonus de
+    // Reputation Degats (Fireball/Aura/Knives/Orbital/Lightning/BouncingOrb deja
+    // corriges). Tourne avant Init(), meme raisonnement d'ordre synchrone.
+    private void Awake()
+    {
+        if (MetaProgressionManager.Instance != null)
+        {
+            float bonusDamage = MetaProgressionManager.Instance.GetReputationBonusDamage();
+            _damagePerSecond += _damagePerSecond * bonusDamage;
+        }
+    }
+
     public void Init(GameObject puddlePrefab)
     {
         _puddlePrefab = puddlePrefab;

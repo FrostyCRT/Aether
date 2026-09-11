@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class DamageNumberSpawner : MonoBehaviour
@@ -11,7 +11,7 @@ public class DamageNumberSpawner : MonoBehaviour
     public static readonly Color ColorCritical = new Color(1f, 0.6f, 0f);
     public static readonly Color ColorPlayer = new Color(1f, 0.2f, 0.2f);
 
-    [SerializeField] private float _fuseWindow = 0.15f; // fen�tre de fusion en secondes
+    [SerializeField] private float _fuseWindow = 0.15f; // fenêtre de fusion en secondes
 
     private Dictionary<Transform, DamageNumber> _activeNumbers = new Dictionary<Transform, DamageNumber>();
 

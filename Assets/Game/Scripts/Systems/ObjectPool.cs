@@ -112,7 +112,7 @@ public class ObjectPool : MonoBehaviour
 
         if (tag == "EnemyProjectile")
         {
-            EnemyProjectile[] activeProjectiles = FindObjectsOfType<EnemyProjectile>();
+            EnemyProjectile[] activeProjectiles = FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None);
             foreach (EnemyProjectile proj in activeProjectiles)
             {
                 if (proj.gameObject.activeSelf)
@@ -123,7 +123,7 @@ public class ObjectPool : MonoBehaviour
         }
         else if (tag == "Projectile")
         {
-            ProjectileBasic[] activeProjectiles = FindObjectsOfType<ProjectileBasic>();
+            ProjectileBasic[] activeProjectiles = FindObjectsByType<ProjectileBasic>(FindObjectsSortMode.None);
             foreach (ProjectileBasic proj in activeProjectiles)
             {
                 if (proj.gameObject.activeSelf)

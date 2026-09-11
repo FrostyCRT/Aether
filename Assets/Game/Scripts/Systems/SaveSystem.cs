@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 public static class SaveSystem
 {
@@ -79,7 +80,19 @@ public class SaveData
     public int totalRuns = 0;
     public float bestTime = 0f;
     public int bestKills = 0;
+    // AJOUTE - 2 records supplementaires (le systeme ne couvrait que temps/kills
+    // jusqu'ici), pour enrichir les messages de record du Game Over.
+    public int bestLevel = 0;
+    public int bestGoldInRun = 0;
     public int selectedCharacterIndex = 0;
+
+    // AJOUTE - déblocage des personnages. Aether est toujours disponible.
+    // Kael : atteindre le Boss 2 en une partie (ou 500 Éclats).
+    // Lyra : gagner une partie complète, Boss 3 (ou 1200 Éclats).
+    // Un ancien save sans ces champs les charge à false : lancer
+    // MetaProgressionManager.DebugUnlockAllCharacters() une fois en dev si besoin.
+    public bool kaelUnlocked = false;
+    public bool lyraUnlocked = false;
     // Branche Guerrier
     public int cadenceLevel = 0;
     public int crystalDamageLevel = 0;
@@ -102,10 +115,17 @@ public class SaveData
     public int reputationDamageLevel = 0;
     public int reputationSpeedLevel = 0;
     public int reputationRegenLevel = 0;
-
-    // AJOUTE - monnaie separee de totalGold, dediee exclusivement a la Reputation.
-    // totalGold finance les 3 arbres de competences par personnage ; totalEclats
-    // finance uniquement la Reputation, gagnee en fin de run selon la performance
-    // (niveau atteint + boss vaincus + bonus de victoire), pas selon l'or ramasse.
     public int totalEclats = 0;
+
+    // AJOUTE - systeme de defis horaires. currentChallengeHourBucket identifie
+    // une heure reelle precise (UTC) ; tant que ce nombre ne change pas, le
+    // defi reste le meme quel que soit le nombre de runs tentees dans l'heure.
+    public string currentChallengeId = "";
+    public long currentChallengeHourBucket = -1;
+    // AJOUTE - empeche de re-toucher le bonus plusieurs fois dans la meme heure
+    // en reussissant le meme defi sur plusieurs runs courtes.
+    public bool currentChallengeRewardClaimed = false;
+    // AJOUTE - historique des 3 derniers defis pour eviter les repetitions,
+    // qu'il s'agisse de runs consecutives ou d'heures consecutives.
+    public List<string> recentChallengeIds = new List<string>();
 }

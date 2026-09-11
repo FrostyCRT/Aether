@@ -5,18 +5,13 @@ using System.Collections.Generic;
 public class WeaponLightningChain : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _damage = 15f;
-    [SerializeField] private float _chainRange = 4f;  // Distance de propagation
-    // MODIFIÉ — 3 → 2 : point de départ au déblocage (1er pick de la carte Lightning).
-    // Les 3 paliers d'amélioration suivants ajoutent +1 rebond chacun via AddChain() → max 5.
+    [SerializeField] private float _damage = 150f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _chainRange = 4f;
     [SerializeField] private int _maxChains = 2;
     [SerializeField] private float _fireRate = 1f;
     [SerializeField] private float _detectionRange = 15f;
 
     [Header("Limites")]
-    // MODIFIÉ — commentaire : ce plafond correspond exactement aux 3 paliers d'amélioration
-    // gérés par UpgradeData (2 au déblocage + 3 = 5 max). Remonté par sécurité à 10 pour éviter
-    // tout blocage silencieux si le design évolue, la vraie limite reste UpgradeData/LevelUpManager.
     [SerializeField] private int _maxChainUpgrades = 10;
     private int _chainUpgradeCount = 0;
     public bool IsMaxChain() => _chainUpgradeCount >= _maxChainUpgrades;
@@ -34,11 +29,18 @@ public class WeaponLightningChain : MonoBehaviour
 
     private float _cooldownTimer = 0f;
 
-    // AJOUTÉ — buffer réutilisable pour aligner cette arme sur le pattern non-alloc des autres
-    // armes (WeaponFireball/WeaponShurikenBarrage), au lieu de FindGameObjectsWithTag qui alloue
-    // un nouveau tableau à chaque appel. Sur un run de 15 min avec beaucoup d'ennemis à l'écran
-    // en fin de partie, ça évite des pics de garbage collection.
     private static readonly Collider[] _detectionBuffer = new Collider[64];
+
+    // AJOUTE - meme trou que Fireball/Aura/Knives/Orbital : le bonus de
+    // Reputation Degats n'etait jamais applique ici.
+    private void Awake()
+    {
+        if (MetaProgressionManager.Instance != null)
+        {
+            float bonusDamage = MetaProgressionManager.Instance.GetReputationBonusDamage();
+            _damage += _damage * bonusDamage;
+        }
+    }
 
     private void Update()
     {
@@ -60,29 +62,27 @@ public class WeaponLightningChain : MonoBehaviour
     {
         List<GameObject> hit = new List<GameObject>();
         Transform current = firstTarget;
+        // Buffs dynamiques (Concentration) figés au déclenchement de la chaîne.
+        float buffedBase = _damage * PlayerBuffs.OutgoingDamageMultiplier;
         for (int i = 0; i <= _maxChains; i++)
         {
             if (current == null) break;
-            // Dégâts dégressifs — chaque rebond fait moins de dégâts
-            float damage = _damage * Mathf.Pow(0.7f, i);
+            float damage = buffedBase * Mathf.Pow(0.7f, i);
             EnemyBase eb = current.GetComponent<EnemyBase>();
             if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
             BossBase boss = current.GetComponent<BossBase>();
             if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
             hit.Add(current.gameObject);
-            // VFX éclair simple — ligne jaune en Gizmo pour l'instant
             Debug.DrawLine(
                 i == 0 ? transform.position : hit[i - 1].transform.position,
                 current.position,
                 Color.yellow, 0.1f
             );
-            // Cherche le prochain ennemi proche non encore touché
             current = FindNextChainTarget(current.position, hit);
-            yield return new WaitForSeconds(0.05f); // Délai visuel entre chaque rebond
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
-    // MODIFIÉ — remplace FindGameObjectsWithTag("Enemy") par OverlapSphereNonAlloc + buffer partagé
     private Transform FindNearestEnemy()
     {
         int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
@@ -102,7 +102,6 @@ public class WeaponLightningChain : MonoBehaviour
         return nearest;
     }
 
-    // MODIFIÉ — même remplacement, en excluant les ennemis déjà touchés dans cette chaîne
     private Transform FindNextChainTarget(Vector3 from, List<GameObject> alreadyHit)
     {
         int count = Physics.OverlapSphereNonAlloc(from, _chainRange, _detectionBuffer);

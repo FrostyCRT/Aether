@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using System.Collections.Generic;
 
 public class WeaponAOE : MonoBehaviour
@@ -19,10 +19,10 @@ public class WeaponAOE : MonoBehaviour
     [SerializeField] private float _maxRadius = 8f;
     public bool IsMaxRadius() => _radius >= _maxRadius;
 
-    // Tableau tampon partagÈ pour annuler complËtement le Garbage Collector (capacitÈ de 128 ennemis par pulsation)
+    // Tableau tampon partag√© pour annuler compl√®tement le Garbage Collector (capacit√© de 128 ennemis par pulsation)
     private static readonly Collider[] _aoeOverlapBuffer = new Collider[128];
 
-    // Liste de cache pour mÈmoriser les ID des ennemis touchÈs DURANT la pulsation actuelle (Èvite les doubles dÈg‚ts)
+    // Liste de cache pour m√©moriser les ID des ennemis touch√©s DURANT la pulsation actuelle (√©vite les doubles d√©g√¢ts)
     private readonly HashSet<int> _hitEnemiesThisPulse = new HashSet<int>();
 
     public void AddRadius(float value)
@@ -36,7 +36,7 @@ public class WeaponAOE : MonoBehaviour
 
         _cooldownTimer += Time.deltaTime;
 
-        // SÈcuritÈ anti-crash : on s'assure que le fireRate est supÈrieur ‡ 0 avant la division
+        // S√©curit√© anti-crash : on s'assure que le fireRate est sup√©rieur √† 0 avant la division
         float currentCooldownDuration = _fireRate > 0f ? (1f / _fireRate) : 9999f;
 
         if (_cooldownTimer >= currentCooldownDuration)
@@ -66,10 +66,10 @@ public class WeaponAOE : MonoBehaviour
 
     private void Pulse()
     {
-        // On vide le dictionnaire de suivi au dÈbut de chaque nouvelle pulsation autonome
+        // On vide le dictionnaire de suivi au d√©but de chaque nouvelle pulsation autonome
         _hitEnemiesThisPulse.Clear();
 
-        // DÈtection physique instantanÈe sur l'intÈgralitÈ du rayon de l'onde
+        // D√©tection physique instantan√©e sur l'int√©gralit√© du rayon de l'onde
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _aoeOverlapBuffer);
 
         for (int i = 0; i < hitCount; i++)
@@ -77,31 +77,31 @@ public class WeaponAOE : MonoBehaviour
             Collider hit = _aoeOverlapBuffer[i];
             if (hit == null || !hit.CompareTag("Enemy")) continue;
 
-            // RÈcupÈration de l'ID unique de l'entitÈ physique pour le filtrage
+            // R√©cup√©ration de l'ID unique de l'entit√© physique pour le filtrage
             int enemyId = hit.GetInstanceID();
 
-            // Si cet ennemi a D…J¿ encaissÈ les dÈg‚ts de cette onde de choc prÈcise, on l'ignore
+            // Si cet ennemi a D√âJ√Ä encaiss√© les d√©g√¢ts de cette onde de choc pr√©cise, on l'ignore
             if (_hitEnemiesThisPulse.Contains(enemyId)) continue;
 
-            // Tentative de rÈcupÈration directe du composant de base
+            // Tentative de r√©cup√©ration directe du composant de base
             EnemyBase enemy = hit.GetComponent<EnemyBase>();
             if (enemy != null)
             {
                 enemy.TakeDamage(_damage, DamageNumberSpawner.ColorAOE);
-                _hitEnemiesThisPulse.Add(enemyId); // MarquÈ comme touchÈ
+                _hitEnemiesThisPulse.Add(enemyId); // Marqu√© comme touch√©
                 continue;
             }
 
-            // Si ce n'est pas un ennemi standard, on vÈrifie si c'est un boss
+            // Si ce n'est pas un ennemi standard, on v√©rifie si c'est un boss
             BossBase boss = hit.GetComponent<BossBase>();
             if (boss != null)
             {
                 boss.TakeDamage(_damage, DamageNumberSpawner.ColorAOE);
-                _hitEnemiesThisPulse.Add(enemyId); // MarquÈ comme touchÈ
+                _hitEnemiesThisPulse.Add(enemyId); // Marqu√© comme touch√©
             }
         }
 
-        // DÈclenchement de l'animation visuelle
+        // D√©clenchement de l'animation visuelle
         if (_pulseVisual != null)
         {
             _pulseVisual.SetActive(true);

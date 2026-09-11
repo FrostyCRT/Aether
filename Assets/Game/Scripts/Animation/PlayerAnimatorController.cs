@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class PlayerAnimatorController : MonoBehaviour
 {
@@ -7,11 +7,11 @@ public class PlayerAnimatorController : MonoBehaviour
     void Awake()
     {
         // Cherche d'abord sur cet objet, puis dans les enfants
-        // pour trouver celui qui est lié au modèle 3D Tripo
+        // pour trouver celui qui est liÃ© au modÃ¨le 3D Tripo
         _animator = GetComponentInChildren<Animator>();
 
         if (_animator == null)
-            Debug.LogError($"[PlayerAnimatorController] Aucun Animator trouvé sur {gameObject.name} ou ses enfants !");
+            Debug.LogError($"[PlayerAnimatorController] Aucun Animator trouvÃ© sur {gameObject.name} ou ses enfants !");
     }
 
     public void SetWalking(bool isMoving)

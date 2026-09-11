@@ -144,8 +144,6 @@ public class PlayerController : MonoBehaviour
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(1f);
     }
 
-    // AJOUTE - appele par HealthSystem.Die() : le baton reste visible et gene
-    // l'animation de mort, puisque rien ne le desactivait auparavant a ce moment.
     public void HideStaff()
     {
         if (_staffTransform != null)
@@ -180,6 +178,17 @@ public class PlayerController : MonoBehaviour
         _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetReputationBonusSpeed();
         _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
         _dashCooldown = Mathf.Max(_dashCooldown, 1f);
+    }
+
+    private void Start()
+    {
+        if (GameUI.Instance != null)
+        {
+            GameUI.Instance.SetCloneAvailable(MetaProgressionManager.Instance.HasPhantomDash());
+            GameUI.Instance.UpdateCloneCooldown(1f);
+        }
+
+        ResetDashCooldown();
     }
 
     private void PrecomputeGhostMaterials()
@@ -282,6 +291,10 @@ public class PlayerController : MonoBehaviour
 
         if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(0f);
+
+        // AJOUTE - notifie le systeme de defis a chaque VRAI declenchement du
+        // Dash (defi "Toujours en Mouvement" = utiliser le Dash 20 fois).
+        if (ChallengeManager.Instance != null) ChallengeManager.Instance.NotifyDashUsed();
     }
 
     private void HandlePhantomCloneInput()
@@ -292,6 +305,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(_phantomCloneKey))
         {
             _phantomCloneCooldownTimer = _phantomCloneCooldown;
+            if (GameUI.Instance != null) GameUI.Instance.UpdateCloneCooldown(0f);
             StartCoroutine(SpawnPhantomClone());
         }
     }
@@ -299,7 +313,11 @@ public class PlayerController : MonoBehaviour
     private void UpdatePhantomCloneCooldown()
     {
         if (_phantomCloneCooldownTimer > 0f)
+        {
             _phantomCloneCooldownTimer -= Time.deltaTime;
+            if (GameUI.Instance != null)
+                GameUI.Instance.UpdateCloneCooldown(1f - (_phantomCloneCooldownTimer / _phantomCloneCooldown));
+        }
     }
 
     private IEnumerator SpawnPhantomClone()
@@ -470,15 +488,6 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // MODIFIE - manquait la verification IsGameOver (ne verifiait que IsPaused).
-        // Ni TriggerVictory() ni ShowVictory() dans GameManager ne mettent IsPaused a
-        // true - ils ne touchent qu'a _isGameOver. Resultat : Update() s'arretait bien
-        // (IsGameOver == true), donc _moveDirection ne se rafraichissait plus et
-        // gardait sa DERNIERE valeur (celle du moment ou une touche etait encore
-        // maintenue) - mais FixedUpdate() continuait de tourner et d'appliquer ce
-        // _moveDirection fige indefiniment, puisque rien ne l'arretait. D'ou le
-        // joueur qui continue d'avancer en arriere-plan apres l'ouverture du panel
-        // de victoire, meme touche relachee.
         if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver)) return;
 
         if (_moveDirection.sqrMagnitude > 0.01f)

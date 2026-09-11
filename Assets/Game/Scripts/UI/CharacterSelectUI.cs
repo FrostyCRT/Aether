@@ -22,6 +22,21 @@ public class CharacterSelectUI : MonoBehaviour
     [SerializeField] private Button _selectButton;
     [SerializeField] private TextMeshProUGUI _selectButtonText;
 
+    [Header("Verrouillage personnage")]
+    [Tooltip("Panneau affiché par-dessus le portrait quand le personnage est verrouillé (cadenas, voile sombre...). Facultatif.")]
+    [SerializeField] private GameObject _lockedOverlay;
+    [Tooltip("Texte qui indique la condition de déblocage, ex : \"Atteins le Boss 2 dans une partie\".")]
+    [SerializeField] private TextMeshProUGUI _unlockConditionText;
+    [Tooltip("Bouton pour débloquer le perso contre des Éclats (filet anti-blocage). Facultatif.")]
+    [SerializeField] private Button _unlockWithEclatsButton;
+    [SerializeField] private TextMeshProUGUI _unlockWithEclatsButtonText;
+    [Tooltip("Opacité du portrait quand le personnage est verrouillé.")]
+    [SerializeField] private float _lockedPortraitAlpha = 0.35f;
+
+    [Header("DEBUG UNIQUEMENT - à retirer avant release")]
+    [Tooltip("Remet les déblocages à l'état 'première partie' (seul Aether). Se câble tout seul, glisse juste le bouton ici.")]
+    [SerializeField] private Button _debugResetUnlocksButton;
+
     [Header("Transition")]
     [SerializeField] private float _slideDuration = 0.35f;
     [SerializeField] private AnimationCurve _slideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -81,6 +96,18 @@ public class CharacterSelectUI : MonoBehaviour
 
         _selectButton.onClick.RemoveAllListeners();
         _selectButton.onClick.AddListener(OnSelectClicked);
+
+        if (_unlockWithEclatsButton != null)
+        {
+            _unlockWithEclatsButton.onClick.RemoveAllListeners();
+            _unlockWithEclatsButton.onClick.AddListener(OnUnlockWithEclatsClicked);
+        }
+
+        if (_debugResetUnlocksButton != null)
+        {
+            _debugResetUnlocksButton.onClick.RemoveAllListeners();
+            _debugResetUnlocksButton.onClick.AddListener(OnDebugResetUnlocksClicked);
+        }
     }
 
     private void OnEnable()
@@ -246,9 +273,11 @@ public class CharacterSelectUI : MonoBehaviour
 
     public void OnSelectClicked()
     {
+        if (MetaProgressionManager.Instance == null) return;
+        if (!MetaProgressionManager.Instance.IsCharacterUnlocked(_currentIndex)) return;
+
         // CORRIGÉ — SetSelectedCharacter appelé ici et UNIQUEMENT ici
-        if (MetaProgressionManager.Instance != null)
-            MetaProgressionManager.Instance.SetSelectedCharacter(_currentIndex);
+        MetaProgressionManager.Instance.SetSelectedCharacter(_currentIndex);
 
         if (SkillTreeUI.Instance != null)
             SkillTreeUI.Instance.RefreshAllNodes();
@@ -256,9 +285,100 @@ public class CharacterSelectUI : MonoBehaviour
         ApplySelectButtonState();
     }
 
+    // Filet anti-blocage : débloquer le perso courant contre des Éclats, puis le
+    // sélectionner directement (on vient de payer pour lui).
+    public void OnUnlockWithEclatsClicked()
+    {
+        if (MetaProgressionManager.Instance == null) return;
+
+        if (MetaProgressionManager.Instance.TryUnlockCharacterWithEclats(_currentIndex))
+        {
+            MetaProgressionManager.Instance.SetSelectedCharacter(_currentIndex);
+            if (SkillTreeUI.Instance != null)
+                SkillTreeUI.Instance.RefreshAllNodes();
+            ApplyCharacterContent(); // rafraîchit portrait dé-grisé + boutons
+        }
+        else
+        {
+            ApplySelectButtonState(); // Éclats insuffisants : juste re-refléter l'état
+        }
+    }
+
+    // DEBUG - à retirer avant release. Simule un premier lancement : seul Aether
+    // débloqué, retour sur Aether, panneau rafraîchi.
+    public void OnDebugResetUnlocksClicked()
+    {
+        if (MetaProgressionManager.Instance == null) return;
+
+        MetaProgressionManager.Instance.DebugResetCharacterUnlocks();
+        _currentIndex = 0;
+        ApplyCharacter(instant: true);
+
+        if (SkillTreeUI.Instance != null)
+            SkillTreeUI.Instance.RefreshAllNodes();
+    }
+
+    private static string GetUnlockConditionText(int index)
+    {
+        switch (index)
+        {
+            case 1: return "Atteins le Boss 2 dans une partie pour débloquer Kael.";
+            case 2: return "Termine une partie (bats le Boss 3) pour débloquer Lyra.";
+            default: return "";
+        }
+    }
+
+    // Reflète l'état du personnage courant : verrouillé (portrait grisé, condition
+    // + bouton Éclats) ou débloqué (bouton Sélectionner).
     private void ApplySelectButtonState()
     {
         if (MetaProgressionManager.Instance == null) return;
+
+        bool unlocked = MetaProgressionManager.Instance.IsCharacterUnlocked(_currentIndex);
+
+        if (_characterImage != null)
+        {
+            Color c = _characterImage.color;
+            c.a = unlocked ? 1f : _lockedPortraitAlpha;
+            _characterImage.color = c;
+        }
+
+        if (_lockedOverlay != null)
+            _lockedOverlay.SetActive(!unlocked);
+
+        if (!unlocked)
+        {
+            if (_unlockConditionText != null)
+            {
+                _unlockConditionText.gameObject.SetActive(true);
+                _unlockConditionText.text = GetUnlockConditionText(_currentIndex);
+            }
+
+            _selectButton.gameObject.SetActive(false);
+
+            if (_unlockWithEclatsButton != null)
+            {
+                int cost = MetaProgressionManager.Instance.GetCharacterUnlockEclatsCost(_currentIndex);
+                bool canAfford = MetaProgressionManager.Instance.TotalEclats >= cost;
+
+                _unlockWithEclatsButton.gameObject.SetActive(true);
+                _unlockWithEclatsButton.interactable = canAfford;
+
+                if (_unlockWithEclatsButtonText != null)
+                {
+                    _unlockWithEclatsButtonText.text = $"Débloquer — {cost} Éclats";
+                    _unlockWithEclatsButtonText.color = canAfford
+                        ? Color.white
+                        : new Color(0.8f, 0.3f, 0.3f);
+                }
+            }
+            return;
+        }
+
+        // --- Personnage débloqué ---
+        if (_unlockConditionText != null) _unlockConditionText.gameObject.SetActive(false);
+        if (_unlockWithEclatsButton != null) _unlockWithEclatsButton.gameObject.SetActive(false);
+        _selectButton.gameObject.SetActive(true);
 
         int savedIndex = MetaProgressionManager.Instance.GetSelectedCharacterIndex();
         bool isSelected = savedIndex == _currentIndex;

@@ -214,6 +214,8 @@ GameObject:
   - component: {fileID: 8332228031087700838}
   - component: {fileID: 7120510792471192415}
   - component: {fileID: 1956711883913624630}
+  - component: {fileID: 1448442805397370601}
+  - component: {fileID: 3032113605969148718}
   m_Layer: 3
   m_Name: Player_Aether
   m_TagString: Player
@@ -455,7 +457,40 @@ MonoBehaviour:
   _enemyLayer:
     serializedVersion: 2
     m_Bits: 64
-  _projectileSpawnPoint: {fileID: 0}
+  _projectileSpawnPoint: {fileID: 4032694106368479100}
+--- !u!114 &1448442805397370601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021830163797081717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 833a11ce60761234db73f4da813ba363, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _maxCharges: 3
+  _rechargeInterval: 3
+  _breakLockoutDuration: 4
+  _bubbleColor: {r: 0.176, g: 0.831, b: 0.812, a: 0.22}
+  _bubbleRadius: 1.1
+  _bubbleCenterOffset: {x: 0, y: 1, z: 0}
+  _bubbleEmptyAlpha: 0.05
+--- !u!114 &3032113605969148718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021830163797081717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e663d0ec7bdc6e45bda2923acdd4ec6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _concentrationRampPerSecond: 0.08
+  _concentrationGraceAfterHit: 0.5
 --- !u!1 &1196754114230055506
 GameObject:
   m_ObjectHideFlags: 0

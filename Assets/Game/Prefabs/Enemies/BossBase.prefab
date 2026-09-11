@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249b4e4c3c2cd1449b3f2f6addbca717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 20000
+  _maxHealth: 20
   _moveSpeed: 4.5
   _xpValue: 1400
   _goldValue: 40
@@ -123,6 +123,7 @@ MonoBehaviour:
   _chargeCooldown: 3.5
   _chargeWindupDuration: 1
   _bossName: Le Dragon de Mana
+  _bossMusicClip: {fileID: 8300000, guid: 737e7c132b871c4438bb5be4a0c2d911, type: 3}
   _bodyRenderer: {fileID: 2006856479019548746}
   _emissionColorProperty: _EmissionColor
   _manaGlowColor: {r: 0.3, g: 0.6, b: 1, a: 1}

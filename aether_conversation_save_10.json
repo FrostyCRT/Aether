@@ -1,0 +1,130 @@
+{
+  "project_name": "Aether Storm Survivor",
+  "save_version": 10,
+  "engine": "Unity 2021.3.45f2",
+  "session_summary": "Session focalisée sur : finalisation du HUD (Clone, palette Ultime), écran de chargement complet (fond/logo/barre/particules/musique), système de défis de run de bout en bout, et refonte en cours des écrans Victory/Game Over (logique complète codée, structure visuelle restant à construire).",
+
+  "project_state": {
+    "characters": {
+      "aether": { "branch": "Guerrier", "theme": "orange/feu", "exclusive_weapon": "Fireball" },
+      "kael": { "branch": "Gardien", "theme": "vert/nature", "exclusive_weapon": "Aura" },
+      "lyra": { "branch": "Fantome", "theme": "cyan-violet/spectral", "exclusive_weapon": "Knives (Salve de Couteaux)", "exclusive_mechanic": "Clone spectral (nœud phantomDash, touche C par défaut, cooldown 8s)" }
+    },
+    "currencies": {
+      "or": "finance les 3 arbres de compétences par personnage",
+      "eclats": "finance les 3 stats de Réputation (Dégâts/Vitesse/Régénération, 5 paliers), gagnés en fin de run selon la performance (niveau*15 + boss*60 + bonus victoire 200)"
+    },
+    "color_palette_shared": {
+      "empty": "#594C40 alpha 150",
+      "filled": "#2DD4CF",
+      "max": "#FFC94D",
+      "usage": "pastilles d'upgrade, page Réputation, dots/texte de la barre d'Ultime (SetCrystalReady prend un int readyStacks, pas un bool)"
+    },
+    "hud": "terminé et validé : ActionCluster (Dash + Clone, centré dynamiquement, hauteur fixée à 32px), UltimateGroup indépendant à droite, icône Clone = lettre C police Bangers blanche sur cercle violet, rappel de défi sous le Chrono",
+    "loading_screen": "terminé : scène LoadingScreen dédiée, chargement async réel + durée minimale 3.5s, fond étendu par outpainting (MetaIA) avec zones calmes haut/bas, logo en calques séparés, Ken Burns lent borné en sécurité, particules concentrées dans les bandes calmes, barre stylée avec reflet animé, musique en boucle, fondu de sortie réutilisable (SceneTransitionFader)",
+    "challenge_system": "terminé et fonctionnel : 12 défis (ChallengeDatabase.cs) sur 3 paliers, tirage pondéré + anti-répétition (3 derniers), renouvellement toutes les heures réelles (pas par run) avec bonus limité à 1 fois/heure, récompense = % de l'or ramassé par palier (10/25/50%), affichage HUD + détail en Pause",
+    "victory_gameover_screens": "EN COURS - toute la logique de données/animations est codée et validée (comptage animé, séquence défi réussi, message contextuel Game Over, aperçu de prochain palier, records étendus à 4 stats, raccourci clavier + bouton verrouillés jusqu'à la fin du reveal). Reste à construire : la Hiérarchie Unity visuelle et le skin final des deux panels (voir pending_tasks pour la structure exacte).",
+    "music": "toutes les musiques du jeu sont prêtes (menu, en jeu, boss, écran de chargement) ; système MusicStarter.cs déjà existant avant la session, étendu avec SwitchTo()/RevertToDefault()/FadeOutAndStop() (délai 0.5s + fondu + loop garanti à chaque changement)",
+    "steam_marketing": "Steam Direct payé (100$, 23/08/2025), vérification d'identité Steamworks en cours ; vise Next Fest février 2027, seuil 2000 wishlists ; politique Steam 2026 = captures d'écran obligatoires en gameplay réel uniquement (capsule/logo peuvent rester illustrés)"
+  },
+
+  "pending_tasks": [
+    {
+      "task": "Construire la hiérarchie visuelle Victory/Game Over dans Unity",
+      "priority": "immédiate, prochaine étape",
+      "details": "Structure exacte donnée dans la doc V13 section 7 : CenterCard avec TitleText, Subtitle/MessageText, KeepSection (Gold/Eclats/Challenge), StatsText, Records, BuildList, boutons verrouillés. Game Over a en plus AttemptText et NextUnlockText. Réutiliser le cadre parchemin + boutons du menu Pause. Décision en attente : titre Game Over 'DÉFAITE' (proposé) vs 'GAME OVER'."
+    },
+    {
+      "task": "SFX complets (moments forts : défi réussi, record, etc.)",
+      "priority": "volontairement repoussée",
+      "details": "L'utilisateur gère tous les effets sonores du jeu en un seul gros morceau une fois le développement terminé, pas maintenant."
+    },
+    {
+      "task": "Extension des causes de mort au-delà de boss/horde",
+      "priority": "basse, bloquée",
+      "details": "Nécessite EnemyBase.cs et le script des projectiles ennemis (goblin shooter, loup, etc.), jamais montrés à l'assistant. HealthSystem.TakeDamage a déjà un paramètre source optionnel (défaut 'horde') prêt à recevoir des valeurs plus précises."
+    },
+    {
+      "task": "Système de fusion",
+      "priority": "en attente",
+      "details": "6 fusions au total (3 exclusives par perso + 3 universelles). Jamais commencé."
+    },
+    {
+      "task": "Système de skins",
+      "priority": "en attente",
+      "details": "Or (courants) ou Éclats (prestige). Aucune donnée/logique/asset construite. Onglets personnage déjà préparés visuellement sur la page Réputation (ReputationUI.cs)."
+    },
+    {
+      "task": "Vérifier les 3 mécaniques spéciales par personnage",
+      "priority": "en attente",
+      "details": "Concentration (Aether/Guerrier), Récupération (Kael/Gardien), Impulsion Nova (Lyra/Fantôme) - nœuds existent dans SkillTreeData, effet en jeu à reconfirmer comme réellement implémenté."
+    },
+    {
+      "task": "Nouvel ennemi : bulbe cracheur de projectile",
+      "priority": "en attente, dépend du mois Tripo3D",
+      "details": "Shooter fixe, ne peut pas bouger une fois spawné, tire en boucle en éventail à faible cadence dès que le joueur est à portée, pensé pour se différencier du gobelin shooter. Modélisation 3D prévue lors d'un mois dédié à Tripo3D. Réfléchir à un ordre d'introduction des ennemis avant de l'ajouter (éviter le chaos visuel)."
+    },
+    {
+      "task": "Paliers de difficulté par taille de map",
+      "priority": "idée posée, pas commencée",
+      "details": "3 maps en cascade : Map 1 infinie sans bordure (base) -> victoire débloque Map 2 tunnel horizontal (gauche/droite infini, petite marge verticale) avec ennemis plus forts -> victoire débloque Map 3 enceinte fermée compacte, encore plus difficile. Sélection par choix de map (facile/moyen/difficile), maps déjà terminées rejouables."
+    },
+    {
+      "task": "Écran d'accueil adaptatif selon le personnage sélectionné",
+      "priority": "en attente",
+      "details": "Afficher le personnage choisi dans le décor du hub, pose différente par personnage."
+    },
+    {
+      "task": "Refonte des pages Personnage de Kael et Lyra",
+      "priority": "en attente",
+      "details": "Existent déjà mais en développement, pas finalisées visuellement (contrairement à ce qu'indiquait une doc antérieure)."
+    },
+    {
+      "task": "Passe d'équilibrage/playtest",
+      "priority": "en attente",
+      "details": "À faire après le rescale x10 des dégâts/PV effectué en fin de session précédente."
+    },
+    {
+      "task": "Options/accessibilité",
+      "priority": "en attente",
+      "details": "Volume, plein écran/fenêtré, remapping clavier (pertinent aussi pour ne jamais coder en dur le nom d'une touche dans les textes du jeu, déjà appliqué pour le Clone)."
+    },
+    {
+      "task": "Localisation anglaise",
+      "priority": "en attente",
+      "details": "Nécessaire pour Steam à l'international / Next Fest."
+    },
+    {
+      "task": "Écran de crédits",
+      "priority": "en attente"
+    },
+    {
+      "task": "Nettoyage pré-release",
+      "priority": "en attente",
+      "details": "Data.totalGold = 10000 dans ResetSkillTree() (artefact de test) à remettre à 0, bouton debug reset Réputation à retirer."
+    }
+  ],
+
+  "user_preferences": {
+    "code_delivery": "TOUJOURS le fichier complet, jamais un diff/extrait, fourni comme un vrai fichier téléchargeable (pas de code collé dans le chat)",
+    "unity_instructions": "précision maximale : noms exacts de composants, chemins Hierarchy, valeurs Inspector",
+    "game_design_discussions": "veut l'avis sincère de l'assistant, y compris pour être contredit si un choix dessert le jeu ; d'accord pour s'inspirer des meilleurs du genre",
+    "vocabulaire_textes_du_jeu": "éviter le mot 'run' (pas français) dans tout texte affiché au joueur -> utiliser 'partie'",
+    "ton_messages_humoristiques": "familier/direct, sarcasme sec sans mise en scène ni ponctuation excessive, mélangé à des messages d'encouragement/de volonté - pas de vocabulaire soutenu",
+    "avancement": "étape par étape, avec confirmation avant de démarrer chaque nouvelle étape - ne pas enchaîner sans validation"
+  },
+
+  "key_files_known_to_assistant": [
+    "GameManager.cs", "GameUI.cs", "HealthSystem.cs", "MetaProgressionManager.cs",
+    "SaveData.cs / SaveSystem.cs", "PlayerController.cs", "BossBase.cs", "CrystalSystem.cs",
+    "SkillTreeData.cs", "XPSystem.cs", "PauseMenuUI.cs", "ReputationUI.cs",
+    "ChallengeDatabase.cs", "ChallengeManager.cs", "GameOverMessagePool.cs", "MusicStarter.cs"
+  ],
+  "key_files_not_yet_seen": [
+    "EnemyBase.cs", "script(s) des projectiles ennemis (goblin shooter, loup, etc.)",
+    "WeaponFireball.cs / WeaponShurikenBarrage.cs (mentionnés mais pas montrés en entier récemment)",
+    "MainMenuManager.cs", "CharacterIdentity.cs"
+  ],
+
+  "next_session_starting_point": "Reprendre directement sur la construction de la Hiérarchie Unity des panels Victory/Game Over (structure exacte en section 7 de la doc V13), puis skin visuel final des deux écrans. Trancher d'abord le titre du Game Over (DÉFAITE vs GAME OVER)."
+}

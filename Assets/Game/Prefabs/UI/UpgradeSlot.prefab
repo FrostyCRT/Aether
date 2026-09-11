@@ -78,6 +78,7 @@ GameObject:
   - component: {fileID: 7659295893544245481}
   - component: {fileID: 3020105282033192349}
   - component: {fileID: 571272602856605219}
+  - component: {fileID: 7276082574681905449}
   m_Layer: 5
   m_Name: UnlockDot
   m_TagString: Untagged
@@ -143,6 +144,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7276082574681905449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2484852247963050048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &3939710791772371770
 GameObject:
   m_ObjectHideFlags: 0
@@ -154,6 +170,7 @@ GameObject:
   - component: {fileID: 2220479534542547192}
   - component: {fileID: 7836545998906925849}
   - component: {fileID: 7620791369151504823}
+  - component: {fileID: 7821662674535435825}
   m_Layer: 5
   m_Name: Dot1
   m_TagString: Untagged
@@ -219,6 +236,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7821662674535435825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3939710791772371770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &4975981789817736513
 GameObject:
   m_ObjectHideFlags: 0
@@ -230,6 +262,7 @@ GameObject:
   - component: {fileID: 1455996695109224623}
   - component: {fileID: 1905751432898813150}
   - component: {fileID: 8453080135753696302}
+  - component: {fileID: 6843821691078767414}
   m_Layer: 5
   m_Name: Dot2
   m_TagString: Untagged
@@ -295,6 +328,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6843821691078767414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4975981789817736513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &6037195682380139831
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,6 +354,7 @@ GameObject:
   - component: {fileID: 1762723612648552221}
   - component: {fileID: 4733023515396623672}
   - component: {fileID: 3389678157205266544}
+  - component: {fileID: 8060112511425180179}
   m_Layer: 5
   m_Name: Dot3
   m_TagString: Untagged
@@ -371,6 +420,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8060112511425180179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6037195682380139831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!1 &6210530078087853468
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,7 +575,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.8862745, g: 0.8862745, b: 0.8862745, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -549,6 +613,7 @@ MonoBehaviour:
   - {fileID: 8453080135753696302}
   - {fileID: 3389678157205266544}
   unlockDot: {fileID: 571272602856605219}
+  stackCountText: {fileID: 8000148743663015838}
 --- !u!1 &6210530079176085821
 GameObject:
   m_ObjectHideFlags: 0

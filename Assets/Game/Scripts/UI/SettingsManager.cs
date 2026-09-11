@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
@@ -39,12 +39,12 @@ public class SettingsManager : MonoBehaviour
         DontDestroyOnLoad(bootloader);
     }
 
-    // Exécuteur asynchrone — applique le volume directement, sans fondu
+    // ExÃ©cuteur asynchrone â€” applique le volume directement, sans fondu
     private class AudioBootloaderExecutor : MonoBehaviour
     {
         private System.Collections.IEnumerator Start()
         {
-            // Chargement ASYNCHRONE pour éviter le freeze au démarrage
+            // Chargement ASYNCHRONE pour Ã©viter le freeze au dÃ©marrage
             ResourceRequest request = Resources.LoadAsync<AudioMixer>("MainMixer");
             while (!request.isDone)
             {
@@ -60,11 +60,11 @@ public class SettingsManager : MonoBehaviour
                 yield break;
             }
 
-            // Attente que le moteur audio soit bien initialisé
+            // Attente que le moteur audio soit bien initialisÃ©
             yield return null;
             yield return null;
 
-            // Récupération des préférences du joueur
+            // RÃ©cupÃ©ration des prÃ©fÃ©rences du joueur
             float targetMusic = PlayerPrefs.GetFloat("settings_music", 0.75f);
             float targetSfx = PlayerPrefs.GetFloat("settings_sfx", 0.75f);
 

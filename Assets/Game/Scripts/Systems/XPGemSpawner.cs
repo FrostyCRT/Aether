@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 public class XPGemSpawner : MonoBehaviour
@@ -7,10 +7,10 @@ public class XPGemSpawner : MonoBehaviour
 
     private Transform _playerTransform;
 
-    // Unification du rayon d'attraction (0f par défaut, s'agrandit au fil du jeu)
+    // Unification du rayon d'attraction (0f par dÃ©faut, s'agrandit au fil du jeu)
     public float AttractionRadius { get; private set; } = 0f;
 
-    // OPTIMISATION : Liste réutilisable mise en cache pour éviter le "new List" à chaque mort
+    // OPTIMISATION : Liste rÃ©utilisable mise en cache pour Ã©viter le "new List" Ã  chaque mort
     private readonly List<XPGem.GemType> _gemsCalculationCache = new List<XPGem.GemType>();
 
     private void Awake()
@@ -26,14 +26,14 @@ public class XPGemSpawner : MonoBehaviour
             _playerTransform = player.transform;
     }
 
-    // Appelé par XPSystem quand le joueur level up
+    // AppelÃ© par XPSystem quand le joueur level up
     public void OnLevelUp(int level)
     {
         if (level >= 3)
             AttractionRadius = 4f; // S'active ou s'agrandit
     }
 
-    // Appelé à la mort d'un ennemi — calcule et spawne les gemmes via l'ObjectPool
+    // AppelÃ© Ã  la mort d'un ennemi â€” calcule et spawne les gemmes via l'ObjectPool
     public void SpawnGems(Vector3 position, float xpValue)
     {
         if (ObjectPool.Instance == null) return;
@@ -44,7 +44,7 @@ public class XPGemSpawner : MonoBehaviour
         {
             XPGem.GemType gemType = _gemsCalculationCache[i];
 
-            // Offset aléatoire pour espacer les gemmes au sol
+            // Offset alÃ©atoire pour espacer les gemmes au sol
             Vector3 offset = new Vector3(
                 Random.Range(-0.8f, 0.8f),
                 0f,
@@ -65,10 +65,10 @@ public class XPGemSpawner : MonoBehaviour
         }
     }
 
-    // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire
+    // Algorithme optimisÃ© "rendre la monnaie" sans aucune allocation mÃ©moire
     private void CalculateGems(float xpValue)
     {
-        _gemsCalculationCache.Clear(); // On vide le cache de la mort précédente
+        _gemsCalculationCache.Clear(); // On vide le cache de la mort prÃ©cÃ©dente
         int remaining = Mathf.RoundToInt(xpValue);
 
         while (remaining >= 50)

@@ -61,7 +61,7 @@ public class MainMenuManager : MonoBehaviour
     public void ShowReputation() => ShowPanel(_reputationPanel);
     public void PlayGame()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
     }
     public void QuitGame()
     {

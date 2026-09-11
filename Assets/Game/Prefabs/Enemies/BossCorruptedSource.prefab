@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 125000
+  _maxHealth: 125
   _moveSpeed: 4
   _xpValue: 0
   _goldValue: 120
@@ -109,6 +109,7 @@ MonoBehaviour:
   _chargeCooldown: 5
   _chargeWindupDuration: 1
   _bossName: La Source Corrompue
+  _bossMusicClip: {fileID: 8300000, guid: 737e7c132b871c4438bb5be4a0c2d911, type: 3}
   _bodyRenderer: {fileID: 4433316125680874705}
   _emissionColorProperty: _EmissionColor
   _manaGlowColor: {r: 0.3, g: 0.6, b: 1, a: 1}

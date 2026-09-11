@@ -104,9 +104,12 @@ public class BossCorruptedSource : BossBase
     {
         base.Start();
         _bossName = "La Source Corrompue";
-        _maxHealth = 12500f;
-        _moveSpeed = 0f; // ancrée au rift — ne "marche" jamais au sens classique
-        _currentHealth = _maxHealth;
+        // MODIFIE - _maxHealth n'est plus codé en dur ici : il vient du prefab
+        // (125000, valeur du rescale ×10). L'ancienne ligne _maxHealth = 12500f
+        // écrasait le prefab et donnait au boss final MOINS de PV que le boss 1
+        // (20000) ou le boss 2 (50000). _currentHealth est déjà initialisé à
+        // _maxHealth par base.Start(), pas besoin de le refaire ici.
+        _moveSpeed = 0f; // ancrée au rift — ne "marche" jamais (override volontaire du prefab, qui porte 4)
 
         if (_playerTransform != null)
         {
