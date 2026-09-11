@@ -152,6 +152,13 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Image _victoryPortraitImage;
     [Tooltip("Index 0 = Aether, 1 = Kael, 2 = Lyra. Mêmes sprites que la page de sélection.")]
     [SerializeField] private Sprite[] _characterPortraits;
+    // AJOUTE - phrase de texture affichée UNIQUEMENT quand ni le highlight de
+    // record ni le chip de défi ne sont actifs (victoire "normale", sans rien
+    // d'exceptionnel à mettre en avant) - le panel de gauche a sensiblement
+    // moins de contenu dans ce cas et se sent vide autrement. Jamais affichée
+    // en même temps que l'un des deux autres (l'un ou l'autre suffit déjà à
+    // remplir l'espace).
+    [SerializeField] private TextMeshProUGUI _victoryQuietLineText;
 
     [Header("Grille d'upgrades (fin de partie)")]
     // AJOUTE - remplace la liste de texte par une grille d'icônes compacte
@@ -625,6 +632,22 @@ public class GameUI : MonoBehaviour
         "Le cristal a tenu bon jusqu'au bout.",
     };
 
+    // AJOUTE - pool dédié à PopulateVictoryQuietLine (voir plus bas). Sujet
+    // volontairement différent de _victoryClosers ci-dessus (qui parle déjà du
+    // boss vaincu) : ici on reconnaît l'absence de record/défi sans plomber le
+    // ton, même famille de voix que le reste (familier, direct, un peu de
+    // personnalité, jamais ronflant).
+    private static readonly string[] _victoryQuietLines =
+    {
+        "Pas de record aujourd'hui, mais la victoire est bien réelle.",
+        "Rien d'exceptionnel à signaler, à part la victoire elle-même.",
+        "Une run sans éclat particulier, mais qui compte double.",
+        "Simple, efficace, sans trembler.",
+        "Aucun exploit cette fois — juste une victoire de plus.",
+        "Pas de nouveau sommet, mais toujours debout.",
+        "La routine, version victorieuse.",
+    };
+
     // AJOUTE - récap avec du ton (temps 1), remplace l'ancien SubtitleText statique.
     private void PopulateVictoryRecap(float runTime, int killCount)
     {
@@ -640,9 +663,12 @@ public class GameUI : MonoBehaviour
     // Over déjà en place - même logique de détection dupliquée ici sciemment.
     // Masqué si aucun record n'est battu (pas de highlight "presque" côté Victoire,
     // la victoire elle-même porte déjà la note positive).
-    private void PopulateVictoryRecordHighlight(float runTime, int killCount, int levelReached, int goldThisRun)
+    // MODIFIE - renvoie désormais un bool (record affiché ou non) pour que
+    // ShowVictory puisse décider d'afficher PopulateVictoryQuietLine à la place
+    // quand ni le record ni le défi ne sont là.
+    private bool PopulateVictoryRecordHighlight(float runTime, int killCount, int levelReached, int goldThisRun)
     {
-        if (_victoryRecordHighlight == null) return;
+        if (_victoryRecordHighlight == null) return false;
 
         string message = null;
 
@@ -676,6 +702,26 @@ public class GameUI : MonoBehaviour
         _victoryRecordHighlight.SetActive(message != null);
         if (message != null && _victoryRecordHighlightText != null)
             _victoryRecordHighlightText.text = message;
+
+        return message != null;
+    }
+
+    // AJOUTE - phrase de texture (temps 1) affichée UNIQUEMENT quand ni le
+    // highlight de record ni le chip de défi ne sont présents cette partie -
+    // ces deux blocs suffisent déjà à remplir le panel de gauche quand l'un
+    // d'eux est là ; sans les deux, le contenu restant (titre + cartes Or/
+    // Éclats + stat strip) laisse un vide sensible. Une phrase choisie au
+    // hasard comble cet espace sans réintroduire de stats permanentes (voir
+    // maquette validée : les records à vie n'ont volontairement pas leur place
+    // ici, "ça dégonflerait le moment").
+    private void PopulateVictoryQuietLine(bool recordShown, bool challengeCompleted)
+    {
+        if (_victoryQuietLineText == null) return;
+
+        bool showQuietLine = !recordShown && !challengeCompleted;
+        _victoryQuietLineText.gameObject.SetActive(showQuietLine);
+        if (showQuietLine)
+            _victoryQuietLineText.text = _victoryQuietLines[UnityEngine.Random.Range(0, _victoryQuietLines.Length)];
     }
 
     // AJOUTE - portrait du perso victorieux (temps 2). Réutilise les illustrations
@@ -713,7 +759,8 @@ public class GameUI : MonoBehaviour
         // Remplacés par PopulateVictoryRecordHighlight (record battu CETTE partie
         // uniquement) et PopulateBuildGrid (grille d'icônes) ci-dessous.
         PopulateVictoryRecap(runTimer, killCount);
-        PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
+        bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
+        PopulateVictoryQuietLine(recordShown, challengeCompleted);
         PopulateVictoryPortrait();
         PopulateBuildGrid(_victoryBuildGridContent);
 
