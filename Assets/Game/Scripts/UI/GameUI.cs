@@ -85,6 +85,9 @@ public class GameUI : MonoBehaviour
     // progression dans le temps plutot que juste dans une partie - meme esprit
     // que le systeme de Reputation/Eclats, applique ici a l'ecran de fin.
     [SerializeField] private TextMeshProUGUI _gameOverAttemptText;
+    // AJOUTE (2026-09-12) - meme compteur cote Victoire, demande explicitement
+    // par l'utilisateur pour la coherence entre les deux ecrans de fin.
+    [SerializeField] private TextMeshProUGUI _victoryAttemptText;
 
     [Header("Verrouillage anti-skip (Rejouer)")]
     // AJOUTE - le bouton Rejouer reste desactive tant que la sequence de
@@ -432,7 +435,7 @@ public class GameUI : MonoBehaviour
         }
 
         if (message == null)
-            message = GameOverMessagePool.GetMessage(deathCause);
+            message = GameOverMessagePool.GetMessage(deathCause, runTime);
 
         _gameOverMessageText.text = message;
         _gameOverMessageText.color = isRecordHighlight ? _challengeSuccessColor : _gameOverMessageDefaultColor;
@@ -598,13 +601,14 @@ public class GameUI : MonoBehaviour
     // conditions réelles pendant cette passe). Ton positif/fier plutôt qu'un
     // trou vide : le joueur a littéralement tout fini côté progression pour
     // ce personnage, ça mérite d'être dit.
+    // MODIFIE (2026-09-12, 3e passe) - "Il ne reste que la gloire, ici."
+    // retiree sur demande utilisateur.
     private static readonly string[] _gameOverMaxedOutLines =
     {
         "Tu as tout donné à cette branche. Littéralement.",
         "Plus rien à débloquer ici — change de personnage pour la suite.",
         "Cette branche n'a plus de secret pour toi.",
         "Arbre et Réputation à fond. Change de perso si tu veux du neuf.",
-        "Il ne reste que la gloire, ici.",
     };
 
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
@@ -706,15 +710,15 @@ public class GameUI : MonoBehaviour
     // QUE quand "La Source Corrompue" (3ᵉ boss) est vaincue, donc pas besoin de
     // paramétrer quel boss - c'est toujours le même. Même famille de ton que
     // GameOverMessagePool (familier, direct, sec), version positive.
+    // MODIFIE (2026-09-12) - 4 lignes retirees sur demande utilisateur
+    // (relecture "jeu serieux / Steam") ; les 3 restantes sont volontairement
+    // celles ancrees dans le lore ("La Source Corrompue", "la corruption") -
+    // registre prefere a un ton plus generique/sportif ("zero pitie", etc.).
     private static readonly string[] _victoryClosers =
     {
         "La Source Corrompue n'a pas tenu la distance.",
-        "Le rift s'est refermé pour de bon.",
         "Elle ne se relèvera pas.",
-        "Trois boss, zéro pitié.",
-        "Une victoire nette, sans trembler.",
         "La corruption s'éteint ici.",
-        "Le cristal a tenu bon jusqu'au bout.",
     };
 
     // AJOUTE - pool pour PopulateEmptyBuildState côté Victoire (0 upgrade
@@ -742,15 +746,13 @@ public class GameUI : MonoBehaviour
     // boss vaincu) : ici on reconnaît l'absence de record/défi sans plomber le
     // ton, même famille de voix que le reste (familier, direct, un peu de
     // personnalité, jamais ronflant).
+    // MODIFIE (2026-09-12) - 4 lignes retirees sur demande utilisateur
+    // (relecture "jeu serieux / Steam").
     private static readonly string[] _victoryQuietLines =
     {
         "Pas de record aujourd'hui, mais la victoire est bien réelle.",
         "Rien d'exceptionnel à signaler, à part la victoire elle-même.",
-        "Une run sans éclat particulier, mais qui compte double.",
-        "Simple, efficace, sans trembler.",
         "Aucun exploit cette fois — juste une victoire de plus.",
-        "Pas de nouveau sommet, mais toujours debout.",
-        "La routine, version victorieuse.",
     };
 
     // AJOUTE - récap avec du ton (temps 1), remplace l'ancien SubtitleText statique.
@@ -864,6 +866,14 @@ public class GameUI : MonoBehaviour
         PopulateVictoryPortrait();
         int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
         PopulateEmptyBuildState(_victoryEmptyBuildText, victoryTileCount, _victoryEmptyBuildLines);
+
+        // AJOUTE - "Tentative n°X", meme logique que Game Over (voir
+        // _gameOverAttemptText). Data.totalRuns a deja ete incremente par
+        // SaveRunResults() avant l'appel a cette methode.
+        if (_victoryAttemptText != null && MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
+        {
+            _victoryAttemptText.text = $"Tentative n°{MetaProgressionManager.Instance.Data.totalRuns}";
+        }
 
         // MODIFIE - le bouton Rejouer reste verrouille jusqu'a la fin de la
         // sequence de reveal (voir PlayVictoryGoldSequenceThenReveal), meme
