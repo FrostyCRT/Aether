@@ -28,6 +28,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7732996451166620575}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
@@ -35,7 +36,6 @@ Transform:
   m_Children:
   - {fileID: 4717720363932980057}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5037192197152354509
 MeshFilter:
@@ -62,6 +62,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -95,9 +98,17 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7732996451166620575}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 1, y: 4, z: 2.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6890409855985010424
@@ -112,7 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249b4e4c3c2cd1449b3f2f6addbca717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 20
+  _maxHealth: 20000
   _moveSpeed: 4.5
   _xpValue: 1400
   _goldValue: 40
@@ -153,10 +164,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7732996451166620575}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
@@ -167,6 +189,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 6572444756988619618}
     m_Modifications:
     - target: {fileID: -3970243614316841892, guid: 2c637f141620730478063455afbee967,
@@ -250,6 +273,13 @@ PrefabInstance:
       value: Drake
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2107409826236812522, guid: 2c637f141620730478063455afbee967,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2015914982532505196}
   m_SourcePrefab: {fileID: 3150474306388093854, guid: 2c637f141620730478063455afbee967,
     type: 3}
 --- !u!1 &1486592262970862575 stripped

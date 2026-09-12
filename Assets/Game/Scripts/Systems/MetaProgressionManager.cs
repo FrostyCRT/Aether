@@ -615,12 +615,22 @@ public class MetaProgressionManager : MonoBehaviour
     // Sert au message "encore X pour debloquer..." de l'ecran de Game Over,
     // pense pour retourner le regard du joueur vers l'avant plutot que vers
     // l'echec qu'il vient de vivre.
+    // MODIFIE - comparait auparavant un "manque d'Or" et un "manque d'Éclats"
+    // sur la même échelle absolue (déjà signalé dans NOTES.md) : un nœud à
+    // "50 Éclats manquants" gagnait toujours contre un nœud à "2000 Or
+    // manquants" alors que les Éclats sont bien plus rares/lents à gagner
+    // (~200-500 par run, contre des milliers d'Or) - le nœud "le plus proche"
+    // affiché n'était donc pas forcément le plus proche en pratique. Compare
+    // désormais une PROPORTION (part déjà payée du coût, 0 à 1), indépendante
+    // de la devise : le nœud choisi est celui dont il manque le moins *en
+    // pourcentage de son coût total*, peu importe si ce coût est en Or ou en
+    // Éclats.
     public NextUnlockPreview GetNextUnlockPreview()
     {
         NextUnlockPreview best = new NextUnlockPreview { HasPreview = false };
         if (Data == null) return best;
 
-        int bestGap = int.MaxValue;
+        float bestRatio = -1f;
         SkillTreeData.CharacterBranch activeBranch = GetActiveBranch();
 
         foreach (SkillTreeData.NodeData node in SkillTreeData.All)
@@ -629,12 +639,12 @@ public class MetaProgressionManager : MonoBehaviour
             if (!IsNodeUnlockable(node.id)) continue;
 
             int cost = GetNodeCost(node.id);
-            if (cost < 0) continue;
+            if (cost <= 0) continue;
 
-            int gap = Mathf.Max(0, cost - Data.totalGold);
-            if (gap < bestGap)
+            float ratio = Mathf.Clamp01((float)Data.totalGold / cost);
+            if (ratio > bestRatio)
             {
-                bestGap = gap;
+                bestRatio = ratio;
                 best = new NextUnlockPreview
                 {
                     HasPreview = true,
@@ -659,12 +669,12 @@ public class MetaProgressionManager : MonoBehaviour
             if (!IsNodeUnlockable(id)) continue;
 
             int cost = GetNodeCost(id);
-            if (cost < 0) continue;
+            if (cost <= 0) continue;
 
-            int gap = Mathf.Max(0, cost - Data.totalEclats);
-            if (gap < bestGap)
+            float ratio = Mathf.Clamp01((float)Data.totalEclats / cost);
+            if (ratio > bestRatio)
             {
-                bestGap = gap;
+                bestRatio = ratio;
                 best = new NextUnlockPreview
                 {
                     HasPreview = true,

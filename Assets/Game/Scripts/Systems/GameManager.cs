@@ -238,7 +238,7 @@ public class GameManager : MonoBehaviour
 
         // MODIFIE - ajout de levelReached, meme ordre de parametres que ShowVictory
         // desormais que GameUI.ShowGameOver() affiche aussi le niveau atteint.
-        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause);
+        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause, _bossKillCount);
     }
 
     public void RestartGame()

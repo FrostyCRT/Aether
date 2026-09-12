@@ -118,46 +118,51 @@ Sur les icônes de cristal (`UnityEngine.UI.Outline`, 2 instances superposées p
 
 ---
 
-## 7. Écrans de fin de run (Victory / Game Over) — EN COURS
+## 7. Écrans de fin de run (Victory / Game Over) — ✅ TERMINÉ (2026-09-12)
 
-Chantier en cours de refonte complète (les deux étaient des placeholders de tout début de développement, notamment le Game Over qui n'avait ni cadre ni richesse). Décision : même univers visuel élégant (parchemin/doré, cadre + boutons repris du menu Pause) pour les deux écrans, différenciés par la teinte (doré éclatant vs plus sombre/désaturé pour le Game Over), pas par deux esthétiques différentes. **Le Game Over a la même richesse de contenu que la Victoire** (records, build obtenu) — décision prise après analyse du genre (Vampire Survivors/Brotato/Halls of Torment traitent mort et victoire de façon quasi symétrique).
+Refonte complète des deux écrans (avant : placeholders de tout début de développement, notamment le Game Over qui n'avait ni cadre ni richesse). Même univers visuel élégant (parchemin/doré, cadre + boutons repris du menu Pause) pour les deux écrans, différenciés par la teinte — doré éclatant pour la Victoire, rouille/ash + fond plus sombre pour le Game Over — pas par deux esthétiques différentes. **Le Game Over a la même richesse de contenu que la Victoire** (record de la partie, build obtenue) — décision prise après analyse du genre (Vampire Survivors/Brotato/Halls of Torment traitent mort et victoire de façon quasi symétrique), avec en plus deux ajouts propres au Game Over (numéro de tentative, aperçu du prochain palier de progression) qu'aucun des trois n'a.
 
-### Fonctionnalités déjà codées (logique complète, visuel pas encore construit)
-- **Comptage animé satisfaisant** de l'Or et des Éclats (ease-out cubique) sur les deux écrans.
-- **Séquence défi réussi** : l'Or compte d'abord jusqu'au montant de base, puis 2 secondes après, si le défi est réussi, le message "Défi réussi ! x0.XX" apparaît (couleur dorée, décalé en diagonale du texte d'Or) et l'Or reprend son compte jusqu'au montant final.
-- **Message contextuel du Game Over** (`GameOverMessagePool.cs`) : priorité à un record battu/presque battu (4 stats désormais : temps, kills, niveau, or en une partie — étendu depuis 2), sinon un message d'humour noir/familier selon la cause de la mort (`"boss"` ou `"horde"`, remonté depuis `HealthSystem` → `GameManager`). Ton : familier, direct, sec, sans ponctuation excessive — validé après plusieurs passes de retouche.
-- **Aperçu du prochain palier** (`MetaProgressionManager.GetNextUnlockPreview()`) : "Encore X Or/Éclats pour débloquer [Nœud]", cherche le nœud le plus proche d'être débloqué tous types de monnaie confondus, affiché en dernier (après la séquence de l'Or), réservé au Game Over.
-- **Numéro de tentative** ("Tentative n°X", `Data.totalRuns`).
-- **Raccourci clavier de relance instantanée** (Entrée/Espace) + bouton Rejouer, tous deux **verrouillés jusqu'à la fin complète de la séquence de reveal** (système événementiel `GameUI.OnEndScreenRevealComplete`, pas un délai deviné) — évite de sauter par-dessus le défi/record en spammant Entrée.
-- **2 nouveaux records** ajoutés (`bestLevel`, `bestGoldInRun`), en plus de `bestTime`/`bestKills` déjà existants.
+**Titre du Game Over tranché : "DÉFAITE"** (cohérent avec "VICTOIRE !", même registre).
 
-### Reste à faire
-- Construction de la Hiérarchie visuelle (voir structure ci-dessous) et skin final des deux panels.
-- Décision en attente : titre du Game Over — **"DÉFAITE"** (proposé, cohérent avec "VICTOIRE !") vs garder "GAME OVER".
-- SFX sur les moments forts (défi réussi, record) — **volontairement repoussé**, l'utilisateur gère tous les effets sonores en un seul gros morceau une fois le jeu terminé.
-- Extension possible des causes de mort au-delà de boss/horde — nécessite `EnemyBase.cs` et le script des projectiles ennemis, jamais vus par l'assistant.
-
-### Hiérarchie cible (identique pour les 2 panels, Game Over a quelques blocs en plus)
+### Structure finale (2 colonnes / 3 temps, identique dans l'esprit pour les 2 panels)
 ```
 [Victory/GameOver]Panel
-├── DimBackground
-├── CenterCard (cadre parchemin repris du menu Pause)
-│   ├── (GameOver only) AttemptText          → Game Over Attempt Text
-│   ├── TitleText
-│   ├── SubtitleText / MessageText           → (GameOver: Game Over Message Text, dynamique)
-│   ├── Separator1
-│   ├── KeepSection ("Ce que tu emportes")
-│   │   ├── GoldRow (icône + GoldText animé + ChallengeText diagonal, inactif par défaut)
-│   │   └── EclatsRow (icône + EclatsText animé)
-│   ├── Separator2
-│   ├── StatsText (Temps/Kills/Niveau)
-│   ├── Separator3
-│   ├── RecordsTitleText + RecordsText
-│   ├── Separator4
-│   ├── BuildTitleText + BuildListText/BuildListText2 (2 colonnes)
-│   ├── (GameOver only) NextUnlockText        → Game Over Next Unlock Text
-│   └── ButtonsRow : RetryButton (verrouillé) + MainMenuButton
+├── DimBackground (plus sombre côté Game Over)
+├── CenterCard (parchemin, teinté grisé/désaturé côté Game Over)
+│   ├── Crown
+│   │   ├── (GameOver only) AttemptText   — "Tentative n°X"
+│   │   ├── TitleText                    — "VICTOIRE !" / "DÉFAITE"
+│   │   ├── RecapText / Message          — Victory: phrase de clôture ; GameOver: message contextuel dynamique (record/humour noir)
+│   │   └── Separator1
+│   ├── Body
+│   │   ├── LeftCol ("Ce que tu emportes" / "Ce qu'il te reste")
+│   │   │   ├── KeepSectionTitle
+│   │   │   ├── KeepSection (2 cartes Or/Éclats côte à côte, icône+nombre centrés, comptage animé)
+│   │   │   ├── ChallengeChipBg (défi réussi, inactif par défaut)
+│   │   │   ├── StatStrip (Survie/Kills/Niveau/Boss X sur 3)
+│   │   │   └── Victory: RecordHighlight + QuietLine (repli si ni record ni défi) — GameOver: GameOverNextUnlockText (déblocage perso > aperçu palier > repli "tout maxé")
+│   │   └── RightCol ("Ton arsenal" / "L'arsenal que tu avais")
+│   │       ├── BuildTitleText
+│   │       └── ArsenalRow : PortraitImage (perso sélectionné, désaturé côté Game Over) + BuildGridContent (grille d'icônes teintées par branche, `UpgradeGridSlot`)
+│   └── ButtonsRow : RetryButton (verrouillé jusqu'à la fin du reveal) + MainMenuButton
 ```
+
+### Fonctionnalités communes aux deux écrans
+- **Comptage animé satisfaisant** de l'Or et des Éclats (ease-out cubique), centrage icône+nombre qui s'adapte au nombre de chiffres.
+- **Séquence défi réussi** : l'Or compte d'abord jusqu'au montant de base, puis 2 secondes après, si le défi est réussi, le message "Défi réussi ! x0.XX" apparaît (couleur dorée) et l'Or reprend son compte jusqu'au montant final.
+- **Raccourci clavier de relance instantanée** (Entrée/Espace) + bouton Rejouer, tous deux **verrouillés jusqu'à la fin complète de la séquence de reveal** (système événementiel `GameUI.OnEndScreenRevealComplete`) — évite de sauter par-dessus le défi/record en spammant Entrée.
+- **4 records** suivis (temps, kills, niveau, or en une partie) — Victory les met en avant seulement s'ils sont battus CETTE partie (highlight ciblé, pas de bloc de records à vie qui "dégonflerait le moment") ; Game Over les intègre à son message contextuel (record battu/presque battu en priorité, sinon humour noir selon la cause de mort).
+
+### Spécifique au Game Over
+- **Message contextuel** (`GameOverMessagePool.cs`) : ton familier, direct, sec, sans ponctuation excessive.
+- **Numéro de tentative** ("Tentative n°X", `Data.totalRuns`).
+- **Aperçu du prochain palier** (`MetaProgressionManager.GetNextUnlockPreview()`, comparaison par ratio du coût plutôt que par écart absolu depuis 2026-09-12 — corrige un biais qui favorisait toujours les nœuds en Éclats, plus rares) : "Encore X Or/Éclats pour débloquer [Nœud]" ou repli "tout maxé" si la branche + Réputation sont entièrement complétées.
+- **Annonce de déblocage de personnage** : si un perso vient d'être débloqué pendant la run qui s'achève (ex. Kael au Boss 2), l'annonce prend le pas sur l'aperçu de palier.
+- **Boss X/3 dynamique** dans le StatStrip (`GameManager.BossKillCount`, transmis à `ShowGameOver`) — contrairement à la Victoire qui peut se permettre un "3/3" fixe (elle ne se déclenche qu'à ce moment précis).
+
+### Volontairement repoussé
+- SFX sur les moments forts (défi réussi, record) — l'utilisateur gère tous les effets sonores en un seul gros morceau une fois le jeu terminé.
+- Extension des causes de mort au-delà de boss/horde — nécessite `EnemyBase.cs` et le script des projectiles ennemis, jamais vus par l'assistant.
 Icônes Or/Éclats : réutiliser celles déjà existantes (HUD pour l'Or, page Réputation pour les Éclats), pas de nouvel asset.
 
 ---
@@ -189,7 +194,6 @@ Icônes Or/Éclats : réutiliser celles déjà existantes (HUD pour l'Or, page R
 
 ## 10. Tâches en attente (à jour)
 
-- Terminer la refonte visuelle Victory/Game Over (hiérarchie ci-dessus).
 - Système de fusion (6 fusions au total).
 - Système de skins (Or/Éclats) — aucune donnée/logique/asset construite.
 - Vérifier les 3 mécaniques spéciales par personnage (Concentration/Récupération/Impulsion Nova) — nœuds existants, effet en jeu à reconfirmer.
