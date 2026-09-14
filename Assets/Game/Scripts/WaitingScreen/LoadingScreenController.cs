@@ -6,6 +6,13 @@ using TMPro;
 
 public class LoadingScreenController : MonoBehaviour
 {
+    // MODIFIE (2026-09-14) - cette scene ne sert plus qu'au TOUT PREMIER
+    // demarrage du jeu (scene de boot dans les Build Settings). Les
+    // transitions en cours de jeu (Jouer/Abandonner/Recommencer/Retour menu)
+    // passent desormais par SceneLoader -> SceneTransitionFader.LoadScene(),
+    // un simple fondu noir rapide sans repasser par cette scene "vitrine"
+    // (retour utilisateur : la revivre a chaque fois se sentait comme un vrai
+    // ecran de chargement, pas adapte a une simple relance de partie).
     [Header("Scene a charger")]
     [SerializeField] private string _nextSceneName = "MainMenu";
 
@@ -38,6 +45,12 @@ public class LoadingScreenController : MonoBehaviour
 
     private IEnumerator LoadRoutine()
     {
+        // AJOUTE - libere explicitement les assets (textures, materiaux, etc.)
+        // qui n'appartenaient qu'a la scene qu'on vient de quitter, AVANT de
+        // charger la suivante : sans ca, ils restent en memoire jusqu'au
+        // prochain passage du GC d'Unity.
+        yield return Resources.UnloadUnusedAssets();
+
         _asyncLoad = SceneManager.LoadSceneAsync(_nextSceneName);
         _asyncLoad.allowSceneActivation = false;
 

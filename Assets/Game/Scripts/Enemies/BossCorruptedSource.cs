@@ -64,6 +64,15 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _summonWindupDuration = 2f;
     [SerializeField] private GameObject _riftPortalPrefab;
     [SerializeField] private float _summonedVisualScale = 0.75f; // MODIFIÉ — remplace _miniBossVisualChildName, était 0.6f codé en dur
+    // AJOUTE (2026-09-15) - delai minimum entre deux Invocations : avant,
+    // seule la presence d'un mini-boss VIVANT bloquait un nouveau Summon
+    // (voir ChooseNextAttack) - des qu'il mourait, rien n'empechait un
+    // NOUVEAU Summon d'etre retire tres vite (le windup de 2s + la fenetre
+    // "safe" de 1.5-2.5s suffisaient), donnant l'impression d'un mini-boss
+    // qui "respawn" en boucle (retour utilisateur). Applique en plus de
+    // MiniBossAlive, pas a la place.
+    [SerializeField] private float _minSummonInterval = 25f;
+    private float _lastSummonRealTime = -999f;
 
     [Header("Implosion — signature Phase 2 (Dance)")]
     [SerializeField] private float _implosionPullDuration = 1.5f;
@@ -197,8 +206,11 @@ public class BossCorruptedSource : BossBase
 
         if (choice == AttackType.Implosion && MiniBossAlive)
             choice = AttackType.CrystalPulse;
-        if (choice == AttackType.Summon && MiniBossAlive)
+        if (choice == AttackType.Summon && (MiniBossAlive || Time.time - _lastSummonRealTime < _minSummonInterval))
             choice = AttackType.RearingStrike;
+
+        if (choice == AttackType.Summon)
+            _lastSummonRealTime = Time.time;
 
         _lastAttack = choice;
         return choice;
@@ -497,7 +509,15 @@ public class BossCorruptedSource : BossBase
                 boss.transform.localScale = Vector3.one * _summonedVisualScale; // fallback ultime, seulement si aucun SkinnedMeshRenderer trouvé du tout
             }
 
-            boss.SetXPValue(boss.MaxHealth * 0.3f);
+            // CORRIGE (2026-09-15) - boss.MaxHealth n'est JAMAIS reduit par
+            // InitWithReducedHP() (seul _currentHealth l'est, voir BossBase) :
+            // ce calcul donnait donc 30% des PV COMPLETS du boss original en
+            // XP (ex. 30% de 20000 = 6000, alors que le boss normal ne
+            // rapporte que 1400 XP au total) plutot que 30% de sa recompense
+            // XP normale (retour utilisateur : "les mini boss donnent bien
+            // trop d'xp"). boss.XPValue lit la valeur AVANT cet appel
+            // (_xpValue de depart, ex. 1400/2450 pour BossBase/BossDeer).
+            boss.SetXPValue(boss.XPValue * percent);
             boss.RageDisabled = true;
         }
     }

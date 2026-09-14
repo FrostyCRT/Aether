@@ -29,6 +29,12 @@ public class GameUI : MonoBehaviour
 
     [Header("Défi")]
     [SerializeField] private TextMeshProUGUI _challengeText;
+    // AJOUTE (2026-09-15) - conteneur (icone + texte) du rappel de defi dans le
+    // HUD : masque entierement quand le defi de cette heure a deja ete reussi
+    // (voir HideChallengeDisplay, appele par ChallengeManager.RefreshDisplay)
+    // plutot que de laisser un texte "a faire" trompeur puisqu'il ne rapporte
+    // plus rien.
+    [SerializeField] private GameObject _challengeGroup;
 
     [Header("Boss")]
     [SerializeField] private GameObject _bossHPBar;
@@ -266,6 +272,7 @@ public class GameUI : MonoBehaviour
 
     public void UpdateChallengeDisplay(string challengeName, string progressText, bool failed)
     {
+        if (_challengeGroup != null) _challengeGroup.SetActive(true);
         if (_challengeText == null) return;
 
         if (failed)
@@ -278,6 +285,13 @@ public class GameUI : MonoBehaviour
             _challengeText.text = $"{challengeName} — {progressText}";
             _challengeText.color = Color.white;
         }
+    }
+
+    // AJOUTE (2026-09-15) - masque le rappel de defi du HUD (voir
+    // ChallengeManager.RefreshDisplay/IsRewardAlreadyClaimedThisHour).
+    public void HideChallengeDisplay()
+    {
+        if (_challengeGroup != null) _challengeGroup.SetActive(false);
     }
 
     // =====================

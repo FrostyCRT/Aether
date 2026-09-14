@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -186,7 +185,10 @@ public class GameManager : MonoBehaviour
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
-        SceneManager.LoadScene(1);
+        // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
+        // chargement async + retour visuel) au lieu d'un SceneManager.LoadScene
+        // brut et synchrone, source de hitch. Voir SceneLoader.cs.
+        SceneLoader.LoadScene("MainMenu");
     }
 
     public void AddKill()
@@ -244,13 +246,13 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(2);
+        SceneLoader.LoadScene("Game");
     }
 
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(1);
+        SceneLoader.LoadScene("MainMenu");
     }
 
     public void TriggerVictory()

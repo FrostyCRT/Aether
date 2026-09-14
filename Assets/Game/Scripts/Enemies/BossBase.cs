@@ -76,6 +76,15 @@ public class BossBase : MonoBehaviour
     private bool _hasDealtChargeDamage = false;
     public float CameraZoomMargin => _cameraZoomMargin;
     public float MaxHealth => _maxHealth;
+    // AJOUTE (2026-09-15) - necessaire pour corriger le calcul d'XP des
+    // mini-boss invoques par BossCorruptedSource (voir InitSummonedBoss) :
+    // avant, SetXPValue(boss.MaxHealth * percent) utilisait _maxHealth, qui
+    // n'est JAMAIS reduit par InitWithReducedHP() (seul _currentHealth
+    // l'est) - donnait donc un mini-boss "a 30% de vie" mais recompense en
+    // XP calculee sur 30% des PV COMPLETS du boss original (ex. 30% de
+    // 20000 = 6000 XP, contre 420 XP attendu pour 30% de son _xpValue reel
+    // de 1400) - retour utilisateur, "les mini boss donnent bien trop d'xp".
+    public float XPValue => _xpValue;
     public bool IsSummoned { get; set; } = false;
     public bool RageDisabled { get; set; } = false;
 

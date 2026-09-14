@@ -15867,6 +15867,8 @@ MonoBehaviour:
   _challengeInfoText: {fileID: 1243156443}
   _challengeStatusText: {fileID: 1011603677}
   _challengeSeparator: {fileID: 1869175826}
+  _challengeTextToSeparatorGap: 24
+  _challengeSeparatorToStatusGap: 24
   _difficultyEasyColor: {r: 0.435, g: 0.749, b: 0.329, a: 1}
   _difficultyMediumColor: {r: 0.91, g: 0.639, b: 0.239, a: 1}
   _difficultyHardColor: {r: 0.71, g: 0.325, b: 0.243, a: 1}
@@ -32014,7 +32016,7 @@ MonoBehaviour:
   m_fontSizeMax: 21
   m_fontStyle: 1
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -45069,6 +45071,7 @@ MonoBehaviour:
   _hpFillImage: {fileID: 779090064}
   _timerText: {fileID: 241854458}
   _challengeText: {fileID: 1518996194}
+  _challengeGroup: {fileID: 1690190982}
   _bossHPBar: {fileID: 789262779}
   _bossHPSlider: {fileID: 789262781}
   _bossNameText: {fileID: 370096273}

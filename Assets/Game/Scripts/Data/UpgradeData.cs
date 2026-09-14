@@ -199,12 +199,26 @@ public class UpgradeData : ScriptableObject
         }
     }
 
+    // CORRIGE (2026-09-15) - BouncingOrb etait le seul parmi les armes
+    // exclusives a deblocage separe (Fireball/AuraUpgrade/Knives) a ne PAS
+    // suivre le decalage "tier = level - 1" : son palier brut 1 appliquait
+    // deja un bonus de degats silencieux (alors que sa description disait
+    // "Débloque...", sans mention de degats) et son palier 4 (le dernier des
+    // TotalAllowedPicks=4, vu que _requiresUnlockPick=true) tombait dans le
+    // defaut - aucun texte, aucun effet (retour utilisateur : avertissement
+    // "palier 4 inattendu" en jeu). Meme structure que FormatKnivesDescription
+    // desormais : palier brut 1 = deblocage pur (aucun chiffre), paliers 2/3/4
+    // = tiers 1/2/3 (degats/vitesse/+1 orbe).
     private string FormatBouncingOrbDescription(int level)
     {
-        float v = GetLevelValue(level);
-        switch (level)
+        if (level == 1)
+            return "Débloque un orbe rebondissant qui traverse les ennemis.";
+
+        int tier = level - 1;
+        float v = GetLevelValue(tier);
+        switch (tier)
         {
-            case 1: return "Débloque un orbe rebondissant qui traverse les ennemis.";
+            case 1: return $"+{PercentOf(v)}% dégâts.";
             case 2: return $"+{PercentOf(v)}% vitesse.";
             case 3: return "+1 orbe rebondissant supplémentaire.";
             default: return description;
@@ -446,21 +460,37 @@ public class UpgradeData : ScriptableObject
                     break;
                 }
 
+            // CORRIGE (2026-09-15) - meme decalage "tier = newLevel - 1" que
+            // Knives juste au-dessus desormais : le palier brut 1 se contente
+            // de debloquer l'arme (comme sa description le dit deja), les 3
+            // effets reels (degats/vitesse/+1 orbe) vivent aux paliers 2/3/4.
+            // Avant ce correctif, le palier 1 appliquait deja AddDamage() en
+            // silence et le palier 4 (dernier des TotalAllowedPicks=4) ne
+            // faisait rien du tout - voir le commentaire sur
+            // FormatBouncingOrbDescription plus haut.
             case UpgradeType.BouncingOrb:
                 {
                     WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
-                    if (orb == null)
+
+                    if (newLevel == 1)
                     {
-                        orb = playerGO.AddComponent<WeaponBouncingOrb>();
-                        GameObject prefab = Resources.Load<GameObject>("BouncingOrbProjectile");
-                        if (prefab != null)
-                            orb.Init(prefab);
-                        else
-                            Debug.LogWarning("Prefab BouncingOrbProjectile introuvable dans Resources !");
+                        if (orb == null)
+                        {
+                            orb = playerGO.AddComponent<WeaponBouncingOrb>();
+                            GameObject prefab = Resources.Load<GameObject>("BouncingOrbProjectile");
+                            if (prefab != null)
+                                orb.Init(prefab);
+                            else
+                                Debug.LogWarning("Prefab BouncingOrbProjectile introuvable dans Resources !");
+                        }
+                        break;
                     }
 
-                    float orbValue = GetLevelValue(newLevel);
-                    switch (newLevel)
+                    if (orb == null) break;
+
+                    int tier = newLevel - 1;
+                    float orbValue = GetLevelValue(tier);
+                    switch (tier)
                     {
                         case 1: orb.AddDamage(orbValue); break;
                         case 2: orb.AddSpeed(orbValue); break;

@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 public class MainMenuManager : MonoBehaviour
 {
@@ -61,7 +60,13 @@ public class MainMenuManager : MonoBehaviour
     public void ShowReputation() => ShowPanel(_reputationPanel);
     public void PlayGame()
     {
-        SceneManager.LoadScene(2);
+        // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
+        // chargement async + retour visuel) au lieu d'un SceneManager.LoadScene
+        // brut et synchrone : c'est la transition la plus lourde du jeu (Jeu
+        // contient bien plus de systemes/assets que MainMenu), donc celle qui
+        // avait le plus besoin d'un vrai chargement asynchrone. Voir
+        // SceneLoader.cs.
+        SceneLoader.LoadScene("Game");
     }
     public void QuitGame()
     {
