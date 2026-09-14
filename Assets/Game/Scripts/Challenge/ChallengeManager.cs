@@ -11,10 +11,14 @@ public class ChallengeManager : MonoBehaviour
     [SerializeField] private float _mediumWeight = 35f;
     [SerializeField] private float _hardWeight = 15f;
 
+    // MODIFIE (2026-09-13) - doubles sur retour utilisateur : +50% (x1,5) sur
+    // le palier Difficile jugé trop faible vu l'effort demandé (ex. Sans-Faute,
+    // Éclair). Facile et Moyen doubles dans les memes proportions pour garder
+    // un ecart coherent entre paliers (x1,2 / x1,5 / x2).
     [Header("Bonus d'or par palier (pourcentage de l'or ramassé)")]
-    [SerializeField] private float _easyRewardPercent = 0.10f;
-    [SerializeField] private float _mediumRewardPercent = 0.25f;
-    [SerializeField] private float _hardRewardPercent = 0.50f;
+    [SerializeField] private float _easyRewardPercent = 0.20f;
+    [SerializeField] private float _mediumRewardPercent = 0.50f;
+    [SerializeField] private float _hardRewardPercent = 1.00f;
 
     [Header("Anti-répétition")]
     [SerializeField] private int _recentHistorySize = 3;
@@ -118,6 +122,21 @@ public class ChallengeManager : MonoBehaviour
         }
     }
 
+    // AJOUTE (2026-09-13) - "Or xN" plutot que "+100%" (retour utilisateur :
+    // "plus parlant dans le langage jeu video, on est pas en maths"). Partage
+    // entre le chip de fin de run (GameUI) et le detail du menu pause
+    // (PauseMenuUI) pour rester coherent partout ou la recompense s'affiche.
+    // Virgule francaise explicite (pas de dependance a la culture systeme) ;
+    // pas de decimale quand le multiplicateur est un nombre entier (x2, pas x2,0).
+    public static string FormatRewardMultiplier(float rewardPercent)
+    {
+        float multiplier = 1f + rewardPercent;
+        string multiplierStr = Mathf.Approximately(multiplier, Mathf.Round(multiplier))
+            ? Mathf.RoundToInt(multiplier).ToString()
+            : multiplier.ToString("0.0").Replace('.', ',');
+        return $"Or x{multiplierStr}";
+    }
+
     // =====================
     // NOTIFICATIONS EN COURS DE RUN
     // =====================
@@ -202,6 +221,39 @@ public class ChallengeManager : MonoBehaviour
         {
             IsFailed = true;
             RefreshDisplay();
+        }
+    }
+
+    // AJOUTE (2026-09-13) - le Statut du menu pause restait bloque sur "En
+    // cours" meme quand la condition etait deja acquise en cours de partie
+    // (ex. "Vaincre 1 boss" apres avoir tue un boss) - retour utilisateur.
+    // Les defis "jalon" (kills/niveau/boss/or/dash/rapidite) sont acquis pour
+    // de bon des que le seuil est franchi, peu importe la suite. Les defis
+    // "endurance" (hp30never/noUltimate/noDamage) ne PEUVENT pas etre confirmes
+    // avant la fin reelle de la partie (la condition doit tenir jusqu'au bout) -
+    // ils restent donc "En cours" tant qu'ils n'ont pas echoue, c'est correct
+    // et voulu, pas un oubli.
+    public bool IsCurrentlySucceeding()
+    {
+        if (CurrentChallenge == null || IsFailed) return false;
+
+        int bossKills = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 0;
+        int gold = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.RunGold : 0;
+        int level = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+        int kills = GameManager.Instance != null ? GameManager.Instance.KillCount : 0;
+
+        switch (CurrentChallenge.id)
+        {
+            case "kill150": return kills >= 150;
+            case "level10": return level >= 10;
+            case "boss1": return bossKills >= 1;
+            case "dash20": return _dashUsedCount >= 20;
+            case "boss2": return bossKills >= 2;
+            case "level20in10min": return _level20ReachedInTime;
+            case "bossUnder30s": return _fastestBossKillTime <= 30f;
+            case "gold3000": return gold >= 3000;
+            case "level30": return level >= 30;
+            default: return false; // hp30never / noUltimate / noDamage
         }
     }
 

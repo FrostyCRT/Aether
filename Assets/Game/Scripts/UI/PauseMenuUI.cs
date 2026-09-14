@@ -45,12 +45,52 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _goldText;
 
     [Header("Défi (Header)")]
-    // AJOUTE - affichage detaille du defi de la run dans le menu pause : nom,
-    // difficulte, description complete, recompense chiffree, et statut (En
-    // cours / Echoue). Complementaire au rappel court deja affiche dans le HUD
-    // (GameUI.UpdateChallengeDisplay) - ici c'est la version detaillee, lue
-    // uniquement quand le joueur ouvre la pause.
+    // AJOUTE - affichage detaille du defi de la partie dans le menu pause : nom,
+    // difficulte, description complete, recompense chiffree. Complementaire au
+    // rappel court deja affiche dans le HUD (GameUI.UpdateChallengeDisplay) -
+    // ici c'est la version detaillee, lue uniquement quand le joueur ouvre la
+    // pause.
+    // MODIFIE - le Statut (En cours/Echoue) est sorti de ce bloc de texte et
+    // vit desormais dans _challengeStatusText, une colonne separee a droite
+    // (avec un separateur vertical entre les deux) : sur 4 lignes empilees,
+    // le bloc etait trop serre en hauteur dans l'espace dedie du HeaderRow
+    // (retour utilisateur). 3 lignes ici + 1 ligne a part laisse largement
+    // plus de respiration a chaque ligne.
     [SerializeField] private TextMeshProUGUI _challengeInfoText;
+    [SerializeField] private TextMeshProUGUI _challengeStatusText;
+    [SerializeField] private Image _challengeSeparator;
+    // RETIRE (2026-09-14) - le positionnement/redimensionnement du texte de defi
+    // en code (icone->texte, largeur dispo avant le separateur) ecrasait a
+    // chaque ouverture du menu pause les ajustements manuels que l'utilisateur
+    // fait a la main dans l'Inspector sur ChallengeHeaderIcon/ChallengeInfoText/
+    // ChallengeSeparator/ChallengeStatusText (retour utilisateur : "j'ai refait
+    // des ajustements mais quand j'ai lance ils se sont enleves"). Position et
+    // taille de ChallengeInfoText sont maintenant entierement figees dans la
+    // scene (Inspector), pareil que les 4 autres elements du bloc. Le
+    // retrecissement de police pour les descriptions trop longues reste actif,
+    // mais via le Auto Size natif de TMP configure une bonne fois dans
+    // l'Inspector (min=18, max=21) plutot que pose en code a chaque frame.
+
+    [Header("Défi - couleurs de difficulte")]
+    // AJOUTE - code couleur par palier, pour que la difficulte du defi actif
+    // se voie vraiment d'un coup d'oeil (retour utilisateur) plutot que de
+    // reposer uniquement sur le mot "Facile/Moyen/Difficile" en texte neutre.
+    [SerializeField] private Color _difficultyEasyColor = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54
+    [SerializeField] private Color _difficultyMediumColor = new Color(0.910f, 0.639f, 0.239f); // #E8A33D
+    [SerializeField] private Color _difficultyHardColor = new Color(0.710f, 0.325f, 0.243f);   // #B5533E (meme rouille que le titre Game Over)
+    [SerializeField] private Color _challengeStatusFailedColor = new Color(0.710f, 0.325f, 0.243f); // #B5533E
+    // MODIFIE (2026-09-13) - blanc pur (retour utilisateur) au lieu de la
+    // creme d'origine (#F2EDD9), sur les deux textes de base (nom/description/
+    // recompense et statut "En cours") - seuls la difficulte et le statut
+    // "Echoue" gardent une couleur dediee.
+    [SerializeField] private Color _challengeInfoTextColor = Color.white;
+    [SerializeField] private Color _challengeStatusNormalColor = Color.white;
+    // AJOUTE (2026-09-13) - troisieme etat du Statut, retour utilisateur : le
+    // defi peut deja etre acquis EN COURS de partie (ex. "Vaincre 1 boss"
+    // apres avoir tue un boss) sans attendre la fin - voir
+    // ChallengeManager.IsCurrentlySucceeding(). Meme vert que la difficulte
+    // Facile, mais champ separe pour pouvoir l'ajuster independamment.
+    [SerializeField] private Color _challengeStatusSuccessColor = new Color(0.435f, 0.749f, 0.329f); // #6FBF54
 
     [Header("Animation d'ouverture - fond et panneau")]
     [SerializeField] private Image _dimBackground;
@@ -278,15 +318,20 @@ public class PauseMenuUI : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Défi de la run - affichage détaillé
+    // Défi de la partie - affichage détaillé
     // ------------------------------------------------------------------
 
-    // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte,
-    // description complete, recompense chiffree (via
-    // ChallengeManager.GetCurrentRewardPercent()), et statut actuel. Appele a
-    // chaque ouverture du menu pause, comme PullLiveStats().
+    // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte
+    // (colore selon _difficultyXxxColor - retour utilisateur, "montrer
+    // vraiment si il est difficile ou pas"), description complete, recompense
+    // chiffree (via ChallengeManager.GetCurrentRewardPercent()). Le Statut vit
+    // a part dans _challengeStatusText (voir PullChallengeStatus) - 3 lignes
+    // ici au lieu de 4, plus de place par ligne dans l'espace dedie du
+    // HeaderRow. Appele a chaque ouverture du menu pause, comme PullLiveStats().
     private void PullChallengeInfo()
     {
+        PullChallengeStatus();
+
         if (_challengeInfoText == null) return;
 
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
@@ -297,23 +342,85 @@ public class PauseMenuUI : MonoBehaviour
 
         ChallengeDefinition challenge = ChallengeManager.Instance.CurrentChallenge;
         string difficultyLabel = GetDifficultyLabel(challenge.difficulty);
-        int rewardPercent = Mathf.RoundToInt(ChallengeManager.Instance.GetCurrentRewardPercent() * 100f);
-        string statusLabel = ChallengeManager.Instance.IsFailed ? "Échoué" : "En cours";
+        string difficultyColorHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(challenge.difficulty));
+        // MODIFIE (2026-09-13) - "Nom : Niv. Difficulte" au lieu de "Nom
+        // (Difficulte)" (retour utilisateur) ; recompense en "Or xN" au lieu
+        // de "+X%" (voir ChallengeManager.FormatRewardMultiplier).
+        string rewardText = ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent());
 
+        _challengeInfoText.color = _challengeInfoTextColor;
         _challengeInfoText.text =
-            $"{challenge.displayName} ({difficultyLabel})\n" +
+            $"{challenge.displayName} : Niv. <color=#{difficultyColorHex}>{difficultyLabel}</color>\n" +
             $"{challenge.description}\n" +
-            $"Récompense : +{rewardPercent}% de l'Or ramassé\n" +
-            $"Statut : {statusLabel}";
+            $"Récompense : {rewardText}";
+        // Position, taille et retrecissement de police (Auto Size) sont figes
+        // dans l'Inspector sur ChallengeInfoText - rien a faire ici en code, voir
+        // la note plus haut sur _challengeInfoText.
     }
 
+    // AJOUTE - colonne "Statut" separee (voir _challengeStatusText), centree
+    // verticalement a droite du separateur. Rouge (_challengeStatusFailedColor,
+    // meme rouille que le titre Game Over) si echoue, couleur normale sinon -
+    // le mot seul ne suffisait pas a alerter au premier coup d'oeil.
+    // MODIFIE (2026-09-13) - 3e etat "Reussi" (vert) : le statut restait
+    // bloque sur "En cours" meme quand la condition etait deja acquise en
+    // cours de partie (ex. "Vaincre 1 boss" apres un boss tue) - retour
+    // utilisateur. Voir ChallengeManager.IsCurrentlySucceeding().
+    private void PullChallengeStatus()
+    {
+        if (_challengeStatusText == null) return;
+
+        bool hasChallenge = ChallengeManager.Instance != null && ChallengeManager.Instance.CurrentChallenge != null;
+        if (_challengeSeparator != null) _challengeSeparator.gameObject.SetActive(hasChallenge);
+
+        if (!hasChallenge)
+        {
+            _challengeStatusText.text = "";
+            return;
+        }
+
+        string statusLabel;
+        Color statusColor;
+        if (ChallengeManager.Instance.IsFailed)
+        {
+            statusLabel = "Échoué";
+            statusColor = _challengeStatusFailedColor;
+        }
+        else if (ChallengeManager.Instance.IsCurrentlySucceeding())
+        {
+            statusLabel = "Réussi";
+            statusColor = _challengeStatusSuccessColor;
+        }
+        else
+        {
+            statusLabel = "En cours";
+            statusColor = _challengeStatusNormalColor;
+        }
+
+        string colorHex = ColorUtility.ToHtmlStringRGB(statusColor);
+        _challengeStatusText.text = $"Statut\n<color=#{colorHex}>{statusLabel}</color>";
+    }
+
+    private Color GetDifficultyColor(ChallengeDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return _difficultyEasyColor;
+            case ChallengeDifficulty.Medium: return _difficultyMediumColor;
+            case ChallengeDifficulty.Hard: return _difficultyHardColor;
+            default: return Color.white;
+        }
+    }
+
+    // MODIFIE (2026-09-13) - tout en majuscules (retour utilisateur), le reste
+    // de la ligne ("Fortune : Niv. ...") garde sa casse normale.
     private string GetDifficultyLabel(ChallengeDifficulty difficulty)
     {
         switch (difficulty)
         {
-            case ChallengeDifficulty.Easy: return "Facile";
-            case ChallengeDifficulty.Medium: return "Moyen";
-            case ChallengeDifficulty.Hard: return "Difficile";
+            case ChallengeDifficulty.Easy: return "FACILE";
+            case ChallengeDifficulty.Medium: return "MOYEN";
+            case ChallengeDifficulty.Hard: return "DIFFICILE";
             default: return "";
         }
     }

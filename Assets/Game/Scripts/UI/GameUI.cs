@@ -346,8 +346,23 @@ public class GameUI : MonoBehaviour
             if (chipRoot != null)
             {
                 chipRoot.SetActive(true);
-                challengeText.color = _challengeSuccessColor;
-                challengeText.text = $"Défi réussi ! x{rewardPercent:0.00}";
+                // MODIFIE - challengeText.color = _challengeSuccessColor (#FFC94D)
+                // retire : c'est EXACTEMENT la meme teinte que le fond du chip
+                // (ChallengeChipBg, egalement #FFC94D) - le texte devenait
+                // invisible en jeu, contraste nul, alors qu'il restait lisible
+                // dans l'Editeur puisque la couleur authoree du texte (#4A3410,
+                // deja correcte sur les deux panels) n'etait jamais touchee la-bas
+                // (retour utilisateur, bug trouve en jeu). On ne touche plus a
+                // cette couleur ici : #4A3410 est deja pensee pour ce fond.
+                // MODIFIE - "x{rewardPercent:0.00}" affichait litteralement
+                // "x0.10" pour un bonus de +10% (rewardPercent est une
+                // fraction 0-1, pas un multiplicateur) - se lisait comme une
+                // PERTE de 90% plutot qu'un bonus.
+                // MODIFIE (2026-09-13) - "Or xN" au lieu de "+X%" (retour
+                // utilisateur : plus parlant dans le vocabulaire jeu video).
+                // Voir ChallengeManager.FormatRewardMultiplier, partage avec
+                // PauseMenuUI.PullChallengeInfo().
+                challengeText.text = $"Défi réussi ! {ChallengeManager.FormatRewardMultiplier(rewardPercent)}";
             }
 
             yield return StartCoroutine(CountUpNumber(goldText, baseGold, totalGold, _bonusCountUpDuration));
