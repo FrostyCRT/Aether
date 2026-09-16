@@ -109,6 +109,11 @@ public class BossCorruptedSource : BossBase
     private GameObject _activeMiniBossInstance = null;
     private bool MiniBossAlive => _activeMiniBossInstance != null;
 
+    // AJOUTE (2026-09-16) - retour utilisateur : les invocations doivent
+    // ALTERNER entre l'echo du Boss 1 et celui du Boss 2, plutot qu'un tirage
+    // 50/50 qui pouvait invoquer 2-3 fois de suite le meme (voir SummonAttack).
+    private bool _nextSummonIsBoss1 = true;
+
     protected override void Start()
     {
         base.Start();
@@ -314,12 +319,22 @@ public class BossCorruptedSource : BossBase
         float lungeElapsed = 0f;
         float lungeDuration = _strikeLungeDistance / _strikeLungeSpeed;
 
+        // MODIFIE (2026-09-16) - retour utilisateur : le corps du boss
+        // infligeait aussi des degats de CONTACT generiques tout le long du
+        // trajet A->B (voir BossBase.OnTriggerEnter/Stay), en plus des degats
+        // d'impact explicites ci-dessous - la zone reelle touchee etait donc
+        // plus large que le seul cercle rouge affiche au point B. Suspendu
+        // pendant le trajet : seuls les degats d'impact (OverlapSphere sur
+        // endPos, meme rayon que le cercle) comptent desormais, exactement la
+        // zone telegraphiee.
+        _contactDamageSuppressed = true;
         while (lungeElapsed < lungeDuration)
         {
             lungeElapsed += Time.deltaTime;
             transform.position = Vector3.Lerp(startPos, endPos, lungeElapsed / lungeDuration);
             yield return null;
         }
+        _contactDamageSuppressed = false;
 
         if (_animator != null) _animator.SetTrigger("Bite");
 
@@ -472,8 +487,11 @@ public class BossCorruptedSource : BossBase
         if (portal != null) Destroy(portal);
         if (_animator != null) _animator.SetBool("IsCoiling", false);
 
-        bool spawnBoss1 = Random.value > 0.5f;
-        GameObject prefabToSpawn = spawnBoss1 ? _miniBoss1Prefab : _miniBoss2Prefab;
+        // MODIFIE (2026-09-16) - alterne strictement au lieu d'un tirage 50/50
+        // (retour utilisateur) : 1ere invocation = echo du Boss 1, 2e = echo
+        // du Boss 2, 3e = Boss 1, etc.
+        GameObject prefabToSpawn = _nextSummonIsBoss1 ? _miniBoss1Prefab : _miniBoss2Prefab;
+        _nextSummonIsBoss1 = !_nextSummonIsBoss1;
         if (prefabToSpawn == null) yield break;
 
         GameObject mini = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);

@@ -19208,6 +19208,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _startDelay: 0.5
   _switchFadeDuration: 1
+  _startFadeDuration: 0.3
+  _stopFadeDuration: 0.2
   _switchDelay: 0.5
 --- !u!1001 &748616059
 PrefabInstance:
@@ -47969,6 +47971,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1719445691}
   - component: {fileID: 1719445690}
+  - component: {fileID: 1719445692}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -48011,6 +48014,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1719445692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1719445689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95cc061fa688dea4a9bd123e19cb28c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _skipToBoss3Key: 286
+  _grantFullBuildKey: 287
+  _toggleGodModeKey: 288
 --- !u!1001 &1721808311
 PrefabInstance:
   m_ObjectHideFlags: 0

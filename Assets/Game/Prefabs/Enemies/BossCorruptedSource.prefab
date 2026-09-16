@@ -161,8 +161,7 @@ MonoBehaviour:
   _diveCheckInterval: 4
   _repositionTelegraphDuration: 0.6
   _repositionTravelDuration: 1
-  _crackTrailPrefab: {fileID: 4720428916564529807, guid: 503047198ab048946a04d69e5f283591,
-    type: 3}
+  _crackTrailPrefab: {fileID: 0}
   _resurfaceBurstPrefab: {fileID: 5196147696218930488, guid: a99eeb3cc49a1144094c735dd5290bda,
     type: 3}
   _resurfaceBurstRadius: 3
@@ -175,6 +174,7 @@ MonoBehaviour:
   _riftPortalPrefab: {fileID: 8271196632911656928, guid: c6cb0e421f6f5694884e323347ba59cf,
     type: 3}
   _summonedVisualScale: 0.75
+  _minSummonInterval: 25
   _implosionPullDuration: 1.5
   _implosionPullForce: 15
   _implosionRadius: 10

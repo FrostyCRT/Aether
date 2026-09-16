@@ -263,12 +263,24 @@ public class MetaProgressionManager : MonoBehaviour
     // Plafond du bonus de dégâts de "Concentration" (branche Guerrier).
     // MODIFIE - 0.25/0.40 -> 0.30/0.50 aux paliers 2/3 : le bonus se réinitialise à
     // chaque coup reçu (fragile en fin de partie), le plafond doit donc être assez
-    // gros pour donner envie de jouer proprement. Montée effective : +8%/s (voir
-    // PlayerBuffs._concentrationRampPerSecond).
+    // gros pour donner envie de jouer proprement. Montée effective : voir
+    // GetConcentrationRampPerSecond() ci-dessous.
     public float GetBonusConcentrationCap()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
         float[] values = { 0f, 0.15f, 0.30f, 0.50f };
+        return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
+    }
+
+    // AJOUTE (2026-09-16) - vitesse de montée du bonus de Concentration (%/s),
+    // variable selon le palier plutôt qu'un taux plat de 8%/s pour tous - retour
+    // utilisateur : "ça doit quand même être une récompense d'avoir des dégâts
+    // en plus, pas un passif facile à avoir". Plus le palier est profond, plus
+    // la montée est rapide ET le plafond est haut - cohérent avec l'investissement.
+    public float GetConcentrationRampPerSecond()
+    {
+        if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
+        float[] values = { 0f, 0.02f, 0.03f, 0.05f };
         return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
     }
 

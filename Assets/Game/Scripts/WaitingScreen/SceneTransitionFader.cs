@@ -64,7 +64,7 @@ public class SceneTransitionFader : MonoBehaviour
         // qui a servi a masquer la coupure - reutilisable pour n'importe quelle
         // future transition de scene dans le jeu, pas seulement celle-ci.
         if (_canvasGroup != null && _canvasGroup.alpha > 0f)
-            StartFade(0f, 0.6f);
+            StartFade(0f, _quickTransitionFadeInDuration);
     }
 
     public IEnumerator FadeOut(float duration)

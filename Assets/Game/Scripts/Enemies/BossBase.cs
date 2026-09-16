@@ -384,8 +384,19 @@ public class BossBase : MonoBehaviour
         _bodyRenderer.SetPropertyBlock(_propBlock);
     }
 
+    // AJOUTE (2026-09-16) - DEBUG/TEST uniquement (voir DebugCheats.cs, F8) :
+    // invincibilite du boss actif, pour observer tranquillement un combat/
+    // pattern sans qu'il ne meure avant d'avoir vu ce qu'on veut tester (ex.
+    // l'alternance des mini-boss invoques par le Boss 3). Statique - un seul
+    // interrupteur global, coherent avec le fait qu'un seul boss est actif a
+    // la fois. Jamais actif en dehors de l'Editeur/d'un build de developpement
+    // (DebugCheats.cs se neutralise lui-meme hors de ces contextes).
+    public static bool DebugInvincible = false;
+
     public virtual void TakeDamage(float damage, Color color = default)
     {
+        if (DebugInvincible) return;
+
         _currentHealth -= damage;
 
         if (DamageNumberSpawner.Instance != null)
@@ -406,7 +417,15 @@ public class BossBase : MonoBehaviour
         DestroyTelegraphZone();
 
         if (XPGemSpawner.Instance != null)
-            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
+        {
+            // CORRIGE (2026-09-16) - le pivot des boss est au sol (Y=0),
+            // contrairement aux ennemis normaux : les gemmes d'XP spawnaient
+            // donc quasiment sous la map, hors de portée du joueur (retour
+            // utilisateur). Force Y=1,5, une hauteur ramassable normale.
+            Vector3 gemSpawnPos = transform.position;
+            gemSpawnPos.y = 1.5f;
+            XPGemSpawner.Instance.SpawnGems(gemSpawnPos, _xpValue);
+        }
 
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
@@ -454,8 +473,22 @@ public class BossBase : MonoBehaviour
         DestroyTelegraphZone();
     }
 
+    // AJOUTE (2026-09-16) - permet a une sous-classe de suspendre temporairement
+    // les degats de CONTACT generiques (ci-dessous) pendant un deplacement
+    // rapide deja telegraphie par ailleurs (ex. la Frappe du Boss 3, qui
+    // affiche un cercle rouge au point d'ARRIVEE puis inflige ses propres
+    // degats d'impact explicites une fois sur place) - retour utilisateur :
+    // sans ca, le corps du boss inflige AUSSI des degats de contact tout le
+    // long de sa trajectoire (avant meme d'arriver), donc une zone de degats
+    // reelle plus large que ce que montre le seul cercle d'avertissement au
+    // point B. Chaque attaque doit avoir un tell fiable (regle deja etablie
+    // sur Golem/Sanglier/Cerf/ce boss meme, voir l'en-tete du fichier) - un
+    // trajet non-telegraphie qui blesse casse cette regle.
+    protected bool _contactDamageSuppressed = false;
+
     protected virtual void OnTriggerEnter(Collider other)
     {
+        if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
@@ -468,6 +501,7 @@ public class BossBase : MonoBehaviour
 
     protected virtual void OnTriggerStay(Collider other)
     {
+        if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
             HealthSystem health = other.GetComponent<HealthSystem>();

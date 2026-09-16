@@ -136,6 +136,14 @@ public class GameUI : MonoBehaviour
     // Le conteneur est masqué pour Aether/Lyra via SetManaShieldAvailable(false).
     [SerializeField] private GameObject _manaShieldContainer;
     [SerializeField] private Image[] _manaShieldPips;
+    // MODIFIE (2026-09-16) - vert plutôt que le cyan générique _filledTierColor
+    // (retour utilisateur : "ce serait mieux de changer la couleur de ces dots
+    // en Vert plutôt qu'en bleu, parce que c'est représentatif de Kael") -
+    // champ dédié pour ne pas changer _filledTierColor, partagé par les pips
+    // Cristal/tier dots/etc. ailleurs dans le HUD. Même famille de teinte que
+    // _tileTintKael (vert des tuiles d'upgrade Kael) mais plus vive/saturée,
+    // pensée pour un pip HUD lumineux plutôt qu'une teinte de fond discrète.
+    [SerializeField] private Color _manaShieldFilledColor = new Color32(0x36, 0xD9, 0x36, 255);
     // Teinte des pips quand le bouclier est cassé (recharge verrouillée) : rouge-gris désaturé.
     [SerializeField] private Color _manaShieldLockedColor = new Color32(0x8A, 0x5A, 0x5A, 200);
 
@@ -979,17 +987,61 @@ public class GameUI : MonoBehaviour
             _concentrationContainer.SetActive(available);
     }
 
+    // MODIFIE (2026-09-16) - retour utilisateur : "il y a écrit Concentration au
+    // lieu de 0%... l'espace donné est fait pour des pourcentages, c'est pas
+    // assez grand pour Concentration". Le texte affiche désormais toujours un
+    // pourcentage, y compris "0%".
     public void UpdateConcentration(float bonus)
     {
         if (_concentrationText == null) return;
 
+        // Une descente animée (PlayConcentrationHitDrop) est en cours : elle a la
+        // main sur le texte/la couleur jusqu'à sa fin, ne pas l'interrompre par un
+        // rafraîchissement normal qui écraserait l'animation par un saut.
+        if (_concentrationDropCoroutine != null) return;
+
+        SetConcentrationDisplay(bonus);
+    }
+
+    private void SetConcentrationDisplay(float bonus)
+    {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        _concentrationText.text = pct > 0 ? $"{pct}%" : "Concentration";
+        _concentrationText.text = $"{pct}%";
 
         // Réf. de teinte : plafond max du nœud (0.50). En dessous = interpolation
         // cyan -> doré, au plafond = doré plein.
         float t = Mathf.Clamp01(bonus / 0.5f);
         _concentrationText.color = Color.Lerp(_filledTierColor, _maxTierColor, t);
+    }
+
+    // AJOUTE (2026-09-16) - descente animée rapide du pourcentage affiché jusqu'à
+    // 0% quand le joueur se fait toucher (voir PlayerBuffs.NotifyDamaged), plutôt
+    // qu'un saut instantané ou le mot "Concentration" - la perte doit se
+    // ressentir. La valeur de jeu réelle (dégâts) est déjà retombée à 0 avant
+    // l'appel ; seule l'animation d'affichage est décalée dans le temps.
+    private Coroutine _concentrationDropCoroutine;
+    private const float ConcentrationDropDuration = 0.25f;
+
+    public void PlayConcentrationHitDrop(float fromBonus)
+    {
+        if (_concentrationText == null) return;
+        if (_concentrationDropCoroutine != null) StopCoroutine(_concentrationDropCoroutine);
+        _concentrationDropCoroutine = StartCoroutine(ConcentrationDropRoutine(fromBonus));
+    }
+
+    private IEnumerator ConcentrationDropRoutine(float fromBonus)
+    {
+        float elapsed = 0f;
+        while (elapsed < ConcentrationDropDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float bonus = Mathf.Lerp(fromBonus, 0f, elapsed / ConcentrationDropDuration);
+            SetConcentrationDisplay(bonus);
+            yield return null;
+        }
+
+        SetConcentrationDisplay(0f);
+        _concentrationDropCoroutine = null;
     }
 
     // AJOUTE - Bouclier de Mana (Kael). SetManaShieldAvailable masque tout le
@@ -1017,7 +1069,7 @@ public class GameUI : MonoBehaviour
             if (!filled)
                 _manaShieldPips[i].color = _emptyTierColor;
             else
-                _manaShieldPips[i].color = locked ? _manaShieldLockedColor : _filledTierColor;
+                _manaShieldPips[i].color = locked ? _manaShieldLockedColor : _manaShieldFilledColor;
         }
     }
 
