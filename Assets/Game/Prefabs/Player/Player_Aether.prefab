@@ -386,10 +386,10 @@ MonoBehaviour:
   _ultScaleRampDuration: 900
   _ultScaleMaxMultiplier: 4
   _novaDamage: 100
-  _novaRadius: 4.5
+  _novaRadius: 4.25
   _novaVFXPrefab: {fileID: 2702546882864918342, guid: 2576f9e80e93d9f448521fccd6d71e8b,
     type: 3}
-  _novaVFXDuration: 0.4
+  _novaVFXDuration: 0.5
   _ultVFXPrefab: {fileID: 2702546882864918342, guid: 434d10f952cfec84881df90357deaadf,
     type: 3}
   _ultVFXDuration: 0.55

@@ -23,6 +23,8 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private GameObject _novaVFXPrefab;
     [Tooltip("Durée de l'expansion visuelle de la Nova (0 -> rayon max). Retour utilisateur : 0,3s d'origine était trop rapide, 0,7s presque parfait mais un chouïa trop lent.")]
     [SerializeField] private float _novaVFXDuration = 0.55f;
+    [Tooltip("Hauteur Y à laquelle le VFX de la Nova est instancié - même logique que WeaponMudPuddle._groundY : le pivot du joueur (transform.position) est à hauteur de torse (~1,5), pas au sol, donc un VFX plaqué au sol comme une onde de choc doit utiliser sa propre hauteur au lieu de suivre le pivot.")]
+    [SerializeField] private float _novaGroundY = 0.2f;
 
     [Header("Ulti — VFX")]
     [SerializeField] private GameObject _ultVFXPrefab;
@@ -243,7 +245,14 @@ public class CrystalSystem : MonoBehaviour
 
     private IEnumerator NovaRoutine()
     {
-        GameObject vfx = Instantiate(_novaVFXPrefab, transform.position, Quaternion.identity);
+        // MODIFIE (2026-09-17) - retour utilisateur : "je veux que tu changes en
+        // Y la position de la Nova, comme pour les flaques de boue". Le pivot du
+        // joueur (transform.position.y) est à hauteur de torse (~1,5), pas au
+        // sol - le VFX flottait donc en l'air au lieu d'être une onde de choc au
+        // sol. Même logique que WeaponMudPuddle._groundY (spawnPos.y = _groundY).
+        Vector3 vfxSpawnPos = transform.position;
+        vfxSpawnPos.y = _novaGroundY;
+        GameObject vfx = Instantiate(_novaVFXPrefab, vfxSpawnPos, Quaternion.identity);
         float elapsed = 0f;
         var alreadyHit = new HashSet<Collider>();
 
