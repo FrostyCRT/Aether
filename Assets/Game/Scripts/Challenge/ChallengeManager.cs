@@ -11,10 +11,14 @@ public class ChallengeManager : MonoBehaviour
     [SerializeField] private float _mediumWeight = 35f;
     [SerializeField] private float _hardWeight = 15f;
 
+    // MODIFIE (2026-09-13) - doubles sur retour utilisateur : +50% (x1,5) sur
+    // le palier Difficile jugé trop faible vu l'effort demandé (ex. Sans-Faute,
+    // Éclair). Facile et Moyen doubles dans les memes proportions pour garder
+    // un ecart coherent entre paliers (x1,2 / x1,5 / x2).
     [Header("Bonus d'or par palier (pourcentage de l'or ramassé)")]
-    [SerializeField] private float _easyRewardPercent = 0.10f;
-    [SerializeField] private float _mediumRewardPercent = 0.25f;
-    [SerializeField] private float _hardRewardPercent = 0.50f;
+    [SerializeField] private float _easyRewardPercent = 0.20f;
+    [SerializeField] private float _mediumRewardPercent = 0.50f;
+    [SerializeField] private float _hardRewardPercent = 1.00f;
 
     [Header("Anti-répétition")]
     [SerializeField] private int _recentHistorySize = 3;
@@ -22,6 +26,48 @@ public class ChallengeManager : MonoBehaviour
     public ChallengeDefinition CurrentChallenge { get; private set; }
     public bool IsFailed { get; private set; } = false;
     public bool IsCompleted { get; private set; } = false;
+
+    // AJOUTE (2026-09-15) - expose si la recompense du defi de CETTE heure a
+    // deja ete touchee (lors d'une run precedente, meme heure) : au-dela,
+    // ApplyGoldReward() l'ignore deja silencieusement, donc HUD/menu pause ne
+    // doivent plus presenter le defi comme "a faire" pour le reste de l'heure
+    // (retour utilisateur). Se base directement sur la donnee de sauvegarde
+    // (pas un champ local) : ce flag doit rester correct meme au tout premier
+    // frame d'une nouvelle run, avant que quoi que ce soit d'autre ne tourne.
+    public bool IsRewardAlreadyClaimedThisHour =>
+        MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null
+        && MetaProgressionManager.Instance.Data.currentChallengeRewardClaimed;
+
+    // AJOUTE (2026-09-15) - minutes restantes avant que currentChallengeHourBucket
+    // change et qu'un nouveau defi soit tire (voir EnsureCurrentChallenge) -
+    // utilise pour le message "Nouveau defi dans X min" du menu pause. IMPORTANT :
+    // ceci ne fait QUE lire l'heure courante pour l'affichage, ca ne declenche
+    // JAMAIS le tirage d'un nouveau defi ici - ce dernier ne se produit que
+    // dans EnsureCurrentChallenge(), appelee uniquement au demarrage de la
+    // scene Jeu (donc HORS partie en cours, jamais en cours de run - retour
+    // utilisateur, voir la note sur EnsureCurrentChallenge plus bas).
+    // MODIFIE (2026-09-15) - retour utilisateur : affichait "Nouveau defi dans
+    // moins d'une minute" indefiniment (meme des heures plus tard) des qu'on
+    // etait deja PASSE l'heure de bascule - courant des qu'une run traverse
+    // cette limite en cours de route, puisque EnsureCurrentChallenge() ne
+    // re-tire qu'au PROCHAIN chargement de la scene Jeu, jamais en cours de
+    // run (voir la note dessus). Retourne desormais -1 pour signaler
+    // explicitement ce cas "deja du" plutot que de mentir sur un compte a
+    // rebours qui n'en est plus vraiment un - a l'appelant de distinguer les
+    // deux cas dans le message affiche.
+    public int GetMinutesUntilNextChallenge()
+    {
+        if (MetaProgressionManager.Instance == null || MetaProgressionManager.Instance.Data == null) return -1;
+
+        long bucket = MetaProgressionManager.Instance.Data.currentChallengeHourBucket;
+        long nextBucketStartSeconds = (bucket + 1) * 3600;
+        long nowSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        long secondsRemaining = nextBucketStartSeconds - nowSeconds;
+
+        if (secondsRemaining <= 0) return -1;
+
+        return Mathf.CeilToInt(secondsRemaining / 60f);
+    }
 
     private int _dashUsedCount = 0;
     private bool _ultimateUsedThisRun = false;
@@ -49,6 +95,17 @@ public class ChallengeManager : MonoBehaviour
         EnsureCurrentChallenge();
     }
 
+    // MODIFIE (2026-09-15) - retour utilisateur : s'assurer que le tirage d'un
+    // nouveau defi se fait bien HORS partie (jamais en cours de run, meme si
+    // l'heure change pendant qu'une run est en cours). C'est deja garanti par
+    // construction : cette methode n'est appelee QUE depuis Start() ci-dessus,
+    // qui ne tourne qu'a la creation de ChallengeManager - donc uniquement au
+    // chargement de la scene Jeu (debut de run), jamais pendant. Si l'heure
+    // change en plein milieu d'une run, le defi de CETTE run reste inchange
+    // jusqu'a son terme ; le nouveau defi n'est tire qu'au PROCHAIN chargement
+    // de la scene Jeu (prochaine run). Documente ici pour eviter qu'un futur
+    // appel de EnsureCurrentChallenge() soit ajoute par erreur en cours de
+    // partie (ex. depuis Update()).
     private void EnsureCurrentChallenge()
     {
         if (MetaProgressionManager.Instance == null || MetaProgressionManager.Instance.Data == null) return;
@@ -116,6 +173,21 @@ public class ChallengeManager : MonoBehaviour
             case ChallengeDifficulty.Hard: return _hardRewardPercent;
             default: return 0f;
         }
+    }
+
+    // AJOUTE (2026-09-13) - "Or xN" plutot que "+100%" (retour utilisateur :
+    // "plus parlant dans le langage jeu video, on est pas en maths"). Partage
+    // entre le chip de fin de run (GameUI) et le detail du menu pause
+    // (PauseMenuUI) pour rester coherent partout ou la recompense s'affiche.
+    // Virgule francaise explicite (pas de dependance a la culture systeme) ;
+    // pas de decimale quand le multiplicateur est un nombre entier (x2, pas x2,0).
+    public static string FormatRewardMultiplier(float rewardPercent)
+    {
+        float multiplier = 1f + rewardPercent;
+        string multiplierStr = Mathf.Approximately(multiplier, Mathf.Round(multiplier))
+            ? Mathf.RoundToInt(multiplier).ToString()
+            : multiplier.ToString("0.0").Replace('.', ',');
+        return $"Or x{multiplierStr}";
     }
 
     // =====================
@@ -205,13 +277,56 @@ public class ChallengeManager : MonoBehaviour
         }
     }
 
+    // AJOUTE (2026-09-13) - le Statut du menu pause restait bloque sur "En
+    // cours" meme quand la condition etait deja acquise en cours de partie
+    // (ex. "Vaincre 1 boss" apres avoir tue un boss) - retour utilisateur.
+    // Les defis "jalon" (kills/niveau/boss/or/dash/rapidite) sont acquis pour
+    // de bon des que le seuil est franchi, peu importe la suite. Les defis
+    // "endurance" (hp30never/noUltimate/noDamage) ne PEUVENT pas etre confirmes
+    // avant la fin reelle de la partie (la condition doit tenir jusqu'au bout) -
+    // ils restent donc "En cours" tant qu'ils n'ont pas echoue, c'est correct
+    // et voulu, pas un oubli.
+    public bool IsCurrentlySucceeding()
+    {
+        if (CurrentChallenge == null || IsFailed) return false;
+
+        int bossKills = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 0;
+        int gold = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.RunGold : 0;
+        int level = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+        int kills = GameManager.Instance != null ? GameManager.Instance.KillCount : 0;
+
+        switch (CurrentChallenge.id)
+        {
+            case "kill150": return kills >= 150;
+            case "level10": return level >= 10;
+            case "boss1": return bossKills >= 1;
+            case "dash20": return _dashUsedCount >= 20;
+            case "boss2": return bossKills >= 2;
+            case "level20in10min": return _level20ReachedInTime;
+            case "bossUnder30s": return _fastestBossKillTime <= 30f;
+            case "gold3000": return gold >= 3000;
+            case "level30": return level >= 30;
+            default: return false; // hp30never / noUltimate / noDamage
+        }
+    }
+
     // Public - appelee aussi depuis GameManager.AddKill() et
     // MetaProgressionManager.AddRunGold() pour rafraichir la progression en
     // temps reel des defis bases sur les kills/l'or.
     public void RefreshDisplay()
     {
-        if (GameUI.Instance != null && CurrentChallenge != null)
-            GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.displayName, GetProgressText(), IsFailed);
+        if (GameUI.Instance == null || CurrentChallenge == null) return;
+
+        // AJOUTE (2026-09-15) - retour utilisateur : le defi ne doit plus
+        // s'afficher dans le HUD pour le reste de l'heure une fois deja
+        // reussi (le refaire ne rapporte plus rien, voir ApplyGoldReward).
+        if (IsRewardAlreadyClaimedThisHour)
+        {
+            GameUI.Instance.HideChallengeDisplay();
+            return;
+        }
+
+        GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.displayName, GetProgressText(), IsFailed);
     }
 
     private string GetProgressText()

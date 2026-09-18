@@ -162,6 +162,34 @@ public class WaveManager : MonoBehaviour
         return eb != null ? eb.PoolTag : "Enemy"; // MODIFIÉ — lit le tag configuré sur le prefab au lieu de deviner via une chaîne de GetComponent<X>()
     }
 
+    // AJOUTE (2026-09-16) - DEBUG/TEST uniquement (voir DebugCheats.cs) : saute
+    // directement au Boss 3 sans avoir a battre les Boss 1/2 ni attendre les
+    // delais entre eux - retour utilisateur, "battre les 2 boss et attendre
+    // le delai entre les boss c'est long" pour tester le Boss 3 en iteration.
+    // Force _bossCount a 2 AVANT de spawner, pour qu'OnBossDied() declenche
+    // correctement la Victoire une fois ce Boss 3 tue (comme un vrai run).
+    public void DebugSkipToBoss3()
+    {
+        // Detruit un boss deja en vie s'il y en a un (ex: skip declenche en
+        // plein combat de Boss 1/2), pour ne jamais en avoir deux en meme temps.
+        BossBase[] existingBosses = FindObjectsByType<BossBase>(FindObjectsSortMode.None);
+        foreach (BossBase b in existingBosses)
+            if (b != null) Destroy(b.gameObject);
+
+        // Filet de securite - _enemySpawner n'est normalement assigne qu'une
+        // fois dans Start() ; le re-verifier ici evite un NullReferenceException
+        // si ce raccourci est declenche avant que Start() ait pu s'executer
+        // correctement (observe en testant via des rechargements de scene
+        // scriptes rapprochés - improbable en jeu normal, mais coute rien a
+        // securiser vu que c'est un outil de debug).
+        if (_enemySpawner == null)
+            _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+
+        _bossAlive = false;
+        _bossCount = 2;
+        SpawnBoss(3);
+    }
+
     public void OnBossDied()
     {
         _bossAlive = false;

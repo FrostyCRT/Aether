@@ -149,8 +149,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7f472065d54094092cb9b635797363, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _startDelay: 0.2
+  _startDelay: 0.5
   _switchFadeDuration: 1
+  _startFadeDuration: 0.3
+  _stopFadeDuration: 0.2
   _switchDelay: 0.5
 --- !u!82 &160640780
 AudioSource:
@@ -1666,6 +1668,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canvasGroup: {fileID: 1071769919}
+  _quickTransitionFadeDuration: 0.25
+  _quickTransitionFadeInDuration: 0.3
+  _minBlackHoldDuration: 0.15
 --- !u!114 &1549727839
 MonoBehaviour:
   m_ObjectHideFlags: 0

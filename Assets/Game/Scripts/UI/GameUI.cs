@@ -29,6 +29,12 @@ public class GameUI : MonoBehaviour
 
     [Header("Défi")]
     [SerializeField] private TextMeshProUGUI _challengeText;
+    // AJOUTE (2026-09-15) - conteneur (icone + texte) du rappel de defi dans le
+    // HUD : masque entierement quand le defi de cette heure a deja ete reussi
+    // (voir HideChallengeDisplay, appele par ChallengeManager.RefreshDisplay)
+    // plutot que de laisser un texte "a faire" trompeur puisqu'il ne rapporte
+    // plus rien.
+    [SerializeField] private GameObject _challengeGroup;
 
     [Header("Boss")]
     [SerializeField] private GameObject _bossHPBar;
@@ -47,13 +53,20 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _gameOverEclatsText;
     [SerializeField] private TextMeshProUGUI _gameOverChallengeText;
 
-    [Header("Game Over — Records/Build (parité avec Victoire)")]
-    // AJOUTE - le Game Over affiche desormais les memes informations que la
-    // Victoire (records + build obtenu) : un joueur qui meurt apprend souvent
-    // plus qu'un joueur qui gagne, pas de raison qu'il ait moins d'infos.
-    [SerializeField] private TextMeshProUGUI _gameOverRecordsText;
-    [SerializeField] private TextMeshProUGUI _gameOverBuildListText;
-    [SerializeField] private TextMeshProUGUI _gameOverBuildListText2;
+    [Header("Game Over — Portrait désaturé + grille (parité Victoire, refonte 3 temps)")]
+    // MODIFIE - remplace l'ancien bloc "Records 5 lignes + liste texte de
+    // build" (retiré, même logique que la refonte Victoire : ça "dégonfle le
+    // moment", voir NOTES.md) par le même traitement moderne que Victoire :
+    // portrait du perso (désaturé — c'est une défaite, pas un triomphe) +
+    // grille d'icônes teintées par branche. Réutilise _buildGridSlotPrefab et
+    // _characterPortraits, déjà câblés pour Victoire.
+    [SerializeField] private Image _gameOverPortraitImage;
+    [SerializeField] private Transform _gameOverBuildGridContent;
+    // AJOUTE - teinte multipliée sur le portrait (grisé/désaturé). Un simple
+    // multiply ne désature pas au sens strict (pas de vraie conversion
+    // niveaux de gris) mais assombrit et neutralise assez la couleur pour lire
+    // clairement "défaite" sans dépendre d'un shader dédié ni d'un nouvel asset.
+    [SerializeField] private Color _gameOverPortraitTint = new Color32(0x8A, 0x85, 0x80, 0xFF);
 
     [Header("Game Over — Message d'ambiance")]
     // AJOUTE - message contextuel : record battu/presque battu en priorite
@@ -78,6 +91,9 @@ public class GameUI : MonoBehaviour
     // progression dans le temps plutot que juste dans une partie - meme esprit
     // que le systeme de Reputation/Eclats, applique ici a l'ecran de fin.
     [SerializeField] private TextMeshProUGUI _gameOverAttemptText;
+    // AJOUTE (2026-09-12) - meme compteur cote Victoire, demande explicitement
+    // par l'utilisateur pour la coherence entre les deux ecrans de fin.
+    [SerializeField] private TextMeshProUGUI _victoryAttemptText;
 
     [Header("Verrouillage anti-skip (Rejouer)")]
     // AJOUTE - le bouton Rejouer reste desactive tant que la sequence de
@@ -120,6 +136,14 @@ public class GameUI : MonoBehaviour
     // Le conteneur est masqué pour Aether/Lyra via SetManaShieldAvailable(false).
     [SerializeField] private GameObject _manaShieldContainer;
     [SerializeField] private Image[] _manaShieldPips;
+    // MODIFIE (2026-09-16) - vert plutôt que le cyan générique _filledTierColor
+    // (retour utilisateur : "ce serait mieux de changer la couleur de ces dots
+    // en Vert plutôt qu'en bleu, parce que c'est représentatif de Kael") -
+    // champ dédié pour ne pas changer _filledTierColor, partagé par les pips
+    // Cristal/tier dots/etc. ailleurs dans le HUD. Même famille de teinte que
+    // _tileTintKael (vert des tuiles d'upgrade Kael) mais plus vive/saturée,
+    // pensée pour un pip HUD lumineux plutôt qu'une teinte de fond discrète.
+    [SerializeField] private Color _manaShieldFilledColor = new Color32(0x36, 0xD9, 0x36, 255);
     // Teinte des pips quand le bouclier est cassé (recharge verrouillée) : rouge-gris désaturé.
     [SerializeField] private Color _manaShieldLockedColor = new Color32(0x8A, 0x5A, 0x5A, 200);
 
@@ -137,10 +161,6 @@ public class GameUI : MonoBehaviour
     [Header("Victoire")]
     [SerializeField] private GameObject _victoryPanel;
     [SerializeField] private TextMeshProUGUI _victoryStatsText;
-    [SerializeField] private TextMeshProUGUI _victoryRecordsText;
-    [SerializeField] private TextMeshProUGUI _victoryBuildListText;
-    [SerializeField] private TextMeshProUGUI _victoryBuildListText2; // NOUVEAU
-    [SerializeField] private int _buildListMaxLinesPerColumn = 8;
 
     [Header("Victoire — refonte 3 temps")]
     // AJOUTE - ligne de récap avec du ton (voix des messages de Game Over).
@@ -152,6 +172,13 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Image _victoryPortraitImage;
     [Tooltip("Index 0 = Aether, 1 = Kael, 2 = Lyra. Mêmes sprites que la page de sélection.")]
     [SerializeField] private Sprite[] _characterPortraits;
+    // AJOUTE - phrase de texture affichée UNIQUEMENT quand ni le highlight de
+    // record ni le chip de défi ne sont actifs (victoire "normale", sans rien
+    // d'exceptionnel à mettre en avant) - le panel de gauche a sensiblement
+    // moins de contenu dans ce cas et se sent vide autrement. Jamais affichée
+    // en même temps que l'un des deux autres (l'un ou l'autre suffit déjà à
+    // remplir l'espace).
+    [SerializeField] private TextMeshProUGUI _victoryQuietLineText;
 
     [Header("Grille d'upgrades (fin de partie)")]
     // AJOUTE - remplace la liste de texte par une grille d'icônes compacte
@@ -162,6 +189,18 @@ public class GameUI : MonoBehaviour
     // non assignés si on ne garde que la grille.
     [SerializeField] private Transform _victoryBuildGridContent;
     [SerializeField] private GameObject _buildGridSlotPrefab;
+    // AJOUTE - repli affiché à la place de la grille quand elle est vide (0
+    // upgrade obtenue cette partie) - voir PopulateEmptyBuildState.
+    [SerializeField] private TextMeshProUGUI _victoryEmptyBuildText;
+    [SerializeField] private TextMeshProUGUI _gameOverEmptyBuildText;
+    // AJOUTE (2026-09-12) - "BackgroundBuild" : cadre permanent ajoute a la
+    // main par l'utilisateur derriere la grille du Game Over, pour que les
+    // tuiles ne semblent plus "sortir de nulle part". Ne doit etre visible que
+    // quand la grille contient au moins une upgrade - sinon il reste affiche
+    // en meme temps que le petit cadre "vide" (EmptyBuildBg), ce qui fait
+    // doublon (retour utilisateur). Uniquement Game Over, la Victoire n'a pas
+    // cet objet.
+    [SerializeField] private GameObject _gameOverArsenalFrame;
 
     // Teintes de fond des tuiles, par branche d'upgrade (rouge/vert/bleu/doré,
     // mêmes familles que les parchemins des cartes de level-up).
@@ -241,6 +280,7 @@ public class GameUI : MonoBehaviour
 
     public void UpdateChallengeDisplay(string challengeName, string progressText, bool failed)
     {
+        if (_challengeGroup != null) _challengeGroup.SetActive(true);
         if (_challengeText == null) return;
 
         if (failed)
@@ -253,6 +293,13 @@ public class GameUI : MonoBehaviour
             _challengeText.text = $"{challengeName} — {progressText}";
             _challengeText.color = Color.white;
         }
+    }
+
+    // AJOUTE (2026-09-15) - masque le rappel de defi du HUD (voir
+    // ChallengeManager.RefreshDisplay/IsRewardAlreadyClaimedThisHour).
+    public void HideChallengeDisplay()
+    {
+        if (_challengeGroup != null) _challengeGroup.SetActive(false);
     }
 
     // =====================
@@ -321,8 +368,23 @@ public class GameUI : MonoBehaviour
             if (chipRoot != null)
             {
                 chipRoot.SetActive(true);
-                challengeText.color = _challengeSuccessColor;
-                challengeText.text = $"Défi réussi ! x{rewardPercent:0.00}";
+                // MODIFIE - challengeText.color = _challengeSuccessColor (#FFC94D)
+                // retire : c'est EXACTEMENT la meme teinte que le fond du chip
+                // (ChallengeChipBg, egalement #FFC94D) - le texte devenait
+                // invisible en jeu, contraste nul, alors qu'il restait lisible
+                // dans l'Editeur puisque la couleur authoree du texte (#4A3410,
+                // deja correcte sur les deux panels) n'etait jamais touchee la-bas
+                // (retour utilisateur, bug trouve en jeu). On ne touche plus a
+                // cette couleur ici : #4A3410 est deja pensee pour ce fond.
+                // MODIFIE - "x{rewardPercent:0.00}" affichait litteralement
+                // "x0.10" pour un bonus de +10% (rewardPercent est une
+                // fraction 0-1, pas un multiplicateur) - se lisait comme une
+                // PERTE de 90% plutot qu'un bonus.
+                // MODIFIE (2026-09-13) - "Or xN" au lieu de "+X%" (retour
+                // utilisateur : plus parlant dans le vocabulaire jeu video).
+                // Voir ChallengeManager.FormatRewardMultiplier, partage avec
+                // PauseMenuUI.PullChallengeInfo().
+                challengeText.text = $"Défi réussi ! {ChallengeManager.FormatRewardMultiplier(rewardPercent)}";
             }
 
             yield return StartCoroutine(CountUpNumber(goldText, baseGold, totalGold, _bonusCountUpDuration));
@@ -410,49 +472,26 @@ public class GameUI : MonoBehaviour
         }
 
         if (message == null)
-            message = GameOverMessagePool.GetMessage(deathCause);
+            message = GameOverMessagePool.GetMessage(deathCause, runTime);
 
         _gameOverMessageText.text = message;
         _gameOverMessageText.color = isRecordHighlight ? _challengeSuccessColor : _gameOverMessageDefaultColor;
     }
 
-    // AJOUTE - factorise le calcul des records (deja identique entre Victoire et
-    // Game Over) plutot que de dupliquer la meme logique 2 fois.
-    private void PopulateRecordsText(TextMeshProUGUI recordsText)
+    // AJOUTE - portrait désaturé du perso (temps 2 du Game Over). Même source
+    // que PopulateVictoryPortrait (illustrations de CharacterSelectUI), teinté
+    // pour signaler visuellement "défaite" sans nouvel asset.
+    private void PopulateGameOverPortrait()
     {
-        if (recordsText == null) return;
-        if (MetaProgressionManager.Instance == null || MetaProgressionManager.Instance.Data == null) return;
+        if (_gameOverPortraitImage == null || _characterPortraits == null || _characterPortraits.Length == 0) return;
+        if (MetaProgressionManager.Instance == null) return;
 
-        SaveData data = MetaProgressionManager.Instance.Data;
-        int bestMins = Mathf.FloorToInt(data.bestTime / 60f);
-        int bestSecs = Mathf.FloorToInt(data.bestTime % 60f);
+        int index = Mathf.Clamp(MetaProgressionManager.Instance.GetSelectedCharacterIndex(), 0, _characterPortraits.Length - 1);
+        Sprite portrait = _characterPortraits[index];
+        if (portrait != null)
+            _gameOverPortraitImage.sprite = portrait;
 
-        // MODIFIE - "Runs totales" -> "Parties totales" (preference de
-        // vocabulaire deja donnee : "run" evite dans les textes du jeu). Ajout
-        // des 2 nouveaux records (niveau, or en une partie).
-        recordsText.text = $"Meilleur temps : {bestMins:00}:{bestSecs:00}\nMeilleur kills : {data.bestKills}\nMeilleur niveau : {data.bestLevel}\nMeilleur or en une partie : {data.bestGoldInRun}\nParties totales : {data.totalRuns}";
-    }
-
-    // AJOUTE - meme principe pour la liste de build (decoupage en 2 colonnes
-    // au-dela de _buildListMaxLinesPerColumn), partagee entre Victoire et Game Over.
-    private void PopulateBuildList(TextMeshProUGUI listText, TextMeshProUGUI listText2)
-    {
-        if (listText == null || LevelUpManager.Instance == null) return;
-
-        List<string> lines = LevelUpManager.Instance.GetUpgradesList();
-
-        if (lines.Count <= _buildListMaxLinesPerColumn)
-        {
-            listText.text = string.Join("\n", lines);
-            if (listText2 != null) listText2.text = "";
-        }
-        else
-        {
-            int splitIndex = Mathf.CeilToInt(lines.Count / 2f);
-            listText.text = string.Join("\n", lines.GetRange(0, splitIndex));
-            if (listText2 != null)
-                listText2.text = string.Join("\n", lines.GetRange(splitIndex, lines.Count - splitIndex));
-        }
+        _gameOverPortraitImage.color = _gameOverPortraitTint;
     }
 
     // AJOUTE - grille d'icônes de la build obtenue cette partie. Suit
@@ -460,25 +499,65 @@ public class GameUI : MonoBehaviour
     // fond teinté par branche + icône + pastilles de palier (ou "xN" pour les
     // upgrades à cap élevé, ou losange de déblocage pour les armes à pick séparé).
     // Pas de nom : sur un écran de résultats, l'icône suffit et reste compacte.
-    private void PopulateBuildGrid(Transform gridContent)
+    // MODIFIE - renvoie desormais le nombre de tuiles reellement posees, pour
+    // que l'appelant puisse afficher un etat "vide" explicite (voir
+    // PopulateEmptyBuildState) au lieu de laisser un grand trou a cote du
+    // portrait quand le joueur meurt/gagne sans avoir pris une seule upgrade
+    // (mort tres precoce - trouve en conditions reelles sur le Game Over,
+    // theoriquement possible aussi sur la Victoire meme si beaucoup plus rare).
+    private int PopulateBuildGrid(Transform gridContent)
     {
         foreach (GameObject old in _spawnedBuildGridSlots)
             if (old != null) Destroy(old);
         _spawnedBuildGridSlots.Clear();
 
         if (gridContent == null || _buildGridSlotPrefab == null || LevelUpManager.Instance == null)
-            return;
+            return 0;
 
         System.Collections.Generic.IReadOnlyList<UpgradeData> obtained = LevelUpManager.Instance.ObtainedOrder;
-        if (obtained == null) return;
+        if (obtained == null) return 0;
 
+        int count = 0;
         foreach (UpgradeData upgrade in obtained)
         {
             if (upgrade == null) continue;
             GameObject slotGO = Instantiate(_buildGridSlotPrefab, gridContent);
             ConfigureBuildGridSlot(slotGO, upgrade);
             _spawnedBuildGridSlots.Add(slotGO);
+            count++;
         }
+        return count;
+    }
+
+    // AJOUTE - repli quand la grille est vide (0 upgrade obtenue) : sans ça,
+    // le portrait se retrouve seul dans une grande carte à moitié vide (retour
+    // utilisateur, capture à l'appui). Même famille de correctif que QuietLine
+    // / le repli "tout maxé" du Game Over - ne jamais laisser un bloc de
+    // contenu totalement vide sans une phrase dédiée à la place.
+    //
+    // MODIFIE (2026-09-12) - un temps passe par un parametre alwaysShowFrame
+    // pour garder "EmptyBuildBg" actif en permanence comme fond de l'arsenal,
+    // retire : l'utilisateur a construit a la main un objet dedie
+    // ("BackgroundBuild", cadre noir semi-transparent toujours visible,
+    // separe d'EmptyBuildBg) directement dans la scene pour ce role. Ce script
+    // ne touche pas a BackgroundBuild - EmptyBuildBg reprend donc son
+    // comportement d'origine : actif seulement quand la grille est vide.
+    private void PopulateEmptyBuildState(TextMeshProUGUI emptyText, int tileCount, string[] pool)
+    {
+        if (emptyText == null) return;
+
+        bool isEmpty = tileCount == 0;
+
+        // Image et TextMeshProUGUI ne peuvent pas coexister sur le meme
+        // GameObject (verifie - AddComponent echoue silencieusement dans les
+        // deux sens), donc le fond vit sur le PARENT ("EmptyBuildBg") - meme
+        // pattern deja utilise pour le chip de defi (voir PlayGoldSequence).
+        Image parentImage = emptyText.transform.parent != null ? emptyText.transform.parent.GetComponent<Image>() : null;
+        GameObject toggleRoot = parentImage != null ? emptyText.transform.parent.gameObject : emptyText.gameObject;
+        toggleRoot.SetActive(isEmpty);
+
+        if (isEmpty)
+            emptyText.text = pool[UnityEngine.Random.Range(0, pool.Length)];
     }
 
     private void ConfigureBuildGridSlot(GameObject slotGO, UpgradeData upgrade)
@@ -553,6 +632,22 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // AJOUTE - repli de PlayNextUnlockPreview() quand HasPreview est faux (la
+    // branche active ET les 3 nœuds de Réputation sont entièrement maxés à la
+    // fois - un joueur très avancé peut vraiment l'atteindre, observé en
+    // conditions réelles pendant cette passe). Ton positif/fier plutôt qu'un
+    // trou vide : le joueur a littéralement tout fini côté progression pour
+    // ce personnage, ça mérite d'être dit.
+    // MODIFIE (2026-09-12, 3e passe) - "Il ne reste que la gloire, ici."
+    // retiree sur demande utilisateur.
+    private static readonly string[] _gameOverMaxedOutLines =
+    {
+        "Tu as tout donné à cette branche. Littéralement.",
+        "Plus rien à débloquer ici — change de personnage pour la suite.",
+        "Cette branche n'a plus de secret pour toi.",
+        "Arbre et Réputation à fond. Change de perso si tu veux du neuf.",
+    };
+
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
     // une fois terminee, revele l'apercu du prochain palier de progression -
     // le tout dans une seule coroutine pour garder ShowGameOver() simple.
@@ -573,25 +668,63 @@ public class GameUI : MonoBehaviour
     // l'offrir. Ne fait rien si aucun palier n'est trouvable (arbre + Reputation
     // entierement maxes - cas rare mais gere proprement plutot que d'afficher
     // un texte vide ou incoherent).
+    // MODIFIE - verifie d'abord ConsumePendingUnlockNotification() : si un
+    // personnage vient d'etre debloque pendant CETTE partie (ex. Kael au
+    // spawn du Boss 2), l'annoncer ici prend le pas sur l'apercu du prochain
+    // palier - montrer "encore X Or pour debloquer Y" juste apres avoir
+    // debloque quelqu'un serait anticlimatique. Voir NOTES.md / V13 §"Systeme
+    // de deblocage des personnages" - c'etait deja prevu, jamais cable.
     private IEnumerator PlayNextUnlockPreview()
     {
         if (_gameOverNextUnlockText == null) yield break;
 
-        MetaProgressionManager.NextUnlockPreview preview = MetaProgressionManager.Instance != null
-            ? MetaProgressionManager.Instance.GetNextUnlockPreview()
+        string unlockedCharacter = MetaProgressionManager.Instance != null
+            ? MetaProgressionManager.Instance.ConsumePendingUnlockNotification()
             : null;
 
-        if (preview == null || !preview.HasPreview)
+        string text;
+        bool highlight = false;
+
+        if (unlockedCharacter != null)
         {
-            _gameOverNextUnlockText.gameObject.SetActive(false);
-            yield break;
+            text = $"Nouveau personnage débloqué : {unlockedCharacter} !";
+            highlight = true;
+        }
+        else
+        {
+            MetaProgressionManager.NextUnlockPreview preview = MetaProgressionManager.Instance != null
+                ? MetaProgressionManager.Instance.GetNextUnlockPreview()
+                : null;
+
+            // MODIFIE - avant, masquait completement ce texte si HasPreview est
+            // faux (branche + Reputation entierement maxees - un joueur tres
+            // avance peut vraiment atteindre ce cas, verifie en conditions
+            // reelles). Repli sur une phrase dediee plutot que de laisser un
+            // trou : cette ligne comble sinon systematiquement l'espace du
+            // panel de gauche (voir le meme souci deja traite cote Victoire
+            // avec QuietLine), pas de raison que le "cas parfait" en soit prive.
+            if (preview == null || !preview.HasPreview)
+            {
+                text = _gameOverMaxedOutLines[UnityEngine.Random.Range(0, _gameOverMaxedOutLines.Length)];
+            }
+            else
+            {
+                string currencyLabel = preview.IsGoldCurrency ? "Or" : "Éclats";
+                text = preview.AmountStillNeeded > 0
+                    ? $"Encore {preview.AmountStillNeeded} {currencyLabel} pour débloquer {preview.NodeName}"
+                    : $"De quoi débloquer {preview.NodeName} dès maintenant !";
+            }
         }
 
-        string currencyLabel = preview.IsGoldCurrency ? "Or" : "Éclats";
-
-        _gameOverNextUnlockText.text = preview.AmountStillNeeded > 0
-            ? $"Encore {preview.AmountStillNeeded} {currencyLabel} pour débloquer {preview.NodeName}"
-            : $"De quoi débloquer {preview.NodeName} dès maintenant !";
+        // MODIFIE - #33271A (encre foncée, même teinte que StatStrip - déjà
+        // confirmée lisible sur ce fond) plutôt que l'ink-soft #5A4834 d'origine :
+        // retour utilisateur avec capture à l'appui, ce texte était presque
+        // illisible sur la carte assombrie du Game Over. Le fond étant plus
+        // sombre que celui de la Victoire, le texte doit compenser en contraste,
+        // pas juste reprendre la même nuance "discrète" qui marchait sur un fond
+        // plus clair.
+        _gameOverNextUnlockText.text = text;
+        _gameOverNextUnlockText.color = highlight ? _challengeSuccessColor : new Color32(0x33, 0x27, 0x1A, 0xFF);
 
         CanvasGroup cg = _gameOverNextUnlockText.GetComponent<CanvasGroup>();
         if (cg == null) cg = _gameOverNextUnlockText.gameObject.AddComponent<CanvasGroup>();
@@ -614,15 +747,49 @@ public class GameUI : MonoBehaviour
     // QUE quand "La Source Corrompue" (3ᵉ boss) est vaincue, donc pas besoin de
     // paramétrer quel boss - c'est toujours le même. Même famille de ton que
     // GameOverMessagePool (familier, direct, sec), version positive.
+    // MODIFIE (2026-09-12) - 4 lignes retirees sur demande utilisateur
+    // (relecture "jeu serieux / Steam") ; les 3 restantes sont volontairement
+    // celles ancrees dans le lore ("La Source Corrompue", "la corruption") -
+    // registre prefere a un ton plus generique/sportif ("zero pitie", etc.).
     private static readonly string[] _victoryClosers =
     {
         "La Source Corrompue n'a pas tenu la distance.",
-        "Le rift s'est refermé pour de bon.",
         "Elle ne se relèvera pas.",
-        "Trois boss, zéro pitié.",
-        "Une victoire nette, sans trembler.",
         "La corruption s'éteint ici.",
-        "Le cristal a tenu bon jusqu'au bout.",
+    };
+
+    // AJOUTE - pool pour PopulateEmptyBuildState côté Victoire (0 upgrade
+    // obtenue mais victoire quand même - rare mais possible en théorie sur un
+    // run très rapide/chanceux avant le boss 3).
+    private static readonly string[] _victoryEmptyBuildLines =
+    {
+        "Une victoire sans la moindre compétence. Chapeau.",
+        "Aucune compétence récupérée. Le style, ça compte double.",
+        "Rien pris en cours de route, et pourtant tu es là.",
+    };
+
+    // AJOUTE - pool pour PopulateEmptyBuildState côté Game Over (mort très
+    // précoce, avant le premier level-up - confirmé en conditions réelles,
+    // pas juste théorique).
+    private static readonly string[] _gameOverEmptyBuildLines =
+    {
+        "Pas eu le temps de récupérer la moindre compétence.",
+        "Mort avant le premier level-up. Ça arrive.",
+        "Aucune compétence récupérée cette fois.",
+    };
+
+    // AJOUTE - pool dédié à PopulateVictoryQuietLine (voir plus bas). Sujet
+    // volontairement différent de _victoryClosers ci-dessus (qui parle déjà du
+    // boss vaincu) : ici on reconnaît l'absence de record/défi sans plomber le
+    // ton, même famille de voix que le reste (familier, direct, un peu de
+    // personnalité, jamais ronflant).
+    // MODIFIE (2026-09-12) - 4 lignes retirees sur demande utilisateur
+    // (relecture "jeu serieux / Steam").
+    private static readonly string[] _victoryQuietLines =
+    {
+        "Pas de record aujourd'hui, mais la victoire est bien réelle.",
+        "Rien d'exceptionnel à signaler, à part la victoire elle-même.",
+        "Aucun exploit cette fois — juste une victoire de plus.",
     };
 
     // AJOUTE - récap avec du ton (temps 1), remplace l'ancien SubtitleText statique.
@@ -640,9 +807,12 @@ public class GameUI : MonoBehaviour
     // Over déjà en place - même logique de détection dupliquée ici sciemment.
     // Masqué si aucun record n'est battu (pas de highlight "presque" côté Victoire,
     // la victoire elle-même porte déjà la note positive).
-    private void PopulateVictoryRecordHighlight(float runTime, int killCount, int levelReached, int goldThisRun)
+    // MODIFIE - renvoie désormais un bool (record affiché ou non) pour que
+    // ShowVictory puisse décider d'afficher PopulateVictoryQuietLine à la place
+    // quand ni le record ni le défi ne sont là.
+    private bool PopulateVictoryRecordHighlight(float runTime, int killCount, int levelReached, int goldThisRun)
     {
-        if (_victoryRecordHighlight == null) return;
+        if (_victoryRecordHighlight == null) return false;
 
         string message = null;
 
@@ -676,6 +846,26 @@ public class GameUI : MonoBehaviour
         _victoryRecordHighlight.SetActive(message != null);
         if (message != null && _victoryRecordHighlightText != null)
             _victoryRecordHighlightText.text = message;
+
+        return message != null;
+    }
+
+    // AJOUTE - phrase de texture (temps 1) affichée UNIQUEMENT quand ni le
+    // highlight de record ni le chip de défi ne sont présents cette partie -
+    // ces deux blocs suffisent déjà à remplir le panel de gauche quand l'un
+    // d'eux est là ; sans les deux, le contenu restant (titre + cartes Or/
+    // Éclats + stat strip) laisse un vide sensible. Une phrase choisie au
+    // hasard comble cet espace sans réintroduire de stats permanentes (voir
+    // maquette validée : les records à vie n'ont volontairement pas leur place
+    // ici, "ça dégonflerait le moment").
+    private void PopulateVictoryQuietLine(bool recordShown, bool challengeCompleted)
+    {
+        if (_victoryQuietLineText == null) return;
+
+        bool showQuietLine = !recordShown && !challengeCompleted;
+        _victoryQuietLineText.gameObject.SetActive(showQuietLine);
+        if (showQuietLine)
+            _victoryQuietLineText.text = _victoryQuietLines[UnityEngine.Random.Range(0, _victoryQuietLines.Length)];
     }
 
     // AJOUTE - portrait du perso victorieux (temps 2). Réutilise les illustrations
@@ -707,15 +897,20 @@ public class GameUI : MonoBehaviour
         if (_victoryStatsText != null)
             _victoryStatsText.text = $"Survie {mins:00}:{secs:00}    ·    Kills {killCount}    ·    Niveau {level}    ·    Boss 3/3";
 
-        // SUPPRIME - l'ancien bloc Records (5 lignes) et la liste texte de build
-        // n'existent plus dans la refonte 3-temps ; _victoryRecordsText et
-        // _victoryBuildListText/2 ne sont désormais plus assignés dans la scène.
-        // Remplacés par PopulateVictoryRecordHighlight (record battu CETTE partie
-        // uniquement) et PopulateBuildGrid (grille d'icônes) ci-dessous.
         PopulateVictoryRecap(runTimer, killCount);
-        PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
+        bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
+        PopulateVictoryQuietLine(recordShown, challengeCompleted);
         PopulateVictoryPortrait();
-        PopulateBuildGrid(_victoryBuildGridContent);
+        int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
+        PopulateEmptyBuildState(_victoryEmptyBuildText, victoryTileCount, _victoryEmptyBuildLines);
+
+        // AJOUTE - "Tentative n°X", meme logique que Game Over (voir
+        // _gameOverAttemptText). Data.totalRuns a deja ete incremente par
+        // SaveRunResults() avant l'appel a cette methode.
+        if (_victoryAttemptText != null && MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
+        {
+            _victoryAttemptText.text = $"Tentative n°{MetaProgressionManager.Instance.Data.totalRuns}";
+        }
 
         // MODIFIE - le bouton Rejouer reste verrouille jusqu'a la fin de la
         // sequence de reveal (voir PlayVictoryGoldSequenceThenReveal), meme
@@ -792,17 +987,61 @@ public class GameUI : MonoBehaviour
             _concentrationContainer.SetActive(available);
     }
 
+    // MODIFIE (2026-09-16) - retour utilisateur : "il y a écrit Concentration au
+    // lieu de 0%... l'espace donné est fait pour des pourcentages, c'est pas
+    // assez grand pour Concentration". Le texte affiche désormais toujours un
+    // pourcentage, y compris "0%".
     public void UpdateConcentration(float bonus)
     {
         if (_concentrationText == null) return;
 
+        // Une descente animée (PlayConcentrationHitDrop) est en cours : elle a la
+        // main sur le texte/la couleur jusqu'à sa fin, ne pas l'interrompre par un
+        // rafraîchissement normal qui écraserait l'animation par un saut.
+        if (_concentrationDropCoroutine != null) return;
+
+        SetConcentrationDisplay(bonus);
+    }
+
+    private void SetConcentrationDisplay(float bonus)
+    {
         int pct = Mathf.RoundToInt(bonus * 100f);
-        _concentrationText.text = pct > 0 ? $"{pct}%" : "Concentration";
+        _concentrationText.text = $"{pct}%";
 
         // Réf. de teinte : plafond max du nœud (0.50). En dessous = interpolation
         // cyan -> doré, au plafond = doré plein.
         float t = Mathf.Clamp01(bonus / 0.5f);
         _concentrationText.color = Color.Lerp(_filledTierColor, _maxTierColor, t);
+    }
+
+    // AJOUTE (2026-09-16) - descente animée rapide du pourcentage affiché jusqu'à
+    // 0% quand le joueur se fait toucher (voir PlayerBuffs.NotifyDamaged), plutôt
+    // qu'un saut instantané ou le mot "Concentration" - la perte doit se
+    // ressentir. La valeur de jeu réelle (dégâts) est déjà retombée à 0 avant
+    // l'appel ; seule l'animation d'affichage est décalée dans le temps.
+    private Coroutine _concentrationDropCoroutine;
+    private const float ConcentrationDropDuration = 0.25f;
+
+    public void PlayConcentrationHitDrop(float fromBonus)
+    {
+        if (_concentrationText == null) return;
+        if (_concentrationDropCoroutine != null) StopCoroutine(_concentrationDropCoroutine);
+        _concentrationDropCoroutine = StartCoroutine(ConcentrationDropRoutine(fromBonus));
+    }
+
+    private IEnumerator ConcentrationDropRoutine(float fromBonus)
+    {
+        float elapsed = 0f;
+        while (elapsed < ConcentrationDropDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float bonus = Mathf.Lerp(fromBonus, 0f, elapsed / ConcentrationDropDuration);
+            SetConcentrationDisplay(bonus);
+            yield return null;
+        }
+
+        SetConcentrationDisplay(0f);
+        _concentrationDropCoroutine = null;
     }
 
     // AJOUTE - Bouclier de Mana (Kael). SetManaShieldAvailable masque tout le
@@ -830,7 +1069,7 @@ public class GameUI : MonoBehaviour
             if (!filled)
                 _manaShieldPips[i].color = _emptyTierColor;
             else
-                _manaShieldPips[i].color = locked ? _manaShieldLockedColor : _filledTierColor;
+                _manaShieldPips[i].color = locked ? _manaShieldLockedColor : _manaShieldFilledColor;
         }
     }
 
@@ -918,20 +1157,31 @@ public class GameUI : MonoBehaviour
 
     // MODIFIE - ajout de "deathCause" (transmis par HealthSystem -> GameManager)
     // pour le message d'ambiance contextuel.
-    public void ShowGameOver(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, float challengeRewardPercent, string deathCause)
+    // MODIFIE - ajout de "bossKillCount" (deja suivi par GameManager, jamais
+    // transmis jusqu'ici) pour que le StatStrip affiche la vraie progression
+    // de la run ("Boss 1/3", "Boss 2/3"...) au lieu d'un "Boss 3/3" fige qui
+    // n'aurait jamais eu de sens ici (contrairement a la Victoire, qui ne se
+    // declenche QUE quand les 3 boss sont vaincus).
+    public void ShowGameOver(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, float challengeRewardPercent, string deathCause, int bossKillCount)
     {
         if (_gameOverPanel != null) _gameOverPanel.SetActive(true);
 
         int mins = Mathf.FloorToInt(runTimer / 60f);
         int secs = Mathf.FloorToInt(runTimer % 60f);
 
+        // MODIFIE - refonte 3-temps, meme format compact que la Victoire (une
+        // seule ligne) plutot que le pave de 3 lignes d'avant.
         if (_statsText != null)
-        {
-            _statsText.text = $"Temps de survie : {mins:00}:{secs:00}\nEnnemis tués : {killCount}\nNiveau atteint : {level}";
-        }
+            _statsText.text = $"Survie {mins:00}:{secs:00}    ·    Kills {killCount}    ·    Niveau {level}    ·    Boss {bossKillCount}/3";
 
-        PopulateRecordsText(_gameOverRecordsText);
-        PopulateBuildList(_gameOverBuildListText, _gameOverBuildListText2);
+        PopulateGameOverPortrait();
+        int gameOverTileCount = PopulateBuildGrid(_gameOverBuildGridContent);
+        PopulateEmptyBuildState(_gameOverEmptyBuildText, gameOverTileCount, _gameOverEmptyBuildLines);
+        // AJOUTE - le cadre "BackgroundBuild" (ajoute a la main par
+        // l'utilisateur) n'a de sens que derriere des tuiles reelles ; a vide,
+        // seul le petit cadre EmptyBuildBg (gere ci-dessus) doit rester.
+        if (_gameOverArsenalFrame != null)
+            _gameOverArsenalFrame.SetActive(gameOverTileCount > 0);
 
         // MODIFIE - passe desormais le niveau atteint et l'Or total (bonus de
         // defi inclus) pour couvrir les 4 records au lieu de 2.

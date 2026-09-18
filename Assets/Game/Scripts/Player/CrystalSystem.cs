@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CrystalSystem : MonoBehaviour
 {
@@ -20,6 +21,10 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private float _novaDamage = 100f;
     [SerializeField] private float _novaRadius = 3f;
     [SerializeField] private GameObject _novaVFXPrefab;
+    [Tooltip("Durée de l'expansion visuelle de la Nova (0 -> rayon max). Retour utilisateur : 0,3s d'origine était trop rapide, 0,7s presque parfait mais un chouïa trop lent.")]
+    [SerializeField] private float _novaVFXDuration = 0.55f;
+    [Tooltip("Hauteur Y à laquelle le VFX de la Nova est instancié - même logique que WeaponMudPuddle._groundY : le pivot du joueur (transform.position) est à hauteur de torse (~1,5), pas au sol, donc un VFX plaqué au sol comme une onde de choc doit utiliser sa propre hauteur au lieu de suivre le pivot.")]
+    [SerializeField] private float _novaGroundY = 0.2f;
 
     [Header("Ulti — VFX")]
     [SerializeField] private GameObject _ultVFXPrefab;
@@ -207,9 +212,26 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerNova()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _novaRadius);
+        // MODIFIE (2026-09-16) - retour utilisateur : "les dégâts s'infligent
+        // instant, alors que la zone n'a pas forcément atteint les ennemis".
+        // Les dégâts étaient appliqués sur tout _novaRadius d'un coup, pendant
+        // que le VFX grandissait séparément sur _novaVFXDuration - désynchro
+        // visible. Les dégâts suivent maintenant le rayon réel du VFX, frame
+        // par frame (voir NovaRoutine), un ennemi n'est touché qu'au moment où
+        // l'anneau l'atteint visuellement.
+        if (_novaVFXPrefab != null)
+            StartCoroutine(NovaRoutine());
+        else
+            ApplyNovaDamage(_novaRadius, null); // pas de VFX à synchroniser : dégâts instantanés comme avant
+    }
+
+    private void ApplyNovaDamage(float radius, HashSet<Collider> alreadyHit)
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, radius);
         foreach (Collider hit in hits)
         {
+            if (alreadyHit != null && !alreadyHit.Add(hit)) continue; // déjà touché par cette vague
+
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
@@ -219,22 +241,29 @@ public class CrystalSystem : MonoBehaviour
                 if (boss != null) boss.TakeDamage(_novaDamage);
             }
         }
-
-        if (_novaVFXPrefab != null)
-            StartCoroutine(ShowNovaVFX());
     }
 
-    private IEnumerator ShowNovaVFX()
+    private IEnumerator NovaRoutine()
     {
-        GameObject vfx = Instantiate(_novaVFXPrefab, transform.position, Quaternion.identity);
+        // MODIFIE (2026-09-17) - retour utilisateur : "je veux que tu changes en
+        // Y la position de la Nova, comme pour les flaques de boue". Le pivot du
+        // joueur (transform.position.y) est à hauteur de torse (~1,5), pas au
+        // sol - le VFX flottait donc en l'air au lieu d'être une onde de choc au
+        // sol. Même logique que WeaponMudPuddle._groundY (spawnPos.y = _groundY).
+        Vector3 vfxSpawnPos = transform.position;
+        vfxSpawnPos.y = _novaGroundY;
+        GameObject vfx = Instantiate(_novaVFXPrefab, vfxSpawnPos, Quaternion.identity);
         float elapsed = 0f;
-        float duration = 0.3f;
+        var alreadyHit = new HashSet<Collider>();
 
-        while (elapsed < duration)
+        while (elapsed < _novaVFXDuration)
         {
             elapsed += Time.deltaTime;
-            float scale = Mathf.Lerp(0f, _novaRadius * 2f, elapsed / duration);
-            vfx.transform.localScale = new Vector3(scale, 0.05f, scale);
+            float currentRadius = Mathf.Lerp(0f, _novaRadius, elapsed / _novaVFXDuration);
+            vfx.transform.localScale = new Vector3(currentRadius * 2f, 0.05f, currentRadius * 2f);
+
+            ApplyNovaDamage(currentRadius, alreadyHit);
+
             yield return null;
         }
         Destroy(vfx);

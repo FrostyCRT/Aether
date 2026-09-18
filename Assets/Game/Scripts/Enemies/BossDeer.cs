@@ -61,8 +61,15 @@ public class BossDeer : BossBase
     protected override void Start()
     {
         _bossName = "Le Cerf Ancestral";
-        // MODIFIE - x10, cf. rescale global des degats/PV
-        _maxHealth = 500f;
+        // MODIFIE - 500 -> 50000. L'ancienne valeur (juste x10 depuis un 50
+        // pre-rescale) etait restee figee ici et ecrasait silencieusement
+        // toute valeur du prefab a chaque Start() - le commentaire dans
+        // BossCorruptedSource.Start() documente explicitement "boss 2
+        // (50000)" comme reference du vrai equilibrage (boss 1 20000 -> boss 2
+        // 50000 -> boss 3 125000, progression croissante voulue), jamais
+        // repercute ici. Le Cerf tournait donc reellement a 500 PV depuis ce
+        // rescale, pas 50000 - largement sous les deux autres boss.
+        _maxHealth = 50000f;
         _moveSpeed = 4f;
 
         base.Start();

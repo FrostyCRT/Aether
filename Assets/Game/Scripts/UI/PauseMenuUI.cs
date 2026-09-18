@@ -45,12 +45,63 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _goldText;
 
     [Header("Défi (Header)")]
-    // AJOUTE - affichage detaille du defi de la run dans le menu pause : nom,
-    // difficulte, description complete, recompense chiffree, et statut (En
-    // cours / Echoue). Complementaire au rappel court deja affiche dans le HUD
-    // (GameUI.UpdateChallengeDisplay) - ici c'est la version detaillee, lue
-    // uniquement quand le joueur ouvre la pause.
+    // AJOUTE - affichage detaille du defi de la partie dans le menu pause : nom,
+    // difficulte, description complete, recompense chiffree. Complementaire au
+    // rappel court deja affiche dans le HUD (GameUI.UpdateChallengeDisplay) -
+    // ici c'est la version detaillee, lue uniquement quand le joueur ouvre la
+    // pause.
+    // MODIFIE - le Statut (En cours/Echoue) est sorti de ce bloc de texte et
+    // vit desormais dans _challengeStatusText, une colonne separee a droite
+    // (avec un separateur vertical entre les deux) : sur 4 lignes empilees,
+    // le bloc etait trop serre en hauteur dans l'espace dedie du HeaderRow
+    // (retour utilisateur). 3 lignes ici + 1 ligne a part laisse largement
+    // plus de respiration a chaque ligne.
     [SerializeField] private TextMeshProUGUI _challengeInfoText;
+    [SerializeField] private TextMeshProUGUI _challengeStatusText;
+    [SerializeField] private Image _challengeSeparator;
+    // RETIRE (2026-09-14) - le positionnement/redimensionnement du texte de defi
+    // en code (icone->texte, largeur dispo avant le separateur) ecrasait a
+    // chaque ouverture du menu pause les ajustements manuels que l'utilisateur
+    // fait a la main dans l'Inspector sur ChallengeHeaderIcon/ChallengeInfoText/
+    // ChallengeSeparator/ChallengeStatusText (retour utilisateur : "j'ai refait
+    // des ajustements mais quand j'ai lance ils se sont enleves"). Position et
+    // taille de ChallengeInfoText restent entierement figees dans la scene
+    // (Inspector). Le retrecissement de police pour les descriptions trop
+    // longues reste actif, mais via le Auto Size natif de TMP configure une
+    // bonne fois dans l'Inspector (min=18, max=21) plutot que pose en code a
+    // chaque frame.
+    // AJOUTE (2026-09-15) - le separateur ET la colonne Statut, eux, suivent
+    // automatiquement la fin REELLE du texte affiche (retour utilisateur :
+    // "l'encrage doit etre auto... la barre verticale et le statut se decale
+    // automatiquement... selon la fin du texte de description le plus long").
+    // Contrairement a la tentative precedente (retiree), ceci ne touche PAS a
+    // la position/taille de ChallengeInfoText lui-meme - seuls le separateur
+    // et le statut bougent, voir PositionSeparatorAndStatus().
+    [Tooltip("Ecart entre la fin reelle du texte de defi et le separateur vertical.")]
+    [SerializeField] private float _challengeTextToSeparatorGap = 24f;
+    [Tooltip("Ecart entre le separateur vertical et le debut de la colonne Statut.")]
+    [SerializeField] private float _challengeSeparatorToStatusGap = 24f;
+
+    [Header("Défi - couleurs de difficulte")]
+    // AJOUTE - code couleur par palier, pour que la difficulte du defi actif
+    // se voie vraiment d'un coup d'oeil (retour utilisateur) plutot que de
+    // reposer uniquement sur le mot "Facile/Moyen/Difficile" en texte neutre.
+    [SerializeField] private Color _difficultyEasyColor = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54
+    [SerializeField] private Color _difficultyMediumColor = new Color(0.910f, 0.639f, 0.239f); // #E8A33D
+    [SerializeField] private Color _difficultyHardColor = new Color(0.710f, 0.325f, 0.243f);   // #B5533E (meme rouille que le titre Game Over)
+    [SerializeField] private Color _challengeStatusFailedColor = new Color(0.710f, 0.325f, 0.243f); // #B5533E
+    // MODIFIE (2026-09-13) - blanc pur (retour utilisateur) au lieu de la
+    // creme d'origine (#F2EDD9), sur les deux textes de base (nom/description/
+    // recompense et statut "En cours") - seuls la difficulte et le statut
+    // "Echoue" gardent une couleur dediee.
+    [SerializeField] private Color _challengeInfoTextColor = Color.white;
+    [SerializeField] private Color _challengeStatusNormalColor = Color.white;
+    // AJOUTE (2026-09-13) - troisieme etat du Statut, retour utilisateur : le
+    // defi peut deja etre acquis EN COURS de partie (ex. "Vaincre 1 boss"
+    // apres avoir tue un boss) sans attendre la fin - voir
+    // ChallengeManager.IsCurrentlySucceeding(). Meme vert que la difficulte
+    // Facile, mais champ separe pour pouvoir l'ajuster independamment.
+    [SerializeField] private Color _challengeStatusSuccessColor = new Color(0.435f, 0.749f, 0.329f); // #6FBF54
 
     [Header("Animation d'ouverture - fond et panneau")]
     [SerializeField] private Image _dimBackground;
@@ -278,15 +329,20 @@ public class PauseMenuUI : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Défi de la run - affichage détaillé
+    // Défi de la partie - affichage détaillé
     // ------------------------------------------------------------------
 
-    // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte,
-    // description complete, recompense chiffree (via
-    // ChallengeManager.GetCurrentRewardPercent()), et statut actuel. Appele a
-    // chaque ouverture du menu pause, comme PullLiveStats().
+    // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte
+    // (colore selon _difficultyXxxColor - retour utilisateur, "montrer
+    // vraiment si il est difficile ou pas"), description complete, recompense
+    // chiffree (via ChallengeManager.GetCurrentRewardPercent()). Le Statut vit
+    // a part dans _challengeStatusText (voir PullChallengeStatus) - 3 lignes
+    // ici au lieu de 4, plus de place par ligne dans l'espace dedie du
+    // HeaderRow. Appele a chaque ouverture du menu pause, comme PullLiveStats().
     private void PullChallengeInfo()
     {
+        PullChallengeStatus();
+
         if (_challengeInfoText == null) return;
 
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
@@ -295,25 +351,163 @@ public class PauseMenuUI : MonoBehaviour
             return;
         }
 
+        // AJOUTE (2026-09-15) - si le defi de cette heure a deja ete reussi
+        // lors d'une run precedente (meme heure), le refaire ne rapporte plus
+        // rien (ChallengeManager.ApplyGoldReward l'ignore deja) - le retour
+        // utilisateur demande explicitement de ne plus le presenter comme "a
+        // faire" pour le reste de l'heure, avec un message d'attente a la
+        // place. PullChallengeStatus() a deja cache separateur/statut dans ce
+        // cas (voir plus bas).
+        if (ChallengeManager.Instance.IsRewardAlreadyClaimedThisHour)
+        {
+            int minutes = ChallengeManager.Instance.GetMinutesUntilNextChallenge();
+            _challengeInfoText.color = _challengeInfoTextColor;
+            // MODIFIE (2026-09-15) - minutes <= 0 (voir GetMinutesUntilNextChallenge)
+            // signifie qu'on a deja depasse l'heure de bascule EN COURS DE RUN -
+            // le nouveau defi est deja "du" mais ne sera tire qu'au prochain
+            // chargement de la scene Jeu, jamais un compte a rebours fige et
+            // trompeur ("moins d'une minute" pendant potentiellement des heures).
+            _challengeInfoText.text = minutes > 0
+                ? $"Défi déjà réussi cette heure !\nNouveau défi dans {minutes} min."
+                : "Défi déjà réussi cette heure !\nNouveau défi à ta prochaine partie !";
+            return;
+        }
+
         ChallengeDefinition challenge = ChallengeManager.Instance.CurrentChallenge;
         string difficultyLabel = GetDifficultyLabel(challenge.difficulty);
-        int rewardPercent = Mathf.RoundToInt(ChallengeManager.Instance.GetCurrentRewardPercent() * 100f);
-        string statusLabel = ChallengeManager.Instance.IsFailed ? "Échoué" : "En cours";
+        string difficultyColorHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(challenge.difficulty));
+        // MODIFIE (2026-09-13) - "Nom : Niv. Difficulte" au lieu de "Nom
+        // (Difficulte)" (retour utilisateur) ; recompense en "Or xN" au lieu
+        // de "+X%" (voir ChallengeManager.FormatRewardMultiplier).
+        string rewardText = ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent());
 
+        _challengeInfoText.color = _challengeInfoTextColor;
         _challengeInfoText.text =
-            $"{challenge.displayName} ({difficultyLabel})\n" +
+            $"{challenge.displayName} : Niv. <color=#{difficultyColorHex}>{difficultyLabel}</color>\n" +
             $"{challenge.description}\n" +
-            $"Récompense : +{rewardPercent}% de l'Or ramassé\n" +
-            $"Statut : {statusLabel}";
+            $"Récompense : {rewardText}";
+        // Position et taille de ChallengeInfoText restent figees dans
+        // l'Inspector - seuls le separateur et le statut s'ajustent, voir
+        // PositionSeparatorAndStatus().
+        PositionSeparatorAndStatus();
     }
 
+    // AJOUTE - colonne "Statut" separee (voir _challengeStatusText), centree
+    // verticalement a droite du separateur. Rouge (_challengeStatusFailedColor,
+    // meme rouille que le titre Game Over) si echoue, couleur normale sinon -
+    // le mot seul ne suffisait pas a alerter au premier coup d'oeil.
+    // MODIFIE (2026-09-13) - 3e etat "Reussi" (vert) : le statut restait
+    // bloque sur "En cours" meme quand la condition etait deja acquise en
+    // cours de partie (ex. "Vaincre 1 boss" apres un boss tue) - retour
+    // utilisateur. Voir ChallengeManager.IsCurrentlySucceeding().
+    // MODIFIE (2026-09-15) - separateur ET statut caches (pas seulement le
+    // statut mis a vide) quand le defi de cette heure a deja ete reussi :
+    // PullChallengeInfo affiche a la place un message "Nouveau defi dans X
+    // min", la colonne Statut n'a plus de sens dans cet etat.
+    private void PullChallengeStatus()
+    {
+        if (_challengeStatusText == null) return;
+
+        bool hasChallenge = ChallengeManager.Instance != null && ChallengeManager.Instance.CurrentChallenge != null;
+        bool alreadyClaimed = hasChallenge && ChallengeManager.Instance.IsRewardAlreadyClaimedThisHour;
+        bool showStatusColumn = hasChallenge && !alreadyClaimed;
+
+        if (_challengeSeparator != null) _challengeSeparator.gameObject.SetActive(showStatusColumn);
+
+        if (!showStatusColumn)
+        {
+            _challengeStatusText.text = "";
+            return;
+        }
+
+        string statusLabel;
+        Color statusColor;
+        if (ChallengeManager.Instance.IsFailed)
+        {
+            statusLabel = "Échoué";
+            statusColor = _challengeStatusFailedColor;
+        }
+        else if (ChallengeManager.Instance.IsCurrentlySucceeding())
+        {
+            statusLabel = "Réussi";
+            statusColor = _challengeStatusSuccessColor;
+        }
+        else
+        {
+            statusLabel = "En cours";
+            statusColor = _challengeStatusNormalColor;
+        }
+
+        string colorHex = ColorUtility.ToHtmlStringRGB(statusColor);
+        _challengeStatusText.text = $"Statut\n<color=#{colorHex}>{statusLabel}</color>";
+    }
+
+    // AJOUTE (2026-09-15) - decale le separateur vertical ET la colonne Statut
+    // pour qu'ils suivent la fin REELLE du texte affiche (retour utilisateur),
+    // plutot que de rester a une position fixe quelle que soit la longueur de
+    // la description. ChallengeInfoText, lui, ne bouge pas (position/taille
+    // figees dans l'Inspector - voir plus haut) : seule sa police peut varier
+    // (Auto Size natif de TMP), donc la largeur reellement occupee varie d'un
+    // defi a l'autre meme si la boite qui le contient ne change pas.
+    // ForceMeshUpdate() avant de mesurer : sans ca, GetPreferredValues()
+    // utiliserait encore la taille de police d'AVANT le changement de texte
+    // qu'on vient de faire (TMP ne recalcule qu'au prochain passage de rendu,
+    // pas de facon synchrone des qu'on assigne .text).
+    private void PositionSeparatorAndStatus()
+    {
+        if (_challengeInfoText == null || _challengeSeparator == null || _challengeStatusText == null) return;
+
+        _challengeInfoText.ForceMeshUpdate();
+
+        RectTransform textRt = _challengeInfoText.rectTransform;
+        float widest = 0f;
+        foreach (string line in _challengeInfoText.text.Split('\n'))
+        {
+            Vector2 pref = _challengeInfoText.GetPreferredValues(line, 0f, 0f);
+            if (pref.x > widest) widest = pref.x;
+        }
+
+        // Pivot.x=0 sur ChallengeInfoText : anchoredPosition.x EST deja son
+        // bord gauche.
+        float textRight = textRt.anchoredPosition.x + widest;
+
+        RectTransform sepRt = _challengeSeparator.rectTransform;
+        RectTransform statusRt = _challengeStatusText.rectTransform;
+        RectTransform block = textRt.parent as RectTransform;
+        float blockWidth = block != null ? block.rect.width : 0f;
+
+        // Separateur : pivot 0.5/ancrage point a gauche du bloc -
+        // anchoredPosition.x EST le centre de sa propre barre.
+        float sepCenterX = textRight + _challengeTextToSeparatorGap + sepRt.sizeDelta.x / 2f;
+        sepRt.anchoredPosition = new Vector2(sepCenterX, sepRt.anchoredPosition.y);
+
+        // Statut : pivot.x=1/ancrage a DROITE du bloc - anchoredPosition.x est
+        // mesure depuis le bord droit du bloc, d'ou la conversion via blockWidth.
+        float statusLeft = sepCenterX + sepRt.sizeDelta.x / 2f + _challengeSeparatorToStatusGap;
+        float statusRight = statusLeft + statusRt.sizeDelta.x;
+        statusRt.anchoredPosition = new Vector2(statusRight - blockWidth, statusRt.anchoredPosition.y);
+    }
+
+    private Color GetDifficultyColor(ChallengeDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return _difficultyEasyColor;
+            case ChallengeDifficulty.Medium: return _difficultyMediumColor;
+            case ChallengeDifficulty.Hard: return _difficultyHardColor;
+            default: return Color.white;
+        }
+    }
+
+    // MODIFIE (2026-09-13) - tout en majuscules (retour utilisateur), le reste
+    // de la ligne ("Fortune : Niv. ...") garde sa casse normale.
     private string GetDifficultyLabel(ChallengeDifficulty difficulty)
     {
         switch (difficulty)
         {
-            case ChallengeDifficulty.Easy: return "Facile";
-            case ChallengeDifficulty.Medium: return "Moyen";
-            case ChallengeDifficulty.Hard: return "Difficile";
+            case ChallengeDifficulty.Easy: return "FACILE";
+            case ChallengeDifficulty.Medium: return "MOYEN";
+            case ChallengeDifficulty.Hard: return "DIFFICILE";
             default: return "";
         }
     }

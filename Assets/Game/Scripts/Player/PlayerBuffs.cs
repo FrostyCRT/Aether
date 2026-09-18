@@ -19,11 +19,14 @@ using UnityEngine;
 public class PlayerBuffs : MonoBehaviour
 {
     [Header("Concentration (nœud Guerrier / Aether)")]
-    [Tooltip("Gain de dégâts par seconde passée sans être touché.")]
-    [SerializeField] private float _concentrationRampPerSecond = 0.08f;
     [Tooltip("Délai après un coup reçu avant que la montée reprenne (évite qu'un double-tap dans la même fraction de seconde ne soit ressenti comme une double punition).")]
     [SerializeField] private float _concentrationGraceAfterHit = 0.5f;
 
+    // MODIFIE (2026-09-16) - retour utilisateur : le taux plat de 8%/s (ex-champ
+    // serialisé ici) rendait le plafond de 50% trop facile a atteindre. Lu
+    // depuis le palier via GetConcentrationRampPerSecond() (2/3/5 %/s aux
+    // paliers 1/2/3) au lieu d'une valeur fixe.
+    private float _concentrationRampPerSecond;
     private float _concentrationCap;      // 0 si hors branche Guerrier ou nœud non pris
     private float _concentrationCurrent;  // bonus actuel, 0..cap
     private float _cleanTimer;            // temps écoulé depuis le dernier coup
@@ -43,6 +46,9 @@ public class PlayerBuffs : MonoBehaviour
         _concentrationCap = MetaProgressionManager.Instance != null
             ? MetaProgressionManager.Instance.GetBonusConcentrationCap()
             : 0f;
+        _concentrationRampPerSecond = MetaProgressionManager.Instance != null
+            ? MetaProgressionManager.Instance.GetConcentrationRampPerSecond()
+            : 0f;
     }
 
     private void Start()
@@ -59,11 +65,21 @@ public class PlayerBuffs : MonoBehaviour
     {
         if (_concentrationCap <= 0f) return;
 
+        // MODIFIE (2026-09-16) - retour utilisateur : le HUD affichait "Concentration"
+        // (trop long pour l'espace prévu) dès que le bonus retombait à 0 après un coup.
+        // La valeur de JEU (dégâts) chute toujours instantanément - un coup reçu doit
+        // rester une vraie punition - mais l'AFFICHAGE joue une descente animée rapide
+        // jusqu'à 0% au lieu de sauter directement, pour que la perte se ressente
+        // clairement au lieu d'un simple changement de texte.
+        float previous = _concentrationCurrent;
         _concentrationCurrent = 0f;
         _cleanTimer = 0f;
         _graceTimer = _concentrationGraceAfterHit;
         Recompute();
-        PushHUD();
+        _lastHudPercent = 0;
+
+        if (GameUI.Instance != null)
+            GameUI.Instance.PlayConcentrationHitDrop(previous);
     }
 
     private void Update()

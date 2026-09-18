@@ -17,6 +17,15 @@ public class DamageNumber : MonoBehaviour
     private void Awake()
     {
         _text = GetComponent<TextMeshPro>();
+
+        // AJOUTE (2026-09-16) - contour sombre autour du texte (retour
+        // utilisateur : les couleurs sont devenues plus vives depuis la
+        // migration Unity 6, ça ne dérange pas mais rend les lettres moins
+        // lisibles - un outline règle ça sans toucher aux couleurs). TMP crée
+        // automatiquement une instance de matériau dédiée dès qu'on modifie
+        // ces propriétés, pas besoin de gérer le matériau à la main.
+        _text.outlineWidth = 0.2f;
+        _text.outlineColor = new Color32(0x1A, 0x14, 0x0D, 0xFF);
     }
 
     public void Init(float damage, Color color, Transform target, bool isCritical = false)

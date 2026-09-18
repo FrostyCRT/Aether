@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -184,9 +183,23 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+
+        // CORRIGE (2026-09-17) - abandonner sautait entierement l'evaluation du
+        // defi : contrairement a ShowGameOver()/ShowVictory(), cet appel
+        // manquait, donc un defi deja "Reussi" dans le HUD en cours de run
+        // (ex. "Tuer 150 ennemis") ne rapportait jamais son bonus d'Or si le
+        // joueur abandonnait au lieu de mourir/gagner - meme progres reel,
+        // recompense perdue sans raison. Meme traitement que les 2 autres fins
+        // de run desormais.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, MetaProgressionManager.Instance.RunGold);
+
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
-        SceneManager.LoadScene(1);
+        // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
+        // chargement async + retour visuel) au lieu d'un SceneManager.LoadScene
+        // brut et synchrone, source de hitch. Voir SceneLoader.cs.
+        SceneLoader.LoadScene("MainMenu");
     }
 
     public void AddKill()
@@ -214,6 +227,17 @@ public class GameManager : MonoBehaviour
     {
         GameUI.Instance.SetHUDVisible(false);
 
+        // CORRIGE (2026-09-17) - ClearPool existait deja (commentaire d'origine :
+        // "requise... pour nettoyer l'ecran a la victoire") mais n'etait jamais
+        // appelee nulle part - les projectiles ennemis continuaient de voler a
+        // l'ecran derriere le panneau de fin. Meme correctif sur les 2 ecrans de
+        // fin (Victoire ET Game Over, le probleme visuel est identique).
+        if (ObjectPool.Instance != null)
+        {
+            ObjectPool.Instance.ClearPool("EnemyProjectile");
+            ObjectPool.Instance.ClearPool("Projectile");
+        }
+
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 
         // MODIFIE - baseGold capture AVANT le bonus de defi, totalGold APRES -
@@ -238,19 +262,19 @@ public class GameManager : MonoBehaviour
 
         // MODIFIE - ajout de levelReached, meme ordre de parametres que ShowVictory
         // desormais que GameUI.ShowGameOver() affiche aussi le niveau atteint.
-        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause);
+        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause, _bossKillCount);
     }
 
     public void RestartGame()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(2);
+        SceneLoader.LoadScene("Game");
     }
 
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(1);
+        SceneLoader.LoadScene("MainMenu");
     }
 
     public void TriggerVictory()
@@ -264,6 +288,12 @@ public class GameManager : MonoBehaviour
     private void ShowVictory()
     {
         GameUI.Instance.SetHUDVisible(false);
+
+        if (ObjectPool.Instance != null)
+        {
+            ObjectPool.Instance.ClearPool("EnemyProjectile");
+            ObjectPool.Instance.ClearPool("Projectile");
+        }
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 

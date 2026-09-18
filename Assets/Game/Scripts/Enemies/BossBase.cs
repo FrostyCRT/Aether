@@ -76,6 +76,15 @@ public class BossBase : MonoBehaviour
     private bool _hasDealtChargeDamage = false;
     public float CameraZoomMargin => _cameraZoomMargin;
     public float MaxHealth => _maxHealth;
+    // AJOUTE (2026-09-15) - necessaire pour corriger le calcul d'XP des
+    // mini-boss invoques par BossCorruptedSource (voir InitSummonedBoss) :
+    // avant, SetXPValue(boss.MaxHealth * percent) utilisait _maxHealth, qui
+    // n'est JAMAIS reduit par InitWithReducedHP() (seul _currentHealth
+    // l'est) - donnait donc un mini-boss "a 30% de vie" mais recompense en
+    // XP calculee sur 30% des PV COMPLETS du boss original (ex. 30% de
+    // 20000 = 6000 XP, contre 420 XP attendu pour 30% de son _xpValue reel
+    // de 1400) - retour utilisateur, "les mini boss donnent bien trop d'xp".
+    public float XPValue => _xpValue;
     public bool IsSummoned { get; set; } = false;
     public bool RageDisabled { get; set; } = false;
 
@@ -375,8 +384,19 @@ public class BossBase : MonoBehaviour
         _bodyRenderer.SetPropertyBlock(_propBlock);
     }
 
+    // AJOUTE (2026-09-16) - DEBUG/TEST uniquement (voir DebugCheats.cs, F8) :
+    // invincibilite du boss actif, pour observer tranquillement un combat/
+    // pattern sans qu'il ne meure avant d'avoir vu ce qu'on veut tester (ex.
+    // l'alternance des mini-boss invoques par le Boss 3). Statique - un seul
+    // interrupteur global, coherent avec le fait qu'un seul boss est actif a
+    // la fois. Jamais actif en dehors de l'Editeur/d'un build de developpement
+    // (DebugCheats.cs se neutralise lui-meme hors de ces contextes).
+    public static bool DebugInvincible = false;
+
     public virtual void TakeDamage(float damage, Color color = default)
     {
+        if (DebugInvincible) return;
+
         _currentHealth -= damage;
 
         if (DamageNumberSpawner.Instance != null)
@@ -397,7 +417,15 @@ public class BossBase : MonoBehaviour
         DestroyTelegraphZone();
 
         if (XPGemSpawner.Instance != null)
-            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
+        {
+            // CORRIGE (2026-09-16) - le pivot des boss est au sol (Y=0),
+            // contrairement aux ennemis normaux : les gemmes d'XP spawnaient
+            // donc quasiment sous la map, hors de portée du joueur (retour
+            // utilisateur). Force Y=1,5, une hauteur ramassable normale.
+            Vector3 gemSpawnPos = transform.position;
+            gemSpawnPos.y = 1.5f;
+            XPGemSpawner.Instance.SpawnGems(gemSpawnPos, _xpValue);
+        }
 
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);
@@ -445,8 +473,22 @@ public class BossBase : MonoBehaviour
         DestroyTelegraphZone();
     }
 
+    // AJOUTE (2026-09-16) - permet a une sous-classe de suspendre temporairement
+    // les degats de CONTACT generiques (ci-dessous) pendant un deplacement
+    // rapide deja telegraphie par ailleurs (ex. la Frappe du Boss 3, qui
+    // affiche un cercle rouge au point d'ARRIVEE puis inflige ses propres
+    // degats d'impact explicites une fois sur place) - retour utilisateur :
+    // sans ca, le corps du boss inflige AUSSI des degats de contact tout le
+    // long de sa trajectoire (avant meme d'arriver), donc une zone de degats
+    // reelle plus large que ce que montre le seul cercle d'avertissement au
+    // point B. Chaque attaque doit avoir un tell fiable (regle deja etablie
+    // sur Golem/Sanglier/Cerf/ce boss meme, voir l'en-tete du fichier) - un
+    // trajet non-telegraphie qui blesse casse cette regle.
+    protected bool _contactDamageSuppressed = false;
+
     protected virtual void OnTriggerEnter(Collider other)
     {
+        if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
@@ -459,6 +501,7 @@ public class BossBase : MonoBehaviour
 
     protected virtual void OnTriggerStay(Collider other)
     {
+        if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
             HealthSystem health = other.GetComponent<HealthSystem>();

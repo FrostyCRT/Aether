@@ -263,12 +263,24 @@ public class MetaProgressionManager : MonoBehaviour
     // Plafond du bonus de dégâts de "Concentration" (branche Guerrier).
     // MODIFIE - 0.25/0.40 -> 0.30/0.50 aux paliers 2/3 : le bonus se réinitialise à
     // chaque coup reçu (fragile en fin de partie), le plafond doit donc être assez
-    // gros pour donner envie de jouer proprement. Montée effective : +8%/s (voir
-    // PlayerBuffs._concentrationRampPerSecond).
+    // gros pour donner envie de jouer proprement. Montée effective : voir
+    // GetConcentrationRampPerSecond() ci-dessous.
     public float GetBonusConcentrationCap()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
         float[] values = { 0f, 0.15f, 0.30f, 0.50f };
+        return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
+    }
+
+    // AJOUTE (2026-09-16) - vitesse de montée du bonus de Concentration (%/s),
+    // variable selon le palier plutôt qu'un taux plat de 8%/s pour tous - retour
+    // utilisateur : "ça doit quand même être une récompense d'avoir des dégâts
+    // en plus, pas un passif facile à avoir". Plus le palier est profond, plus
+    // la montée est rapide ET le plafond est haut - cohérent avec l'investissement.
+    public float GetConcentrationRampPerSecond()
+    {
+        if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
+        float[] values = { 0f, 0.02f, 0.03f, 0.05f };
         return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
     }
 
@@ -615,12 +627,22 @@ public class MetaProgressionManager : MonoBehaviour
     // Sert au message "encore X pour debloquer..." de l'ecran de Game Over,
     // pense pour retourner le regard du joueur vers l'avant plutot que vers
     // l'echec qu'il vient de vivre.
+    // MODIFIE - comparait auparavant un "manque d'Or" et un "manque d'Éclats"
+    // sur la même échelle absolue (déjà signalé dans NOTES.md) : un nœud à
+    // "50 Éclats manquants" gagnait toujours contre un nœud à "2000 Or
+    // manquants" alors que les Éclats sont bien plus rares/lents à gagner
+    // (~200-500 par run, contre des milliers d'Or) - le nœud "le plus proche"
+    // affiché n'était donc pas forcément le plus proche en pratique. Compare
+    // désormais une PROPORTION (part déjà payée du coût, 0 à 1), indépendante
+    // de la devise : le nœud choisi est celui dont il manque le moins *en
+    // pourcentage de son coût total*, peu importe si ce coût est en Or ou en
+    // Éclats.
     public NextUnlockPreview GetNextUnlockPreview()
     {
         NextUnlockPreview best = new NextUnlockPreview { HasPreview = false };
         if (Data == null) return best;
 
-        int bestGap = int.MaxValue;
+        float bestRatio = -1f;
         SkillTreeData.CharacterBranch activeBranch = GetActiveBranch();
 
         foreach (SkillTreeData.NodeData node in SkillTreeData.All)
@@ -629,12 +651,12 @@ public class MetaProgressionManager : MonoBehaviour
             if (!IsNodeUnlockable(node.id)) continue;
 
             int cost = GetNodeCost(node.id);
-            if (cost < 0) continue;
+            if (cost <= 0) continue;
 
-            int gap = Mathf.Max(0, cost - Data.totalGold);
-            if (gap < bestGap)
+            float ratio = Mathf.Clamp01((float)Data.totalGold / cost);
+            if (ratio > bestRatio)
             {
-                bestGap = gap;
+                bestRatio = ratio;
                 best = new NextUnlockPreview
                 {
                     HasPreview = true,
@@ -659,12 +681,12 @@ public class MetaProgressionManager : MonoBehaviour
             if (!IsNodeUnlockable(id)) continue;
 
             int cost = GetNodeCost(id);
-            if (cost < 0) continue;
+            if (cost <= 0) continue;
 
-            int gap = Mathf.Max(0, cost - Data.totalEclats);
-            if (gap < bestGap)
+            float ratio = Mathf.Clamp01((float)Data.totalEclats / cost);
+            if (ratio > bestRatio)
             {
-                bestGap = gap;
+                bestRatio = ratio;
                 best = new NextUnlockPreview
                 {
                     HasPreview = true,
