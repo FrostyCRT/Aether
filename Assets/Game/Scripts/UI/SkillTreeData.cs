@@ -98,7 +98,7 @@ public static class SkillTreeData
         AddNode("fragmentation", new NodeData
         {
             displayName = "Fragmentation",
-            description = "Les projectiles ont 20% de chance d'exploser à l'impact.",
+            description = "Les projectiles ont 15% de chance d'exploser à l'impact.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "concentration" }, // MODIFIÉ — était "damage"

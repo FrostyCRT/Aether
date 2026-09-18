@@ -1,7 +1,47 @@
 # Aether Storm Survivor — Notes de travail
 
 Deux listes vivantes tenues au fil des sessions. Mises à jour à chaque passe.
-Dernière mise à jour : 2026-09-12 (cadre autour du texte de repli vide + titre "Ce qu'il te reste" ambigu corrigé).
+Dernière mise à jour : 2026-09-17 (Bouclier de Mana réactif, Nova synchronisée/repositionnée, Concentration par palier — voir section juste en dessous).
+
+## Session 2026-09-16 → 09-17 — Bouclier de Mana, Nova, Concentration
+
+**GameOverPanel** ✅ **validé visuellement par l'utilisateur** ("le gameover panel est aussi validé") — plus aucune inconnue, chantier clos (voir aussi VictoryPanel, déjà validé).
+
+**Bouclier de Mana (Kael)** — refonte du visuel suite retours utilisateur :
+- Pips HUD passés du bleu au vert (`#36D936`), représentatif de Kael.
+- Bulle : sphère → **capsule** (épouse mieux un gabarit debout), vraie transparence (le vrai bug était `_SrcBlend`/`_DstBlend` jamais dérivés de `_Surface`/`_Blend` pour un matériau créé par script hors ShaderGUI — corrigé en les fixant explicitement à SrcAlpha/OneMinusSrcAlpha).
+- Décision de design : bulle **invisible au repos**, ne flashe que réactivement à l'absorption (`_hitFlash`), plus de halo permanent lié aux charges restantes.
+- Durée du flash 0,33s → **2,5s** (retour : disparaissait trop vite pour être lu).
+- Repositionnée à **Y=1,5 exact** (bug trouvé : le pivot racine du joueur est DÉJÀ à Y=1,5 en jeu — l'offset d'origine s'additionnait par-dessus au lieu de le remplacer, bulle flottait à Y=3).
+
+**Nova (Cristal)** — 3 problèmes distincts corrigés :
+1. Dégâts appliqués instantanément sur tout `_novaRadius` pendant que le VFX grandissait séparément (désynchro visible) → dégâts désormais synchronisés frame par frame avec le rayon réel du VFX (`NovaRoutine`, `HashSet` anti double-hit).
+2. Durée de l'explosion réglée en 3 passes suite aux retours successifs : 0,3s (trop rapide) → 0,7s (presque parfait, un peu lent) → 0,55s.
+3. VFX instancié à `transform.position` (pivot du joueur, hauteur de torse ~1,5) au lieu d'être au sol → nouveau champ `_novaGroundY` (0,2), même logique que `WeaponMudPuddle._groundY`. La détection de dégâts reste centrée sur le joueur, seule la position du VFX a changé.
+
+**Concentration (Aether)** :
+- Montée uniforme +8%/s jugée trop généreuse pour un plafond de 50% → passée par palier via `MetaProgressionManager.GetConcentrationRampPerSecond()` : **2%/s (niv.1) / 3%/s (niv.2) / 5%/s (niv.3)**.
+- HUD affichait le mot "Concentration" (trop long pour l'espace prévu) dès que le bonus retombait à 0 après un coup → toujours un pourcentage désormais, avec une **descente animée rapide (0,25s)** du % jusqu'à 0 au moment du coup plutôt qu'un saut instantané ou un changement de texte. Le multiplicateur de dégâts réel, lui, chute toujours instantanément (juste l'affichage est adouci).
+
+**Découverte d'environnement de test (nouvelle)** : `UnityEditor.EditorApplication.Step()` avance le Play Mode d'une frame de façon fiable et déterministe en une seule commande — bien plus fiable que d'espérer qu'un délai réel s'écoule entre deux appels MCP séparés (le problème documenté plus bas : `Time.frameCount` bloqué entre appels). À utiliser en priorité pour tout futur test de timing/coroutine.
+
+**Note** : plusieurs sessions de suite, les valeurs de `CrystalSystem` (`_novaRadius`, `_novaVFXDuration`) et le save réel (arbre de compétences, or, personnage sélectionné) ont changé sans corréler avec mon propre travail — l'utilisateur teste/règle en parallèle directement dans l'Éditeur/en jeu pendant les sessions. Confirmé sans risque à chaque fois (aucun appel `SaveSystem.Save`/`SaveRunResults` fait de mon côté pendant les tests), mais à garder en tête : ne pas supposer qu'une valeur inattendue dans un prefab ou le save est un bug de mon fait avant de vérifier.
+
+Commits : `e8191ba`, `4e56abc` sur `victory-panel-realconditions-fix`.
+
+## Session 2026-09-13 → 09-16 — Défis, chargement de scène, correctifs combat
+
+**Défi (PausePanel + HUD)** — le point "HUD, rappel du défi en cours jamais construit" (voir Découvertes annexes ci-dessous, désormais réglé) : `ChallengeGroup`/`ChallengeText` construits dans le HUD, `ChallengeManager` câblé de bout en bout. Détail dans le PausePanel (nom/difficulté colorée/description/récompense + colonne Statut séparée par un séparateur vertical), tous deux auto-ancrés à la fin réelle du texte affiché (pas de position fixe). Difficultés FACILE/MOYEN/DIFFICILE en majuscules + code couleur. Statut à 3 états (En cours/Réussi/Échoué), "Réussi" dès la condition acquise en cours de run, pas seulement en fin de run. Récompenses doublées (x1,2/x1,5/x2 affiché "Or xN"). Si le défi de l'heure est déjà réussi (une run précédente, même heure) : HUD masqué entièrement, PausePanel affiche "Nouveau défi dans X min" (ou "à ta prochaine partie !" une fois l'heure dépassée en cours de run plutôt qu'un compte à rebours figé et trompeur) — le tirage d'un nouveau défi reste garanti HORS partie (`EnsureCurrentChallenge` ne tourne qu'au chargement de la scène Jeu, jamais en cours de run).
+
+**Chargement de scène** — toute transition en cours de jeu (Jouer/Abandonner/Recommencer/Retour menu) passe désormais par un fondu noir rapide (`SceneLoader` → `SceneTransitionFader.LoadScene()`) avec vrai chargement asynchrone + libération des assets de l'ancienne scène, au lieu d'un `SceneManager.LoadScene` brut (source de hitch, surtout vers la scène Jeu). Un seul fondu actif à la fois (le fondu de retour auto et un nouveau `LoadScene()` rapproché se marchaient dessus sur le même alpha — corrigé), temps garanti d'écran noir plein (0,15s) même si le chargement est instantané. L'écran `LoadingScreen` complet (artwork/logo/barre/"Appuyez sur une touche") reste réservé au tout premier démarrage du jeu — jamais revisité ensuite.
+
+**Musique** — `MusicStarter` : arrêt et démarrage passent par un fondu court (0,2s / 0,3s) plutôt qu'un `Stop()`/`Play()` sec (coupure audible sinon), fondu d'entrée assez bref pour garder le début du morceau audible.
+
+**Bugs de combat trouvés et corrigés** :
+- `UpgradeData` : BouncingOrb ne suivait pas le schéma "palier 1 = déblocage, paliers 2/3/4 = les 3 effets" déjà utilisé par Fireball/Aura/Couteaux — le palier 4 ne faisait rien (avertissement en jeu), le palier 1 donnait déjà un bonus de dégâts non documenté.
+- `BossCorruptedSource` : les mini-boss invoqués (Boss 3) donnaient 6000-15000 XP au lieu de ~420-735 XP (calcul basé sur les PV COMPLETS du boss original, jamais réduits par `InitWithReducedHP`, au lieu de sa récompense XP normale × le pourcentage de réduction). Délai minimum de 25s ajouté entre deux Invocations (impression de mini-boss qui "respawn en boucle").
+
+Commits : `b0ee803`, `d22b901`, `504e164` sur `victory-panel-realconditions-fix`. Rien de tout ça n'a encore de retour visuel/playtest utilisateur confirmé en conditions réelles prolongées (vérifié par mesure + Play Mode piloté, comme toujours) — à surveiller au prochain vrai playtest.
 
 ## GameOverPanel/VictoryPanel — cadre + titre ambigu (2026-09-12)
 
@@ -61,7 +101,7 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 
 ### En cours
 
-- **GameOverPanel — construit de zéro en parité avec VictoryPanel (2026-09-12)** ✅ scène et code faits, testés en Play Mode réel. Le VictoryPanel ci-dessous est **considéré terminé par l'utilisateur** ("je le trouve vraiment bien et complet") — chantier suivant naturel, cf. V13 §7 ("même richesse de contenu que la Victoire, différenciés par la teinte").
+- **GameOverPanel — construit de zéro en parité avec VictoryPanel (2026-09-12)** ✅✅ **TERMINÉ ET VALIDÉ VISUELLEMENT PAR L'UTILISATEUR (2026-09-16)** — scène et code faits, testés en Play Mode réel, plus aucune inconnue. Comme le VictoryPanel ci-dessous ("je le trouve vraiment bien et complet").
   - **Titre tranché** : "DÉFAITE" (l'option proposée dans V13 §7, jamais actée) — cohérent avec "VICTOIRE !", même registre linguistique.
   - **Différenciation visuelle** (voulue explicitement par l'utilisateur — "il faut qu'il soit différenciable") : teinte rouille/ash (`#B5533E` titre+séparateur, contour noir identique à Victoire) au lieu de l'or, `CenterCard` teintée grise/désaturée (`#B8AFA0F0` au lieu de `#FFFFFFF0`), `DimBackground` plus sombre (`#00000058` contre `#00000037` côté Victoire — une défaite pèse plus lourd). Or/Éclats gardent leurs couleurs fonctionnelles habituelles (`#FFD700`/`#00ECE3`) — ce sont des devises, pas un accent de mood, les changer casserait le code-couleur appris ailleurs dans tout le jeu (HUD, Réputation).
   - **Structure identique à la Victoire** (2 colonnes / 3 temps), reconstruite en clonant les réglages exacts de `VictoryPanel` (sprites, polices, tailles de `LayoutElement`/`HorizontalLayoutGroup`/`VerticalLayoutGroup`) plutôt que de redeviner — zéro nouvel asset :
@@ -113,7 +153,7 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 
 ### Découvertes annexes (pas traitées cette passe, à trancher)
 
-- **HUD — rappel du défi en cours jamais construit** : `GameUI._challengeText` (le champ utilisé par `UpdateChallengeDisplay()`) est `null` dans la scène `Game` — aucun GameObject "rappel de défi" n'existe sous `HUD`, alors que la doc V13 §5 le décrit comme "état final, validé" sous le Chrono. Écart doc/scène réel : soit l'objet a été supprimé par accident, soit il n'a en fait jamais été construit. Pas touché cette passe (création de nouvelle UI = décision de placement/DA à valider avant d'agir), mais le joueur ne voit actuellement AUCUN rappel de son défi en cours pendant la run.
+- ~~**HUD — rappel du défi en cours jamais construit**~~ ✅ **réglé (session 2026-09-13→16)** — voir section dédiée tout en haut du fichier.
 - **`SaveSystem.Load()` a renvoyé un `SaveData` par défaut (tout à 0) une fois**, en plein milieu de cette session de test, alors que le vrai `save.json` sur disque contenait déjà de la vraie progression (totalRuns 6, 5735 Or, etc. — confirmé intact par une lecture directe du fichier après coup, rien perdu). Point isolé, pas reproduit une 2ᵉ fois, cause non identifiée (piste : lock transitoire du fichier juste après un rechargement de scène/domain reload). À surveiller si ça se reproduit, pas creusé plus loin cette passe.
 - **Grille d'upgrades** — `GameUI.PopulateBuildGrid()` codé, câblé et vérifié (Victory). Prefab `UpgradeGridSlot` fait (68×68, ancrage stretch, nom masqué). **Reste** : même traitement 3-temps + grille pour le **Game Over** (teinte désaturée, "Tentative n°X", aperçu du prochain déblocage à la place du portrait triomphant) — pas encore commencé.
 
@@ -125,8 +165,8 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 | Encodage CP1252 → UTF-8 (18 fichiers, texte joueur cassé) | ✅ corrigé |
 | Impulsion Nova : effet gratuit pour tous | ✅ corrigé (gaté sur `HasImpulsionNova()`) |
 | Récupération (Kael) : `GetBonusRecuperation()` jamais lu | ✅ implémenté (20/50/80 PV par absorption) |
-| Bouclier de Mana (Kael) : `HasManaShield()` jamais lu | ✅ implémenté (barrière 3 charges) — reste câblage Unity (composant + pips HUD) |
-| Concentration (Aether) : `GetBonusConcentrationCap()` jamais lu | ✅ implémenté (`PlayerBuffs`, +8%/s, plafonds 15/30/50) — reste câblage Unity (composant + texte HUD) |
+| Bouclier de Mana (Kael) : `HasManaShield()` jamais lu | ✅✅ implémenté ET câblé (barrière 3 charges, bulle capsule verte réactive, HUD vert) — terminé |
+| Concentration (Aether) : `GetBonusConcentrationCap()` jamais lu | ✅✅ implémenté ET câblé (`PlayerBuffs`, 2/3/5%/s par palier, plafonds 15/30/50, HUD avec descente animée) — terminé |
 | 3 persos = stats prefab identiques | 🔁 **décision revue** : ne PAS ajouter d'étage de stats prefab (3 couches = confus, redondant avec l'arbre). À la place, traits **innés qualitatifs** (une règle / un verbe, pas un %), à trancher avant le Next Fest : Lyra = dash réellement plus court (1,5 s) ; Kael = une règle tanky (ex. immunité au contact en avançant, ou -50 % dégâts 3 s après un gros coup) ; Aether = baseline, rien (choix assumé). Alt légère : rendre le 1ᵉʳ level-up plus rapide (baisser l'XP niv. 2) pour que l'arme exclusive surgisse en <20 s. |
 
 ### Système de déblocage des personnages ✅ (code fait, câblage Unity à faire)
@@ -180,11 +220,11 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 - `_phasesDeJeu` (EnemySpawner) écrasé chaque frame par `WaveManager.ApplyDifficulty()` → configuration inspecteur morte. Choisir une seule source de vérité pour la courbe de difficulté.
 - `MapBoundaryUtils` existe en double (classe autonome + classe imbriquée dans `WaveManager`).
 - `WeaponAOE.cs` : arme orpheline (aucun `UpgradeType.AOE`). Supprimer ou brancher.
-- `ObjectPool.ClearPool()` jamais appelé → projectiles ennemis volent pendant l'écran de victoire.
-- `GetNextUnlockPreview()` compare "manque d'Or" et "manque d'Éclats" sur la même échelle (devises différentes) — utilisé par l'écran Game Over en construction.
-- Fragmentation : texte dit "20 %", code = 15 %.
-- Restes de debug connus (déjà notés V13) : `ResetSkillTree()` → `totalGold = 10000`, bouton debug reset Réputation, **`MetaProgressionManager.DebugUnlockAllCharacters()` / `DebugResetCharacterUnlocks()`** + le champ `_debugResetUnlocksButton` + `OnDebugResetUnlocksClicked()` sur `CharacterSelectUI` (nouveaux). Nettoyage pré-release.
-- `GameManager.GoToMainMenu()` ne sauvegarde pas la partie (vs `AbandonRun()`). Vérifier le câblage des boutons.
+- ~~`ObjectPool.ClearPool()` jamais appelé → projectiles ennemis volent pendant l'écran de victoire.~~ ✅ **corrigé (2026-09-17)** : appelée (`EnemyProjectile` + `Projectile`) dans `ShowVictory()` ET `ShowGameOver()` (même problème visuel des deux côtés).
+- ~~`GetNextUnlockPreview()` compare "manque d'Or" et "manque d'Éclats" sur la même échelle (devises différentes)~~ ✅ déjà réglé pendant la construction du GameOverPanel (comparaison par ratio) — voir section dédiée plus haut, entrée obsolète laissée par erreur.
+- ~~Fragmentation : texte dit "20 %", code = 15 %.~~ ✅ **corrigé (2026-09-17)** : texte aligné sur la vraie valeur (15 %, `_fragmentationNodeChance`).
+- Restes de debug connus (déjà notés V13) : `ResetSkillTree()` → `totalGold = 10000`, bouton debug reset Réputation, **`MetaProgressionManager.DebugUnlockAllCharacters()` / `DebugResetCharacterUnlocks()`** + le champ `_debugResetUnlocksButton` + `OnDebugResetUnlocksClicked()` sur `CharacterSelectUI` (nouveaux), + le nouvel outil `DebugCheats.cs` (F5-F8). **Volontairement pas touché maintenant** — outils encore activement utiles en développement, à retirer juste avant release (déjà le cas pour les précédents, s'auto-neutralisent hors éditeur/dev build).
+- ~~`GameManager.GoToMainMenu()` ne sauvegarde pas la partie (vs `AbandonRun()`)~~ ✅ **vérifié (2026-09-17), c'était une fausse alerte** : `GoToMainMenu()` n'est câblé QUE sur les boutons "Retour au menu" des écrans de fin (`GameOverPanel`/`VictoryPanel`), jamais accessible en cours de run — la sauvegarde a déjà eu lieu via `ShowGameOver()`/`ShowVictory()` avant que ce bouton soit même visible. `AbandonRun()` (bouton distinct, `PausePanel/AbandonConfirmPanel`) est le seul vrai point de sortie EN COURS de run, et sauvegardait déjà correctement. **Vrai bug trouvé au passage en creusant cette question** : `AbandonRun()` ne déclenchait jamais `ChallengeManager.EvaluateAndApplyReward()` (contrairement aux 2 autres fins de run) — un défi déjà "Réussi" dans le HUD perdait silencieusement son bonus d'Or si le joueur abandonnait au lieu de finir la run. Corrigé.
 - Death causes : étendre au-delà de `boss`/`horde`. Plomberie identifiée — `EnemyBase` ligne ~191 (`TryTakeContactDamage` sans source), `EnemyProjectile.Init()` (pas de param source), attaques Kaiju/Weaver/BossDeer saut.
 - Perf : `FindGameObjectsWithTag`/`FindObjectsOfType` par frame ou par mort ; `Physics.OverlapSphere` allouant dans CrystalSystem / bosses ; `GetComponentInChildren` répétés dans `EnemyBase.Update`.
 

@@ -183,6 +183,17 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
+
+        // CORRIGE (2026-09-17) - abandonner sautait entierement l'evaluation du
+        // defi : contrairement a ShowGameOver()/ShowVictory(), cet appel
+        // manquait, donc un defi deja "Reussi" dans le HUD en cours de run
+        // (ex. "Tuer 150 ennemis") ne rapportait jamais son bonus d'Or si le
+        // joueur abandonnait au lieu de mourir/gagner - meme progres reel,
+        // recompense perdue sans raison. Meme traitement que les 2 autres fins
+        // de run desormais.
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, MetaProgressionManager.Instance.RunGold);
+
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
         // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
@@ -215,6 +226,17 @@ public class GameManager : MonoBehaviour
     private void ShowGameOver()
     {
         GameUI.Instance.SetHUDVisible(false);
+
+        // CORRIGE (2026-09-17) - ClearPool existait deja (commentaire d'origine :
+        // "requise... pour nettoyer l'ecran a la victoire") mais n'etait jamais
+        // appelee nulle part - les projectiles ennemis continuaient de voler a
+        // l'ecran derriere le panneau de fin. Meme correctif sur les 2 ecrans de
+        // fin (Victoire ET Game Over, le probleme visuel est identique).
+        if (ObjectPool.Instance != null)
+        {
+            ObjectPool.Instance.ClearPool("EnemyProjectile");
+            ObjectPool.Instance.ClearPool("Projectile");
+        }
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 
@@ -266,6 +288,12 @@ public class GameManager : MonoBehaviour
     private void ShowVictory()
     {
         GameUI.Instance.SetHUDVisible(false);
+
+        if (ObjectPool.Instance != null)
+        {
+            ObjectPool.Instance.ClearPool("EnemyProjectile");
+            ObjectPool.Instance.ClearPool("Projectile");
+        }
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 

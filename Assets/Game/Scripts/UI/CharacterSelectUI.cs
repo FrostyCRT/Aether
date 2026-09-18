@@ -5,12 +5,43 @@ using System.Collections;
 
 public class CharacterSelectUI : MonoBehaviour
 {
-    [Header("Backgrounds")]
-    [SerializeField] private Image _backgroundRight;
+    // MODIFIE (2026-09-17) - refonte visuelle de l'onglet Personnage (retour
+    // utilisateur : "pas fini, pas beau par rapport aux autres onglets" - il
+    // n'y avait que 2 aplats de couleur + une diagonale plate, alors que
+    // Réputation/Paramètres ont une vraie illustration de fond). Remplace les
+    // 2 aplats de couleur (_backgroundRight, plus l'ex-BackgroundLeft) par une
+    // vraie image de fond partagée, dédiée par personnage (le cristal flottant
+    // change de couleur selon le perso - même image de base retouchée 3 fois
+    // pour garder une architecture identique, seul le cristal change).
+    [Header("Fond de scène (par personnage)")]
+    [Tooltip("Image qui affiche le fond dédié au personnage courant (voir _panelBackgroundImage pour le cadrage 'cover').")]
+    [SerializeField] private Image _panelBackground;
+    [Tooltip("Enfant de _panelBackground qui porte le vrai sprite - redimensionné en code (FitCover) pour remplir le cadre sans déformer l'image, quel que soit son ratio d'origine.")]
+    [SerializeField] private RectTransform _panelBackgroundImageRect;
+    [SerializeField] private Sprite _backgroundAether;
+    [SerializeField] private Sprite _backgroundKael;
+    [SerializeField] private Sprite _backgroundLyra;
 
     [Header("Personnage")]
     [SerializeField] private Image _characterImage;
     [SerializeField] private Image _characterName;
+
+    // AJOUTE (2026-09-17) - retour utilisateur : en retirant le fond beige des
+    // portraits pour les poser sur la nouvelle illustration de fond, les lueurs
+    // magiques peintes dans l'image d'origine (poussière ambiante autour du
+    // corps, halo du cristal du bâton) ont disparu avec (la détourure ne garde
+    // que le sujet, pas les halos diffus qui débordaient dessus). Recréées ici
+    // procéduralement (ProceduralGlowUI, déjà utilisé sur le LoadingScreen) -
+    // "fluide, vivante, dynamique" comme demandé : pulsation douce + légère
+    // dérive, pas une image statique. Un seul rig partagé entre les 3 persos
+    // (repositionné/reteint à chaque changement), comme le reste du portrait.
+    [Header("Lueurs magiques (par personnage)")]
+    [Tooltip("Petit halo vif bleu-blanc au niveau du cristal du bâton - couleur cohérente sur les 3 persos (le cristal lui-même est bleu chez les 3).")]
+    [SerializeField] private ProceduralGlowUI _crystalGlow;
+    [Tooltip("Halo ambiant plus large et plus doux, teinté à la couleur d'identité du perso (recrée la poussière/aura magique perdue avec le fond).")]
+    [SerializeField] private ProceduralGlowUI _auraGlow;
+    [Tooltip("Petites étincelles qui dérivent doucement autour de l'aura - teintées comme l'aura. Facultatif (tableau vide = désactivé).")]
+    [SerializeField] private ProceduralGlowUI[] _sparkles = new ProceduralGlowUI[0];
 
     [Header("Textes")]
     [SerializeField] private TextMeshProUGUI _loreText;
@@ -55,18 +86,22 @@ public class CharacterSelectUI : MonoBehaviour
     {
         public Sprite characterSprite;
         public Sprite nameLogoSprite;
-        public Color backgroundRightColor;
+        public Sprite backgroundSprite;
+        public Vector2 crystalGlowOffset;
+        public Vector2 auraGlowOffset;
+        public Color auraColor;
         public string lore;
         public string specialities;
     }
 
+    // AJOUTE - teinte bleu-blanc du cristal, identique sur les 3 persos (voir
+    // _crystalGlow). Constante plutôt que dans CharacterData : ne dépend pas du
+    // perso, seul son ANCRAGE (crystalGlowOffset) change d'un portrait à l'autre.
+    private static readonly Color CrystalGlowColor = new Color(0.72f, 0.88f, 1f);
+
     private CharacterData[] _characters;
     private int _currentIndex = 0;
     private bool _isTransitioning = false;
-
-    private static readonly Color ColorAether = new Color(0.239f, 0.122f, 0.000f);
-    private static readonly Color ColorKael   = new Color(0.051f, 0.169f, 0.051f);
-    private static readonly Color ColorLyra   = new Color(0.024f, 0.157f, 0.157f);
 
     private RectTransform _characterRect;
     private RectTransform _nameRect;
@@ -127,7 +162,10 @@ public class CharacterSelectUI : MonoBehaviour
             {
                 characterSprite      = _spriteAether,
                 nameLogoSprite       = _logoAether,
-                backgroundRightColor = ColorAether,
+                backgroundSprite     = _backgroundAether,
+                crystalGlowOffset    = new Vector2(107f, 271f),
+                auraGlowOffset       = new Vector2(-75f, -166f),
+                auraColor            = new Color(1f, 0.78f, 0.35f), // poussière ambrée/dorée d'Aether
                 lore =
                     "Né au creux d'une tempête de mana, Aether a grandi entre les ruines d'un sanctuaire oublié. " +
                     "Il ne cherche pas la gloire — il cherche des réponses. " +
@@ -142,7 +180,10 @@ public class CharacterSelectUI : MonoBehaviour
             {
                 characterSprite      = _spriteKael,
                 nameLogoSprite       = _logoKael,
-                backgroundRightColor = ColorKael,
+                backgroundSprite     = _backgroundKael,
+                crystalGlowOffset    = new Vector2(112f, 282f),
+                auraGlowOffset       = new Vector2(-48f, 23f),
+                auraColor            = new Color(0.42f, 0.9f, 0.46f), // volute verte de Kael
                 lore =
                     "Kael n'a jamais reculé. Pas une fois. " +
                     "Ancien protecteur d'une cité engloutie, il porte encore sur lui le poids de ceux qu'il n'a pas pu sauver. " +
@@ -157,7 +198,10 @@ public class CharacterSelectUI : MonoBehaviour
             {
                 characterSprite      = _sprayteLyra,
                 nameLogoSprite       = _logoLyra,
-                backgroundRightColor = ColorLyra,
+                backgroundSprite     = _backgroundLyra,
+                crystalGlowOffset    = new Vector2(91f, 309f),
+                auraGlowOffset       = new Vector2(-192f, -226f),
+                auraColor            = new Color(0.56f, 0.55f, 1f), // volute bleu-violet de Lyra
                 lore =
                     "On ne la voit jamais venir. On ne la voit jamais partir. " +
                     "Lyra opère dans les espaces entre les secondes — là où personne ne regarde. " +
@@ -205,7 +249,7 @@ public class CharacterSelectUI : MonoBehaviour
         // Phase 2 — swap contenu, PAS de SetSelectedCharacter ici
         _currentIndex = newIndex;
         ApplyCharacterContent();
-        ApplyBackgroundColor();
+        ApplyPanelBackground();
 
         _characterRect.anchoredPosition = new Vector2(slideInStart, _characterOriginalPos.y);
         _nameRect.anchoredPosition      = new Vector2(slideInStart * 0.8f, _nameOriginalPos.y);
@@ -239,7 +283,7 @@ public class CharacterSelectUI : MonoBehaviour
     private void ApplyCharacter(bool instant)
     {
         ApplyCharacterContent();
-        ApplyBackgroundColor();
+        ApplyPanelBackground();
 
         if (!instant) return;
         _characterRect.anchoredPosition = _characterOriginalPos;
@@ -262,13 +306,117 @@ public class CharacterSelectUI : MonoBehaviour
         if (_specialitiesText != null)
             _specialitiesText.text = data.specialities;
 
+        ApplyGlowFX(data);
         ApplySelectButtonState();
     }
 
-    private void ApplyBackgroundColor()
+    // AJOUTE (2026-09-17) - repositionne/reteint le rig de lueurs magiques
+    // partagé pour le personnage courant. _crystalGlow garde toujours la même
+    // teinte (le cristal est bleu chez les 3 persos) - seul son ancrage change.
+    // _auraGlow et les étincelles changent à la fois d'ancrage ET de couleur
+    // (poussière ambrée/volute verte/volute bleu-violet selon le perso).
+    private void ApplyGlowFX(CharacterData data)
     {
-        if (_backgroundRight != null)
-            _backgroundRight.color = _characters[_currentIndex].backgroundRightColor;
+        if (_crystalGlow != null)
+        {
+            _crystalGlow.SetColor(CrystalGlowColor);
+            _crystalGlow.SetBasePosition(data.crystalGlowOffset);
+        }
+
+        if (_auraGlow != null)
+        {
+            _auraGlow.SetColor(data.auraColor);
+            _auraGlow.SetBasePosition(data.auraGlowOffset);
+        }
+
+        if (_sparkles != null)
+        {
+            EnsureSparkleRelativeOffsets();
+            for (int i = 0; i < _sparkles.Length; i++)
+            {
+                ProceduralGlowUI sparkle = _sparkles[i];
+                if (sparkle == null) continue;
+                sparkle.SetColor(data.auraColor);
+                sparkle.SetBasePosition(data.auraGlowOffset + _sparkleRelativeOffsets[i]);
+            }
+        }
+    }
+
+    // AJOUTE - décalage FIXE de chaque étincelle par rapport au centre de
+    // l'aura, calculé une seule fois à partir de sa position posée à la main
+    // dans l'éditeur (autour du 1er personnage affiché) par rapport à l'ancrage
+    // d'aura de ce même personnage. Ce décalage relatif ne change ensuite
+    // jamais - seul l'ancrage d'aura (data.auraGlowOffset) bouge selon le
+    // perso, donc les étincelles suivent l'aura en gardant leur dispersion
+    // relative les unes des autres.
+    private Vector2[] _sparkleRelativeOffsets;
+
+    private void EnsureSparkleRelativeOffsets()
+    {
+        if (_sparkleRelativeOffsets != null) return;
+
+        _sparkleRelativeOffsets = new Vector2[_sparkles.Length];
+        Vector2 referenceAuraOffset = _characters[0].auraGlowOffset;
+        for (int i = 0; i < _sparkles.Length; i++)
+        {
+            if (_sparkles[i] == null) continue;
+            Vector2 editorPosition = _sparkles[i].GetComponent<RectTransform>().anchoredPosition;
+            _sparkleRelativeOffsets[i] = editorPosition - referenceAuraOffset;
+        }
+    }
+
+    // MODIFIE (2026-09-17) - remplace l'ancien aplat de couleur par une vraie
+    // image de fond dédiée au personnage. FitCover reproduit un comportement
+    // "background-size: cover" (CSS) : l'image remplit tout le cadre sans se
+    // déformer, quel que soit son ratio d'origine (2048x1152 vs 2096x1184 selon
+    // le fond) - elle déborde légèrement d'un côté et RectMask2D sur le parent
+    // (_panelBackground) découpe le surplus, au lieu d'étirer l'image pour
+    // qu'elle colle exactement au cadre (ce qui déformerait l'architecture
+    // peinte, visible sur les colonnes/arches).
+    private void ApplyPanelBackground()
+    {
+        Sprite sprite = _characters[_currentIndex].backgroundSprite;
+        if (_panelBackground == null || _panelBackgroundImageRect == null || sprite == null) return;
+
+        // CORRIGE - le sprite doit aller sur l'Image de l'ENFANT
+        // (_panelBackgroundImageRect, celui qui est redimensionne par FitCover),
+        // pas sur celle du conteneur (_panelBackground, qui ne sert qu'a porter
+        // le RectMask2D qui decoupe le debordement).
+        Image image = _panelBackgroundImageRect.GetComponent<Image>();
+        if (image != null) image.sprite = sprite;
+
+        FitCover(sprite);
+    }
+
+    private void FitCover(Sprite sprite)
+    {
+        if (_panelBackgroundImageRect == null) return;
+
+        RectTransform container = _panelBackground.rectTransform;
+        float containerWidth = container.rect.width;
+        float containerHeight = container.rect.height;
+        if (containerWidth <= 0f || containerHeight <= 0f) return;
+
+        float imageAspect = sprite.rect.width / sprite.rect.height;
+        float containerAspect = containerWidth / containerHeight;
+
+        float width, height;
+        if (imageAspect > containerAspect)
+        {
+            // Image relativement plus large que le cadre : cale la hauteur,
+            // laisse déborder en largeur (débordement gauche/droite découpé).
+            height = containerHeight;
+            width = containerHeight * imageAspect;
+        }
+        else
+        {
+            // Image relativement plus haute/étroite : cale la largeur, laisse
+            // déborder en hauteur (débordement haut/bas découpé).
+            width = containerWidth;
+            height = containerWidth / imageAspect;
+        }
+
+        _panelBackgroundImageRect.sizeDelta = new Vector2(width, height);
     }
 
     public void OnSelectClicked()

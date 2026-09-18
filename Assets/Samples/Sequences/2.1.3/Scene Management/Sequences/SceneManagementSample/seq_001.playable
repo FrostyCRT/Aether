@@ -15,6 +15,7 @@ MonoBehaviour:
   director:
     exposedName: a3999ca314ff93e4ebfcd578f601c1e8
     defaultValue: {fileID: 0}
+  m_Timeline: {fileID: 11400000, guid: 8fa175cc88b407a43bd6df75e824cb20, type: 2}
 --- !u!114 &-1644111355423390690
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -198,7 +199,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bfda56da833e2384a9677cd3c976a436, type: 3}
-  m_Name: seq_001_Timeline
+  m_Name: seq_001
   m_EditorClassIdentifier: 
   m_Version: 0
   m_Tracks:
@@ -225,6 +226,7 @@ MonoBehaviour:
   director:
     exposedName: b074aac8d63941846aef17a27fc729c0
     defaultValue: {fileID: 0}
+  m_Timeline: {fileID: 11400000, guid: 491e5698d0a858446b113fb08e3840bc, type: 2}
 --- !u!114 &3898338125790921803
 MonoBehaviour:
   m_ObjectHideFlags: 1
