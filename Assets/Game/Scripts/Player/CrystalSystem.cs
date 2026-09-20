@@ -74,7 +74,7 @@ public class CrystalSystem : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
 
-        if (_storedUlts >= 1 && Input.GetKeyDown(KeyCode.F))
+        if (_storedUlts >= 1 && GameInput.Down(GameAction.Ultimate))
             TriggerUlt();
     }
 

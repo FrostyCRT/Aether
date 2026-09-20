@@ -21,7 +21,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform _staffTransform;
 
     [Header("Clone Fantôme (touche dédiée)")]
-    [SerializeField] private KeyCode _phantomCloneKey = KeyCode.C;
+    // OBSOLÈTE (2026-09-19) : la touche se règle désormais dans Paramètres > Commandes (GameAction.PhantomClone).
+    // Le champ est conservé pour ne pas casser la sérialisation des prefabs joueur.
+    [SerializeField, HideInInspector] private KeyCode _phantomCloneKey = KeyCode.C;
     [SerializeField] private float _phantomCloneCooldown = 8f;
     [SerializeField] private float _phantomCloneDuration = 2f;
     [SerializeField] private float _phantomAttractRadius = 10f;
@@ -253,9 +255,9 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovementInput()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        _moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+        // Touches lues via la configuration du joueur (page Paramètres > Commandes) + stick de manette.
+        Vector2 move = GameInput.Move();
+        _moveDirection = new Vector3(move.x, 0f, move.y).normalized;
 
         if (_animatorController != null)
         {
@@ -266,7 +268,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleDash()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !_isDashing && _dashCooldownTimer <= 0f)
+        if (GameInput.Down(GameAction.Dash) && !_isDashing && _dashCooldownTimer <= 0f)
         {
             Vector3 direction = _moveDirection != Vector3.zero ? _moveDirection : transform.forward;
             StartDash(direction);
@@ -302,7 +304,7 @@ public class PlayerController : MonoBehaviour
         if (_phantomCloneCooldownTimer > 0f) return;
         if (!MetaProgressionManager.Instance.HasPhantomDash()) return;
 
-        if (Input.GetKeyDown(_phantomCloneKey))
+        if (GameInput.Down(GameAction.PhantomClone))
         {
             _phantomCloneCooldownTimer = _phantomCloneCooldown;
             if (GameUI.Instance != null) GameUI.Instance.UpdateCloneCooldown(0f);

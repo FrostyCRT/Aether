@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca476d8119e63674d8068932e735c0d8, type: 3}
+  m_Name: SkinCatalog
+  m_EditorClassIdentifier: 
+  skins:
+  - id: aether_default
+    characterIndex: 0
+    displayName: Tenue d'origine
+    description: La tenue avec laquelle Aether part au combat.
+    tier: 0
+    cost: 0
+    isDefault: 1
+    preview: {fileID: 21300000, guid: b3c5e1dacf43425294c15cdb0b1b5fe2, type: 3}
+    playerPrefab: {fileID: 0}
+  - id: kael_default
+    characterIndex: 1
+    displayName: Tenue d'origine
+    description: La tenue avec laquelle Kael part au combat.
+    tier: 0
+    cost: 0
+    isDefault: 1
+    preview: {fileID: 21300000, guid: 3e52753fb4f748cf806ec7a65f47dac3, type: 3}
+    playerPrefab: {fileID: 0}
+  - id: lyra_default
+    characterIndex: 2
+    displayName: Tenue d'origine
+    description: La tenue avec laquelle Lyra part au combat.
+    tier: 0
+    cost: 0
+    isDefault: 1
+    preview: {fileID: 21300000, guid: c412137bcf864b2da092878428042328, type: 3}
+    playerPrefab: {fileID: 0}

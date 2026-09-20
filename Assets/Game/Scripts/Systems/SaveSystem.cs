@@ -6,8 +6,13 @@ public static class SaveSystem
 {
     private static string _savePath => Application.persistentDataPath + "/save.json";
     private static string _backupPath => Application.persistentDataPath + "/save.bak";
+    // Garde-fou pour les tests en éditeur : à vrai, plus rien n'est écrit sur disque (la vraie sauvegarde du
+    // joueur reste intacte, les changements ne vivent qu'en mémoire).
+    public static bool SuppressWrites;
+
     public static void Save(SaveData data)
     {
+        if (SuppressWrites) return;
         try
         {
             string json = JsonUtility.ToJson(data, true);
@@ -93,6 +98,15 @@ public class SaveData
     // MetaProgressionManager.DebugUnlockAllCharacters() une fois en dev si besoin.
     public bool kaelUnlocked = false;
     public bool lyraUnlocked = false;
+
+    // AJOUTE (2026-09-19) - parcours PAR personnage (index 0 Aether, 1 Kael, 2 Lyra),
+    // affiché sur la fiche de l'onglet Personnage. Un ancien save sans ces champs les
+    // charge avec ces valeurs par défaut (tableaux de 3 zéros) : le suivi démarre à
+    // la première partie jouée après cette mise à jour, l'historique d'avant n'est pas
+    // attribuable à un personnage.
+    public int[] runsByCharacter = new int[3];
+    public int[] winsByCharacter = new int[3];
+    public float[] bestTimeByCharacter = new float[3];
     // Branche Guerrier
     public int cadenceLevel = 0;
     public int crystalDamageLevel = 0;
@@ -128,4 +142,10 @@ public class SaveData
     // AJOUTE - historique des 3 derniers defis pour eviter les repetitions,
     // qu'il s'agisse de runs consecutives ou d'heures consecutives.
     public List<string> recentChallengeIds = new List<string>();
+
+    // AJOUTE (2026-09-20) - skins (onglet Réputation). ownedSkins = identifiants du SkinCatalog achetés (la tenue
+    // d'origine est toujours possédée, elle n'y figure pas) ; equippedSkins = skin équipé par personnage
+    // (index 0 Aether, 1 Kael, 2 Lyra ; vide = tenue d'origine). Un ancien save sans ces champs les charge vides.
+    public List<string> ownedSkins = new List<string>();
+    public string[] equippedSkins = new string[3];
 }

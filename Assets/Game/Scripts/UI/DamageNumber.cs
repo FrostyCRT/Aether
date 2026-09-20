@@ -65,7 +65,7 @@ public class DamageNumber : MonoBehaviour
     {
         _text.color = _color;
         _text.text = _isCritical ? $"{Mathf.CeilToInt(_totalDamage)}!" : $"{Mathf.CeilToInt(_totalDamage)}";
-        _text.fontSize = _isCritical ? 10f : 8f;
+        _text.fontSize = (_isCritical ? 10f : 8f) * GameSettings.GetFloat(GameSettings.DamageSize);
         _text.fontStyle = FontStyles.Bold;
     }
 

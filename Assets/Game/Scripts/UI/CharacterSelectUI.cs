@@ -25,6 +25,8 @@ public class CharacterSelectUI : MonoBehaviour
     [Header("Personnage")]
     [SerializeField] private Image _characterImage;
     [SerializeField] private Image _characterName;
+    [Tooltip("Lumière du logo-nom (halo, reflets, étincelles). Ajouté automatiquement au logo s'il manque.")]
+    [SerializeField] private CharacterNameLight _nameLight;
 
     // AJOUTE (2026-09-17) - retour utilisateur : en retirant le fond beige des
     // portraits pour les poser sur la nouvelle illustration de fond, les lueurs
@@ -43,9 +45,15 @@ public class CharacterSelectUI : MonoBehaviour
     [Tooltip("Petites étincelles qui dérivent doucement autour de l'aura - teintées comme l'aura. Facultatif (tableau vide = désactivé).")]
     [SerializeField] private ProceduralGlowUI[] _sparkles = new ProceduralGlowUI[0];
 
-    [Header("Textes")]
-    [SerializeField] private TextMeshProUGUI _loreText;
-    [SerializeField] private TextMeshProUGUI _specialitiesText;
+    // AJOUTE (2026-09-19) - ambiance magique vivante (brume très diffuse, bokeh,
+    // poussières de lumière, éclats rares) générée en code, teintée à la couleur
+    // d'aura du perso et centrée sur le portrait. Facultatif (null = désactivé).
+    // Voir CharacterAmbientFX pour le détail et les curseurs d'intensité.
+    [Tooltip("Ambiance magique procédurale (brume, bokeh, poussières, éclats). Facultatif.")]
+    [SerializeField] private CharacterAmbientFX _ambientFX;
+
+    [Header("Fiche personnage (panneau de droite)")]
+    [SerializeField] private CharacterInfoPanel _infoPanel;
 
     [Header("Navigation")]
     [SerializeField] private Button _leftArrow;
@@ -61,8 +69,10 @@ public class CharacterSelectUI : MonoBehaviour
     [Tooltip("Bouton pour débloquer le perso contre des Éclats (filet anti-blocage). Facultatif.")]
     [SerializeField] private Button _unlockWithEclatsButton;
     [SerializeField] private TextMeshProUGUI _unlockWithEclatsButtonText;
-    [Tooltip("Opacité du portrait quand le personnage est verrouillé.")]
-    [SerializeField] private float _lockedPortraitAlpha = 0.35f;
+    [Tooltip("Opacité du portrait quand le personnage est verrouillé (1 = net ; l'effet 'pas encore à toi' vient de la désaturation, pas de la transparence).")]
+    [SerializeField] private float _lockedPortraitAlpha = 1f;
+    [Tooltip("Matériau désaturant appliqué au portrait d'un personnage verrouillé (Aether/UI/Desaturate). Vide = pas de désaturation.")]
+    [SerializeField] private Material _lockedPortraitMaterial;
 
     [Header("DEBUG UNIQUEMENT - à retirer avant release")]
     [Tooltip("Remet les déblocages à l'état 'première partie' (seul Aether). Se câble tout seul, glisse juste le bouton ici.")]
@@ -90,8 +100,21 @@ public class CharacterSelectUI : MonoBehaviour
         public Vector2 crystalGlowOffset;
         public Vector2 auraGlowOffset;
         public Color auraColor;
-        public string lore;
-        public string specialities;
+        // Brume de CharacterAmbientFX : couleur propre + éclaircissement + force, car sur
+        // certains fonds la teinte d'aura éclaircie disparaît (Aether : fond doré).
+        public Color mistColor;
+        public float mistWhitenScale;
+        public float mistAlphaScale;
+        // Fiche du panneau de droite (voir CharacterInfoPanel)
+        public Color infoAccent;
+        public string displayName;
+        public string[] tags;
+        public string weaponName;
+        public string weaponDescription;
+        public string weaponUpgrades;
+        public SkillTreeData.CharacterBranch branch;
+        public string branchName;
+        public string branchFocus;
     }
 
     // AJOUTE - teinte bleu-blanc du cristal, identique sur les 3 persos (voir
@@ -100,6 +123,7 @@ public class CharacterSelectUI : MonoBehaviour
     private static readonly Color CrystalGlowColor = new Color(0.72f, 0.88f, 1f);
 
     private CharacterData[] _characters;
+    private CharacterLockOverlay _lockStyle;
     private int _currentIndex = 0;
     private bool _isTransitioning = false;
 
@@ -113,6 +137,11 @@ public class CharacterSelectUI : MonoBehaviour
     {
         _characterRect = _characterImage.GetComponent<RectTransform>();
         _nameRect = _characterName.GetComponent<RectTransform>();
+        if (_nameLight == null)
+        {
+            _nameLight = _characterName.GetComponent<CharacterNameLight>();
+            if (_nameLight == null) _nameLight = _characterName.gameObject.AddComponent<CharacterNameLight>();
+        }
         _characterOriginalPos = _characterRect.anchoredPosition;
         _nameOriginalPos = _nameRect.anchoredPosition;
 
@@ -122,6 +151,8 @@ public class CharacterSelectUI : MonoBehaviour
             : 1920f;
 
         BuildCharacterData();
+
+        _lockStyle = _lockedOverlay != null ? _lockedOverlay.GetComponent<CharacterLockOverlay>() : null;
 
         _leftArrow.onClick.RemoveAllListeners();
         _leftArrow.onClick.AddListener(() => Navigate(-1));
@@ -152,65 +183,93 @@ public class CharacterSelectUI : MonoBehaviour
 
         ApplyCharacter(instant: true);
         ApplySelectButtonState();
+        if (_infoPanel != null) _infoPanel.FadeTo(1f, 0f); // repart toujours pleinement visible (transition interrompue)
     }
 
     private void BuildCharacterData()
     {
         _characters = new CharacterData[]
         {
+            // MODIFIE (2026-09-19) - ancien lore + "spécialités" supprimés (paragraphe de
+            // fiction + liste mélangeant boucle commune aux 3 persos, nœuds d'arbre payants
+            // et un "dash ultra-rapide" inexistant) : remplacés par la FICHE structurée de
+            // CharacterInfoPanel. Chaque donnée ci-dessous est vérifiable dans le jeu :
+            // l'arme exclusive (UpgradeData : Fireball / AuraUpgrade / Knives, débloquée par
+            // un level-up), ses paliers (Format*Description), la branche de l'arbre
+            // (SkillTreeData) et les mots-clés, qui décrivent l'ARME (portée, effet), pas
+            // des stats de perso qui n'existent pas encore. Couleurs d'accent = celles des
+            // médaillons de l'onglet Compétences (orange / vert / cyan).
             new CharacterData
             {
                 characterSprite      = _spriteAether,
                 nameLogoSprite       = _logoAether,
                 backgroundSprite     = _backgroundAether,
-                crystalGlowOffset    = new Vector2(107f, 271f),
-                auraGlowOffset       = new Vector2(-75f, -166f),
+                // MODIFIE (2026-09-19) - offsets recalculés d'après les PNG réels
+                // (AetherTR/KaelTR/LyraTR) au lieu de valeurs posées à l'œil sur
+                // l'ancienne illustration : cristal = centre du cristal bleu du bâton
+                // (détecté par la couleur, en haut de la silhouette), aura = centre de
+                // masse alpha du personnage. Repère = CharacterImage (preserveAspect,
+                // hauteur 836,46). Le cristal était ~45-57 px trop bas.
+                crystalGlowOffset    = new Vector2(86.5f, 328.5f),
+                auraGlowOffset       = new Vector2(-8f, 8f),
                 auraColor            = new Color(1f, 0.78f, 0.35f), // poussière ambrée/dorée d'Aether
-                lore =
-                    "Né au creux d'une tempête de mana, Aether a grandi entre les ruines d'un sanctuaire oublié. " +
-                    "Il ne cherche pas la gloire — il cherche des réponses. " +
-                    "Son cristal ne lui appartient pas : il l'a trouvé. Et depuis, il ne peut plus s'en séparer.",
-                specialities =
-                    "― Attaque au cristal de mana\n" +
-                    "― Maîtrise des projectiles élémentaires\n" +
-                    "― Fragmentation à l'impact\n" +
-                    "― Surpuissance post-ultime"
+                // Brume ORANGE (pas jaune/dorée) : le fond derrière Aether est déjà doré, une
+                // brume de la même teinte (et éclaircie) s'y confond. Orange profond, peu
+                // éclairci, un peu plus forte pour compenser le faible contraste avec l'or.
+                mistColor            = new Color(0.86f, 0.28f, 0.03f),
+                mistWhitenScale      = 0.15f,
+                mistAlphaScale       = 1.8f,
+                infoAccent           = new Color32(0xF2, 0x8A, 0x2E, 0xFF),
+                displayName           = "AETHER",
+                tags                 = new[] { "DISTANCE", "ZONE", "BRÛLURE" },
+                weaponName           = "Fireball",
+                weaponDescription    = "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité.",
+                weaponUpgrades       = "Rayon / Dégâts / Brûlure",
+                branch               = SkillTreeData.CharacterBranch.Guerrier,
+                branchName           = "GUERRIER",
+                branchFocus          = "Montée en puissance offensive"
             },
             new CharacterData
             {
                 characterSprite      = _spriteKael,
                 nameLogoSprite       = _logoKael,
                 backgroundSprite     = _backgroundKael,
-                crystalGlowOffset    = new Vector2(112f, 282f),
-                auraGlowOffset       = new Vector2(-48f, 23f),
+                crystalGlowOffset    = new Vector2(91f, 329f),
+                auraGlowOffset       = new Vector2(-2f, 15f),
                 auraColor            = new Color(0.42f, 0.9f, 0.46f), // volute verte de Kael
-                lore =
-                    "Kael n'a jamais reculé. Pas une fois. " +
-                    "Ancien protecteur d'une cité engloutie, il porte encore sur lui le poids de ceux qu'il n'a pas pu sauver. " +
-                    "Son bâton pulse au rythme de sa volonté — et sa volonté ne faiblit jamais.",
-                specialities =
-                    "― Aura de mana permanente au corps-à-corps\n" +
-                    "― Absorption et résistance aux dégâts\n" +
-                    "― Régénération et endurance\n" +
-                    "― Bouclier de mana automatique"
+                mistColor            = new Color(0.42f, 0.9f, 0.46f),
+                mistWhitenScale      = 1f,
+                mistAlphaScale       = 1f,
+                infoAccent           = new Color32(0x52, 0xD4, 0x6B, 0xFF),
+                displayName           = "KAEL",
+                tags                 = new[] { "MÊLÉE", "AURA", "RALENTISSEMENT" },
+                weaponName           = "Aura de mana",
+                weaponDescription    = "Champ permanent autour de toi qui blesse les ennemis au contact.",
+                weaponUpgrades       = "Dégâts / Rayon / Ralentissement",
+                branch               = SkillTreeData.CharacterBranch.Gardien,
+                branchName           = "GARDIEN",
+                branchFocus          = "Survie et résilience"
             },
             new CharacterData
             {
                 characterSprite      = _sprayteLyra,
                 nameLogoSprite       = _logoLyra,
                 backgroundSprite     = _backgroundLyra,
-                crystalGlowOffset    = new Vector2(91f, 309f),
-                auraGlowOffset       = new Vector2(-192f, -226f),
+                crystalGlowOffset    = new Vector2(84f, 354f),
+                auraGlowOffset       = new Vector2(-4f, -20f),
                 auraColor            = new Color(0.56f, 0.55f, 1f), // volute bleu-violet de Lyra
-                lore =
-                    "On ne la voit jamais venir. On ne la voit jamais partir. " +
-                    "Lyra opère dans les espaces entre les secondes — là où personne ne regarde. " +
-                    "Elle n'explique pas ses motivations. Elle livre ses résultats.",
-                specialities =
-                    "― Salve de shurikens de mana perforants\n" +
-                    "― Dash ultra-rapide et impulsion Nova\n" +
-                    "― Maîtrise du cristal et recharge d'ultime accélérée\n" +
-                    "― Clone fantôme attirant les ennemis"
+                mistColor            = new Color(0.56f, 0.55f, 1f),
+                mistWhitenScale      = 1f,
+                mistAlphaScale       = 1f,
+                infoAccent           = new Color32(0x33, 0xC6, 0xF0, 0xFF),
+                displayName           = "LYRA",
+                tags                 = new[] { "DISTANCE", "PERFORANT", "SALVE" },
+                weaponName           = "Salve de couteaux",
+                weaponDescription    = "Lance une salve de couteaux qui transpercent les ennemis.",
+                weaponUpgrades       = "Couteau en plus / Dégâts / Perforation",
+                branch               = SkillTreeData.CharacterBranch.Fantome,
+                branchName           = "FANTÔME",
+                branchFocus          = "Mobilité et dash"
             }
         };
     }
@@ -227,6 +286,9 @@ public class CharacterSelectUI : MonoBehaviour
         _isTransitioning = true;
         _leftArrow.interactable  = false;
         _rightArrow.interactable = false;
+
+        // La fiche s'efface pendant que le portrait sort, puis réapparaît avec le nouveau contenu.
+        if (_infoPanel != null) _infoPanel.FadeTo(0f, _slideDuration * 0.8f);
 
         float slideOutTarget = direction > 0 ? -_screenWidth :  _screenWidth;
         float slideInStart   = direction > 0 ?  _screenWidth : -_screenWidth;
@@ -250,6 +312,7 @@ public class CharacterSelectUI : MonoBehaviour
         _currentIndex = newIndex;
         ApplyCharacterContent();
         ApplyPanelBackground();
+        if (_infoPanel != null) _infoPanel.FadeTo(1f, _slideDuration);
 
         _characterRect.anchoredPosition = new Vector2(slideInStart, _characterOriginalPos.y);
         _nameRect.anchoredPosition      = new Vector2(slideInStart * 0.8f, _nameOriginalPos.y);
@@ -299,12 +362,24 @@ public class CharacterSelectUI : MonoBehaviour
 
         if (_characterName != null && data.nameLogoSprite != null)
             _characterName.sprite = data.nameLogoSprite;
+        if (_nameLight != null) _nameLight.SetAccent(data.infoAccent);
 
-        if (_loreText != null)
-            _loreText.text = data.lore;
-
-        if (_specialitiesText != null)
-            _specialitiesText.text = data.specialities;
+        if (_infoPanel != null)
+        {
+            _infoPanel.Show(new CharacterInfoPanel.Info
+            {
+                characterIndex    = _currentIndex,
+                accent            = data.infoAccent,
+                displayName       = data.displayName,
+                tags              = data.tags,
+                weaponName        = data.weaponName,
+                weaponDescription = data.weaponDescription,
+                weaponUpgrades    = data.weaponUpgrades,
+                branch            = data.branch,
+                branchName        = data.branchName,
+                branchFocus       = data.branchFocus
+            });
+        }
 
         ApplyGlowFX(data);
         ApplySelectButtonState();
@@ -328,6 +403,11 @@ public class CharacterSelectUI : MonoBehaviour
             _auraGlow.SetColor(data.auraColor);
             _auraGlow.SetBasePosition(data.auraGlowOffset);
         }
+
+        // Centrée sur le portrait (pas sur l'ancrage d'aura, qui décale la lueur
+        // vers un coin du corps selon le perso) : seule la teinte change.
+        if (_ambientFX != null)
+            _ambientFX.SetTint(data.auraColor, data.mistColor, data.mistWhitenScale, data.mistAlphaScale);
 
         if (_sparkles != null)
         {
@@ -476,6 +556,23 @@ public class CharacterSelectUI : MonoBehaviour
         }
     }
 
+    // AJOUTE (2026-09-19) - retour utilisateur : aucune lueur/ambiance magique sur un
+    // personnage verrouillé (cadenas + chaînes + portrait grisé ; des lueurs vives
+    // par-dessus contredisent l'état "inaccessible"). Désactive tout le rig : halos du
+    // cristal et de l'aura, étincelles, ambiance procédurale (dont sa brume derrière le
+    // portrait, qui suit via CharacterAmbientFX.OnDisable/OnEnable).
+    private void SetGlowsActive(bool active)
+    {
+        if (_crystalGlow != null) _crystalGlow.gameObject.SetActive(active);
+        if (_auraGlow != null) _auraGlow.gameObject.SetActive(active);
+
+        if (_sparkles != null)
+            foreach (ProceduralGlowUI sparkle in _sparkles)
+                if (sparkle != null) sparkle.gameObject.SetActive(active);
+
+        if (_ambientFX != null) _ambientFX.gameObject.SetActive(active);
+    }
+
     // Reflète l'état du personnage courant : verrouillé (portrait grisé, condition
     // + bouton Éclats) ou débloqué (bouton Sélectionner).
     private void ApplySelectButtonState()
@@ -484,12 +581,20 @@ public class CharacterSelectUI : MonoBehaviour
 
         bool unlocked = MetaProgressionManager.Instance.IsCharacterUnlocked(_currentIndex);
 
+        SetGlowsActive(unlocked);
+        if (_nameLight != null) _nameLight.SetLit(unlocked);
+        if (_infoPanel != null) _infoPanel.SetLocked(!unlocked);
+
+        // Verrouillé : portrait désaturé et légèrement assombri mais NET (un alpha bas donnait
+        // un fantôme délavé) ; débloqué : matériau et couleur d'origine.
         if (_characterImage != null)
         {
-            Color c = _characterImage.color;
-            c.a = unlocked ? 1f : _lockedPortraitAlpha;
-            _characterImage.color = c;
+            _characterImage.material = unlocked ? null : _lockedPortraitMaterial;
+            _characterImage.color = unlocked ? Color.white : new Color(0.86f, 0.86f, 0.92f, _lockedPortraitAlpha);
         }
+
+        if (!unlocked && _lockStyle != null)
+            _lockStyle.Apply(_characters[_currentIndex].infoAccent);
 
         if (_lockedOverlay != null)
             _lockedOverlay.SetActive(!unlocked);
@@ -532,6 +637,11 @@ public class CharacterSelectUI : MonoBehaviour
         bool isSelected = savedIndex == _currentIndex;
 
         _selectButton.interactable = !isSelected;
+
+        // Un bouton grisé qui dit toujours "Sélectionner" se lit comme désactivé sans raison :
+        // le perso déjà choisi l'annonce explicitement.
+        if (_selectButtonText != null)
+            _selectButtonText.text = isSelected ? "Sélectionné" : "Sélectionner";
 
         if (_selectButtonText != null)
             _selectButtonText.color = isSelected

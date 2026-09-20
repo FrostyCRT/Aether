@@ -65,18 +65,19 @@ public class GameManager : MonoBehaviour
 
         int index = MetaProgressionManager.Instance.GetSelectedCharacterIndex();
 
+        GameObject prefab;
         switch (index)
         {
-            case 1:
-                SpawnPrefab(_prefabKael);
-                break;
-            case 2:
-                SpawnPrefab(_prefabLyra);
-                break;
-            default:
-                SpawnPrefab(_prefabAether);
-                break;
+            case 1: prefab = _prefabKael; break;
+            case 2: prefab = _prefabLyra; break;
+            default: prefab = _prefabAether; break;
         }
+
+        // AJOUTE (2026-09-20) - skin équipé (onglet Réputation) : son prefab remplace celui d'origine s'il en a un.
+        SkinEntry skin = MetaProgressionManager.Instance.GetEquippedSkin(index);
+        if (skin != null && skin.playerPrefab != null) prefab = skin.playerPrefab;
+
+        SpawnPrefab(prefab);
     }
 
     private void SpawnPrefab(GameObject prefab)
@@ -146,7 +147,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // la page Paramètres (ouverte depuis le menu pause) garde la touche Pause pour se refermer
+        if (GameInput.Down(GameAction.Pause) && !SettingsPage.InGameOpen && SettingsPage.ClosedFrame != Time.frameCount)
         {
             if (LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice) return;
             TogglePause();

@@ -103,9 +103,9 @@ public class WeaponOrbital : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (_orbitals.Count == 0) return;
 
-        if (Input.GetKey(KeyCode.A))
+        if (GameInput.Held(GameAction.OrbitShrink))
             _orbitRadius = Mathf.Max(_minOrbitRadius, _orbitRadius - _rangeChangeSpeed * Time.deltaTime);
-        if (Input.GetKey(KeyCode.E))
+        if (GameInput.Held(GameAction.OrbitGrow))
             _orbitRadius = Mathf.Min(_maxOrbitRadius, _orbitRadius + _rangeChangeSpeed * Time.deltaTime);
 
         _currentAngle += _orbitSpeed * Time.deltaTime;

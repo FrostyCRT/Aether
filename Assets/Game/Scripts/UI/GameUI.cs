@@ -121,6 +121,10 @@ public class GameUI : MonoBehaviour
     [Header("Clone (Lyra)")]
     [SerializeField] private GameObject _cloneCooldownContainer;
     [SerializeField] private Image _cloneCooldownFill;
+    [Tooltip("Texte de l'icône du clone : affiche la touche assignée dans Paramètres > Commandes (trouvé tout seul dans le conteneur s'il est vide).")]
+    [SerializeField] private TextMeshProUGUI _cloneKeyText;
+    [Tooltip("Taille max de la touche dans la pastille du clone, en proportion de la taille d'origine du texte (appliquée au lancement).")]
+    [Range(0.3f, 1.2f)] [SerializeField] private float _cloneKeyFontScale = 0.72f;
 
     [Header("Concentration (Aether)")]
     // AJOUTE - lecture du bonus dynamique du nœud Guerrier "Concentration".
@@ -154,6 +158,8 @@ public class GameUI : MonoBehaviour
 
     [Header("Pause")]
     [SerializeField] private GameObject _pausePanel;
+    [SerializeField] private Button _pauseSettingsButton;      // menu pause : ouvre la page Paramètres
+    [SerializeField] private GameObject _settingsPage;
     [SerializeField] private TextMeshProUGUI _pauseStatsText;
     [SerializeField] private TextMeshProUGUI _pauseUpgradesText;
     [SerializeField] private GameObject _abandonConfirmPanel;
@@ -237,6 +243,16 @@ public class GameUI : MonoBehaviour
             return;
         }
         Instance = this;
+        GameSettings.Changed += OnUserSettingChanged;
+        SettingsPage.InGameClosed += OnSettingsClosed;
+        InputBindings.Changed += OnBindingChanged;
+    }
+
+    private void OnDestroy()
+    {
+        GameSettings.Changed -= OnUserSettingChanged;
+        SettingsPage.InGameClosed -= OnSettingsClosed;
+        InputBindings.Changed -= OnBindingChanged;
     }
 
     private void Start()
@@ -245,6 +261,100 @@ public class GameUI : MonoBehaviour
             UpdateGold(MetaProgressionManager.Instance.RunGold);
 
         UpdateKillCount(0);
+        ApplyUserSettings();
+        RefreshCloneKey();
+        FitStatStrips();
+
+        if (_pauseSettingsButton != null) _pauseSettingsButton.onClick.AddListener(OpenSettings);
+    }
+
+    // Menu pause > Paramètres : la page (même prefab que le menu principal) s'affiche par-dessus, la partie reste en pause.
+    public void OpenSettings()
+    {
+        if (_pausePanel != null) _pausePanel.SetActive(false);      // la page Paramètres prend tout l'écran (la partie reste visible en fond)
+        if (_settingsPage != null) _settingsPage.SetActive(true);
+    }
+
+    // La page Paramètres vient de se fermer : retour au menu pause (si la partie est toujours en pause).
+    private void OnSettingsClosed()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused) ShowPausePanel(true);
+    }
+
+    // ---- réglages du joueur (Paramètres > Interface) -------------------------------------------------------
+    // Échelle du HUD = échelle du seul panneau HUD (jamais du Canvas entier : les menus pause / montée de niveau /
+    // fin de partie sont dessinés plein cadre et déborderaient). Le panneau est centré, réduit à (écran ÷ échelle)
+    // puis agrandi de l'échelle : il couvre toujours exactement l'écran, donc les éléments restent collés à leurs
+    // bords. Opacité = CanvasGroup posé sur le HUD. Chronomètre / or / kills = simple activation de leur texte.
+    private CanvasGroup _hudGroup;
+    private RectTransform _hudRect;
+    private Vector2 _hudParentSize;
+    private float _hudAppliedScale = -1f;
+
+    private void LateUpdate()
+    {
+        // la fenêtre a changé de taille : le panneau HUD doit suivre
+        if (_hudRect != null && _hudRect.parent is RectTransform p && (p.rect.size - _hudParentSize).sqrMagnitude > 0.25f)
+            ApplyHudScale();
+    }
+
+    private void ApplyHudScale()
+    {
+        if (_hudPanel == null) return;
+        if (_hudRect == null) _hudRect = _hudPanel.GetComponent<RectTransform>();
+        if (_hudRect == null || !(_hudRect.parent is RectTransform parent)) return;
+
+        float s = Mathf.Clamp(GameSettings.GetFloat(GameSettings.HudScale), 0.5f, 1.5f);
+        _hudParentSize = parent.rect.size;
+        _hudAppliedScale = s;
+
+        _hudRect.pivot = new Vector2(0.5f, 0.5f);
+        if (Mathf.Abs(s - 1f) < 0.001f)
+        {
+            _hudRect.anchorMin = Vector2.zero;
+            _hudRect.anchorMax = Vector2.one;
+            _hudRect.offsetMin = _hudRect.offsetMax = Vector2.zero;
+            _hudRect.localScale = Vector3.one;
+            return;
+        }
+        _hudRect.anchorMin = _hudRect.anchorMax = new Vector2(0.5f, 0.5f);
+        _hudRect.anchoredPosition = Vector2.zero;
+        _hudRect.sizeDelta = _hudParentSize / s;
+        _hudRect.localScale = new Vector3(s, s, 1f);
+    }
+
+    private void OnUserSettingChanged(string key)
+    {
+        switch (key)
+        {
+            case GameSettings.HudScale:
+            case GameSettings.HudOpacity:
+            case GameSettings.ShowTimer:
+            case GameSettings.ShowGold:
+            case GameSettings.ShowKills:
+                ApplyUserSettings(); break;
+        }
+    }
+
+    public void ApplyUserSettings()
+    {
+        ApplyHudScale();
+
+        if (_hudPanel != null)
+        {
+            if (_hudGroup == null)
+            {
+                _hudGroup = _hudPanel.GetComponent<CanvasGroup>();
+                if (_hudGroup == null) _hudGroup = _hudPanel.AddComponent<CanvasGroup>();
+                _hudGroup.interactable = false;
+                _hudGroup.blocksRaycasts = false;
+            }
+            _hudGroup.alpha = GameSettings.GetFloat(GameSettings.HudOpacity);
+        }
+
+        if (_timerText != null) _timerText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowTimer));
+        if (_goldText != null) _goldText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowGold));
+        if (_killCountText != null) _killCountText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowKills));
     }
 
     public void UpdateUltStack(int stacks)
@@ -441,7 +551,7 @@ public class GameUI : MonoBehaviour
                 RecordCheck[] checks =
                 {
                     new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !", nearRecordMessage = "À deux doigts de ton record de survie..." },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record de kills : {killCount} ennemis !", nearRecordMessage = "Si proche de ton record de kills..." },
+                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record d'éliminations : {killCount} !", nearRecordMessage = "Si proche de ton record d'éliminations..." },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = $"Nouveau record de niveau : {levelReached} !", nearRecordMessage = "Un cheveu de ton meilleur niveau..." },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = $"Nouveau record d'Or en une partie : {goldThisRun} !", nearRecordMessage = "Tout près de ton record d'Or..." },
                 };
@@ -827,7 +937,7 @@ public class GameUI : MonoBehaviour
                 RecordCheck[] checks =
                 {
                     new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !" },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record de kills : {killCount} ennemis !" },
+                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record d'éliminations : {killCount} !" },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = $"Nouveau record de niveau : {levelReached} !" },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = $"Nouveau record d'Or en une partie : {goldThisRun} !" },
                 };
@@ -895,7 +1005,7 @@ public class GameUI : MonoBehaviour
         // 3 lignes. "Boss 3/3" est fixe : la Victoire ne se déclenche QUE quand
         // les 3 boss sont vaincus (invariant WaveManager.OnBossDied -> GameManager).
         if (_victoryStatsText != null)
-            _victoryStatsText.text = $"Survie {mins:00}:{secs:00}    ·    Kills {killCount}    ·    Niveau {level}    ·    Boss 3/3";
+            _victoryStatsText.text = $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    Boss 3/3";
 
         PopulateVictoryRecap(runTimer, killCount);
         bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
@@ -965,6 +1075,46 @@ public class GameUI : MonoBehaviour
     {
         if (_dashCooldownBar != null)
             _dashCooldownBar.value = Mathf.Clamp01(percent);
+    }
+
+    // L'icône du clone (Lyra) montre la touche que le joueur a réellement assignée : « C » par défaut, mais plus
+    // jamais une lettre fausse après un changement dans Paramètres > Commandes (mise à jour immédiate, même en pause).
+    private void OnBindingChanged(GameAction action)
+    {
+        if (action == GameAction.PhantomClone) RefreshCloneKey();
+    }
+
+    // « Éliminations » est plus long que « Kills » : les bandeaux de stats (Game Over / Victoire) réduisent leur police
+    // au besoin plutôt que de déborder de leur cadre.
+    private void FitStatStrips()
+    {
+        foreach (TextMeshProUGUI t in new[] { _statsText, _victoryStatsText })
+        {
+            if (t == null || t.enableAutoSizing) continue;
+            float max = t.fontSize;
+            t.enableAutoSizing = true;
+            t.fontSizeMax = max;
+            t.fontSizeMin = Mathf.Max(10f, max * 0.65f);
+        }
+    }
+
+    private void RefreshCloneKey()
+    {
+        if (_cloneKeyText == null && _cloneCooldownContainer != null)
+        {
+            foreach (TextMeshProUGUI t in _cloneCooldownContainer.GetComponentsInChildren<TextMeshProUGUI>(true))
+                if (t.text.Trim().Length <= 4) { _cloneKeyText = t; break; }
+        }
+        if (_cloneKeyText == null) return;
+        if (!_cloneKeyText.enableAutoSizing)                      // « Maj », « Ctrl »... doivent tenir dans la pastille
+        {
+            float max = _cloneKeyText.fontSize * _cloneKeyFontScale;      // la touche reste discrète dans la pastille
+            _cloneKeyText.enableAutoSizing = true;
+            _cloneKeyText.fontSizeMax = max;
+            _cloneKeyText.fontSizeMin = Mathf.Max(8f, max * 0.4f);
+            _cloneKeyText.textWrappingMode = TextWrappingModes.NoWrap;
+        }
+        _cloneKeyText.text = GameInput.ShortBindingLabel(GameAction.PhantomClone);
     }
 
     public void UpdateCloneCooldown(float percent)
@@ -1082,7 +1232,7 @@ public class GameUI : MonoBehaviour
     public void UpdateKillCount(int kills)
     {
         if (_killCountText != null)
-            _killCountText.text = $"Kills : {kills}";
+            _killCountText.text = $"Éliminations : {kills}";
     }
 
     public void UpdateXPBar(float currentXP, float xpToNextLevel, int level)
@@ -1138,6 +1288,7 @@ public class GameUI : MonoBehaviour
         }
         if (_bossHPSlider != null) _bossHPSlider.value = 1f;
         if (_bossIcon != null) _bossIcon.SetActive(true);
+        if (_bossHPBar != null) { HudBar hb = _bossHPBar.GetComponent<HudBar>(); if (hb != null) hb.PlayIntro(); }   // la barre se remplit à l'apparition
     }
 
     public void UpdateBossHP(float current, float max)
@@ -1172,7 +1323,7 @@ public class GameUI : MonoBehaviour
         // MODIFIE - refonte 3-temps, meme format compact que la Victoire (une
         // seule ligne) plutot que le pave de 3 lignes d'avant.
         if (_statsText != null)
-            _statsText.text = $"Survie {mins:00}:{secs:00}    ·    Kills {killCount}    ·    Niveau {level}    ·    Boss {bossKillCount}/3";
+            _statsText.text = $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    Boss {bossKillCount}/3";
 
         PopulateGameOverPortrait();
         int gameOverTileCount = PopulateBuildGrid(_gameOverBuildGridContent);
@@ -1205,6 +1356,7 @@ public class GameUI : MonoBehaviour
     public void ShowPausePanel(bool show)
     {
         if (_pausePanel != null) _pausePanel.SetActive(show);
+        SettingsApplier.SetPauseDuck(show);          // le son du jeu baisse légèrement pendant la pause
 
         if (show)
         {

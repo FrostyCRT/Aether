@@ -6,7 +6,7 @@ public class GameSceneSettingsApplier : MonoBehaviour
 
     private void Start()
     {
-        bool shadowsOn = SettingsManager.AreShadowsEnabled();
+        bool shadowsOn = GameSettings.ShadowsEnabled;
         if (_directionalLight != null)
             _directionalLight.shadows = shadowsOn ? LightShadows.Soft : LightShadows.None;
     }

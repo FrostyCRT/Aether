@@ -86,6 +86,8 @@ public class MetaProgressionManager : MonoBehaviour
         if (levelReached > Data.bestLevel) Data.bestLevel = levelReached;
         if (RunGold > Data.bestGoldInRun) Data.bestGoldInRun = RunGold;
 
+        RecordCharacterRun(runTime, victory);
+
         int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory);
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
@@ -97,6 +99,51 @@ public class MetaProgressionManager : MonoBehaviour
         // se sauvegarde lui-même si c'est un nouveau déblocage.
         if (victory)
             UnlockCharacter(2);
+    }
+
+    // =====================
+    // PARCOURS PAR PERSONNAGE (fiche de l'onglet Personnage)
+    // =====================
+
+    // Garantit 3 cases par tableau (save ancien/édité/tronqué) en conservant l'existant.
+    private void EnsureCharacterStatArrays()
+    {
+        if (Data == null) return;
+        if (Data.runsByCharacter == null || Data.runsByCharacter.Length < 3)
+            System.Array.Resize(ref Data.runsByCharacter, 3);
+        if (Data.winsByCharacter == null || Data.winsByCharacter.Length < 3)
+            System.Array.Resize(ref Data.winsByCharacter, 3);
+        if (Data.bestTimeByCharacter == null || Data.bestTimeByCharacter.Length < 3)
+            System.Array.Resize(ref Data.bestTimeByCharacter, 3);
+    }
+
+    // Le personnage joué = celui sélectionné (la sélection ne change pas en cours de partie),
+    // avec le même repli de sécurité que le spawn (perso verrouillé -> Aether).
+    private void RecordCharacterRun(float runTime, bool victory)
+    {
+        EnsureCharacterStatArrays();
+        int c = Mathf.Clamp(GetSelectedCharacterIndex(), 0, 2);
+        Data.runsByCharacter[c]++;
+        if (victory) Data.winsByCharacter[c]++;
+        if (runTime > Data.bestTimeByCharacter[c]) Data.bestTimeByCharacter[c] = runTime;
+    }
+
+    public int GetCharacterRuns(int index)
+    {
+        EnsureCharacterStatArrays();
+        return Data != null && index >= 0 && index < 3 ? Data.runsByCharacter[index] : 0;
+    }
+
+    public int GetCharacterWins(int index)
+    {
+        EnsureCharacterStatArrays();
+        return Data != null && index >= 0 && index < 3 ? Data.winsByCharacter[index] : 0;
+    }
+
+    public float GetCharacterBestTime(int index)
+    {
+        EnsureCharacterStatArrays();
+        return Data != null && index >= 0 && index < 3 ? Data.bestTimeByCharacter[index] : 0f;
     }
 
     private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory)
@@ -398,25 +445,107 @@ public class MetaProgressionManager : MonoBehaviour
     // RÉPUTATION — tronc commun, aucun filtre de branche
     // =====================
 
+    // Valeurs de chaque palier (index = niveau, 0 = aucun bonus). Publiques en lecture pour que l'onglet Réputation
+    // puisse afficher le bonus du PROCHAIN palier sans dupliquer ces tableaux.
+    public const int MaxReputationLevel = 5;
+    private static readonly float[] ReputationDamageValues = { 0f, 0.05f, 0.12f, 0.20f, 0.30f, 0.42f };
+    private static readonly float[] ReputationSpeedValues = { 0f, 0.05f, 0.10f, 0.16f, 0.23f, 0.25f };
+    private static readonly float[] ReputationRegenValues = { 0f, 10f, 20f, 30f, 50f, 70f };
+
+    // Bonus d'une stat de Réputation à un niveau donné (0..MaxReputationLevel) : Dégâts / Vitesse en fraction
+    // (0,42 = +42 %), Régénération en PV/s. Renvoie 0 pour un identifiant inconnu.
+    public float GetReputationValueAt(string nodeId, int level)
+    {
+        float[] values = null;
+        switch (nodeId)
+        {
+            case "reputationDamage": values = ReputationDamageValues; break;
+            case "reputationSpeed": values = ReputationSpeedValues; break;
+            case "reputationRegen": values = ReputationRegenValues; break;
+        }
+        if (values == null) return 0f;
+        return values[Mathf.Clamp(level, 0, values.Length - 1)];
+    }
+
     public float GetReputationBonusDamage()
     {
         if (Data == null) return 0f;
-        float[] values = { 0f, 0.05f, 0.12f, 0.20f, 0.30f, 0.42f };
-        return values[Mathf.Clamp(Data.reputationDamageLevel, 0, values.Length - 1)];
+        return GetReputationValueAt("reputationDamage", Data.reputationDamageLevel);
     }
 
     public float GetReputationBonusSpeed()
     {
         if (Data == null) return 0f;
-        float[] values = { 0f, 0.05f, 0.10f, 0.16f, 0.23f, 0.25f };
-        return values[Mathf.Clamp(Data.reputationSpeedLevel, 0, values.Length - 1)];
+        return GetReputationValueAt("reputationSpeed", Data.reputationSpeedLevel);
     }
 
     public float GetReputationBonusRegen()
     {
         if (Data == null) return 0f;
-        float[] values = { 0f, 10f, 20f, 30f, 50f, 70f };
-        return values[Mathf.Clamp(Data.reputationRegenLevel, 0, values.Length - 1)];
+        return GetReputationValueAt("reputationRegen", Data.reputationRegenLevel);
+    }
+
+    // =====================
+    // SKINS (onglet Réputation)
+    // =====================
+
+    public enum SkinBuyResult { Ok, Unknown, AlreadyOwned, CharacterLocked, NotEnoughCurrency }
+
+    public bool IsSkinOwned(SkinEntry skin)
+    {
+        if (skin == null || Data == null) return false;
+        return skin.isDefault || Data.ownedSkins.Contains(skin.id);
+    }
+
+    // Skin équipé d'un personnage ; la tenue d'origine si rien n'est équipé (ou si le skin n'existe plus / n'est plus possédé).
+    public SkinEntry GetEquippedSkin(int characterIndex)
+    {
+        characterIndex = Mathf.Clamp(characterIndex, 0, SkinCatalog.CharacterCount - 1);
+        SkinCatalog catalog = SkinCatalog.Instance;
+        if (Data != null && Data.equippedSkins != null && characterIndex < Data.equippedSkins.Length)
+        {
+            SkinEntry equipped = catalog.Get(Data.equippedSkins[characterIndex]);
+            if (equipped != null && equipped.characterIndex == characterIndex && IsSkinOwned(equipped)) return equipped;
+        }
+        return catalog.DefaultFor(characterIndex);
+    }
+
+    public SkinBuyResult TryBuySkin(string skinId)
+    {
+        SkinEntry skin = SkinCatalog.Instance.Get(skinId);
+        if (skin == null || Data == null) return SkinBuyResult.Unknown;
+        if (IsSkinOwned(skin)) return SkinBuyResult.AlreadyOwned;
+        if (!IsCharacterUnlocked(skin.characterIndex)) return SkinBuyResult.CharacterLocked;
+
+        if (skin.tier == SkinTier.Prestige)
+        {
+            if (Data.totalEclats < skin.cost) return SkinBuyResult.NotEnoughCurrency;
+            Data.totalEclats -= skin.cost;
+        }
+        else
+        {
+            if (Data.totalGold < skin.cost) return SkinBuyResult.NotEnoughCurrency;
+            Data.totalGold -= skin.cost;
+        }
+        Data.ownedSkins.Add(skin.id);
+        SaveSystem.Save(Data);
+        return SkinBuyResult.Ok;
+    }
+
+    public bool EquipSkin(string skinId)
+    {
+        SkinEntry skin = SkinCatalog.Instance.Get(skinId);
+        if (skin == null || Data == null || !IsSkinOwned(skin)) return false;
+        if (!IsCharacterUnlocked(skin.characterIndex)) return false;
+        if (Data.equippedSkins == null || Data.equippedSkins.Length < SkinCatalog.CharacterCount)
+        {
+            string[] grown = new string[SkinCatalog.CharacterCount];
+            if (Data.equippedSkins != null) System.Array.Copy(Data.equippedSkins, grown, Data.equippedSkins.Length);
+            Data.equippedSkins = grown;
+        }
+        Data.equippedSkins[skin.characterIndex] = skin.isDefault ? "" : skin.id;
+        SaveSystem.Save(Data);
+        return true;
     }
 
     // =====================
@@ -604,7 +733,7 @@ public class MetaProgressionManager : MonoBehaviour
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
 
-        Data.totalGold = 10000; // remettre à 0 pour la release
+        Data.totalGold = 50000; // DEBUG : 50000 = de quoi tout acheter (~15 100 pour les 3 branches) avec de la marge ; remettre à 0 pour la release
 
         SaveSystem.Save(Data);
     }

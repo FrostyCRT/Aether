@@ -30,6 +30,10 @@ public class DamageNumberSpawner : MonoBehaviour
     {
         if (ObjectPool.Instance == null) return;
 
+        // Réglages du joueur (Paramètres > Jeu) : nombres de dégâts infligés / subis (le joueur = rouge)
+        bool taken = color == ColorPlayer;
+        if (!GameSettings.GetBool(taken ? GameSettings.DamageTaken : GameSettings.DamageDealt)) return;
+
         if (target != null && _activeNumbers.TryGetValue(target, out DamageNumber existing)
             && existing != null && existing.gameObject.activeSelf
             && existing.ElapsedTime <= _fuseWindow)

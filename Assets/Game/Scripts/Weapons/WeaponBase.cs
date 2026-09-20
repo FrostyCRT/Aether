@@ -74,7 +74,7 @@ public class WeaponBase : MonoBehaviour
 
             Vector3 firingOrigin = _projectileSpawnPoint != null ? _projectileSpawnPoint.position : transform.position;
 
-            if (SettingsManager.IsAutoFireEnabled())
+            if (GameSettings.AutoAimEnabled)
             {
                 Transform nearest = FindNearestEnemy();
                 if (nearest != null)

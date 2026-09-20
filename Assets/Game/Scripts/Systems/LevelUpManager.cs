@@ -93,9 +93,9 @@ public class LevelUpManager : MonoBehaviour
             // symptome que l'ancien listener persistant sur les boutons.
             if (_upgradeUI != null)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1)) _upgradeUI.SelectCardByIndex(0);
-                if (Input.GetKeyDown(KeyCode.Alpha2)) _upgradeUI.SelectCardByIndex(1);
-                if (Input.GetKeyDown(KeyCode.Alpha3)) _upgradeUI.SelectCardByIndex(2);
+                if (GameInput.Down(GameAction.Card1)) _upgradeUI.SelectCardByIndex(0);
+                if (GameInput.Down(GameAction.Card2)) _upgradeUI.SelectCardByIndex(1);
+                if (GameInput.Down(GameAction.Card3)) _upgradeUI.SelectCardByIndex(2);
             }
         }
     }
