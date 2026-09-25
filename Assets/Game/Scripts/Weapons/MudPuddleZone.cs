@@ -108,9 +108,14 @@ public class MudPuddleZone : MonoBehaviour
             // deja les boss (GetInstanceID fonctionne sur n'importe quel Collider),
             // donc la restauration de vitesse ci-dessous les detecte correctement
             // quand ils sortent du rayon.
-            BossBase boss = hit.GetComponent<BossBase>();
+            BossBase boss = hit.GetComponentInParent<BossBase>();
             if (boss != null)
             {
+                // CORRIGE (2026-09-24) - la restauration plus bas compare l'ID du COMPOSANT BossBase
+                // (boss.GetInstanceID()) alors que _inRangeThisTick ne contenait que l'ID du COLLIDER :
+                // jamais égaux, donc le boss était ralenti puis remis à 1 dans le même tick (aucun effet visible).
+                if (!_inRangeThisTick.Add(boss.GetInstanceID())) continue; // déjà traité ce tick (plusieurs colliders)
+
                 if (_damagePerSecond > 0f)
                     boss.TakeDamage(tickDamage);
 

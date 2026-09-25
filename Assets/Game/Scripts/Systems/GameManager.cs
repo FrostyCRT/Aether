@@ -125,6 +125,12 @@ public class GameManager : MonoBehaviour
     private void OnDisable()
     {
         GameUI.OnEndScreenRevealComplete -= HandleEndScreenRevealComplete;
+
+        // rend toujours le curseur en quittant la partie (retour menu, rechargement)
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);   // rend le curseur système (menu principal, etc.)
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        _cursorState = -1;
     }
 
     private void HandleEndScreenRevealComplete()
@@ -132,8 +138,50 @@ public class GameManager : MonoBehaviour
         _replayShortcutReady = true;
     }
 
+    // AJOUTÉ (2026-09-24) - curseur invisible en pleine partie ; visible dès qu'un panneau doit être cliqué
+    // (pause, paramètres, choix de niveau, Game Over, Victoire). Le curseur personnalisé viendra plus tard.
+    // Cursor.visible = false ne suffit pas : dans l'éditeur, Échap (touche Pause) remet le curseur système visible et
+    // ignore Cursor.visible jusqu'au prochain clic. On remplace donc AUSSI l'image du curseur par un carré 100 %
+    // transparent : même si le système le déclare « visible », on ne voit rien, dans tous les cas.
+    private static Texture2D _blankCursor;
+    private int _cursorState = -1;   // 0 = caché, 1 = visible
+
+    private void ApplyCursor(bool show)
+    {
+        if (_blankCursor == null)
+        {
+            _blankCursor = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+            _blankCursor.SetPixels32(new Color32[16 * 16]);
+            _blankCursor.Apply();
+            _blankCursor.hideFlags = HideFlags.HideAndDontSave;
+        }
+        if (_cursorState != (show ? 1 : 0))
+        {
+            _cursorState = show ? 1 : 0;
+            Cursor.SetCursor(show ? null : _blankCursor, Vector2.zero, CursorMode.ForceSoftware);
+        }
+        Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Confined;
+        Cursor.visible = show;
+    }
+
+    private void UpdateCursor()
+    {
+        bool needCursor = _isGameOver || IsPaused
+            || SettingsPage.InGameOpen
+            || (LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice);
+        ApplyCursor(needCursor);
+    }
+
+    // au retour dans la fenêtre / l'éditeur, le système peut avoir rendu son curseur : on force la réapplication
+    private void OnApplicationFocus(bool focus)
+    {
+        if (focus) _cursorState = -1;
+    }
+
     private void Update()
     {
+        UpdateCursor();
+
         // MODIFIE - raccourci de relance instantanee (Entree/Espace), desormais
         // verrouille tant que _replayShortcutReady n'est pas passe a vrai par
         // HandleEndScreenRevealComplete().
@@ -143,6 +191,12 @@ public class GameManager : MonoBehaviour
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space)))
             {
                 RestartGame();
+            }
+            // AJOUTÉ (2026-09-24) - Échap (ou la touche Pause rebindée) sur l'écran de Game Over / Victoire = retour au menu
+            else if (_replayShortcutReady && (Input.GetKeyDown(KeyCode.Escape) || GameInput.Down(GameAction.Pause)))
+            {
+                _replayShortcutReady = false; // évite un double chargement
+                GoToMainMenu();
             }
             return;
         }

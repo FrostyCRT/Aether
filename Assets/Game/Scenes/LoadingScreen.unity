@@ -1154,6 +1154,9 @@ MonoBehaviour:
   _maxAlpha: 0.65
   _minScale: 0.95
   _maxScale: 1.08
+  _enableDrift: 0
+  _driftRadius: 15
+  _driftSpeed: 0.3
 --- !u!1 &1086551076
 GameObject:
   m_ObjectHideFlags: 0

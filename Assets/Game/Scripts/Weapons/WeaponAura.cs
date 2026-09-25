@@ -138,9 +138,12 @@ public class WeaponAura : MonoBehaviour
                 continue;
             }
             // MODIFIE - le boss est desormais ralenti EN PLUS d'encaisser les degats.
-            BossBase boss = hit.GetComponent<BossBase>();
+            BossBase boss = hit.GetComponentInParent<BossBase>();
             if (boss != null)
             {
+                // CORRIGE (2026-09-24) - voir MudPuddleZone : la restauration compare l'ID du composant BossBase,
+                // pas celui du collider -> le boss était remis à vitesse normale dans le même tick.
+                if (!_inRangeThisTick.Add(boss.GetInstanceID())) continue; // déjà traité ce tick (plusieurs colliders)
                 boss.TakeDamage(tickDamage);
                 boss.SetSpeedMultiplier(_slowMultiplier);
                 _currentlySlowedBoss = boss;

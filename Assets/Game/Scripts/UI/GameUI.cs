@@ -11,9 +11,20 @@ public class GameUI : MonoBehaviour
     // Palette a 3 paliers reprise telle quelle des pastilles d'upgrade
     // (UpgradeSlot/Réputation), pour une cohérence visuelle totale entre tous
     // les indicateurs à paliers du jeu.
-    private static readonly Color _emptyTierColor = new Color32(0x59, 0x4C, 0x40, 150);
-    private static readonly Color _filledTierColor = new Color32(0x2D, 0xD4, 0xCF, 255);
-    private static readonly Color _maxTierColor = new Color32(0xFF, 0xC9, 0x4D, 255);
+    // Couleurs des paliers (cristaux d'ultime, points de compétences, Concentration) : réglables par HudStyler (palette du HUD).
+    private static Color _emptyTierColor = new Color32(0x59, 0x4C, 0x40, 150);
+    private static Color _filledTierColor = new Color32(0x2D, 0xD4, 0xCF, 255);
+    private static Color _maxTierColor = new Color32(0xFF, 0xC9, 0x4D, 255);
+
+    public static void SetTierColors(Color empty, Color filled, Color max)
+    {
+        _emptyTierColor = empty; _filledTierColor = filled; _maxTierColor = max;
+    }
+
+    public void SetShieldColors(Color filled, Color locked)
+    {
+        _manaShieldFilledColor = filled; _manaShieldLockedColor = locked;
+    }
 
     [Header("XP")]
     [SerializeField] private Slider _xpBar;
@@ -369,8 +380,8 @@ public class GameUI : MonoBehaviour
 
         _ultStackText.gameObject.SetActive(true);
         _ultStackText.text = stacks == 2
-            ? "<color=#FFC94D>ULT x2</color>"
-            : "<color=#2DD4CF>ULT x1</color>";
+            ? "<color=#" + ColorUtility.ToHtmlStringRGB(_maxTierColor) + ">ULT x2</color>"
+            : "<color=#" + ColorUtility.ToHtmlStringRGB(_filledTierColor) + ">ULT x1</color>";
     }
 
     public void UpdateCrystalCharge(int current, int max)

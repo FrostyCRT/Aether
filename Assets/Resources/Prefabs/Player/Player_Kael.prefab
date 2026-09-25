@@ -166,7 +166,7 @@ MonoBehaviour:
   _phantomEscapeSpeedMultiplier: 1.5
   _phantomEscapeSpeedDuration: 1.2
   _cloneTint: {r: 0.55, g: 0.7, b: 1, a: 1}
-  _cloneAlpha: 0.55
+  _cloneAlpha: 1
   _phantomSelfAlpha: 0.45
   _blinkInterval: 0.1
 --- !u!114 &7671530704944036374

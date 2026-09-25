@@ -15437,7 +15437,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b67b372e671ee5249a6fd0374d21ff07, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c98ff2eeb0259f043bdb2af251018459, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -38320,7 +38320,7 @@ MonoBehaviour:
       poids: 20
     healthMultiplier: 1
   - nom: Corbeau
-    debutMinutes: 1
+    debutMinutes: 4
     composition:
     - poolTag: Enemy
       poids: 30
@@ -38332,7 +38332,7 @@ MonoBehaviour:
       poids: 30
     healthMultiplier: 1.5
   - nom: Tisseuse
-    debutMinutes: 3
+    debutMinutes: 8
     composition:
     - poolTag: Enemy
       poids: 20
@@ -38346,7 +38346,7 @@ MonoBehaviour:
       poids: 30
     healthMultiplier: 3
   - nom: Brute
-    debutMinutes: 5
+    debutMinutes: 12
     composition:
     - poolTag: Enemy
       poids: 20
@@ -46220,29 +46220,52 @@ MonoBehaviour:
   _timerFontSize: 52
   _hpLength: 520
   _hpThickness: 32
-  _hpMedallion: 56
+  _hpMedallion: 64
   _hpBarInset: 44
   _hpFontSize: 26
+  _hpTextLeft: 42
+  _hpTextRight: -10
+  _lifeColorByTier: 1
   _xpThickness: 20
   _bossBarThickness: 30
   _bossSideShift: 34
   _bossHitFlashQuietTime: 1
   _bossTopGap: 372
   _bossBottomGap: 150
-  _bossIconY: 300
-  _bossIconSize: {x: 112, y: 82}
+  _bossIconY: 310
+  _bossIconSize: {x: 120, y: 90}
   _bossNameFontSize: 42
   _bossNameOffsetY: 68
   _bottomMargin: 60
-  _dashCaptionX: 15
+  _clusterY: 150
+  _dashCaptionX: 0
   _captionFontSize: 27
   _captionColor: {r: 0.96, g: 0.89, b: 0.72, a: 1}
   _captionGap: 6
   _dashLength: 210
-  _dashThickness: 16
-  _dashMedallion: 38
-  _ultStackFontSize: 42
-  _crystalSize: {x: 32, y: 50}
+  _dashThickness: 18
+  _ultStackFontSize: 32
+  _crystalSize: {x: 34, y: 34}
+  _lifeColor: {r: 0.78039217, g: 0.18039216, b: 0.2, a: 1}
+  _bossColor: {r: 0.81960785, g: 0.16862746, b: 0.16862746, a: 1}
+  _bossNameColor: {r: 0.9098039, g: 0.22745098, b: 0.19607843, a: 1}
+  _xpColor: {r: 0.24313726, g: 0.5176471, b: 0.8392157, a: 1}
+  _dashColor: {r: 0.7372549, g: 0.8235294, b: 0.8901961, a: 1}
+  _crystalFilledColor: {r: 0.43529412, g: 0.8627451, b: 0.92156863, a: 1}
+  _crystalEmptyColor: {r: 0.4862745, g: 0.5764706, b: 0.6509804, a: 0.5882353}
+  _maxColor: {r: 0.9490196, g: 0.74509805, b: 0.22745098, a: 1}
+  _shieldColor: {r: 0.29803923, g: 0.6901961, b: 0.41568628, a: 1}
+  _shieldLockedColor: {r: 0.5411765, g: 0.3529412, b: 0.3529412, a: 0.78431374}
+  _cloneColor: {r: 0.6627451, g: 0.5764706, b: 0.9019608, a: 1}
+  _goldTextColor: {r: 0.9607843, g: 0.75686276, b: 0.2901961, a: 1}
+  _heartSprite: {fileID: 21300000, guid: 66c1a18aa66939d4e87199caf81ebf46, type: 3}
+  _cloneSprite: {fileID: 0}
+  _shieldPipSprite: {fileID: 0}
+  _goldSprite: {fileID: 0}
+  _killsSprite: {fileID: 21300000, guid: c98ff2eeb0259f043bdb2af251018459, type: 3}
+  _challengeSprite: {fileID: 0}
+  _bossIconSprite: {fileID: 21300000, guid: 182566bb2c1df09428a92416ebd3ae23, type: 3}
+  _iconsHaveOwnFrame: 1
   _crystalSprite: {fileID: 0}
 --- !u!1001 &1655087059
 PrefabInstance:
@@ -55024,7 +55047,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c15cd5a496d12446a7564aa915c5055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BossSpawnInterval: 60
+  BossSpawnInterval: 300
   _bossPrefab1: {fileID: 7732996451166620575, guid: c8b30a9595b433d46a53ca0171b2836b,
     type: 3}
   _bossPrefab2: {fileID: 8074673154536467952, guid: 0a332bffaf034c1428bcbb4e22eacd3f,

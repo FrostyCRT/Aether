@@ -16,6 +16,8 @@ public class HudBar : MonoBehaviour
     public enum Kind { Health, Boss, Xp, Dash }
 
     private static readonly Color TrackColor = new Color(0.085f, 0.06f, 0.045f, 0.96f);   // cuir sombre
+    public static bool FlatStyle = true;
+    private static readonly Color FlatTrackColor = new Color(0.05f, 0.06f, 0.08f, 0.72f);
     private static readonly Color TrailColor = new Color(1f, 0.86f, 0.70f, 0.72f);
     private static readonly Color AlarmColor = new Color(1f, 0.30f, 0.24f, 1f);
 
@@ -24,7 +26,8 @@ public class HudBar : MonoBehaviour
     private bool _vertical;
     private Image _srcFill;
     private RectTransform _fillRt, _trailRt, _iconRt;
-    private Image _fill, _trail, _frame, _medRim;
+    private Image _fill, _trail, _frame, _medRim, _iconImg;
+    private bool _ownFrame;
     private GameObject _trailGo;
 
     private float _shown, _trailV, _vel, _flash, _trailHold, _prevTarget, _lastFillAnchor = -1f, _lastTrailAnchor = -1f;
@@ -35,6 +38,12 @@ public class HudBar : MonoBehaviour
     // se rejoue qu'après ce délai (en secondes) SANS aucun coup ; chaque coup remet le compteur à zéro.
     public float hitFlashQuietTime = 0f;
     public float FlashAmount { get { return _flash; } }        // lecture seule (tests)
+
+    // Couleur de remplissage imposée (palette du HUD). Sans elle, la barre reprend la couleur écrite par GameUI sur son Fill.
+    private bool _hasFixedColor;
+    private Color _fixedColor;
+    public void SetFixedColor(Color c) { _hasFixedColor = true; _fixedColor = c; }
+    public void ClearFixedColor() { _hasFixedColor = false; }
     private float _lastHitTime = -999f;                       // horloge réelle : insensible aux images longues
 
     // Matériau TMP dérivé avec un contour de largeur / couleur données (mis en cache). On passe par le matériau plutôt que par
@@ -60,13 +69,13 @@ public class HudBar : MonoBehaviour
     // 2 = cadre de 3,6 px (barres fines) ; leftInset : place réservée au médaillon (barre horizontale).
     public static HudBar Attach(Slider slider, Kind kind, float thickness, float leftInset, Sprite icon, Color iconColor,
                                 float medallionDiameter, TextMeshProUGUI valueText, float valueFontSize,
-                                bool vertical = false, float frameScale = 1f)
+                                bool vertical = false, float frameScale = 1f, bool iconOwnsFrame = false)
     {
         if (slider == null) return null;
         HudBar bar = slider.GetComponent<HudBar>();
         if (bar != null)
         {
-            bar.Reconfigure(thickness, leftInset, icon, iconColor, medallionDiameter, valueText, valueFontSize, frameScale);   // réglages modifiés en jeu
+            bar.Reconfigure(thickness, leftInset, icon, iconColor, medallionDiameter, valueText, valueFontSize, frameScale, iconOwnsFrame);   // réglages modifiés en jeu
             return bar;
         }
 
@@ -79,12 +88,12 @@ public class HudBar : MonoBehaviour
         // masque tout ce que dessinait le Slider (fond, remplissage, poignée « Knob » par défaut de Unity)
         foreach (Image g in slider.GetComponentsInChildren<Image>(true)) g.enabled = false;
 
-        bar.Build(thickness, leftInset, icon, iconColor, medallionDiameter, valueText, valueFontSize, frameScale);
+        bar.Build(thickness, leftInset, icon, iconColor, medallionDiameter, valueText, valueFontSize, frameScale, iconOwnsFrame);
         return bar;
     }
 
     // Reconstruit l'habillage avec de nouvelles dimensions (réglages de l'inspecteur modifiés pendant le jeu).
-    private void Reconfigure(float t, float inset, Sprite icon, Color iconColor, float medD, TextMeshProUGUI valueText, float valueFontSize, float frameScale)
+    private void Reconfigure(float t, float inset, Sprite icon, Color iconColor, float medD, TextMeshProUGUI valueText, float valueFontSize, float frameScale, bool iconOwnsFrame)
     {
         if (_valueText != null) _valueText.transform.SetParent(transform, false);      // le sortir du cadre avant de le détruire
         Transform old = transform.Find("HudBarVisual");
@@ -93,7 +102,7 @@ public class HudBar : MonoBehaviour
         if (old != null) DestroyImmediate(old.gameObject);
         _lastFillAnchor = _lastTrailAnchor = -1f;
         _init = false;
-        Build(t, inset, icon, iconColor, medD, valueText, valueFontSize, frameScale);
+        Build(t, inset, icon, iconColor, medD, valueText, valueFontSize, frameScale, iconOwnsFrame);
     }
 
     // À l'apparition d'un boss : la barre se remplit devant le joueur (appelé par GameUI.ShowBossHP).
@@ -138,7 +147,7 @@ public class HudBar : MonoBehaviour
         return img;
     }
 
-    private void Build(float t, float inset, Sprite icon, Color iconColor, float medD, TextMeshProUGUI valueText, float valueFontSize, float frameScale)
+    private void Build(float t, float inset, Sprite icon, Color iconColor, float medD, TextMeshProUGUI valueText, float valueFontSize, float frameScale, bool iconOwnsFrame)
     {
         RectTransform root = NewRect("HudBarVisual", transform);
         root.SetAsFirstSibling();
@@ -157,25 +166,29 @@ public class HudBar : MonoBehaviour
             root.offsetMax = new Vector2(0f, t * 0.5f);
         }
 
-        float frameGrow = HudSprites.FrameThickness / frameScale - 0.4f;
-        _frame = Sliced("Frame", root, HudSprites.Frame, Color.white, frameScale, frameGrow);
-        Sliced("Track", root, HudSprites.Inset, TrackColor, frameScale, 0f);
+        // Style plat commun à TOUTES les barres (vie, XP, esquive, boss) : pastille arrondie, liseré fin clair, fond sombre
+        // translucide. Passer FlatStyle à false rend l'ancien cadre de bronze biseauté.
+        bool flat = FlatStyle;
+        Sprite fillShape = flat ? HudSprites.Pill : HudSprites.Inset;
+        float frameGrow = flat ? 0.5f : HudSprites.FrameThickness / frameScale - 0.4f;
+        _frame = Sliced("Frame", root, flat ? HudSprites.PillOutline : HudSprites.Frame, Color.white, frameScale, frameGrow);
+        Sliced("Track", root, fillShape, flat ? FlatTrackColor : TrackColor, frameScale, 0f);
 
         // zone de remplissage : traînée derrière, remplissage devant (étendue pilotée par les ancres)
         RectTransform area = NewRect("FillArea", root);
         Stretch(area, 0f);
 
-        Image trail = Sliced("Trail", area, HudSprites.Inset, TrailColor, frameScale, 0f);
+        Image trail = Sliced("Trail", area, fillShape, TrailColor, frameScale, 0f);
         _trailRt = trail.rectTransform;
         _trail = trail;
         _trailGo = trail.gameObject;
         _trailGo.SetActive(false);                       // allumée par SetAnchor dès qu'il y a quelque chose à montrer
         if (_kind != Kind.Health && _kind != Kind.Boss) Destroy(_trailGo);
 
-        Image fill = Sliced("Fill", area, HudSprites.Inset, Color.white, frameScale, 0f);
+        Image fill = Sliced("Fill", area, fillShape, Color.white, frameScale, 0f);
         _fillRt = fill.rectTransform;
         _fill = fill;
-        Sliced("Sheen", _fillRt, _vertical ? HudSprites.SheenV : HudSprites.SheenH, Color.white, frameScale, 0f);
+        if (!flat) Sliced("Sheen", _fillRt, _vertical ? HudSprites.SheenV : HudSprites.SheenH, Color.white, frameScale, 0f);
 
         _valueText = valueText;
         if (valueText != null)
@@ -208,13 +221,21 @@ public class HudBar : MonoBehaviour
             med.sizeDelta = new Vector2(medD, medD);
             med.anchoredPosition = new Vector2(medD * 0.5f, 0f);
 
-            _medRim = NewImage("Ring", med, HudSprites.Ring, Color.white);
-            Stretch(_medRim.rectTransform, 0f);
-            Image ic = NewImage("Icon", med, icon, iconColor);
+            // Icône « autonome » (image peinte avec son propre cadre) : pas d'anneau dessiné en code, l'image remplit le médaillon.
+            _medRim = null;
+            _ownFrame = iconOwnsFrame;
+            if (!iconOwnsFrame)
+            {
+                _medRim = NewImage("Ring", med, HudSprites.Ring, Color.white);
+                Stretch(_medRim.rectTransform, 0f);
+            }
+            Image ic = NewImage("Icon", med, icon, iconOwnsFrame ? Color.white : iconColor);
             ic.preserveAspect = true;
+            _iconImg = ic;
             _iconRt = ic.rectTransform;
             _iconRt.anchorMin = _iconRt.anchorMax = new Vector2(0.5f, 0.5f);
-            _iconRt.sizeDelta = new Vector2(medD * 0.5f, medD * 0.5f);
+            float iconSize = iconOwnsFrame ? medD : medD * 0.5f;
+            _iconRt.sizeDelta = new Vector2(iconSize, iconSize);
             _iconRt.anchoredPosition = Vector2.zero;
         }
     }
@@ -279,9 +300,14 @@ public class HudBar : MonoBehaviour
             pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f);
 
         // ----- rendu -----
-        Color c = _srcFill != null ? _srcFill.color : Color.white;
+        Color c;
+        if (_hasFixedColor) c = _fixedColor;
+        else
+        {
+            c = _srcFill != null ? _srcFill.color : Color.white;
+            c = Tone(c);
+        }
         c.a = 1f;
-        c = Tone(c);
         c = Color.Lerp(c, Color.white, _flash * 0.75f);
         c = Color.Lerp(c, Color.white, pulse * 0.30f);
         _fill.color = c;
@@ -289,6 +315,7 @@ public class HudBar : MonoBehaviour
         Color tint = Color.Lerp(Color.white, AlarmColor, pulse * 0.9f);   // le bronze rougit en alerte
         _frame.color = tint;
         if (_medRim != null) _medRim.color = tint;
+        if (_ownFrame && _iconImg != null) _iconImg.color = Color.Lerp(Color.white, tint, 0.55f);   // icône autonome : rougit en alerte, mais doucement (le doré se boue si on le multiplie à fond)
         if (_iconRt != null) _iconRt.localScale = Vector3.one * (1f + 0.14f * pulse);
 
         SetAnchor(_fillRt, _shown, ref _lastFillAnchor);

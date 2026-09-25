@@ -536,6 +536,9 @@ public class BossCorruptedSource : BossBase
             // trop d'xp"). boss.XPValue lit la valeur AVANT cet appel
             // (_xpValue de depart, ex. 1400/2450 pour BossBase/BossDeer).
             boss.SetXPValue(boss.XPValue * percent);
+            // MODIFIÉ (2026-09-24) - demande utilisateur : un mini-boss donne 50% de la barre d'XP du niveau actuel
+            // (remplace la valeur fixe ci-dessus, gardée seulement comme repli si XPSystem est absent).
+            boss.SetXPBarFraction(0.5f);
             boss.RageDisabled = true;
         }
     }

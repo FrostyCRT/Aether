@@ -227,12 +227,16 @@ public class BossBase : MonoBehaviour
 
         if (_chargeTimer >= _chargeCooldown && !_isCharging)
         {
-            float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
-            if (distanceToPlayer >= _minChargeDistance)
+            // CORRIGE (2026-09-24) - avant, la charge ne partait que si le joueur était à _minChargeDistance ou plus :
+            // collé au boss, la charge n'était jamais lancée, _isWindingUp restait vrai (le boss ne bougeait ni ne tirait plus)
+            // et il restait figé indéfiniment. La charge part maintenant toujours ; si le joueur est pile dessus,
+            // elle part dans la direction où regarde le boss.
             {
+                Vector3 toPlayer = _playerTransform.position - transform.position;
+                toPlayer.y = 0f;
                 _isCharging = true;
                 _isWindingUp = false;
-                _chargeDirection = (_playerTransform.position - transform.position).normalized;
+                _chargeDirection = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : transform.forward;
                 _chargeTimer = 0f;
                 _chargeDurationTimer = _chargeDuration;
                 _hasDealtChargeDamage = false;
@@ -424,7 +428,11 @@ public class BossBase : MonoBehaviour
             // utilisateur). Force Y=1,5, une hauteur ramassable normale.
             Vector3 gemSpawnPos = transform.position;
             gemSpawnPos.y = 1.5f;
-            XPGemSpawner.Instance.SpawnGems(gemSpawnPos, _xpValue);
+            float xpReward = _xpValue;
+            // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
+            if (_xpBarFraction > 0f && XPSystem.Instance != null)
+                xpReward = XPSystem.Instance.XPToNextLevel * _xpBarFraction;
+            XPGemSpawner.Instance.SpawnGems(gemSpawnPos, xpReward);
         }
 
         GameManager.Instance.AddKill();
@@ -518,5 +526,13 @@ public class BossBase : MonoBehaviour
     public void SetXPValue(float value)
     {
         _xpValue = value;
+    }
+
+    // AJOUTE (2026-09-24) - > 0 : l'XP donnée à la mort vaut cette fraction de la barre d'XP du niveau en cours
+    // (au lieu de _xpValue). Utilisé par les mini-boss du boss 3 (0.5 = la moitié de la barre).
+    private float _xpBarFraction = 0f;
+    public void SetXPBarFraction(float fraction)
+    {
+        _xpBarFraction = fraction;
     }
 }

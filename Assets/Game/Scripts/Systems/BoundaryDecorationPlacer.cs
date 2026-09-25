@@ -19,8 +19,8 @@ public class BoundaryDecorationPlacer : MonoBehaviour
 
     [Header("Zone")]
     [SerializeField] private float _zoneHalfSize = 60f;
-    [SerializeField] private float _beltWidth = 30f; // élargi — plusieurs rangées de profondeur, plus une seule ligne
-    [SerializeField] private int _decorCount = 400; // très augmenté pour un effet forêt dense
+    [SerializeField] private float _beltWidth = 30f;
+    [SerializeField] private int _decorCount = 400;
 
     [Header("Échelle par catégorie")]
     [SerializeField] private float _treeMinScale = 7.5f;
@@ -30,7 +30,7 @@ public class BoundaryDecorationPlacer : MonoBehaviour
 
     [Header("Ratio (poids de tirage)")]
     [Range(0f, 1f)]
-    [SerializeField] private float _treeProbability = 0.75f; // 75% arbres, 25% roches
+    [SerializeField] private float _treeProbability = 0.75f;
 
     [Header("Espacement")]
     [SerializeField] private float _minDistanceBetweenDecor = 4f;
@@ -76,11 +76,16 @@ public class BoundaryDecorationPlacer : MonoBehaviour
 
             bool pickTree = Random.value < _treeProbability;
             List<DecorEntry> pool = pickTree ? trees : rocks;
-            if (pool.Count == 0) pool = pickTree ? rocks : trees; // sécurité si une catégorie est vide
+            if (pool.Count == 0) pool = pickTree ? rocks : trees;
 
             DecorEntry entry = pool[Random.Range(0, pool.Count)];
 
-            GameObject instance = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(entry.prefab, transform);
+            GameObject instance;
+#if UNITY_EDITOR
+            instance = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(entry.prefab, transform);
+#else
+            instance = Instantiate(entry.prefab, transform);
+#endif
             instance.transform.position = position + entry.positionCorrection;
 
             float randomY = Random.Range(0f, 360f);

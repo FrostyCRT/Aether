@@ -68,7 +68,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private string[] _options;
     private float _knobT = -1f;       // 0 = éteint, 1 = allumé (animé)
     private bool _hover;
-    private int _lastCaptureSlot = -1;
+    //private int _lastCaptureSlot = -1;
 
     // ---- liaison ------------------------------------------------------------------------------------------
     public void Bind(RowDef def, SettingsPage page)

@@ -13,6 +13,36 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _dashCooldown = 2f;
     [SerializeField] private float _absorptionWindow = 0.3f;
 
+    [Header("Dash — Effet visuel")]
+    // MODIFIE (2026-09-23) - remplace la 1ère version (traînées de vent seules, jugée trop discrète/"juste des
+    // traits") par un vrai combo de Dash à la Hades/Dead Cells/Hollow Knight : silhouettes fantômes du personnage
+    // qui restent un instant derrière lui (mêmes matériaux translucides que le double du Clone Fantôme, voir
+    // PrecomputeGhostMaterials), un étirement/tassement du modèle façon animation (squash & stretch) pendant le
+    // Dash puis un petit rebond élastique à l'arrivée, et un souffle d'air au point de départ (ExpandingRingVFX,
+    // déjà utilisé par la Nova). Tout est procédural (aucun asset requis) et réglable ci-dessous.
+    [SerializeField] private bool _dashVFXEnabled = true;
+    [Tooltip("Teinte des silhouettes fantômes et du souffle de départ.")]
+    [SerializeField] private Color _dashAccentColor = new Color(0.65f, 0.85f, 1f, 1f);
+    [Range(0f, 1f)] [SerializeField] private float _dashGhostAlpha = 0.62f;
+    [Tooltip("Nombre de silhouettes laissées derrière le joueur sur la durée du Dash.")]
+    [SerializeField] private int _dashGhostCount = 6;
+    [Tooltip("Durée du fondu de CHAQUE silhouette (elles se chevauchent : plus long = traînée plus dense).")]
+    [SerializeField] private float _dashGhostFade = 0.18f;
+    [Tooltip("Étirement du modèle dans le sens du Dash (1 = taille normale). Volontairement modéré : un personnage rigué (squelette/animations) supporte moins d'étirement qu'un sprite avant de se déformer bizarrement aux articulations.")]
+    [SerializeField] private float _dashStretchForward = 1.14f;
+    [Tooltip("Tassement latéral pendant l'étirement (conserve un effet de « volume »).")]
+    [SerializeField] private float _dashSquashSide = 0.93f;
+    [Tooltip("Petit rebond élastique au retour à la taille normale (1 = pas de rebond).")]
+    [SerializeField] private float _dashReleaseOvershoot = 0.95f;
+    [SerializeField] private float _dashReleaseDuration = 0.14f;
+    [SerializeField] private bool _dashLaunchPuff = true;
+    [SerializeField] private float _dashLaunchPuffRadius = 0.55f;
+    [Tooltip("Hauteur Y du souffle de départ (même logique que WeaponMudPuddle._groundY : le pivot du joueur est à hauteur de torse, un effet au sol doit avoir sa propre hauteur).")]
+    [SerializeField] private float _dashWindGroundY = 0.15f;
+    [Tooltip("Son du Dash (optionnel) : laissé vide pour l'instant, à assigner plus tard sans toucher au code.")]
+    [SerializeField] private AudioClip _dashSound;
+    [Range(0f, 1f)] [SerializeField] private float _dashSoundVolume = 0.7f;
+
     [Header("Rotation")]
     [SerializeField] private float _rotationSpeed = 700f;
 
@@ -23,7 +53,7 @@ public class PlayerController : MonoBehaviour
     [Header("Clone Fantôme (touche dédiée)")]
     // OBSOLÈTE (2026-09-19) : la touche se règle désormais dans Paramètres > Commandes (GameAction.PhantomClone).
     // Le champ est conservé pour ne pas casser la sérialisation des prefabs joueur.
-    [SerializeField, HideInInspector] private KeyCode _phantomCloneKey = KeyCode.C;
+    //[SerializeField, HideInInspector] private KeyCode _phantomCloneKey = KeyCode.C;
     [SerializeField] private float _phantomCloneCooldown = 8f;
     [SerializeField] private float _phantomCloneDuration = 2f;
     [SerializeField] private float _phantomAttractRadius = 10f;
@@ -31,7 +61,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _phantomEscapeSpeedMultiplier = 1.5f;
     [SerializeField] private float _phantomEscapeSpeedDuration = 1.2f;
     [SerializeField] private Color _cloneTint = new Color(0.55f, 0.7f, 1f);
-    [SerializeField] private float _cloneAlpha = 0.55f;
+    // CORRIGE (2026-09-24) - retour utilisateur : "le clone aussi est invisible, ça n'a pas de sens, seule Lyra doit
+    // l'être". Cette valeur (0,55) datait d'avant la correction du bug de mélange GPU de CreateGhostMaterial (voir
+    // plus bas) : l'alpha n'avait AUCUN effet visuel avant ce correctif, donc le clone restait opaque à l'écran
+    // quelle que soit cette valeur - personne ne s'en était rendu compte. Une fois l'alpha réellement fonctionnel,
+    // 0,55 rendait le clone à moitié transparent, exactement comme Lyra en train de se rendre invisible : plus de
+    // décoy visible. Le clone est maintenant pleinement opaque (1) ; seule la teinte (_cloneTint, mélange 0,4 plus
+    // bas) lui donne un léger aspect fantomatique, sans jamais le rendre translucide.
+    [SerializeField] private float _cloneAlpha = 1f;
     [SerializeField] private float _phantomSelfAlpha = 0.45f;
 
     [Header("Clone Fantôme — overrides par personnage")]
@@ -70,12 +107,16 @@ public class PlayerController : MonoBehaviour
     public static int PhantomAttractedCount { get; private set; }
     public static int PhantomMaxAttracted { get; private set; }
 
-    public static bool TryAttractToPhantom(EnemyBase enemy)
+    // MODIFIÉ (2026-09-24) - retour utilisateur : Lyra est invisible et invulnérable pendant le clone, il n'a donc plus de sens
+    // qu'un ennemi hors de portée continue à la viser. TOUS les ennemis ciblent maintenant le clone tant qu'il existe (plus de
+    // rayon d'attraction ni de plafond d'ennemis attirés). `near` = l'ennemi est dans l'ancien rayon : il garde le bonus de
+    // vitesse x2 pour foncer sur le clone ; les plus lointains le rejoignent à vitesse normale (sinon toute la carte
+    // accourrait deux fois plus vite).
+    public static bool TryAttractToPhantom(EnemyBase enemy, bool near = true)
     {
         if (ActivePhantomClone == null) return false;
-        if (PhantomAttractedCount >= PhantomMaxAttracted) return false;
         PhantomAttractedCount++;
-        enemy.SetTarget(ActivePhantomClone, 2f);
+        enemy.SetTarget(ActivePhantomClone, near ? 2f : 1f);
         return true;
     }
 
@@ -88,9 +129,12 @@ public class PlayerController : MonoBehaviour
     private bool _renderersEnabled = true;
 
     private Transform _modelTransform;
+    private Vector3 _modelBaseScale = Vector3.one;
+    private Coroutine _dashStretchRoutine;
     private Material[][] _originalMaterials;
     private Material[][] _ghostSelfMaterials;
     private Material[][] _ghostCloneMaterials;
+    private Material[][] _ghostDashMaterials;
 
     public void ActivateInvisibility(float duration)
     {
@@ -160,6 +204,7 @@ public class PlayerController : MonoBehaviour
         _animatorController = GetComponent<PlayerAnimatorController>();
 
         _modelTransform = transform.Find(_modelChildName);
+        if (_modelTransform != null) _modelBaseScale = _modelTransform.localScale;
 
         if (_mainBodyRenderer != null)
         {
@@ -200,6 +245,7 @@ public class PlayerController : MonoBehaviour
         _originalMaterials = new Material[_playerRenderers.Length][];
         _ghostSelfMaterials = new Material[_playerRenderers.Length][];
         _ghostCloneMaterials = new Material[_playerRenderers.Length][];
+        _ghostDashMaterials = new Material[_playerRenderers.Length][];
 
         for (int i = 0; i < _playerRenderers.Length; i++)
         {
@@ -208,19 +254,30 @@ public class PlayerController : MonoBehaviour
 
             Material[] ghostSelf = new Material[originals.Length];
             Material[] ghostClone = new Material[originals.Length];
+            Material[] ghostDash = new Material[originals.Length];
 
             for (int j = 0; j < originals.Length; j++)
             {
                 ghostSelf[j] = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f);
                 ghostClone[j] = CreateGhostMaterial(originals[j], _cloneTint, _cloneAlpha, 0.4f);
+                // AJOUTE - silhouettes du Dash (voir StartDash/SpawnDashGhost) : même technique que les deux
+                // au-dessus (matériau transparent URP dérivé du matériau réel, donc rendu garanti correct), teinte
+                // dédiée réglable dans l'inspecteur (_dashAccentColor/_dashGhostAlpha).
+                ghostDash[j] = CreateGhostMaterial(originals[j], _dashAccentColor, _dashGhostAlpha, 0.7f, zWrite: false);
             }
 
             _ghostSelfMaterials[i] = ghostSelf;
             _ghostCloneMaterials[i] = ghostClone;
+            _ghostDashMaterials[i] = ghostDash;
         }
     }
 
-    private Material CreateGhostMaterial(Material source, Color tintMultiply, float alpha, float tintBlend)
+    // MODIFIE (2026-09-23) - ajout de "zWrite" (true par défaut = comportement d'origine, inchangé pour les ghosts
+    // du Clone Fantôme/Second Souffle qui n'existent jamais qu'un à la fois). Les silhouettes du Dash, elles,
+    // se superposent PLUSIEURS À LA FOIS (voir SpawnDashGhost) : avec ZWrite actif, la première silhouette rendue
+    // écrit la profondeur et empêche les suivantes de s'y fondre par transparence - tout le paquet ressort opaque
+    // au lieu de se dégrader en fondu. zWrite=false règle ça (comportement standard pour empiler du alpha-blend).
+    private Material CreateGhostMaterial(Material source, Color tintMultiply, float alpha, float tintBlend, bool zWrite = true)
     {
         Material mat = new Material(source);
         Color baseColor = mat.color;
@@ -233,8 +290,13 @@ public class PlayerController : MonoBehaviour
         mat.DisableKeyword("_ALPHATEST_ON");
         mat.EnableKeyword("_ALPHABLEND_ON");
         mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        // AJOUTE (2026-09-23) - manquait : sans ces deux-là, l'état de mélange GPU du shader Lit d'URP reste sur ses
+        // valeurs par défaut (proches d'un rendu opaque) et fait totalement ignorer l'alpha, quels que soient les
+        // mots-clés/_Surface ci-dessus - le ghost restait visuellement opaque en jeu malgré une couleur transparente.
+        mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
         mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-        mat.SetInt("_ZWrite", 1);
+        mat.SetInt("_ZWrite", zWrite ? 1 : 0);
         mat.SetShaderPassEnabled("DepthOnly", false);
         return mat;
     }
@@ -294,9 +356,165 @@ public class PlayerController : MonoBehaviour
         if (_healthSystem != null) _healthSystem.AddExternalInvincibility();
         if (GameUI.Instance != null) GameUI.Instance.UpdateDashCooldown(0f);
 
+        // AJOUTE - habillage visuel du Dash (silhouettes fantômes + étirement + souffle de départ, voir le bloc de
+        // champs juste au-dessus) + emplacement pour un son (silencieux tant qu'aucun clip n'est assigné).
+        if (_dashVFXEnabled)
+        {
+            if (_dashLaunchPuff)
+            {
+                Vector3 puffPos = transform.position;
+                puffPos.y = _dashWindGroundY;
+                Color puffColor = _dashAccentColor;
+                puffColor.a = 0.6f;
+                ExpandingRingVFX.Spawn(puffPos, _dashLaunchPuffRadius, puffColor, 0.22f);
+            }
+
+            StartCoroutine(PlayDashAfterimages(_dashDuration));
+
+            if (_modelTransform != null)
+            {
+                if (_dashStretchRoutine != null) StopCoroutine(_dashStretchRoutine);
+                _dashStretchRoutine = StartCoroutine(DashStretchAndRelease(_dashDuration));
+            }
+        }
+        if (_dashSound != null) AudioSource.PlayClipAtPoint(_dashSound, transform.position, _dashSoundVolume);
+
         // AJOUTE - notifie le systeme de defis a chaque VRAI declenchement du
         // Dash (defi "Toujours en Mouvement" = utiliser le Dash 20 fois).
         if (ChallengeManager.Instance != null) ChallengeManager.Instance.NotifyDashUsed();
+    }
+
+    // ---- Dash — silhouettes fantômes ------------------------------------------------------------------------------
+    // Une poignée d'instantanés du modèle (même technique de bake que SpawnPhantomClone) sont laissés derrière le
+    // joueur pendant le Dash et s'effacent chacun indépendamment - la traînée classique des jeux d'action (Hades,
+    // Dead Cells, Hollow Knight...). Contrairement au Clone Fantôme, ces silhouettes n'ont ni script ni collider :
+    // elles ne vivent qu'une fraction de seconde et ne doivent jamais interagir avec quoi que ce soit.
+    private IEnumerator PlayDashAfterimages(float duration)
+    {
+        if (_dashGhostCount <= 0) yield break;
+        float interval = duration / _dashGhostCount;
+
+        for (int i = 0; i < _dashGhostCount; i++)
+        {
+            SpawnDashGhost();
+            float t = 0f;
+            while (t < interval)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+        }
+    }
+
+    private void SpawnDashGhost()
+    {
+        if (_modelTransform == null) return;
+
+        SkinnedMeshRenderer sourceSkinned = _cloneSourceRenderer != null
+            ? _cloneSourceRenderer
+            : _modelTransform.GetComponentInChildren<SkinnedMeshRenderer>();
+        if (sourceSkinned == null) return;
+
+        var ghost = new GameObject("DashGhost");
+        Mesh baked = new Mesh();
+        sourceSkinned.BakeMesh(baked);
+
+        var mf = ghost.AddComponent<MeshFilter>();
+        mf.sharedMesh = baked;
+
+        var mr = ghost.AddComponent<MeshRenderer>();
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+        if (_ghostDashMaterials != null && _ghostDashMaterials.Length > 0)
+            mr.sharedMaterials = _ghostDashMaterials[0];
+
+        // même astuce que SpawnPhantomClone : parenter un instant sous le rendu source pour récupérer exactement sa
+        // position/rotation/échelle du monde au moment du bake, puis détacher (worldPositionStays = true).
+        ghost.transform.SetParent(sourceSkinned.transform, false);
+        ghost.transform.SetParent(null, true);
+        // CORRIGE (2026-09-24) - même piège que SpawnPhantomClone (qui s'en protège déjà via _cloneScale) : détacher
+        // avec worldPositionStays=true fait hériter l'échelle MONDE du parent quitté, presque jamais 1,1,1 (chaîne de
+        // mise à l'échelle de l'import du modèle). Sans ce reset, chaque fantôme apparaissait bien plus gros que le
+        // joueur, écrasant tout le reste de l'effet (impression d'un "clone" massif plutôt qu'une fine traînée).
+        ghost.transform.localScale = Vector3.one;
+
+        StartCoroutine(FadeAndDestroyGhost(ghost, baked));
+    }
+
+    private IEnumerator FadeAndDestroyGhost(GameObject ghost, Mesh bakedMesh)
+    {
+        MeshRenderer mr = ghost.GetComponent<MeshRenderer>();
+        // .materials (et non .sharedMaterials) : instancie des copies propres à CE fantôme, pour faire varier leur
+        // alpha sans toucher au modèle partagé _ghostDashMaterials (qui ferait clignoter tous les fantômes ensemble).
+        Material[] mats = mr.materials;
+        Color[] baseColors = new Color[mats.Length];
+        for (int i = 0; i < mats.Length; i++) baseColors[i] = mats[i].color;
+
+        float elapsed = 0f;
+        while (elapsed < _dashGhostFade)
+        {
+            elapsed += Time.deltaTime;
+            float fade = 1f - Mathf.Clamp01(elapsed / _dashGhostFade);
+            for (int i = 0; i < mats.Length; i++)
+            {
+                Color c = baseColors[i];
+                mats[i].color = new Color(c.r, c.g, c.b, c.a * fade);
+            }
+            yield return null;
+        }
+
+        foreach (Material m in mats) Destroy(m);
+        Destroy(bakedMesh);
+        Destroy(ghost);
+    }
+
+    // ---- Dash — étirement / tassement (squash & stretch) -----------------------------------------------------------
+    // Le modèle s'étire dans le sens du Dash pendant sa durée, puis revient à sa taille avec un petit rebond
+    // élastique - le même principe d'animation que les jeux d'action utilisent pour "vendre" la vitesse d'un
+    // mouvement instantané (Celeste, Hollow Knight...).
+    private IEnumerator DashStretchAndRelease(float dashDuration)
+    {
+        if (_modelTransform == null) yield break;
+
+        Vector3 baseScale = _modelBaseScale;
+        Vector3 stretched = new Vector3(baseScale.x * _dashSquashSide, baseScale.y, baseScale.z * _dashStretchForward);
+
+        float inDuration = Mathf.Min(0.05f, dashDuration * 0.35f);
+        float t = 0f;
+        while (t < inDuration)
+        {
+            t += Time.deltaTime;
+            if (_modelTransform == null) yield break;
+            _modelTransform.localScale = Vector3.Lerp(baseScale, stretched, Mathf.SmoothStep(0f, 1f, t / Mathf.Max(inDuration, 0.0001f)));
+            yield return null;
+        }
+        if (_modelTransform == null) yield break;
+        _modelTransform.localScale = stretched;
+
+        float hold = Mathf.Max(0f, dashDuration - inDuration);
+        t = 0f;
+        while (t < hold)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        // tassement bref à l'arrivée (sur X/Z, pas en hauteur) puis retour élastique à la taille normale
+        Vector3 undershoot = Vector3.Scale(baseScale, new Vector3(_dashReleaseOvershoot, 1f, _dashReleaseOvershoot));
+        t = 0f;
+        while (t < _dashReleaseDuration)
+        {
+            t += Time.deltaTime;
+            if (_modelTransform == null) yield break;
+            float u = t / _dashReleaseDuration;
+            Vector3 scale = u < 0.55f
+                ? Vector3.Lerp(stretched, undershoot, Mathf.SmoothStep(0f, 1f, u / 0.55f))
+                : Vector3.Lerp(undershoot, baseScale, Mathf.SmoothStep(0f, 1f, (u - 0.55f) / 0.45f));
+            _modelTransform.localScale = scale;
+            yield return null;
+        }
+        if (_modelTransform != null) _modelTransform.localScale = baseScale;
+        _dashStretchRoutine = null;
     }
 
     private void HandlePhantomCloneInput()
@@ -336,8 +554,19 @@ public class PlayerController : MonoBehaviour
             {
                 clone = new GameObject("PhantomCloneSnapshot");
 
+                // CORRIGE (2026-09-24) - retour utilisateur : "le clone est figé en pleine action" (pris en pleine
+                // foulée de marche si Lyra bougeait au moment du sort). Le clone est un instantané FIGÉ du maillage
+                // (BakeMesh) : il doit être pris sur une pose Idle, pas sur l'image de marche en cours. On force la
+                // pose puis on l'applique tout de suite (Update(0)), on bake, et on restaure l'état réel juste après
+                // - tout dans la même image, avant le moindre rendu : invisible pour la vraie Lyra, qui garde son
+                // animation normale.
+                bool wasMoving = _moveDirection != Vector3.zero;
+                if (_animatorController != null) _animatorController.SnapToIdlePose();
+
                 Mesh bakedMesh = new Mesh();
                 sourceSkinned.BakeMesh(bakedMesh);
+
+                if (_animatorController != null) _animatorController.SetWalking(wasMoving);
 
                 MeshFilter mf = clone.AddComponent<MeshFilter>();
                 mf.mesh = bakedMesh;

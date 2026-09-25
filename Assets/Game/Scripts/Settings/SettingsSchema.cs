@@ -182,6 +182,7 @@ public static class SettingsSchema
         ui.rows.Add(Toggle("Chronomètre", "Le temps écoulé depuis le début de la partie.", GameSettings.ShowTimer));
         ui.rows.Add(Toggle("Or de la partie", "L'or ramassé pendant cette partie.", GameSettings.ShowGold));
         ui.rows.Add(Toggle("Ennemis vaincus", "Le nombre d'ennemis éliminés.", GameSettings.ShowKills));
+        ui.rows.Add(Toggle("Légende des touches", "Rappel des touches (dash, ultime, clone, orbites, pause) affiché à gauche de l'écran.", GameSettings.ShowKeyLegend));
         cats.Add(ui);
 
         // ---------------------------------------------------------------- COMMANDES

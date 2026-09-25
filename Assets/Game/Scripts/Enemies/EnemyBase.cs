@@ -147,11 +147,10 @@ public class EnemyBase : MonoBehaviour
 
         if (PlayerController.ActivePhantomClone != null && _currentTarget == _playerTransform)
         {
+            // le clone attire TOUS les ennemis (pas de rayon) ; seuls ceux proches gardent le bonus de vitesse
             float sqrDistance = Vector3.SqrMagnitude(transform.position - PlayerController.ActivePhantomClone.position);
-            if (sqrDistance <= PlayerController.PhantomAttractRadius * PlayerController.PhantomAttractRadius)
-            {
-                PlayerController.TryAttractToPhantom(this);
-            }
+            bool near = sqrDistance <= PlayerController.PhantomAttractRadius * PlayerController.PhantomAttractRadius;
+            PlayerController.TryAttractToPhantom(this, near);
         }
 
         UpdateBehaviour(_currentTarget);

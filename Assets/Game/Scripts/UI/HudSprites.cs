@@ -14,6 +14,7 @@ public static class HudSprites
     private const int FrameSize = 48, FrameBorder = 14;
     private const int InsetSize = 32, InsetBorder = 8;
 
+    private static Sprite _pill, _pillOutline, _diamond, _ringFlat;
     private static Sprite _frame, _inset, _sheenH, _sheenV, _ring, _disc, _pip, _heart, _bolt, _crystal;
 
     public static Sprite Frame  { get { if (_frame == null)  _frame  = MakeFrame();     return _frame; } }
@@ -25,6 +26,11 @@ public static class HudSprites
     public static Sprite Pip    { get { if (_pip == null)    _pip    = MakeDisc(true);  return _pip; } }
     public static Sprite Heart  { get { if (_heart == null)  _heart  = MakeHeart();     return _heart; } }
     public static Sprite Bolt   { get { if (_bolt == null)   _bolt   = MakeBolt();      return _bolt; } }
+    // Formes « modernes » (sans biseau) : pastille arrondie pleine, son contour fin (9 tranches) et le losange de l'ultime.
+    public static Sprite Pill        { get { if (_pill == null)        _pill        = MakePill(false); return _pill; } }
+    public static Sprite PillOutline { get { if (_pillOutline == null) _pillOutline = MakePill(true);  return _pillOutline; } }
+    public static Sprite RingFlat    { get { if (_ringFlat == null)    _ringFlat    = MakeRingFlat();  return _ringFlat; } }
+    public static Sprite Diamond     { get { if (_diamond == null)     _diamond     = MakeDiamond();   return _diamond; } }
     public static Sprite Crystal{ get { if (_crystal == null)_crystal= MakeCrystal();   return _crystal; } }
 
     private static Texture2D NewTex(int w, int h)
@@ -184,6 +190,72 @@ public static class HudSprites
                     c = Mathf.Clamp01(1f - rim * 0.30f + hi * hi * 0.18f);
                 }
                 px[y * n + x] = new Color(c, c, c, mask);
+            }
+        return Finish(t, px, Vector4.zero);
+    }
+
+    // Pastille : 32 px, rayon 15,5 (demi-cercles aux extrémités d'une barre de 2×rayon de haut). outline = liseré de 3 px
+    // (à 2× la finesse : 1,5 px à l'écran), clair légèrement bleuté.
+    private static Sprite MakePill(bool outline)
+    {
+        const int n = 32;
+        Texture2D t = NewTex(n, n);
+        Color[] px = new Color[n * n];
+        float r = n * 0.5f - 0.5f;
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                // distance signée à un rectangle arrondi plein cadre (rayon r)
+                float qx = Mathf.Abs(x + 0.5f - n * 0.5f) - (n * 0.5f - r);
+                float qy = Mathf.Abs(y + 0.5f - n * 0.5f) - (n * 0.5f - r);
+                float sd = new Vector2(Mathf.Max(qx, 0f), Mathf.Max(qy, 0f)).magnitude + Mathf.Min(Mathf.Max(qx, qy), 0f) - r;
+                float inside = Mathf.Clamp01(0.5f - sd);
+                if (!outline) { px[y * n + x] = new Color(1f, 1f, 1f, inside); continue; }
+                float ring = inside * Mathf.Clamp01(sd + 3f + 0.5f);      // bande de 3 px le long du bord
+                px[y * n + x] = new Color(0.86f, 0.93f, 1f, ring * 0.92f);
+            }
+        return Finish(t, px, new Vector4(15f, 15f, 15f, 15f));
+    }
+
+    // Anneau plat : liseré de 5 px (sur 128) le long du bord d'un disque, même teinte claire que PillOutline.
+    private static Sprite MakeRingFlat()
+    {
+        const int n = 128;
+        Texture2D t = NewTex(n, n);
+        Color[] px = new Color[n * n];
+        float r = n * 0.5f;
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
+                float inside = Mathf.Clamp01(r - d + 0.5f);
+                float ring = inside * Mathf.Clamp01(d - (r - 5f) + 0.5f);
+                px[y * n + x] = new Color(0.86f, 0.93f, 1f, ring * 0.92f);
+            }
+        return Finish(t, px, Vector4.zero);
+    }
+
+    // Losange (carré tourné de 45°) à coins légèrement adoucis : liseré clair de 2 px, cœur un peu plus sombre avec
+    // une lueur en haut à gauche. Teinté par l'Image (plein = couleur du palier, vide = ton sombre).
+    private static Sprite MakeDiamond()
+    {
+        const int n = 64;
+        Texture2D t = NewTex(n, n);
+        Color[] px = new Color[n * n];
+        const float half = 29f, round = 3f;                 // demi-côté du carré (avant rotation) et rayon des coins
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = x + 0.5f - n * 0.5f, dy = y + 0.5f - n * 0.5f;
+                float u = (dx + dy) * 0.70710678f, v = (dx - dy) * 0.70710678f;
+                float b = half / 1.41421356f - round;       // demi-côté du carré tourné, après arrondi des coins
+                float qx = Mathf.Abs(u) - b, qy = Mathf.Abs(v) - b;
+                float sd = new Vector2(Mathf.Max(qx, 0f), Mathf.Max(qy, 0f)).magnitude + Mathf.Min(Mathf.Max(qx, qy), 0f) - round;
+                float a = Mathf.Clamp01(0.5f - sd);
+                float rim = Mathf.Clamp01(sd + 4f);                                  // 0 au cœur, 1 sur le bord
+                float glow = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(dx, dy), new Vector2(-8f, 8f)) / 26f);
+                float c = Mathf.Lerp(0.80f + glow * 0.16f, 1f, Smooth(0.45f, 0.9f, rim));
+                px[y * n + x] = new Color(c, c, c, a);
             }
         return Finish(t, px, Vector4.zero);
     }
