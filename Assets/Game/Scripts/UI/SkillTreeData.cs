@@ -166,7 +166,7 @@ public static class SkillTreeData
         AddNode("secondWind", new NodeData
         {
             displayName = "Second Souffle",
-            description = "Une fois par partie, survit à un coup fatal avec 1 HP.",
+            description = "Une fois par partie, survit à un coup fatal avec 1 PV.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "vitality" },
@@ -204,7 +204,7 @@ public static class SkillTreeData
         AddNode("impulsionNova", new NodeData
         {
             displayName = "Impulsion Nova",
-            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le cooldown du dash est immédiatement réinitialisé.",
+            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = System.Array.Empty<string>(),

@@ -130,7 +130,11 @@ public class EnemySpawner : MonoBehaviour
         if (spawnPos == Vector3.zero) return;
         if (ObjectPool.Instance == null) return;
 
-        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, palier.healthMultiplier);
+        // Mode sans fin : les PV continuent de croître au-delà de 15 min (x1 en classique, voir GameModes).
+        float runMinutes = GameManager.Instance != null ? GameManager.Instance.RunTimer / 60f : 0f;
+        float healthMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
+
+        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier);
 
         if (spawned == null)
             Debug.LogWarning($"[SPAWNER] Tag de pool '{tag}' introuvable — vérifie l'orthographe dans ObjectPool._pools ET dans _paliersEnnemis.");

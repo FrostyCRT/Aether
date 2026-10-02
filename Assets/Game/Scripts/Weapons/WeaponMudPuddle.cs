@@ -58,6 +58,9 @@ public class WeaponMudPuddle : MonoBehaviour
 
     public void AddDamage(float value) => _damagePerSecond += _damagePerSecond * value;
 
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamagePerSecond => _damagePerSecond;
+
     private void Update()
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;

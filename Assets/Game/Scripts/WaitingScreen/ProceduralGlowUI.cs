@@ -9,6 +9,11 @@ using UnityEngine.UI;
 // optionnel (_enableDrift) transforme le meme composant en petite particule
 // qui flotte doucement - utile pour des etincelles ambiantes vivantes autour
 // d'un perso, sans dupliquer toute la logique de pulsation/texture.
+//
+// MODIFIE (2026-09-27/28) - a aussi servi (plusieurs tentatives : brume rectangulaire, étincelles éparpillées,
+// contour + points d'énergie) de lueur magique derrière les cartes d'upgrade (level-up/menu Pause). Retiré
+// entièrement (retour utilisateur : "enlève toutes les lueurs, parce que y'a rien qui va") - ce composant n'a
+// plus aucun rôle lié aux cartes, uniquement son usage d'origine (LoadingScreen/CharacterSelect).
 public class ProceduralGlowUI : MonoBehaviour
 {
     [SerializeField] private int _textureSize = 256;
@@ -47,11 +52,11 @@ public class ProceduralGlowUI : MonoBehaviour
         _driftSeedX = Random.Range(0f, 100f);
         _driftSeedY = Random.Range(0f, 100f);
 
-        _image.sprite = GenerateRadialGlowSprite();
+        _image.sprite = GenerateGlowSprite();
         _image.raycastTarget = false;
     }
 
-    private Sprite GenerateRadialGlowSprite()
+    private Sprite GenerateGlowSprite()
     {
         Texture2D tex = new Texture2D(_textureSize, _textureSize, TextureFormat.RGBA32, false);
         Vector2 center = new Vector2(_textureSize * 0.5f, _textureSize * 0.5f);
@@ -63,7 +68,7 @@ public class ProceduralGlowUI : MonoBehaviour
             {
                 float dist = Vector2.Distance(new Vector2(x, y), center) / maxDist;
                 float alpha = Mathf.Clamp01(1f - dist);
-                alpha = Mathf.Pow(alpha, 2.2f); // chute douce, plus concentree au centre
+                alpha = Mathf.Pow(alpha, 2.2f);
                 tex.SetPixel(x, y, new Color(_glowColor.r, _glowColor.g, _glowColor.b, alpha));
             }
         }
@@ -79,7 +84,19 @@ public class ProceduralGlowUI : MonoBehaviour
     {
         _glowColor = color;
         if (_image == null) _image = GetComponent<Image>();
-        _image.sprite = GenerateRadialGlowSprite();
+        _image.sprite = GenerateGlowSprite();
+    }
+
+    public void SetAlphaRange(float min, float max)
+    {
+        _minAlpha = min;
+        _maxAlpha = max;
+    }
+
+    public void SetScalePulseRange(float min, float max)
+    {
+        _minScale = min;
+        _maxScale = max;
     }
 
     // AJOUTE - repositionne le halo (utile quand on reteint pour un autre

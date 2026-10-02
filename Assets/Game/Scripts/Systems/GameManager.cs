@@ -9,6 +9,15 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver => _isGameOver;
     public bool IsPaused { get; private set; } = false;
 
+    // AJOUTÉ (2026-10-01) - délais entre la fin de partie et l'apparition du panel, réglables dans l'Inspector.
+    // Avant : valeurs codées en dur (1.5 s Game Over / 2 s Victoire). Le panel de Game Over arrivait avant la fin
+    // de l'animation de mort du joueur. Le délai doit être AU MOINS égal à la durée du clip de mort.
+    [Header("Délais de fin de partie")]
+    [Tooltip("Secondes entre la mort du joueur et l'apparition du panel de Game Over. Doit couvrir toute l'animation de mort (durée du clip Death + chute du corps).")]
+    [SerializeField] private float _gameOverDelay = 3f;
+    [Tooltip("Secondes entre la mort du dernier boss et l'apparition du panel de Victoire.")]
+    [SerializeField] private float _victoryDelay = 2f;
+
     // AJOUTE - retient la cause de la mort transmise par HealthSystem.Die(),
     // pour le message d'ambiance contextuel du Game Over.
     private string _deathCause = "horde";
@@ -33,6 +42,10 @@ public class GameManager : MonoBehaviour
     private int _killCount = 0;
     public int KillCount => _killCount;
     public float RunTimer => _runTimer;
+
+    // AJOUTE (2026-09-27) - DEBUG/TEST uniquement (voir DebugCheats.cs) : avance directement le chrono de la run, pour
+    // atteindre instantanément l'heure d'un boss classique (5/10/15 min) sans attendre.
+    public void DebugSetRunTimer(float seconds) { _runTimer = Mathf.Max(0f, seconds); }
 
     private int _bossKillCount = 0;
     public int BossKillCount => _bossKillCount;
@@ -208,7 +221,8 @@ public class GameManager : MonoBehaviour
             TogglePause();
         }
         if (IsPaused) return;
-        if (WaveManager.Instance != null && WaveManager.Instance.BossAlive) return;
+        // Choc des titans : les boss sont là dès le début, le chrono (= temps de victoire) doit tourner pendant le combat.
+        if (WaveManager.Instance != null && WaveManager.Instance.BossAlive && !GameModes.IsTitans) return;
         _runTimer += Time.deltaTime;
     }
 
@@ -276,7 +290,8 @@ public class GameManager : MonoBehaviour
         _isGameOver = true;
         _deathCause = deathCause;
         OnGameEnded?.Invoke();
-        Invoke(nameof(ShowGameOver), 1.5f);
+        // MODIFIÉ (2026-10-01) - délai réglable (_gameOverDelay) au lieu de 1.5 s en dur.
+        Invoke(nameof(ShowGameOver), _gameOverDelay);
     }
 
     private void ShowGameOver()
@@ -338,7 +353,8 @@ public class GameManager : MonoBehaviour
         if (_isGameOver) return;
         _isGameOver = true;
         OnGameEnded?.Invoke();
-        Invoke(nameof(ShowVictory), 2f);
+        // MODIFIÉ (2026-10-01) - délai réglable (_victoryDelay) au lieu de 2 s en dur.
+        Invoke(nameof(ShowVictory), _victoryDelay);
     }
 
     private void ShowVictory()

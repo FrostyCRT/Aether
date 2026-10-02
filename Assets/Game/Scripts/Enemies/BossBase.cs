@@ -9,6 +9,12 @@ public class BossBase : MonoBehaviour
     [SerializeField] protected float _xpValue = 200f;
     [SerializeField] protected int _goldValue = 50;
 
+    // AJOUTÉ (2026-10-01) - retour utilisateur : pas de soin à la mort du boss 3. Case à décocher dans l'Inspector du
+    // prefab concerné (cochée par défaut : les boss 1 et 2 gardent leur soin de 50 % des PV max du joueur).
+    [Header("Récompense de mort")]
+    [Tooltip("Si coché, le joueur est soigné de 50 % de ses PV max quand ce boss meurt. À décocher sur le boss 3.")]
+    [SerializeField] protected bool _healPlayerOnDeath = true;
+
     [Header("Attaque")]
     [SerializeField] protected GameObject _projectilePrefab;
     [SerializeField] protected float _fireRate = 1f;
@@ -76,6 +82,7 @@ public class BossBase : MonoBehaviour
     private bool _hasDealtChargeDamage = false;
     public float CameraZoomMargin => _cameraZoomMargin;
     public float MaxHealth => _maxHealth;
+    public float CurrentHealth => _currentHealth;
     // AJOUTE (2026-09-15) - necessaire pour corriger le calcul d'XP des
     // mini-boss invoques par BossCorruptedSource (voir InitSummonedBoss) :
     // avant, SetXPValue(boss.MaxHealth * percent) utilisait _maxHealth, qui
@@ -99,6 +106,12 @@ public class BossBase : MonoBehaviour
         _speedMultiplier = multiplier;
     }
 
+    // AJOUTE (2026-09-25) - cible de déplacement / de visée : le clone spectral de Lyra tant qu'il existe,
+    // sinon le joueur. Les dégâts, eux, restent toujours vérifiés sur le vrai joueur (_playerTransform).
+    // Le test `!= null` d'Unity gère aussi un clone détruit.
+    protected Transform AimTarget =>
+        PlayerController.ActivePhantomClone != null ? PlayerController.ActivePhantomClone : _playerTransform;
+
     protected virtual void Start()
     {
         _currentHealth = _maxHealth;
@@ -112,9 +125,34 @@ public class BossBase : MonoBehaviour
         StartCoroutine(InitUI());
     }
 
+    // AJOUTE (2026-09-26) - mode sans fin : multiplicateur de PV pour les séries de boss suivantes. Posé par WaveManager
+    // juste après l'instanciation ; appliqué ici après le Start() (qui, selon le boss, fixe déjà ses PV en dur).
+    private float _endlessHealthMultiplier = 1f;
+    public void SetEndlessHealthMultiplier(float multiplier) { _endlessHealthMultiplier = Mathf.Max(1f, multiplier); }
+
+    // AJOUTE - Ruée de boss : PV absolus imposés par l'équilibrage du mode (GameModes.RushBossHealth), quelles que soient
+    // les PV du boss en classique. Même mécanisme d'application que le multiplicateur ci-dessus.
+    private float _healthOverride = 0f;
+    public void SetHealthOverride(float hp) { _healthOverride = Mathf.Max(0f, hp); }
+
     private IEnumerator InitUI()
     {
         yield return null;
+
+        if (!IsSummoned)
+        {
+            if (_healthOverride > 0f)
+            {
+                _maxHealth = _healthOverride;
+                _currentHealth = _maxHealth;
+            }
+            else if (_endlessHealthMultiplier > 1f)
+            {
+                _maxHealth *= _endlessHealthMultiplier;
+                _currentHealth = _maxHealth;
+            }
+        }
+
         if (!IsSummoned)
         {
             GameUI.Instance.ShowBossHP(_bossName);
@@ -170,11 +208,11 @@ public class BossBase : MonoBehaviour
         if (_isCharging || _isRecovering) return;
         if (_isWindingUp)
         {
-            RotateTowards(_playerTransform.position - transform.position);
+            RotateTowards(AimTarget.position - transform.position);
             return;
         }
 
-        Vector3 direction = (_playerTransform.position - transform.position).normalized;
+        Vector3 direction = (AimTarget.position - transform.position).normalized;
         Vector3 nextPosition = transform.position + direction * _moveSpeed * _speedMultiplier * Time.deltaTime;
         transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
         RotateTowards(direction);
@@ -232,7 +270,7 @@ public class BossBase : MonoBehaviour
             // et il restait figé indéfiniment. La charge part maintenant toujours ; si le joueur est pile dessus,
             // elle part dans la direction où regarde le boss.
             {
-                Vector3 toPlayer = _playerTransform.position - transform.position;
+                Vector3 toPlayer = AimTarget.position - transform.position;
                 toPlayer.y = 0f;
                 _isCharging = true;
                 _isWindingUp = false;
@@ -264,7 +302,7 @@ public class BossBase : MonoBehaviour
                     HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
                     // MODIFIE - meme source "boss" pour les degats de charge.
                     if (playerHealth != null)
-                        playerHealth.TryTakeContactDamage(_chargeDamage, _contactDamageCooldown, "boss");
+                        playerHealth.TryTakeContactDamage(_chargeDamage * GameModes.EnemyDamageScale, _contactDamageCooldown, "boss");
                     _hasDealtChargeDamage = true;
                 }
             }
@@ -333,7 +371,7 @@ public class BossBase : MonoBehaviour
         if (_chargeTelegraphInstance == null)
             CreateTelegraphZone();
 
-        Vector3 dir = _playerTransform.position - transform.position;
+        Vector3 dir = AimTarget.position - transform.position;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
         dir.Normalize();
@@ -397,9 +435,15 @@ public class BossBase : MonoBehaviour
     // (DebugCheats.cs se neutralise lui-meme hors de ces contextes).
     public static bool DebugInvincible = false;
 
+    // CORRIGE (2026-09-26) - Destroy() n'est effectif qu'en fin de frame : plusieurs coups (zones, éclairs, cristaux...) reçus
+    // dans la même frame après la mort rappelaient Die() -> mort comptée plusieurs fois (BossKillCount, OnBossDied).
+    // Invisible en classique, mais en Choc des titans un seul boss tué déclenchait la victoire.
+    private bool _deathTriggered = false;
+
     public virtual void TakeDamage(float damage, Color color = default)
     {
         if (DebugInvincible) return;
+        if (_deathTriggered) return;
 
         _currentHealth -= damage;
 
@@ -413,14 +457,18 @@ public class BossBase : MonoBehaviour
             GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
 
         if (_currentHealth <= 0)
+        {
+            _deathTriggered = true;
             Die();
+        }
     }
 
     protected virtual void Die()
     {
         DestroyTelegraphZone();
 
-        if (XPGemSpawner.Instance != null)
+        // Choc des titans : l'XP ne sert à rien (build complet, pas de niveaux) -> aucune gemme.
+        if (XPGemSpawner.Instance != null && !GameModes.IsTitans)
         {
             // CORRIGE (2026-09-16) - le pivot des boss est au sol (Y=0),
             // contrairement aux ennemis normaux : les gemmes d'XP spawnaient
@@ -443,12 +491,13 @@ public class BossBase : MonoBehaviour
 
         if (!IsSummoned)
         {
-            GameUI.Instance.HideBossHP();
+            GameUI.Instance.HideBossHP();   // (Choc des titans : ne masque la barre qu'à la mort du dernier titan, voir GameUI)
             WaveManager.Instance.OnBossDied();
 
             // AJOUTE - revient a la musique normale de la scene a la mort du
             // boss, meme filtre !IsSummoned que le reste de ce bloc.
-            if (MusicStarter.Instance != null)
+            // Choc des titans : seulement quand le dernier des 3 boss tombe.
+            if (MusicStarter.Instance != null && (!GameModes.IsTitans || WaveManager.Instance.TitansRemaining <= 0))
                 MusicStarter.Instance.RevertToDefault();
 
             // AJOUTE - notifie le systeme de defis (chrono "Eclair" + compteur
@@ -456,19 +505,24 @@ public class BossBase : MonoBehaviour
             if (ChallengeManager.Instance != null)
                 ChallengeManager.Instance.NotifyBossDefeated();
 
-            HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
-            if (playerHP != null)
+            // MODIFIÉ (2026-10-01) - le soin n'est donné que si _healPlayerOnDeath est coché sur ce boss
+            // (décoché sur le boss 3 : inutile de soigner le joueur juste avant l'écran de Victoire).
+            if (_healPlayerOnDeath)
             {
-                float healAmount = playerHP.MaxHealth * 0.5f;
-                playerHP.Heal(healAmount);
-
-                if (DamageNumberSpawner.Instance != null)
+                HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
+                if (playerHP != null)
                 {
-                    DamageNumberSpawner.Instance.Spawn(
-                        playerHP.transform.position,
-                        healAmount,
-                        Color.green
-                    );
+                    float healAmount = playerHP.MaxHealth * 0.5f;
+                    playerHP.Heal(healAmount);
+
+                    if (DamageNumberSpawner.Instance != null)
+                    {
+                        DamageNumberSpawner.Instance.Spawn(
+                            playerHP.transform.position,
+                            healAmount,
+                            Color.green
+                        );
+                    }
                 }
             }
         }
@@ -503,7 +557,7 @@ public class BossBase : MonoBehaviour
             // MODIFIE - precise "boss" comme source du degat, pour le message
             // d'ambiance contextuel du Game Over.
             if (health != null)
-                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown, "boss");
+                health.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown, "boss");
         }
     }
 
@@ -514,13 +568,19 @@ public class BossBase : MonoBehaviour
         {
             HealthSystem health = other.GetComponent<HealthSystem>();
             if (health != null)
-                health.TryTakeContactDamage(_contactDamage, _contactDamageCooldown, "boss");
+                health.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown, "boss");
         }
     }
 
     public void InitWithReducedHP(float percent)
     {
         _currentHealth = _maxHealth * percent;
+    }
+
+    // PV absolus (mini-boss invoqués en Choc des titans : leurs PV suivent ceux des titans, pas ceux du classique).
+    public void InitWithHealth(float health)
+    {
+        _currentHealth = Mathf.Max(1f, health);
     }
 
     public void SetXPValue(float value)

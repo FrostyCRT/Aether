@@ -92,6 +92,15 @@ public class ChallengeManager : MonoBehaviour
 
     private void Start()
     {
+        // MODES DE JEU (2026-09-26) - les défis n'existent qu'en partie Classique : ni tirage, ni suivi, ni récompense,
+        // ni affichage dans les autres modes. CurrentChallenge reste null, ce que tout le reste (HUD, menu pause,
+        // évaluation de fin de partie, notifications de boss / de dégâts) sait déjà gérer.
+        if (!GameModes.CountsForProgression)
+        {
+            CurrentChallenge = null;
+            return;
+        }
+
         EnsureCurrentChallenge();
     }
 
@@ -249,12 +258,38 @@ public class ChallengeManager : MonoBehaviour
         }
         _currentBossSpawnRealTime = -1f;
 
+        if (IsEnduranceChallenge && !IsFailed
+            && _bossesDefeatedCount >= RequiredBossesForEndurance(CurrentChallenge.id))
+            _enduranceCompleted = true;
+
         RefreshDisplay();
     }
 
+    // CORRIGE (2026-09-26) - les défis "endurance" (jamais sous 30 % de vie / sans Ultime / sans dégât)
+    // étaient marqués réussis dès qu'on n'avait PAS échoué au moment où la partie s'arrêtait : abandonner
+    // (ou mourir) sans avoir rien raté validait le défi. Ils exigent maintenant d'avoir tenu la condition
+    // jusqu'à la mort d'un nombre précis de vrais boss (les invocations ne comptent pas, voir
+    // BossBase.Die). Une fois ce jalon atteint, le défi est acquis pour de bon (verrou
+    // _enduranceCompleted) : ce qui arrive ensuite ne peut plus le faire échouer.
+    private static int RequiredBossesForEndurance(string challengeId)
+    {
+        switch (challengeId)
+        {
+            case "hp30never": return 2;
+            case "noUltimate": return 2;
+            case "noDamage": return 1;
+            default: return 0;
+        }
+    }
+
+    private bool _enduranceCompleted = false;
+
+    private bool IsEnduranceChallenge =>
+        CurrentChallenge != null && RequiredBossesForEndurance(CurrentChallenge.id) > 0;
+
     private void CheckFailureConditions()
     {
-        if (CurrentChallenge == null || IsFailed) return;
+        if (CurrentChallenge == null || IsFailed || _enduranceCompleted) return;
 
         bool failed = false;
         switch (CurrentChallenge.id)
@@ -306,7 +341,11 @@ public class ChallengeManager : MonoBehaviour
             case "bossUnder30s": return _fastestBossKillTime <= 30f;
             case "gold3000": return gold >= 3000;
             case "level30": return level >= 30;
-            default: return false; // hp30never / noUltimate / noDamage
+            case "hp30never":
+            case "noUltimate":
+            case "noDamage":
+                return _enduranceCompleted;
+            default: return false;
         }
     }
 
@@ -345,11 +384,11 @@ public class ChallengeManager : MonoBehaviour
             case "level10": return $"Niv. {Mathf.Min(level, 10)}/10";
             case "boss1": return $"{Mathf.Min(bossKills, 1)}/1";
             case "dash20": return $"{Mathf.Min(_dashUsedCount, 20)}/20";
-            case "hp30never": return "En cours";
+            case "hp30never": return $"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2";
             case "boss2": return $"{Mathf.Min(bossKills, 2)}/2";
             case "level20in10min": return $"Niv. {Mathf.Min(level, 20)}/20";
-            case "noUltimate": return "En cours";
-            case "noDamage": return "En cours";
+            case "noUltimate": return $"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2";
+            case "noDamage": return $"Boss {Mathf.Min(_bossesDefeatedCount, 1)}/1";
             case "bossUnder30s": return "En cours";
             case "gold3000": return $"{Mathf.Min(gold, 3000)}/3000 Or";
             case "level30": return $"Niv. {Mathf.Min(level, 30)}/30";
@@ -373,11 +412,12 @@ public class ChallengeManager : MonoBehaviour
             case "level10": success = levelReached >= 10; break;
             case "boss1": success = bossKillCount >= 1; break;
             case "dash20": success = _dashUsedCount >= 20; break;
-            case "hp30never": success = _minHealthPercent >= 0.30f; break;
+            case "hp30never":
+            case "noUltimate":
+            case "noDamage":
+                success = _enduranceCompleted; break;
             case "boss2": success = bossKillCount >= 2; break;
             case "level20in10min": success = _level20ReachedInTime; break;
-            case "noUltimate": success = !_ultimateUsedThisRun; break;
-            case "noDamage": success = !_tookDamageThisRun; break;
             case "bossUnder30s": success = _fastestBossKillTime <= 30f; break;
             case "gold3000": success = runGoldEarned >= 3000; break;
             case "level30": success = levelReached >= 30; break;

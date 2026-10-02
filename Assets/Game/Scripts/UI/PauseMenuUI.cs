@@ -18,11 +18,11 @@ public class PauseMenuUI : MonoBehaviour
     [Tooltip("Le prefab UpgradeSlot cree a l'etape 6, avec son composant UpgradeSlotRefs deja configure.")]
     [SerializeField] private GameObject _upgradeSlotPrefab;
 
-    [Header("Parchemins par branche (memes sprites que sur UpgradeUI)")]
-    [SerializeField] private Sprite _parchmentAether;    // rouge
-    [SerializeField] private Sprite _parchmentKael;      // vert
-    [SerializeField] private Sprite _parchmentLyra;      // bleu
-    [SerializeField] private Sprite _parchmentUniversal; // dore
+    // MODIFIE (2026-09-27) - les 4 parchemins colorés supprimés (retour utilisateur, problèmes de cadrage/lueur) :
+    // un seul parchemin sobre pour toutes les cartes, la couleur par branche vit maintenant dans une lueur
+    // dynamique DERRIÈRE la carte (voir GameUI.ConfigureBuildGridSlot/BuildCardGlow).
+    [Header("Parchemin (sobre, identique pour toutes les cartes)")]
+    [SerializeField] private Sprite _parchmentSober;
 
     [Header("Couleurs des pastilles (memes valeurs que sur UpgradeUI)")]
     [SerializeField] private Color _dotColorEmpty = new Color(0.35f, 0.30f, 0.25f, 0.6f);
@@ -167,127 +167,225 @@ public class PauseMenuUI : MonoBehaviour
     // Peuplement de la grille
     // ------------------------------------------------------------------
 
+    // MODIFIE (2026-09-27) - la grille était une liste défilante des upgrades OBTENUES, dans leur ordre de pick.
+    // Elle est passée par une grille 3x3 pleine hauteur avec ScrollRect (retour utilisateur : cartes trop petites),
+    // puis - nouveau retour utilisateur - revenue sur un format COMPACT sans scrollbar ("j'ai jamais vu une barre
+    // comme ça dans la pause pour voir des informations de jeu") : 2 rangées de 4 cases (8 au total), Soin exclu
+    // ("pas informatif sur du build, c'est même pas un passif"). Utilise GameUI.PopulatePauseGrid (voir sa
+    // description, GetPauseArsenalItems) - layout dédié, différent du 3x3 réutilisé tel quel par Victoire/Défaite.
+    // MODIFIE (2026-09-27) - retour utilisateur : la barre de description fixe en bas prenait de la place utile aux
+    // cartes ("je préfère que tu l'utilise pour agrandir les cartes") - supprimée, cet espace rendu au ScrollView.
+    // La description s'affiche maintenant dans un petit panneau flottant qui apparaît À L'ENDROIT DU CLIC (voir
+    // _descriptionTooltip/ShowUpgradeDescription), pas dans une zone fixe.
+    [Header("Taille des tuiles (Pause : grille compacte 2x4, sans défilement)")]
+    [SerializeField] private Vector2 _cellSize = new Vector2(350f, 265f);
+    [SerializeField] private Vector2 _cellSpacing = new Vector2(16f, 16f);
+    [SerializeField] private int _gridColumns = 4;
+
+    // AJOUTE (2026-09-28, retour utilisateur : "les positions ne correspondent pas du tout") - la colonne de
+    // pastilles (Dot1/2/3 + losange) DOIT rester calculée en code (le nombre de pastilles varie de 1 à 5 selon
+    // l'arme, impossible à figer dans le prefab sans perdre le centrage automatique) - mais sa taille/son
+    // espacement étaient des constantes codées en dur, invisibles et impossibles à ajuster sans redemander un
+    // changement de code. Exposés ici : réglables directement dans l'Inspector, comme le reste.
+    [Header("Pastilles (taille/espacement - la position reste calculée automatiquement, voir GameUI.ConfigureBuildGridSlot)")]
+    [Tooltip("Taille (largeur/hauteur) d'une pastille quand il y en a 3 ou moins.")]
+    [SerializeField] private float _dotSizeFew = 22f;
+    [Tooltip("Taille d'une pastille quand il y en a plus de 3 (4 ou 5) - plus petite pour que tout tienne.")]
+    [SerializeField] private float _dotSizeMany = 16f;
+    [SerializeField] private float _dotSpacing = 10f;
+    [SerializeField] private float _unlockDotSize = 26f;
+    [Tooltip("Ecart entre le losange de déblocage et la première pastille.")]
+    [SerializeField] private float _unlockDotGap = 10f;
+
+    [Header("Description au clic (retour utilisateur : \"aucun moyen de savoir ce qu'une carte fait\")")]
+    [Tooltip("Le petit panneau flottant lui-même (racine avec le fond) - masqué par défaut, positionné et activé au clic sur une carte.")]
+    [SerializeField] private RectTransform _descriptionTooltip;
+    [Tooltip("Le texte à l'intérieur du panneau - la description statique de l'upgrade (UpgradeData.description).")]
+    [SerializeField] private TextMeshProUGUI _descriptionText;
+    [SerializeField] private float _tooltipFadeInDuration = 0.15f;
+    [SerializeField] private float _tooltipFadeOutDuration = 0.2f;
+    [SerializeField] private float _tooltipHoverDismissDelay = 1f;
+
+    private CanvasGroup _tooltipCanvasGroup;
+    private UpgradeData _activeTooltipUpgrade;
+    private Coroutine _tooltipFadeCoroutine;
+    private Coroutine _tooltipHoverDismissCoroutine;
+
     private void PopulateGrid()
     {
-        // Nettoie les slots de l'ouverture precedente avant de repeupler - la liste
-        // d'upgrades obtenues a pu changer depuis la derniere fois que le menu pause
-        // a ete ouvert (le joueur a probablement pick plusieurs upgrades entre-temps).
-        foreach (GameObject oldSlot in _spawnedSlots)
-        {
-            if (oldSlot != null) Destroy(oldSlot);
-        }
-        _spawnedSlots.Clear();
-
-        if (LevelUpManager.Instance == null || _gridContent == null || _upgradeSlotPrefab == null)
+        if (GameUI.Instance == null || _gridContent == null || _upgradeSlotPrefab == null)
             return;
 
-        // Suit desormais ObtainedOrder (ordre chronologique reel de pick)
-        // plutot que AllUpgrades (ordre fixe du tableau de l'Inspector). Cette liste
-        // ne contient deja que des upgrades reellement obtenues au moins une fois,
-        // donc plus besoin de filtrer nous-memes ici.
-        IReadOnlyList<UpgradeData> obtainedInOrder = LevelUpManager.Instance.ObtainedOrder;
-        if (obtainedInOrder == null) return;
+        GameUI.Instance.PopulatePauseGrid(_gridContent, _upgradeSlotPrefab, _spawnedSlots, _cellSize, _cellSpacing, _gridColumns,
+            _parchmentSober, _dotColorEmpty, _dotColorFilled, _dotColorMax, ShowUpgradeDescription, OnCardHoverEnter, OnCardHoverExit,
+            _dotSizeFew, _dotSizeMany, _dotSpacing, _unlockDotSize, _unlockDotGap);
 
-        foreach (UpgradeData upgrade in obtainedInOrder)
+        // Le panneau de description repart toujours masqué à l'ouverture du menu (pas de description périmée d'une
+        // précédente ouverture affichée avant même d'avoir cliqué quoi que ce soit) - coupe aussi net toute
+        // animation de fondu et tout minuteur de fermeture en cours (retour utilisateur : "attention aux bugs si
+        // on spam les clics" - une réouverture du menu ne doit jamais laisser un coroutine de l'ouverture
+        // précédente continuer à tourner en arrière-plan).
+        StopTooltipCoroutines();
+        _activeTooltipUpgrade = null;
+        if (_descriptionTooltip != null)
         {
-            if (upgrade == null) continue;
+            _descriptionTooltip.gameObject.SetActive(false);
+            if (_tooltipCanvasGroup == null) _tooltipCanvasGroup = _descriptionTooltip.GetComponent<CanvasGroup>();
+            if (_tooltipCanvasGroup == null) _tooltipCanvasGroup = _descriptionTooltip.gameObject.AddComponent<CanvasGroup>();
+            _tooltipCanvasGroup.alpha = 0f;
+        }
 
-            GameObject slotGO = Instantiate(_upgradeSlotPrefab, _gridContent);
-            ConfigureSlot(slotGO, upgrade);
-            _spawnedSlots.Add(slotGO);
+        // Etat de depart pour l'animation en cascade : invisible tant que PlayOpenAnimation() ne l'a pas fait
+        // apparaitre. Ajoute un CanvasGroup a chaque slot si le prefab n'en a pas deja un.
+        foreach (GameObject slotGO in _spawnedSlots)
+        {
+            if (slotGO == null) continue;
+            CanvasGroup cg = slotGO.GetComponent<CanvasGroup>();
+            if (cg == null) cg = slotGO.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
         }
     }
 
-    private void ConfigureSlot(GameObject slotGO, UpgradeData upgrade)
+    private void StopTooltipCoroutines()
     {
-        UpgradeSlotRefs refs = slotGO.GetComponent<UpgradeSlotRefs>();
-        if (refs == null)
+        if (_tooltipFadeCoroutine != null) { StopCoroutine(_tooltipFadeCoroutine); _tooltipFadeCoroutine = null; }
+        if (_tooltipHoverDismissCoroutine != null) { StopCoroutine(_tooltipHoverDismissCoroutine); _tooltipHoverDismissCoroutine = null; }
+    }
+
+    // MODIFIE (2026-09-27) - callback de clic passé à GameUI.PopulatePauseGrid : affiche la description STATIQUE de
+    // l'upgrade (UpgradeData.description, ex: "FUSION — Aura + Orbitaux : ..."), pas GetDynamicDescription() (qui
+    // décrit le PROCHAIN palier et n'a donc plus de sens une fois une carte déjà maxée). Positionne le petit
+    // panneau À L'ENDROIT DU CLIC (retour utilisateur) - converti en coordonnées locales de MainFrame (Canvas en
+    // Screen Space Overlay, camera=null) via Input.mousePosition (input legacy, déjà utilisé partout ailleurs dans
+    // le projet - voir GameInput.cs). Léger décalage bas-droite pour que le curseur ne masque pas le texte, puis
+    // bloqué dans les bords de MainFrame pour ne jamais déborder de l'écran.
+    private static readonly Vector2 TooltipCursorOffset = new Vector2(18f, -18f);
+
+    // Marge intérieure du panneau (doit correspondre aux offsetMin/Max du texte à l'intérieur, réglés dans la
+    // scène : 16/12 de chaque côté) et largeur de texte max avant retour à la ligne, pour qu'une description
+    // longue s'enroule au lieu de produire un panneau démesurément large (retour utilisateur : "le panel doit être
+    // de la taille du texte").
+    private static readonly Vector2 TooltipPadding = new Vector2(32f, 24f);
+    private const float TooltipMaxTextWidth = 380f;
+
+    private void ShowUpgradeDescription(UpgradeData upgrade)
+    {
+        if (_descriptionTooltip == null || _descriptionText == null || upgrade == null) return;
+        if (string.IsNullOrEmpty(upgrade.description)) return;
+
+        // Un nouveau clic (même sur une autre carte pendant qu'un fondu de sortie était en cours - retour
+        // utilisateur : "attention aux bugs si on spam les clics") annule tout fondu/minuteur en cours AVANT de
+        // toucher au texte ou à la taille.
+        StopTooltipCoroutines();
+
+        // CORRIGE (2026-09-27, retour utilisateur : "au premier clique... une lettre par ligne, en 1 colonne") -
+        // le panneau était activé APRÈS avoir déjà changé son texte : tant que le GameObject est inactif dans la
+        // hiérarchie, TMP met la mise à jour du texte en attente au lieu de la traiter tout de suite, et la
+        // reprend au réveil avec un état de mise en page pas encore à jour (largeur pas encore fiable) - d'où le
+        // texte retourné à la ligne sur presque chaque caractère la toute première fois. Activer le GameObject
+        // D'ABORD, puis changer le texte et forcer la reconstruction du maillage, règle ça définitivement.
+        _descriptionTooltip.gameObject.SetActive(true);
+        _descriptionText.text = upgrade.description;
+        _descriptionText.ForceMeshUpdate();
+        GameUI.ApplyReadableOutline(_descriptionText);
+
+        // Taille du panneau = taille du texte (+ marge intérieure) - plus de format fixe, un texte court donne un
+        // petit panneau, un texte long s'enroule à TooltipMaxTextWidth puis grandit en hauteur.
+        Vector2 preferred = _descriptionText.GetPreferredValues(upgrade.description, TooltipMaxTextWidth, 0f);
+        _descriptionTooltip.sizeDelta = new Vector2(Mathf.Min(preferred.x, TooltipMaxTextWidth) + TooltipPadding.x, preferred.y + TooltipPadding.y);
+
+        RectTransform parentRt = _descriptionTooltip.parent as RectTransform;
+        if (parentRt != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRt, Input.mousePosition, null, out Vector2 localPoint))
         {
-            Debug.LogWarning("[PauseMenuUI] Le prefab UpgradeSlot n'a pas de composant UpgradeSlotRefs assigne.");
+            Vector2 pos = localPoint + TooltipCursorOffset;
+
+            Vector2 halfParent = parentRt.rect.size * 0.5f;
+            // Le pivot du panneau est en haut-gauche (0,1) : il s'étend vers la droite et le bas depuis 'pos'.
+            pos.x = Mathf.Clamp(pos.x, -halfParent.x, halfParent.x - _descriptionTooltip.sizeDelta.x);
+            pos.y = Mathf.Clamp(pos.y, -halfParent.y + _descriptionTooltip.sizeDelta.y, halfParent.y);
+
+            _descriptionTooltip.anchoredPosition = pos;
+        }
+
+        _activeTooltipUpgrade = upgrade;
+        _tooltipFadeCoroutine = StartCoroutine(FadeTooltip(1f, _tooltipFadeInDuration, false));
+        _tooltipJustUpdatedThisFrame = true;
+    }
+
+    // AJOUTE (2026-09-27, retour utilisateur : "si au survol on enlève la souris de la carte, le panel disparait
+    // en fondu au bout de 1 sec") - ne démarre le minuteur QUE si la carte quittée est celle dont la description
+    // est actuellement affichée (survoler puis quitter une AUTRE carte, sans jamais l'avoir cliquée, ne doit rien
+    // fermer). Revenir sur cette même carte avant la fin du délai annule la fermeture.
+    private void OnCardHoverExit(UpgradeData upgrade)
+    {
+        if (upgrade != _activeTooltipUpgrade || _descriptionTooltip == null || !_descriptionTooltip.gameObject.activeSelf) return;
+        if (_tooltipHoverDismissCoroutine != null) StopCoroutine(_tooltipHoverDismissCoroutine);
+        _tooltipHoverDismissCoroutine = StartCoroutine(DismissTooltipAfterDelay());
+    }
+
+    private void OnCardHoverEnter(UpgradeData upgrade)
+    {
+        if (upgrade != _activeTooltipUpgrade || _tooltipHoverDismissCoroutine == null) return;
+        StopCoroutine(_tooltipHoverDismissCoroutine);
+        _tooltipHoverDismissCoroutine = null;
+    }
+
+    private IEnumerator DismissTooltipAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(_tooltipHoverDismissDelay);
+        _tooltipHoverDismissCoroutine = null;
+        HideTooltip();
+    }
+
+    private void HideTooltip()
+    {
+        _activeTooltipUpgrade = null;
+        if (_tooltipFadeCoroutine != null) StopCoroutine(_tooltipFadeCoroutine);
+        _tooltipFadeCoroutine = StartCoroutine(FadeTooltip(0f, _tooltipFadeOutDuration, true));
+    }
+
+    // Fondu générique (temps réel, indépendant de Time.timeScale=0 pendant la pause - même principe que
+    // PlayOpenAnimation ci-dessous). deactivateAtEnd : désactive le GameObject une fois à alpha 0 (fermeture),
+    // jamais lors d'une ouverture (alpha visé = 1).
+    private IEnumerator FadeTooltip(float target, float duration, bool deactivateAtEnd)
+    {
+        if (_tooltipCanvasGroup == null) _tooltipCanvasGroup = _descriptionTooltip.GetComponent<CanvasGroup>();
+        float start = _tooltipCanvasGroup.alpha;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            _tooltipCanvasGroup.alpha = Mathf.Lerp(start, target, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        _tooltipCanvasGroup.alpha = target;
+        if (deactivateAtEnd && target <= 0f)
+            _descriptionTooltip.gameObject.SetActive(false);
+        _tooltipFadeCoroutine = null;
+    }
+
+    // AJOUTE (2026-09-27, retour utilisateur : "si on clique hors du panel, le panel doit disparaître") -
+    // LateUpdate (pas Update) : l'EventSystem traite les clics sur les boutons des cartes pendant sa propre
+    // Update(), donc à ce stade ShowUpgradeDescription() a déjà pu s'exécuter CETTE MÊME frame si une carte vient
+    // d'être cliquée - _tooltipJustUpdatedThisFrame évite de refermer immédiatement le panneau qu'on vient tout
+    // juste d'afficher/repositionner sur ce même clic.
+    private bool _tooltipJustUpdatedThisFrame = false;
+
+    private void LateUpdate()
+    {
+        if (_descriptionTooltip == null || !_descriptionTooltip.gameObject.activeSelf)
+        {
+            _tooltipJustUpdatedThisFrame = false;
             return;
         }
 
-        if (refs.background != null)
-            refs.background.sprite = GetParchmentSprite(upgrade.Branch);
-
-        if (refs.icon != null)
-            refs.icon.sprite = upgrade.icon;
-
-        if (refs.nameText != null)
-            refs.nameText.text = upgrade.upgradeName;
-
-        int maxLevel = upgrade.MaxLevel;
-        int currentLevel = upgrade.GetDisplayLevel();
-        bool alreadyMaxed = currentLevel >= maxLevel;
-        bool showDots = maxLevel > 1 && maxLevel <= 3 && refs.tierDots != null;
-
-        if (refs.tierDots != null)
+        if (Input.GetMouseButtonDown(0) && !_tooltipJustUpdatedThisFrame
+            && !RectTransformUtility.RectangleContainsScreenPoint(_descriptionTooltip, Input.mousePosition, null))
         {
-            for (int d = 0; d < refs.tierDots.Length; d++)
-            {
-                if (refs.tierDots[d] == null) continue;
-
-                bool dotExists = showDots && d < maxLevel;
-                refs.tierDots[d].gameObject.SetActive(dotExists);
-                if (!dotExists) continue;
-
-                bool filled = d < currentLevel;
-                if (!filled)
-                    refs.tierDots[d].color = _dotColorEmpty;
-                else
-                    refs.tierDots[d].color = alreadyMaxed ? _dotColorMax : _dotColorFilled;
-            }
+            HideTooltip();
         }
 
-        // Compteur x1/x2/x3, meme condition que sur les cartes de
-        // level-up : uniquement pour les upgrades sans pastilles (cap eleve/
-        // illimite comme Degats/Cadence/Soin), jamais pour Tir x2 (maxLevel==1),
-        // et seulement si deja pris au moins une fois.
-        bool showStackCount = !showDots && maxLevel > 1 && currentLevel >= 1;
-        if (refs.stackCountText != null)
-        {
-            refs.stackCountText.gameObject.SetActive(showStackCount);
-            if (showStackCount)
-                refs.stackCountText.text = $"x{currentLevel}";
-        }
-
-        // requiresUnlock calcule une seule fois, reutilise a la fois pour
-        // le losange ET pour repositionner TierDotsRow, meme si l'un des deux
-        // champs n'est pas assigne dans l'Inspector (les deux restent independants).
-        bool requiresUnlock = upgrade.RequiresUnlockPick;
-
-        if (refs.unlockDot != null)
-        {
-            refs.unlockDot.gameObject.SetActive(requiresUnlock);
-            if (requiresUnlock)
-                refs.unlockDot.color = upgrade.IsUnlocked() ? _dotColorFilled : _dotColorEmpty;
-        }
-
-        if (refs.tierDotsRow != null)
-        {
-            Vector2 rowPos = refs.tierDotsRow.anchoredPosition;
-            rowPos.x = requiresUnlock ? _slotDotsRowOffsetWithUnlockDot : _slotDotsRowOffsetWithoutUnlockDot;
-            refs.tierDotsRow.anchoredPosition = rowPos;
-        }
-
-        // Etat de depart pour l'animation en cascade : invisible tant que
-        // PlayOpenAnimation() ne l'a pas fait apparaitre. Ajoute un CanvasGroup au
-        // slot si le prefab n'en a pas deja un, meme logique que pour MainFrame.
-        CanvasGroup slotCanvasGroup = slotGO.GetComponent<CanvasGroup>();
-        if (slotCanvasGroup == null)
-            slotCanvasGroup = slotGO.AddComponent<CanvasGroup>();
-        slotCanvasGroup.alpha = 0f;
-    }
-
-    private Sprite GetParchmentSprite(UpgradeBranch branch)
-    {
-        switch (branch)
-        {
-            case UpgradeBranch.Aether: return _parchmentAether;
-            case UpgradeBranch.Kael: return _parchmentKael;
-            case UpgradeBranch.Lyra: return _parchmentLyra;
-            default: return _parchmentUniversal;
-        }
+        _tooltipJustUpdatedThisFrame = false;
     }
 
     // ------------------------------------------------------------------
@@ -347,7 +445,8 @@ public class PauseMenuUI : MonoBehaviour
 
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
         {
-            _challengeInfoText.text = "";
+            // Les défis n'existent qu'en Classique (voir ChallengeManager.Start).
+            _challengeInfoText.text = GameModes.CountsForProgression ? "" : "Pas de défi dans ce mode.";
             return;
         }
 

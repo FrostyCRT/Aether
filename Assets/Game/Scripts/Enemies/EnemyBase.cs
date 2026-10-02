@@ -55,6 +55,8 @@ public class EnemyBase : MonoBehaviour
         _healthMultiplier = multiplier;
     }
 
+    public float CurrentHealth => _currentHealth;
+
     private Vector3 _smoothedMoveDirection = Vector3.forward;
     protected float MoveSpeed => _moveSpeed;
 
@@ -187,7 +189,7 @@ public class EnemyBase : MonoBehaviour
             {
                 HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
                 if (playerHealth != null)
-                    playerHealth.TryTakeContactDamage(_contactDamage, _contactDamageCooldown);
+                    playerHealth.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown);
             }
 
             return;
@@ -262,8 +264,14 @@ public class EnemyBase : MonoBehaviour
         return force.normalized * 0.5f;
     }
 
+    // AJOUTE (2026-09-27) - DEBUG/TEST uniquement (voir DebugCheats.cs), meme principe que BossBase.DebugInvincible :
+    // interrupteur global, un seul point a verifier partout ou un ennemi normal encaisse des degats.
+    public static bool DebugInvincible = false;
+
     public void TakeDamage(float damage, Color color = default, bool fromNova = false)
     {
+        if (DebugInvincible) return;
+
         _currentHealth -= damage;
 
         if (DamageNumberSpawner.Instance != null)

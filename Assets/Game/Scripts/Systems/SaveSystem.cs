@@ -89,6 +89,26 @@ public class SaveData
     // jusqu'ici), pour enrichir les messages de record du Game Over.
     public int bestLevel = 0;
     public int bestGoldInRun = 0;
+    // AJOUTE (2026-09-26) - records du MODE SANS FIN, séparés du classique (sinon une seule partie sans fin de 40 min
+    // écraserait à jamais les records de la partie de 15 min). Valeur par défaut 0 : anciens saves compatibles.
+    public float bestEndlessTime = 0f;
+    public int bestEndlessBossKills = 0;
+    public int bestEndlessKills = 0;
+
+    // AJOUTE (2026-09-26) - modes de jeu. bestClassicBossKills (0-3) = plus grand nombre de boss battus en une partie
+    // CLASSIQUE : donne accès à la Ruée de boss et en fixe l'ampleur (voir GameModes). Les saves d'avant sont migrés
+    // dans MetaProgressionManager.LoadData (Lyra débloquée = victoire = 3, Kael débloqué = au moins 1).
+    // endlessRuns / rushRuns : compteurs de "Tentative n°X" par mode (le classique = totalRuns - les deux autres).
+    public int bestClassicBossKills = 0;
+    public int endlessRuns = 0;
+    public int rushRuns = 0;
+    public int rushWins = 0;
+    public int rushBestBossKills = 0;
+    // Choc des titans : parties jouées, victoires, meilleur temps de victoire (0 = jamais gagné), max de boss tués.
+    public int titansRuns = 0;
+    public int titansWins = 0;
+    public float titansBestTime = 0f;
+    public int titansBestBossKills = 0;
     public int selectedCharacterIndex = 0;
 
     // AJOUTE - déblocage des personnages. Aether est toujours disponible.

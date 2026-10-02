@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 3249017591722854340}
   - component: {fileID: 2696284090038528861}
   - component: {fileID: 3379871262965359322}
+  - component: {fileID: -5922321865323607786}
+  - component: {fileID: -6209418554700485452}
   m_Layer: 6
   m_Name: BossDeer
   m_TagString: Enemy
@@ -154,6 +156,7 @@ MonoBehaviour:
   _moveSpeed: 4
   _xpValue: 2450
   _goldValue: 70
+  _healPlayerOnDeath: 1
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
   _fireRate: 1.75
@@ -204,6 +207,30 @@ MonoBehaviour:
   _phase2SpeedMultiplier: 1.4
   _biteRange: 2.5
   _deathAnimDuration: 1
+--- !u!114 &-5922321865323607786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8074673154536467952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde97c9c461c0c74c81fc02df7bcbc3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-6209418554700485452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8074673154536467952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9423bad43b583d4887c405f11c9f2b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1042701517578024386
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -5,8 +5,17 @@ using System.Collections.Generic;
 // applique un ralentissement + DPS léger aux ennemis dans son rayon, puis retourne au pool.
 public class MudPuddleZone : MonoBehaviour
 {
+    // AJOUTÉ (2026-10-01) - arrivée dynamique : le cercle grandit de presque rien jusqu'à son rayon final au lieu
+    // d'apparaître d'un coup. Courbe "ease-out" (démarrage vif, fin douce). La zone de ralentissement/dégâts suit
+    // le visuel (même rayon courant), pour ne jamais blesser/ralentir dans une zone que l'écran ne montre pas encore.
+    [Header("Arrivée dynamique")]
+    [Tooltip("Durée (secondes) pour que la flaque atteigne son rayon final. 0 = apparition instantanée (ancien comportement).")]
+    [SerializeField] private float _growDuration = 0.3f;
+
     private float _duration;
-    private float _radius;
+    private float _radius;          // rayon FINAL
+    private float _currentRadius;   // rayon actuel pendant la croissance (visuel ET zone d'effet)
+    private float _baseScaleY;
     private float _slowMultiplier;
     private float _damagePerSecond;
 
@@ -45,7 +54,29 @@ public class MudPuddleZone : MonoBehaviour
         _currentlySlowed.Clear();
         _isActive = true;
 
-        transform.localScale = new Vector3(radius * 2f, transform.localScale.y, radius * 2f);
+        // La hauteur (Y) du prefab n'est jamais modifiée : seule l'emprise au sol (X/Z) grandit.
+        _baseScaleY = transform.localScale.y;
+
+        // Démarre quasi à zéro (jamais exactement 0, pour éviter une échelle dégénérée), ou directement au rayon
+        // final si la croissance est désactivée.
+        _currentRadius = _growDuration > 0f ? Mathf.Max(0.05f, radius * 0.05f) : radius;
+        ApplyScale();
+    }
+
+    private void ApplyScale()
+    {
+        transform.localScale = new Vector3(_currentRadius * 2f, _baseScaleY, _currentRadius * 2f);
+    }
+
+    private void UpdateGrowth()
+    {
+        if (_currentRadius >= _radius) return;
+
+        float t = _growDuration > 0f ? Mathf.Clamp01(_lifeTimer / _growDuration) : 1f;
+        float eased = 1f - (1f - t) * (1f - t) * (1f - t); // ease-out cubique
+        _currentRadius = Mathf.Max(0.05f, _radius * eased);
+        if (t >= 1f) _currentRadius = _radius;
+        ApplyScale();
     }
 
     private void Update()
@@ -60,6 +91,8 @@ public class MudPuddleZone : MonoBehaviour
             return;
         }
 
+        UpdateGrowth();
+
         _tickTimer += Time.deltaTime;
         if (_tickTimer >= TickRate)
         {
@@ -71,7 +104,8 @@ public class MudPuddleZone : MonoBehaviour
     private void Tick()
     {
         _inRangeThisTick.Clear();
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _overlapBuffer);
+        // MODIFIÉ (2026-10-01) - utilise le rayon COURANT (en croissance) et non le rayon final.
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _currentRadius, _overlapBuffer);
         // Buffs dynamiques du joueur (Concentration) relus à chaque tick. 1f si inactif.
         float tickDamage = _damagePerSecond * TickRate * PlayerBuffs.OutgoingDamageMultiplier;
 

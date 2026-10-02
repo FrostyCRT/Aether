@@ -38,16 +38,26 @@ public static class BangersDigitsSetup
         so.ApplyModifiedPropertiesWithoutUndo();
         fa.fallbackFontAssetTable = new List<TMP_FontAsset>();
 
-        // 2) retirer les anciens chiffres (caractères ET glyphes), puis les régénérer depuis la source corrigée
+        // 2) retirer les anciens chiffres ET lettres accentuées (caractères et glyphes), puis les régénérer depuis la source corrigée
+        //    (les accents ont été rapetissés dans la police : voir Tools/patch_bangers_accents.py)
+        System.Text.StringBuilder toRebuild = new System.Text.StringBuilder("0123456789");
         HashSet<uint> oldGlyphs = new HashSet<uint>();
         foreach (TMP_Character c in fa.characterTable)
-            if (c.unicode >= '0' && c.unicode <= '9') oldGlyphs.Add(c.glyphIndex);
-        fa.characterTable.RemoveAll(c => c.unicode >= '0' && c.unicode <= '9');
+        {
+            bool digit = c.unicode >= '0' && c.unicode <= '9';
+            bool accented = c.unicode >= 0xC0 && c.unicode <= 0x17F;   // Latin-1 supplément et Latin étendu A
+            if (!digit && !accented) continue;
+            oldGlyphs.Add(c.glyphIndex);
+            if (accented) toRebuild.Append(char.ConvertFromUtf32((int)c.unicode));
+        }
+        fa.characterTable.RemoveAll(c => (c.unicode >= '0' && c.unicode <= '9') || (c.unicode >= 0xC0 && c.unicode <= 0x17F));
         fa.glyphTable.RemoveAll(g => oldGlyphs.Contains(g.index));
         fa.ReadFontAssetDefinition();
 
-        fa.TryAddCharacters("0123456789", out string missing);
-        if (!string.IsNullOrEmpty(missing)) Debug.LogWarning("[BangersDigitsSetup] chiffres non générés : " + missing);
+        // les lettres accentuées courantes du français sont toujours (re)générées, même si l'atlas ne les contenait pas encore
+        toRebuild.Append("ÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸàâäçéèêëîïôöùûüÿ");
+        fa.TryAddCharacters(toRebuild.ToString(), out string missing);
+        if (!string.IsNullOrEmpty(missing)) Debug.LogWarning("[BangersDigitsSetup] caractères non générés : " + missing);
 
         EditorUtility.SetDirty(fa);
         AssetDatabase.SaveAssets();

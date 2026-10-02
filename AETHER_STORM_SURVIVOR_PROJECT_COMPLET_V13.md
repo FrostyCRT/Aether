@@ -1,5 +1,7 @@
 # AETHER STORM SURVIVOR — Documentation projet (V13)
 
+> **Note (2026-09-30)** : ce document est un instantané de conception haut niveau, pas mis à jour à chaque session. Pour l'état le plus récent et le détail des décisions/bugs corrigés session par session, voir `NOTES.md` (source de vérité à jour). Pour savoir quel script fait quoi, voir `SCRIPTS_INDEX.md`. Le projet tourne désormais sous **Unity 6** (voir NOTES.md, commit "Unity6"), pas 2021.3.45f2 comme indiqué juste en dessous - certains points de cette doc (ex. section 10 "Tâches en attente") sont périmés : le système de fusion et le Bulbe cracheur sont maintenant implémentés (voir NOTES.md et `SCRIPTS_INDEX.md`, dossier `Weapons/` et `Enemies/EnemyBulb.cs`).
+
 Jeu horde-survivor développé en solo sous Unity 2021.3.45f2. Nom du jeu **confirmé définitif** : Aether Storm Survivor (l'idée de changement de nom évoquée en V12 est abandonnée).
 
 Objectif affiché : viser une qualité capable de rivaliser avec les vrais survivor-like du marché (Vampire Survivors, Brotato, Halls of Torment), en restant original sans s'éloigner du genre. Steam Next Fest visé pour février 2027, seuil critique 2000 wishlists.
@@ -194,10 +196,10 @@ Icônes Or/Éclats : réutiliser celles déjà existantes (HUD pour l'Or, page R
 
 ## 10. Tâches en attente (à jour)
 
-- Système de fusion (6 fusions au total).
+- ~~Système de fusion (6 fusions au total).~~ **Fait** (6 fusions implémentées, `Assets/Game/Scripts/Weapons/WeaponFusion*.cs` + `SO_Fusion_*.asset` + visuel dédié dans le menu Pause et sur Victoire/Défaite — voir NOTES.md, session 2026-09-30).
 - Système de skins (Or/Éclats) — aucune donnée/logique/asset construite.
 - Vérifier les 3 mécaniques spéciales par personnage (Concentration/Récupération/Impulsion Nova) — nœuds existants, effet en jeu à reconfirmer.
-- Nouvel ennemi "bulbe cracheur de projectile" (shooter fixe, tir en éventail, cadence faible) — modélisation 3D prévue lors du mois dédié Tripo3D.
+- ~~Nouvel ennemi "bulbe cracheur de projectile" (shooter fixe, tir en éventail, cadence faible) — modélisation 3D prévue lors du mois dédié Tripo3D.~~ **Fait** (`EnemyBulb.cs`, voir NOTES.md session 2026-09-26).
 - Ordre d'introduction des types d'ennemis à réfléchir avant d'ajouter le bulbe cracheur (éviter le chaos visuel).
 - Paliers de difficulté par taille de map (3 maps, du champ infini à l'enceinte fermée) — idée posée, pas commencée.
 - Écran d'accueil adaptatif selon le personnage sélectionné.

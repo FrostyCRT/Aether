@@ -2,11 +2,15 @@
 # Bangers-Regular.ttf en levant l'ambiguite 1 / 7 (le 1 recoit un pied, le 7 une barre : le "7 barre"
 # usuel en francais). Le reste de la police est inchange. Requiert : pip install fonttools
 # Ensuite, dans Unity : menu Aether > Rebuild Bangers Digits (regenere les chiffres de l'atlas TMP).
+# Puis lancer Tools/patch_bangers_accents.py (accents plus petits) : il retravaille le fichier produit ici.
+# Puis lancer Tools/patch_bangers_accents.py (accents plus petits) : il retravaille le fichier produit ici.
 # Police renommee "Bangers Chiffres" (la licence OFL demande un autre nom pour une version modifiee).
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables import ttProgram
-SRC=r"C:/Users/jules/My project/Aether/Assets/Game/Fonts/Bangers-Regular.ttf"
-DST=r"C:/Users/jules/My project/Aether/Assets/Game/Fonts/Bangers-Regular-Chiffres.ttf"
+import os
+ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # racine du projet Unity (Tools/..)
+SRC=os.path.join(ROOT,"Assets","Game","Fonts","Bangers-Regular.ttf")
+DST=os.path.join(ROOT,"Assets","Game","Fonts","Bangers-Regular-Chiffres.ttf")
 f=TTFont(SRC)
 glyf=f['glyf']; hmtx=f['hmtx']
 SL=0.355   # pente des traits de Bangers (~19,5 degrés)

@@ -27,6 +27,11 @@ public class HealthSystem : MonoBehaviour
     private float _regenTimer = 0f;
     private bool _secondWindUsed = false;
 
+    // AJOUTÉ (2026-10-01) - vrai dès que le joueur est mort. Le délai avant le panel de Game Over étant plus long
+    // (pour laisser finir l'animation de mort), les ennemis peuvent encore frapper le joueur pendant ce temps :
+    // sans ce garde-fou, chaque coup relancerait Die() (animation de mort rejouée + chute du corps relancée).
+    private bool _isDead = false;
+
     // AJOUTE - retient la source du DERNIER coup encaisse, pour remonter la
     // cause de la mort jusqu'au Game Over (messages d'ambiance contextuels).
     // Defaut "horde" : la plupart des degats du jeu viennent d'ennemis normaux
@@ -47,6 +52,7 @@ public class HealthSystem : MonoBehaviour
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
         _regenPerSecond = MetaProgressionManager.Instance.GetReputationBonusRegen();
         _secondWindUsed = false;
+        _isDead = false;
         _playerBuffs = GetComponent<PlayerBuffs>();
     }
 
@@ -102,6 +108,8 @@ public class HealthSystem : MonoBehaviour
 
     public void TakeDamage(float damage, string source = "horde")
     {
+        // MODIFIÉ (2026-10-01) - ignore aussi les coups reçus une fois mort (voir _isDead).
+        if (_isDead) return;
         if (IsInvincible) return;
 
         // AJOUTE - retient la source de CE coup ; si c'est le coup fatal, Die()
@@ -178,6 +186,9 @@ public class HealthSystem : MonoBehaviour
 
     public void Heal(float percent)
     {
+        // AJOUTÉ (2026-10-01) - pas de soin sur un joueur déjà mort.
+        if (_isDead) return;
+
         _currentHealth += _maxHealth * percent;
         _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
 
@@ -190,7 +201,7 @@ public class HealthSystem : MonoBehaviour
     // Cappe à _maxHealth (pas d'overheal). Ignoré si le joueur est déjà mort.
     public void HealFlat(float amount)
     {
-        if (amount <= 0f || _currentHealth <= 0f) return;
+        if (_isDead || amount <= 0f || _currentHealth <= 0f) return;
 
         _currentHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
 
@@ -216,6 +227,10 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
+        // AJOUTÉ (2026-10-01) - une seule mort possible (voir _isDead).
+        if (_isDead) return;
+        _isDead = true;
+
         PlayerAnimatorController animatorController = GetComponent<PlayerAnimatorController>();
         if (animatorController != null)
             animatorController.TriggerDeath();

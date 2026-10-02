@@ -112,6 +112,16 @@ public class LevelUpManager : MonoBehaviour
         if (_pendingLevelUps <= 0) return;
 
         _pendingLevelUps--;
+
+        // Build complet (toutes les cartes au maximum, Soin compris) : rien à proposer, on ne fige pas le jeu pour un
+        // écran vide. Le niveau est quand même gagné ; on passe au niveau en attente suivant s'il y en a.
+        List<UpgradeData> choices = GetRandomUpgrades(3);
+        if (choices.Count == 0)
+        {
+            if (_pendingLevelUps > 0) DisplayLevelUp();
+            return;
+        }
+
         _waitingForChoice = true;
 
         Time.timeScale = 0f;
@@ -127,13 +137,20 @@ public class LevelUpManager : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.SetPausedFlag(true);
 
-        _currentChoices = GetRandomUpgrades(3);
+        _currentChoices = choices;
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(true);
 
         if (_upgradeUI != null)
             _upgradeUI.gameObject.SetActive(true);
+
+        // AJOUTE (2026-09-27, retour utilisateur) - masque le HUD pendant tout l'écran de level-up (barres, minimap,
+        // etc. n'ont rien à faire derrière un choix de carte) ; remis dans SelectUpgrade() uniquement une fois
+        // TOUS les level-up en attente traités (même logique que GameManager.SetPausedFlag ci-dessus - pas
+        // remontré puis re-masqué entre deux cartes d'une même rafale de montées de niveau).
+        if (GameUI.Instance != null)
+            GameUI.Instance.SetHUDVisible(false);
 
         _upgradeUI.DisplayUpgrades(_currentChoices);
     }
@@ -178,6 +195,10 @@ public class LevelUpManager : MonoBehaviour
             // d'une meme rafale de level-up.
             if (GameManager.Instance != null)
                 GameManager.Instance.SetPausedFlag(false);
+
+            // AJOUTE (2026-09-27, retour utilisateur) - symetrique du masquage dans DisplayLevelUp().
+            if (GameUI.Instance != null)
+                GameUI.Instance.SetHUDVisible(true);
         }
     }
 

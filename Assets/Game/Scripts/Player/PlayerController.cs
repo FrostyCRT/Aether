@@ -227,6 +227,30 @@ public class PlayerController : MonoBehaviour
         _dashCooldown = Mathf.Max(_dashCooldown, 1f);
     }
 
+    // AJOUTÉ (2026-10-01) - retour utilisateur : le personnage doit être en idle entre la mort du dernier boss et
+    // l'arrivée du panel de Victoire. Avant, dès que la partie se terminait, Update() s'arrêtait net (voir son
+    // premier garde-fou) : HandleMovementInput() ne recalculait plus rien, donc si le joueur était en train de
+    // marcher à cet instant, le paramètre Animator "IsWalking" restait à vrai et le personnage restait figé
+    // en pleine marche pendant tout le délai avant le panel. On s'abonne à GameManager.OnGameEnded (statique,
+    // déclenché par TriggerVictory ET TriggerGameOver) pour remettre le déplacement à zéro et "IsWalking" à faux.
+    // Désabonnement dans OnDisable : l'événement est statique et survit au rechargement de scène.
+    private void OnEnable()
+    {
+        GameManager.OnGameEnded += HandleGameEnded;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnGameEnded -= HandleGameEnded;
+    }
+
+    private void HandleGameEnded()
+    {
+        _moveDirection = Vector3.zero;
+        if (_animatorController != null)
+            _animatorController.SetWalking(false);
+    }
+
     private void Start()
     {
         if (GameUI.Instance != null)
@@ -664,6 +688,46 @@ public class PlayerController : MonoBehaviour
 
         SwapPlayerMaterials(_ghostSelfMaterials);
 
+        // MODIFIE (2026-09-26) - le bâton de Lyra devient TRANSPARENT comme son corps (même matériau fantôme, même alpha
+        // _phantomSelfAlpha), et non plus invisible (1re version : retour utilisateur, "pas totalement invisible").
+        // Le bâton n'est pas dans _playerRenderers (seul le corps l'est quand _mainBodyRenderer est renseigné). Les rendus
+        // qui ne sont pas des maillages (particules, traînées du cristal) ne se prêtent pas au matériau fantôme : ils sont
+        // masqués pendant l'effet. Tout est remis à l'identique à la fin. Le bâton du CLONE a déjà été copié avant cet
+        // appel (SpawnPhantomClone), il n'est pas concerné.
+        Renderer[] staffRenderers = _staffTransform != null
+            ? _staffTransform.GetComponentsInChildren<Renderer>(true)
+            : null;
+        Material[][] staffOriginals = null;
+        Material[][] staffGhosts = null;
+        bool[] staffWasEnabled = null;
+        if (staffRenderers != null)
+        {
+            staffOriginals = new Material[staffRenderers.Length][];
+            staffGhosts = new Material[staffRenderers.Length][];
+            staffWasEnabled = new bool[staffRenderers.Length];
+            for (int i = 0; i < staffRenderers.Length; i++)
+            {
+                Renderer r = staffRenderers[i];
+                if (r == null) continue;
+                staffWasEnabled[i] = r.enabled;
+
+                if (r is MeshRenderer || r is SkinnedMeshRenderer)
+                {
+                    Material[] originals = r.sharedMaterials;
+                    staffOriginals[i] = originals;
+                    Material[] ghosts = new Material[originals.Length];
+                    for (int j = 0; j < originals.Length; j++)
+                        ghosts[j] = CreateGhostMaterial(originals[j], Color.white, _phantomSelfAlpha, 0f);
+                    staffGhosts[i] = ghosts;
+                    r.sharedMaterials = ghosts;
+                }
+                else
+                {
+                    r.enabled = false;
+                }
+            }
+        }
+
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -674,6 +738,19 @@ public class PlayerController : MonoBehaviour
         }
 
         SwapPlayerMaterials(_originalMaterials);
+
+        if (staffRenderers != null)
+        {
+            for (int i = 0; i < staffRenderers.Length; i++)
+            {
+                if (staffRenderers[i] == null) continue;
+                if (staffOriginals[i] != null) staffRenderers[i].sharedMaterials = staffOriginals[i];
+                staffRenderers[i].enabled = staffWasEnabled[i];
+
+                if (staffGhosts[i] != null)
+                    foreach (Material m in staffGhosts[i]) if (m != null) Destroy(m);
+            }
+        }
     }
 
     private void SwapPlayerMaterials(Material[][] materialSet)

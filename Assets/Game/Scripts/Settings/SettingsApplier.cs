@@ -199,7 +199,13 @@ public class SettingsApplier : MonoBehaviour
         if (_mixer == null) { Debug.LogError("[SettingsApplier] MainMixer introuvable dans Resources."); yield break; }
         yield return null;                                                          // laisse le moteur audio s'initialiser
         ApplyAudioVolumes();
+        AudioReady = true;
     }
+
+    // AJOUTE (2026-09-26) - vrai dès que les volumes SAUVEGARDÉS (Musique / Effets / Général) sont appliqués au mixer.
+    // MusicStarter attend ce signal avant de lancer un morceau : sans lui, la musique de l'écran de chargement
+    // démarrait au volume par défaut du mixer (le mixer se charge en asynchrone) puis sautait au volume réglé.
+    public static bool AudioReady { get; private set; }
 
     private static float ToDb(float linear) => linear > 0.0001f ? Mathf.Log10(linear) * 20f : -80f;
 

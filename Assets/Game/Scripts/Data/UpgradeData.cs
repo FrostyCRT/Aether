@@ -23,10 +23,32 @@ public class UpgradeData : ScriptableObject
                 case UpgradeType.Fireball: return UpgradeBranch.Aether;
                 case UpgradeType.AuraUpgrade: return UpgradeBranch.Kael;
                 case UpgradeType.Knives: return UpgradeBranch.Lyra;
+                // Une fusion prend la couleur du personnage concerné si elle en a un (réglé à la main par fusion, voir
+                // _fusionBranch) — sinon Universal, comme les armes universelles dont elle est faite.
+                case UpgradeType.Fusion: return _fusionBranch;
                 default: return UpgradeBranch.Universal;
             }
         }
     }
+
+    // ---- Fusions (2026-09-27) --------------------------------------------------------------------------------------------
+    // Une fusion combine 2 armes UNE FOIS TOUTES LES DEUX AU PALIER MAX en une arme unique, plus forte, qui les remplace.
+    // Système générique : chaque fusion est un asset UpgradeData de type Fusion, qui référence ses 2 armes sources
+    // (_fusionSource1/2) et un identifiant (_fusionResultId) qui dit à ApplyFusionResult() quel composant d'arme créer.
+    // Ajouter une fusion = un nouvel asset + un nouveau "case" dans ApplyFusionResult() (et dans les cases Damage/FireRate
+    // ci-dessous si la nouvelle arme doit continuer de profiter des futurs achats de dégâts/cadence).
+    [Header("Fusion (uniquement pour UpgradeType.Fusion)")]
+    [Tooltip("Les 2 upgrades qui doivent être TOUTES LES DEUX au palier maximum pour que cette fusion soit proposée.")]
+    [SerializeField] private UpgradeType _fusionSource1;
+    [SerializeField] private UpgradeType _fusionSource2;
+    // Lus par GameUI/PauseMenuUI pour regrouper les 2 armes sources sur la même ligne de la grille 3x3 (voir
+    // GameUI.GetArsenalRows), même avant que la fusion soit complétée.
+    public UpgradeType FusionSource1 => _fusionSource1;
+    public UpgradeType FusionSource2 => _fusionSource2;
+    [Tooltip("Identifiant lu par UpgradeData.ApplyFusionResult() pour savoir quelle arme fusionnée créer (ex: \"ScorchedEarth\").")]
+    [SerializeField] private string _fusionResultId;
+    [Tooltip("Couleur de tuile dans l'arsenal (écrans de fin). Aether/Kael/Lyra si la fusion est réservée à ce personnage, Universal sinon.")]
+    [SerializeField] private UpgradeBranch _fusionBranch = UpgradeBranch.Universal;
 
     [Header("Valeurs par palier (Fireball / AuraUpgrade / Knives uniquement)")]
     [Tooltip("Utilisé UNIQUEMENT par Fireball/AuraUpgrade/Knives, dont les 3 paliers ont des effets différents (contrairement aux autres cartes qui répètent le même effet à chaque pick). Index 0 = palier 1, index 1 = palier 2, index 2 = palier 3. Ignoré par tous les autres UpgradeType, qui continuent d'utiliser le champ 'value' ci-dessus.")]
@@ -143,7 +165,7 @@ public class UpgradeData : ScriptableObject
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
-            return "Débloque Fireball : équipe l'arme exclusive d'Aether.";
+            return "Débloque Boule de feu : équipe l'arme exclusive d'Aether.";
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
@@ -194,7 +216,7 @@ public class UpgradeData : ScriptableObject
         {
             case 1: return "Débloque un couteau supplémentaire dans la salve.";
             case 2: return $"+{PercentOf(v)}% dégâts.";
-            case 3: return $"+{Mathf.Max(1, Mathf.RoundToInt(v))} ennemi(s) perforé(s) en plus.";
+            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? $"+{pierce} ennemis perforés en plus." : $"+{pierce} ennemi perforé en plus."; }
             default: return description;
         }
     }
@@ -254,8 +276,9 @@ public class UpgradeData : ScriptableObject
                     return false;
                 }
 
+            // Limité à MaxLevel paliers (5) comme Dégâts / Cadence (avant : illimité, servait de carte de secours).
             case UpgradeType.Heal:
-                return true;
+                return !IsMaxed();
 
             case UpgradeType.Damage:
                 return !IsMaxed();
@@ -292,8 +315,55 @@ public class UpgradeData : ScriptableObject
             case UpgradeType.BouncingOrb:
                 return !IsMaxed();
 
+            // Fusion : proposée une seule fois (GetCurrentLevel jamais > 1, maxLevel = 1), seulement en Classique/Sans fin
+            // (voir GameModes.FusionsEnabled — pas en Ruée de boss/Choc des titans, trop courts pour y prétendre), et
+            // seulement quand les 2 armes sources sont TOUTES LES DEUX au palier max.
+            case UpgradeType.Fusion:
+                return GameModes.FusionsEnabled && GetCurrentLevel() == 0 && BothFusionSourcesMaxed();
+
             default:
                 return true;
+        }
+    }
+
+    // Retrouve, parmi toutes les upgrades connues du run, celle du type donné (un seul asset par UpgradeType de base).
+    private UpgradeData FindUpgradeByType(UpgradeType type)
+    {
+        if (LevelUpManager.Instance == null || LevelUpManager.Instance.AllUpgrades == null) return null;
+        foreach (UpgradeData u in LevelUpManager.Instance.AllUpgrades)
+            if (u != null && u.upgradeType == type) return u;
+        return null;
+    }
+
+    private bool BothFusionSourcesMaxed()
+    {
+        UpgradeData s1 = FindUpgradeByType(_fusionSource1);
+        UpgradeData s2 = FindUpgradeByType(_fusionSource2);
+        if (s1 == null || s2 == null) return false;
+        if (s1.GetDisplayLevel() < s1.MaxLevel || s2.GetDisplayLevel() < s2.MaxLevel) return false;
+
+        // CORRIGE (2026-09-27) - certaines armes universelles sont sources de PLUSIEURS fusions différentes (ex: la
+        // Foudre pour "Orbes Foudroyants" ET "Marécage Maudit") : une seule peut jamais se compléter par partie, la
+        // première détruit le composant. Sans ce contrôle, l'autre fusion restait "disponible" pour toujours (le
+        // niveau de l'upgrade source, lui, ne redescend jamais) et sa sélection n'aurait produit aucun effet.
+        GameObject player = GetActivePlayer();
+        return player != null && SourceStillEquipped(player, _fusionSource1) && SourceStillEquipped(player, _fusionSource2);
+    }
+
+    // DoubleShot n'a pas de composant propre (il modifie WeaponBase, qui reste toujours présent) : toujours considéré
+    // comme équipé tant qu'il a été pris une fois. Pour les autres, le composant doit encore exister sur le joueur.
+    private static bool SourceStillEquipped(GameObject player, UpgradeType type)
+    {
+        switch (type)
+        {
+            case UpgradeType.Fireball: return player.GetComponent<WeaponFireball>() != null;
+            case UpgradeType.AuraUpgrade: return player.GetComponent<WeaponAura>() != null;
+            case UpgradeType.Knives: return player.GetComponent<WeaponShurikenBarrage>() != null;
+            case UpgradeType.Orbital: return player.GetComponent<WeaponOrbital>() != null;
+            case UpgradeType.Lightning: return player.GetComponent<WeaponLightningChain>() != null;
+            case UpgradeType.MudPuddle: return player.GetComponent<WeaponMudPuddle>() != null;
+            case UpgradeType.BouncingOrb: return player.GetComponent<WeaponBouncingOrb>() != null;
+            default: return true;
         }
     }
 
@@ -511,6 +581,11 @@ public class UpgradeData : ScriptableObject
                     break;
                 }
 
+            // Ne se déclenche qu'au tout premier (et seul) pick : IsAvailable() ne repropose jamais une fusion déjà prise.
+            case UpgradeType.Fusion:
+                if (newLevel == 1) ApplyFusionResult(playerGO);
+                break;
+
             case UpgradeType.Damage:
                 {
                     WeaponFireball fireball = playerGO.GetComponent<WeaponFireball>();
@@ -534,6 +609,26 @@ public class UpgradeData : ScriptableObject
                     WeaponBouncingOrb orbWeapon = playerGO.GetComponent<WeaponBouncingOrb>();
                     if (orbWeapon != null) orbWeapon.AddDamage(value);
 
+                    // Fusions : chaque arme fusionnée doit être listée ici pour continuer de profiter de "Dégâts+"
+                    // après avoir remplacé ses armes sources (voir WeaponFusionX.AddDamage de chacune).
+                    WeaponFusionScorchedEarth scorchedEarth = playerGO.GetComponent<WeaponFusionScorchedEarth>();
+                    if (scorchedEarth != null) scorchedEarth.AddDamage(value);
+
+                    WeaponFusionManaVortex manaVortex = playerGO.GetComponent<WeaponFusionManaVortex>();
+                    if (manaVortex != null) manaVortex.AddDamage(value);
+
+                    WeaponFusionRicochetBlades ricochetBlades = playerGO.GetComponent<WeaponFusionRicochetBlades>();
+                    if (ricochetBlades != null) ricochetBlades.AddDamage(value);
+
+                    WeaponFusionThunderingOrbs thunderingOrbs = playerGO.GetComponent<WeaponFusionThunderingOrbs>();
+                    if (thunderingOrbs != null) thunderingOrbs.AddDamage(value);
+
+                    WeaponFusionCursedSwamp cursedSwamp = playerGO.GetComponent<WeaponFusionCursedSwamp>();
+                    if (cursedSwamp != null) cursedSwamp.AddDamage(value);
+
+                    WeaponFusionTwinOrbs twinOrbs = playerGO.GetComponent<WeaponFusionTwinOrbs>();
+                    if (twinOrbs != null) twinOrbs.AddDamage(value);
+
                     if (weapon != null) weapon.AddDamage(value);
                     if (aoe != null) aoe.AddDamage(value);
                     break;
@@ -546,6 +641,11 @@ public class UpgradeData : ScriptableObject
 
                     WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
                     if (knives != null) knives.AddFireRate(value);
+
+                    // Fusions : seule Lames Ricochet a une cadence de tir propre (salve périodique) ; les autres
+                    // fusions n'ont pas de notion de cadence (zones/orbes en continu).
+                    WeaponFusionRicochetBlades ricochetBladesFR = playerGO.GetComponent<WeaponFusionRicochetBlades>();
+                    if (ricochetBladesFR != null) ricochetBladesFR.AddFireRate(value);
 
                     WeaponLightningChain lightningWeapon = playerGO.GetComponent<WeaponLightningChain>();
                     if (lightningWeapon != null) lightningWeapon.AddFireRate(value);
@@ -562,6 +662,152 @@ public class UpgradeData : ScriptableObject
 
         }
     }
+
+    // Détruit les 2 armes sources (elles sont remplacées, pas cumulées) et crée l'arme fusionnée correspondant à
+    // _fusionResultId. Les paliers/déblocages des 2 sources restent enregistrés dans LevelUpManager (l'arsenal des
+    // écrans de fin continue donc de les montrer comme obtenues) : seuls leurs COMPOSANTS en jeu disparaissent.
+    private void ApplyFusionResult(GameObject playerGO)
+    {
+        switch (_fusionResultId)
+        {
+            case "ScorchedEarth":
+                {
+                    WeaponFireball fireball = playerGO.GetComponent<WeaponFireball>();
+                    WeaponMudPuddle mud = playerGO.GetComponent<WeaponMudPuddle>();
+
+                    // Dégâts de départ = somme des dégâts hérités des 2 armes (déjà boostés par la Réputation et les
+                    // picks de Dégâts+ précédents à cet instant) : la fusion ne repart jamais de zéro.
+                    float inheritedDamage = 0f;
+                    if (fireball != null) inheritedDamage += fireball.CurrentDamage;
+                    if (mud != null) inheritedDamage += mud.CurrentDamagePerSecond;
+
+                    if (fireball != null) Object.Destroy(fireball);
+                    if (mud != null) Object.Destroy(mud);
+
+                    if (playerGO.GetComponent<WeaponFusionScorchedEarth>() == null)
+                    {
+                        WeaponFusionScorchedEarth fused = playerGO.AddComponent<WeaponFusionScorchedEarth>();
+                        GameObject prefab = Resources.Load<GameObject>("MudPuddleZone");
+                        if (prefab != null)
+                            fused.Init(prefab, Mathf.Max(1f, inheritedDamage));
+                        else
+                            Debug.LogWarning("Prefab MudPuddleZone introuvable dans Resources !");
+                    }
+                    break;
+                }
+
+            case "ManaVortex":
+                {
+                    WeaponAura aura = playerGO.GetComponent<WeaponAura>();
+                    WeaponOrbital orbital = playerGO.GetComponent<WeaponOrbital>();
+
+                    float inheritedField = aura != null ? aura.CurrentDamagePerSecond : 0f;
+                    float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
+
+                    if (aura != null) Object.Destroy(aura);
+                    if (orbital != null) Object.Destroy(orbital);
+
+                    if (playerGO.GetComponent<WeaponFusionManaVortex>() == null)
+                    {
+                        WeaponFusionManaVortex fused = playerGO.AddComponent<WeaponFusionManaVortex>();
+                        GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
+                        if (prefab != null)
+                            fused.Init(prefab, Mathf.Max(1f, inheritedField), Mathf.Max(1f, inheritedOrbital));
+                        else
+                            Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
+                    }
+                    break;
+                }
+
+            case "RicochetBlades":
+                {
+                    WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
+                    WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
+
+                    float inheritedDamage = 0f;
+                    if (knives != null) inheritedDamage += knives.CurrentDamage;
+                    if (orb != null) inheritedDamage += orb.CurrentDamage;
+
+                    if (knives != null) Object.Destroy(knives);
+                    if (orb != null) Object.Destroy(orb);
+
+                    if (playerGO.GetComponent<WeaponFusionRicochetBlades>() == null)
+                        playerGO.AddComponent<WeaponFusionRicochetBlades>().Init(Mathf.Max(1f, inheritedDamage));
+                    break;
+                }
+
+            case "ThunderingOrbs":
+                {
+                    WeaponOrbital orbital = playerGO.GetComponent<WeaponOrbital>();
+                    WeaponLightningChain lightning = playerGO.GetComponent<WeaponLightningChain>();
+
+                    float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
+                    float inheritedLightning = lightning != null ? lightning.CurrentDamage : 0f;
+
+                    if (orbital != null) Object.Destroy(orbital);
+                    if (lightning != null) Object.Destroy(lightning);
+
+                    if (playerGO.GetComponent<WeaponFusionThunderingOrbs>() == null)
+                    {
+                        WeaponFusionThunderingOrbs fused = playerGO.AddComponent<WeaponFusionThunderingOrbs>();
+                        GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
+                        if (prefab != null)
+                            fused.Init(prefab, Mathf.Max(1f, inheritedOrbital), Mathf.Max(1f, inheritedLightning));
+                        else
+                            Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
+                    }
+                    break;
+                }
+
+            case "CursedSwamp":
+                {
+                    WeaponMudPuddle mud = playerGO.GetComponent<WeaponMudPuddle>();
+                    WeaponLightningChain lightning = playerGO.GetComponent<WeaponLightningChain>();
+
+                    float inheritedMud = mud != null ? mud.CurrentDamagePerSecond : 0f;
+                    float inheritedLightning = lightning != null ? lightning.CurrentDamage : 0f;
+
+                    if (mud != null) Object.Destroy(mud);
+                    if (lightning != null) Object.Destroy(lightning);
+
+                    if (playerGO.GetComponent<WeaponFusionCursedSwamp>() == null)
+                    {
+                        WeaponFusionCursedSwamp fused = playerGO.AddComponent<WeaponFusionCursedSwamp>();
+                        GameObject prefab = Resources.Load<GameObject>("MudPuddleZone");
+                        if (prefab != null)
+                            fused.Init(prefab, Mathf.Max(1f, inheritedMud), Mathf.Max(1f, inheritedLightning));
+                        else
+                            Debug.LogWarning("Prefab MudPuddleZone introuvable dans Resources !");
+                    }
+                    break;
+                }
+
+            case "TwinOrbs":
+                {
+                    // Double tir n'a pas de composant propre (voir WeaponFusionTwinOrbs) : seul l'Orbe rebondissant
+                    // est détruit. Un petit bonus (+30%) représente le "jumelage" apporté par le Double tir.
+                    WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
+                    float inheritedDamage = orb != null ? orb.CurrentDamage * 1.3f : 1f;
+
+                    if (orb != null) Object.Destroy(orb);
+
+                    if (playerGO.GetComponent<WeaponFusionTwinOrbs>() == null)
+                    {
+                        WeaponFusionTwinOrbs fused = playerGO.AddComponent<WeaponFusionTwinOrbs>();
+                        GameObject prefab = Resources.Load<GameObject>("BouncingOrbProjectile");
+                        if (prefab != null)
+                            fused.Init(prefab, Mathf.Max(1f, inheritedDamage));
+                        else
+                            Debug.LogWarning("Prefab BouncingOrbProjectile introuvable dans Resources !");
+                    }
+                    break;
+                }
+
+            default:
+                Debug.LogWarning($"[UpgradeData] Fusion \"{_fusionResultId}\" inconnue de ApplyFusionResult().");
+                break;
+        }
+    }
 }
 
 public enum UpgradeType
@@ -576,7 +822,8 @@ public enum UpgradeType
     Orbital,
     Lightning,
     MudPuddle,
-    BouncingOrb
+    BouncingOrb,
+    Fusion
 }
 
 public enum UpgradeBranch

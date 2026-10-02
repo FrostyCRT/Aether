@@ -36,6 +36,10 @@ public class WeaponBouncingOrb : MonoBehaviour
         _damage += _damage * value;
         PushStatsToActiveOrbs();
     }
+
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamage => _damage;
+
     public void AddSpeed(float value)
     {
         _speed += _speed * value;
@@ -45,6 +49,20 @@ public class WeaponBouncingOrb : MonoBehaviour
     {
         _orbCount++;
         SpawnOrbs();
+    }
+
+    // AJOUTE (2026-09-27, retour utilisateur : "si il y a toujours les 2 orbes rebondissant... ça ne va pas") -
+    // même bug que WeaponOrbital/WeaponAura plus tôt cette session : aucun OnDestroy() ici, alors que
+    // BouncingOrbProjectile (voir son commentaire d'en-tête) "ne se détruit ni ne retourne au pool TANT QUE L'ARME
+    // EXISTE" - il compte entièrement sur ce composant pour le nettoyer. Quand une fusion (Lames Ricochet, Orbes
+    // Jumeaux) détruit ce composant via Object.Destroy(), les orbes déjà lancés continuaient de rebondir et de
+    // faire des dégâts indéfiniment, complètement détachés de l'arme fusionnée qui les remplace - exactement le
+    // bug rapporté ("les 2 orbes rebondissant" encore présents après la fusion).
+    private void OnDestroy()
+    {
+        if (ObjectPool.Instance == null) return;
+        foreach (GameObject orb in _orbs)
+            if (orb != null) ObjectPool.Instance.ReturnToPool("BouncingOrbProjectile", orb);
     }
     private void PushStatsToActiveOrbs()
     {

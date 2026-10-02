@@ -62,6 +62,9 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private GameObject _miniBoss1Prefab;
     [SerializeField] private GameObject _miniBoss2Prefab;
     [SerializeField] private float _summonWindupDuration = 2f;
+    // OBSOLÈTE (2026-10-01) : l'ancien cercle violet simple. Remplacé par SummonPortalFX (effet construit en code, voir
+    // la section "Invocation — effet visuel" juste en dessous). Champ conservé uniquement pour ne pas casser la
+    // sérialisation du prefab : il peut être laissé vide, il n'est plus utilisé.
     [SerializeField] private GameObject _riftPortalPrefab;
     [SerializeField] private float _summonedVisualScale = 0.75f; // MODIFIÉ — remplace _miniBossVisualChildName, était 0.6f codé en dur
     // AJOUTE (2026-09-15) - delai minimum entre deux Invocations : avant,
@@ -73,6 +76,19 @@ public class BossCorruptedSource : BossBase
     // MiniBossAlive, pas a la place.
     [SerializeField] private float _minSummonInterval = 25f;
     private float _lastSummonRealTime = -999f;
+
+    // AJOUTÉ (2026-10-01) - retour utilisateur : l'ancien cercle violet "ressemblait à un bug de cercle aléatoire".
+    // Le nouvel effet (cercle runique qui grandit et tourne, halo, étincelles, anneau qui se resserre, pilier de lumière,
+    // éclat à l'apparition) est construit par SummonPortalFX ; le mini-boss, lui, émerge en grandissant.
+    [Header("Invocation — effet visuel (SummonPortalFX)")]
+    [Tooltip("Rayon (en unités monde) du cercle d'invocation. Plus il est grand, plus on voit de loin où le mini-boss va apparaître.")]
+    [SerializeField] private float _summonCircleRadius = 3.5f;
+    [Tooltip("FACULTATIF. Image du cercle runique (blanc sur fond noir, Alpha Source = From Gray Scale). Vide = cercle généré par le code.")]
+    [SerializeField] private Sprite _summonRuneSprite;
+    [Tooltip("Couleur de l'effet (violet corrompu par défaut).")]
+    [SerializeField] private Color _summonColor = new Color(0.62f, 0.28f, 1f, 1f);
+    [Tooltip("Durée (secondes) pendant laquelle le mini-boss grandit de rien à sa taille réelle en apparaissant.")]
+    [SerializeField] private float _summonedEmergeDuration = 0.35f;
 
     [Header("Implosion — signature Phase 2 (Dance)")]
     [SerializeField] private float _implosionPullDuration = 1.5f;
@@ -165,7 +181,7 @@ public class BossCorruptedSource : BossBase
         if (_lockRotation) return;
         if (_playerTransform == null) return;
 
-        Vector3 dir = _playerTransform.position - transform.position;
+        Vector3 dir = AimTarget.position - transform.position;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.001f) return;
 
@@ -254,7 +270,7 @@ public class BossCorruptedSource : BossBase
                 foreach (GameObject crystal in _crystals)
                 {
                     if (crystal == null) continue;
-                    Vector3 dirToPlayer = (_playerTransform.position - crystal.transform.position).normalized;
+                    Vector3 dirToPlayer = (AimTarget.position - crystal.transform.position).normalized;
                     dirToPlayer.y = 0f;
 
                     GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
@@ -279,7 +295,7 @@ public class BossCorruptedSource : BossBase
         _lockRotation = true;
         if (_animator != null) _animator.SetBool("IsCoiling", true);
 
-        Vector3 targetPos = _playerTransform.position;
+        Vector3 targetPos = AimTarget.position;
         Vector3 dir = (targetPos - transform.position).normalized;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
@@ -289,7 +305,7 @@ public class BossCorruptedSource : BossBase
         Vector3 impactPos = transform.position + dir * _strikeLungeDistance;
         if (_strikeTelegraphPrefab != null)
         {
-            telegraph = Instantiate(_strikeTelegraphPrefab, impactPos, Quaternion.identity);
+            telegraph = Track(Instantiate(_strikeTelegraphPrefab, impactPos, Quaternion.identity));
             telegraph.transform.localScale = Vector3.zero;
         }
 
@@ -362,7 +378,7 @@ public class BossCorruptedSource : BossBase
         GameObject ring = null;
         if (_waveRingPrefab != null)
         {
-            ring = Instantiate(_waveRingPrefab, transform.position, Quaternion.identity);
+            ring = Track(Instantiate(_waveRingPrefab, transform.position, Quaternion.identity));
             ring.transform.localScale = Vector3.zero;
         }
 
@@ -376,7 +392,7 @@ public class BossCorruptedSource : BossBase
             float distToPlayer = Vector3.Distance(_playerTransform.position, transform.position);
             if (distToPlayer <= radius && _cachedPlayerController != null)
             {
-                StartCoroutine(SlowPlayer(_cachedPlayerController));
+                _cachedPlayerController.ApplyTemporarySlow(_slowMultiplier, _slowDuration); // coroutine portée par le JOUEUR : survit à la mort du boss (StopAllCoroutines dans Die) - sinon le ralentissement restait coincé en mode sans fin
                 break;
             }
             yield return null;
@@ -386,12 +402,6 @@ public class BossCorruptedSource : BossBase
         if (_animator != null) _animator.SetBool("IsCoiling", false);
     }
 
-    private IEnumerator SlowPlayer(PlayerController player)
-    {
-        player.SetSpeedMultiplier(_slowMultiplier);
-        yield return new WaitForSeconds(_slowDuration);
-        player.SetSpeedMultiplier(1f);
-    }
 
     // ---------- REPOSITIONNEMENT SLITHER ----------
     // Remplace le wander aléatoire : si le joueur s'éloigne trop du rift en phase 2,
@@ -406,7 +416,7 @@ public class BossCorruptedSource : BossBase
             if (!_isPhase2 || _isRepositioning || _isAttacking) continue;
             if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver)) continue;
 
-            float dist = Vector3.Distance(transform.position, _playerTransform.position);
+            float dist = Vector3.Distance(transform.position, AimTarget.position);
             if (dist > _anchorLeashRadius)
                 yield return StartCoroutine(RepositionSlither());
         }
@@ -419,12 +429,12 @@ public class BossCorruptedSource : BossBase
 
         Vector3 offset = Random.insideUnitSphere * 3f;
         offset.y = 0f;
-        Vector3 targetPos = MapBoundaryUtils.ClampToZone(_playerTransform.position + offset);
+        Vector3 targetPos = MapBoundaryUtils.ClampToZone(AimTarget.position + offset);
         Quaternion targetRot = Quaternion.LookRotation((targetPos - transform.position).normalized);
 
         GameObject crackTrail = null;
         if (_crackTrailPrefab != null)
-            crackTrail = Instantiate(_crackTrailPrefab, transform.position, targetRot);
+            crackTrail = Track(Instantiate(_crackTrailPrefab, transform.position, targetRot));
 
         float telegraphElapsed = 0f;
         while (telegraphElapsed < _repositionTelegraphDuration)
@@ -469,22 +479,34 @@ public class BossCorruptedSource : BossBase
     }
 
     // ---------- SUMMON (Échos corrompus) ----------
-    // Portail visible avant l'apparition du mini-boss, au lieu d'un pop instantané.
+    // MODIFIÉ (2026-10-01) - l'ancien portail (cercle violet simple) est remplacé par SummonPortalFX : cercle runique qui
+    // grandit et tourne, halo, étincelles, anneau qui se resserre, pilier de lumière, puis éclat + onde de choc au moment
+    // exact où le mini-boss apparaît (Burst). Pendant le windup, le corps du boss brille de plus en plus (même glow que les
+    // autres boss, si "Body Renderer" est assigné sur le prefab). Le mini-boss, lui, émerge en grandissant
+    // (voir InitSummonedBoss / EmergeRoutine). L'effet est suivi (Track) : détruit si le boss meurt en plein windup.
     private IEnumerator SummonAttack()
     {
         if (_animator != null) _animator.SetBool("IsCoiling", true);
 
-        Vector3 playerPos = _playerTransform.position;
+        Vector3 playerPos = AimTarget.position;
         Vector3 awayFromPlayer = (transform.position - playerPos).normalized;
-        Vector3 spawnPos = playerPos + awayFromPlayer * 10f;
+        // Ramené dans la zone de jeu : le cercle (et le mini-boss) ne doivent jamais apparaître hors de la map.
+        Vector3 spawnPos = MapBoundaryUtils.ClampToZone(playerPos + awayFromPlayer * 10f);
+        spawnPos.y = 0f;
 
-        GameObject portal = null;
-        if (_riftPortalPrefab != null)
-            portal = Instantiate(_riftPortalPrefab, spawnPos, Quaternion.identity);
+        SummonPortalFX portal = SummonPortalFX.Spawn(spawnPos, _summonCircleRadius, _summonWindupDuration, _summonRuneSprite, _summonColor);
+        Track(portal.gameObject);
 
-        yield return new WaitForSeconds(_summonWindupDuration);
+        float elapsed = 0f;
+        while (elapsed < _summonWindupDuration)
+        {
+            elapsed += Time.deltaTime;
+            UpdateGlowEffect(Mathf.Clamp01(elapsed / _summonWindupDuration));
+            yield return null;
+        }
+        UpdateGlowEffect(0f);
 
-        if (portal != null) Destroy(portal);
+        if (portal != null) portal.Burst();
         if (_animator != null) _animator.SetBool("IsCoiling", false);
 
         // MODIFIE (2026-09-16) - alterne strictement au lieu d'un tirage 50/50
@@ -510,22 +532,30 @@ public class BossCorruptedSource : BossBase
         yield return null;
         if (boss != null)
         {
-            boss.InitWithReducedHP(percent);
+            // Choc des titans : PV du mini-boss = 30 % de ceux du titan correspondant (Boss 1 ou Boss 2) ; sinon le mini Boss 1
+            // (20 000 PV de base) tombait en quelques secondes face à un build complet, contrairement au mini Boss 2 (50 000).
+            if (GameModes.IsTitans) boss.InitWithHealth(GameModes.TitansBossHealth(boss is BossDeer ? 2 : 1) * percent);
+            else boss.InitWithReducedHP(percent);
 
             // MODIFIÉ — recherche par composant plutôt que par nom d'enfant : trouve tout
             // SkinnedMeshRenderer peu importe sa profondeur/nom dans la hiérarchie (ex: "Skinned Mesh 0"),
             // évite de deviner un nom qui varie d'un prefab à l'autre (cause du bug précédent où
             // le fallback scalait toute la racine, y compris le Collider — d'où les tirs qui passaient au-dessus)
+            // MODIFIÉ (2026-10-01) - la taille finale est la même qu'avant (_summonedVisualScale), mais le mini-boss
+            // l'atteint maintenant en GRANDISSANT (EmergeRoutine, exécutée sur le mini-boss lui-même : elle survit
+            // à la mort de La Source et s'arrête toute seule si le mini-boss est détruit).
+            List<Transform> emergeTargets = new List<Transform>();
             SkinnedMeshRenderer[] renderers = boss.GetComponentsInChildren<SkinnedMeshRenderer>();
             if (renderers.Length > 0)
             {
                 foreach (SkinnedMeshRenderer smr in renderers)
-                    smr.transform.localScale = Vector3.one * _summonedVisualScale;
+                    emergeTargets.Add(smr.transform);
             }
             else
             {
-                boss.transform.localScale = Vector3.one * _summonedVisualScale; // fallback ultime, seulement si aucun SkinnedMeshRenderer trouvé du tout
+                emergeTargets.Add(boss.transform); // fallback ultime, seulement si aucun SkinnedMeshRenderer trouvé du tout
             }
+            boss.StartCoroutine(EmergeRoutine(emergeTargets, Vector3.one * _summonedVisualScale, _summonedEmergeDuration));
 
             // CORRIGE (2026-09-15) - boss.MaxHealth n'est JAMAIS reduit par
             // InitWithReducedHP() (seul _currentHealth l'est, voir BossBase) :
@@ -543,6 +573,35 @@ public class BossCorruptedSource : BossBase
         }
     }
 
+    // AJOUTÉ (2026-10-01) - le mini-boss ne surgit plus à taille réelle : il grandit de presque rien jusqu'à sa taille
+    // finale, avec un petit rebond (même courbe que les pops d'interface), pile au moment de l'éclat du portail.
+    private IEnumerator EmergeRoutine(List<Transform> targets, Vector3 finalScale, float duration)
+    {
+        foreach (Transform t in targets)
+            if (t != null) t.localScale = finalScale * 0.05f;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float k = EaseOutBack(Mathf.Clamp01(elapsed / Mathf.Max(0.01f, duration)));
+            foreach (Transform t in targets)
+                if (t != null) t.localScale = Vector3.LerpUnclamped(finalScale * 0.05f, finalScale, k);
+            yield return null;
+        }
+
+        foreach (Transform t in targets)
+            if (t != null) t.localScale = finalScale;
+    }
+
+    private static float EaseOutBack(float t)
+    {
+        const float c1 = 1.4f;
+        const float c3 = c1 + 1f;
+        float u = t - 1f;
+        return 1f + c3 * u * u * u + c1 * u * u;
+    }
+
     // ---------- IMPLOSION — signature Phase 2 (Dance) ----------
     private IEnumerator ImplosionAttack()
     {
@@ -551,7 +610,7 @@ public class BossCorruptedSource : BossBase
         GameObject warning = null;
         if (_implosionWarningPrefab != null)
         {
-            warning = Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity);
+            warning = Track(Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity));
             warning.transform.localScale = Vector3.zero;
         }
 
@@ -644,9 +703,23 @@ public class BossCorruptedSource : BossBase
         // Golem/Sanglier/Cerf plutôt que par une animation supplémentaire.
     }
 
+    // CORRIGE (2026-09-26) - mode sans fin : le boss meurt maintenant en cours de partie (avant, la victoire mettait fin à la run).
+    // Die() coupe toutes ses coroutines : les effets qu'elles détruisaient elles-mêmes à leur fin (télégraphes, onde, portail,
+    // fissures, avertissement d'implosion) restaient donc à l'écran pour toujours. On les suit et on les détruit à la mort.
+    private readonly System.Collections.Generic.List<GameObject> _transientEffects = new System.Collections.Generic.List<GameObject>();
+
+    private GameObject Track(GameObject effect)
+    {
+        if (effect != null) _transientEffects.Add(effect);
+        return effect;
+    }
+
     protected override void Die()
     {
         StopAllCoroutines();
+        foreach (GameObject effect in _transientEffects)
+            if (effect != null) Destroy(effect);
+        _transientEffects.Clear();
         if (_animator != null) _animator.SetTrigger("Death");
         if (_crystals != null)
             foreach (GameObject crystal in _crystals)

@@ -30,12 +30,12 @@ public static class ChallengeDatabase
         // "Terminer la partie avec au moins 3000 Or ramasse"). Le prefixe
         // "Terminer la partie"/"Atteindre le" est retire quand redondant (une
         // description de defi porte deja implicitement sur la partie entiere).
-        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Jamais sous 30% de vie", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "boss2", displayName = "Double Chasse", description = "Vaincre 2 boss dans la même partie", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 20 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
-        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans jamais utiliser l'Ultime", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", difficulty = ChallengeDifficulty.Medium },
 
-        new ChallengeDefinition { id = "noDamage", displayName = "Sans-Faute", description = "Sans prendre le moindre dégât", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "noDamage", displayName = "Sans-Faute", description = "Aucun dégât jusqu'au boss 1", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 3000 Or ramassé", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 30 dans la même partie", difficulty = ChallengeDifficulty.Hard },

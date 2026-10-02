@@ -30,6 +30,19 @@ public class WeaponOrbital : MonoBehaviour
 
     public bool IsMaxOrbital() => _orbitalCount >= _maxOrbitalCount;
 
+    // AJOUTE (2026-09-27) - sans ça, quand ce composant est détruit AVANT la fin de la partie (ex: fusion
+    // ManaVortex/ThunderingOrbs qui fait Object.Destroy(orbital) une fois les 2 armes sources maxées), les orbitaux
+    // déjà en orbite restent orphelins : plus aucun Update() ne les repositionne, ils gardent leur dernier offset
+    // LOCAL au joueur figé - et comme ce offset était calculé en espace MONDE juste avant, il se retrouve balayé
+    // autour du joueur à chaque rotation de celui-ci (symptôme rapporté : "les orbes bougent en fonction de la
+    // rotation du personnage"). Les rendre au pool coupe immédiatement ce lien.
+    private void OnDestroy()
+    {
+        if (ObjectPool.Instance == null) return;
+        foreach (GameObject orbital in _orbitals)
+            if (orbital != null) ObjectPool.Instance.ReturnToPool("OrbitalProjectile", orbital);
+    }
+
     // MODIFIE - applique le bonus de Reputation Degats AVANT le premier calcul de
     // _currentDamage, meme trou que Fireball/Aura/Knives corrige plus tot.
     private void Awake()
@@ -142,4 +155,7 @@ public class WeaponOrbital : MonoBehaviour
         _upgradeDamageModifier += value;
         UpdateCalculatedStats();
     }
+
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamage => _currentDamage;
 }

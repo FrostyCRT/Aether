@@ -74,7 +74,7 @@ public class EnemyProjectile : MonoBehaviour
             HealthSystem health = other.GetComponent<HealthSystem>();
             if (health != null)
             {
-                health.TakeDamage(_damage);
+                health.TakeDamage(_damage * GameModes.EnemyDamageScale);
             }
 
             _hasHit = true;

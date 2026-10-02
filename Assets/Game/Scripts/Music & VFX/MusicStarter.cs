@@ -29,6 +29,7 @@ public class MusicStarter : MonoBehaviour
     private AudioSource _audioSource;
     private AudioClip _defaultClip;
     private Coroutine _fadeCoroutine;
+    private bool _started = false;
 
     private void Awake()
     {
@@ -45,7 +46,25 @@ public class MusicStarter : MonoBehaviour
 
     private void Start()
     {
-        Invoke(nameof(PlayMusic), _startDelay);
+        StartCoroutine(StartWhenAudioReady());
+    }
+
+    // MODIFIE (2026-09-26) - retour utilisateur : la musique de l'écran de chargement doit être calée
+    // directement sur le volume réglé dans les Paramètres lors de la dernière session. Le mixer se
+    // charge en asynchrone (SettingsApplier.LoadMixer) : on attend que les volumes sauvegardés soient
+    // appliqués avant de lancer le morceau (garde-fou de 3 s réelles si le mixer est introuvable).
+    private IEnumerator StartWhenAudioReady()
+    {
+        yield return new WaitForSecondsRealtime(_startDelay);
+
+        float waited = 0f;
+        while (!SettingsApplier.AudioReady && waited < 3f)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        PlayMusic();
     }
 
     // MODIFIE (2026-09-15) - demarre desormais avec un fondu d'entree court
@@ -56,6 +75,7 @@ public class MusicStarter : MonoBehaviour
     {
         if (_audioSource == null) return;
 
+        _started = true;
         float targetVolume = _audioSource.volume;
         _audioSource.volume = 0f;
         _audioSource.Play();
@@ -67,6 +87,17 @@ public class MusicStarter : MonoBehaviour
     public void SwitchTo(AudioClip newClip)
     {
         if (newClip == null || _audioSource.clip == newClip) return;
+
+        // CORRIGE (2026-09-26) - un boss présent dès le début de la partie (Choc des titans) demandait sa musique AVANT que la
+        // musique de départ (lancée après _startDelay / l'attente du mixer) ne démarre : PlayMusic() annulait alors ce
+        // changement et jouait le morceau normal. Tant que rien n'a démarré, on remplace simplement le morceau à lancer.
+        if (!_started)
+        {
+            _audioSource.clip = newClip;
+            _audioSource.loop = true;
+            return;
+        }
+
         if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
         _fadeCoroutine = StartCoroutine(SwitchRoutine(newClip));
     }

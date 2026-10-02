@@ -225,6 +225,10 @@ public class GameUI : MonoBehaviour
     private static readonly Color _tileTintKael      = new Color32(0x4C, 0x8A, 0x4C, 0xE6);
     private static readonly Color _tileTintLyra      = new Color32(0x4C, 0x74, 0xC4, 0xE6);
     private static readonly Color _tileTintUniversal = new Color32(0xC4, 0xA0, 0x4D, 0xE6);
+    // AJOUTE (2026-09-30, retour utilisateur : "le fond de carte d'une fusion doit être d'une couleur
+    // spéciale, je pensais au violet") - même famille de saturation/alpha que les teintes ci-dessus, teinte
+    // violette pour bien distinguer une fusion de la couleur de branche habituelle.
+    private static readonly Color _tileTintFusion    = new Color32(0x8A, 0x4C, 0xC4, 0xE6);
 
     private readonly List<GameObject> _spawnedBuildGridSlots = new List<GameObject>();
 
@@ -542,12 +546,23 @@ public class GameUI : MonoBehaviour
         public string nearRecordMessage;
     }
 
-    private void PopulateGameOverMessage(float runTime, int killCount, int levelReached, int goldThisRun, string deathCause)
+    private void PopulateGameOverMessage(float runTime, int killCount, int levelReached, int goldThisRun, string deathCause, int bossKillCount = 0)
     {
         if (_gameOverMessageText == null) return;
 
         bool isRecordHighlight = false;
         string message = null;
+
+        // Sans fin / Ruée de boss : leurs propres records et leur propre ton (les records du classique ne sont pas touchés).
+        if (!GameModes.IsClassic)
+        {
+            string modeRecord = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.LastRunRecordMessage : null;
+            isRecordHighlight = modeRecord != null;
+            message = modeRecord ?? BuildModeGameOverMessage(runTime, bossKillCount);
+            _gameOverMessageText.text = message;
+            _gameOverMessageText.color = isRecordHighlight ? _challengeSuccessColor : _gameOverMessageDefaultColor;
+            return;
+        }
 
         if (MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
         {
@@ -557,11 +572,20 @@ public class GameUI : MonoBehaviour
             // les valeurs de CE run (SaveRunResults les a ecrasees juste avant),
             // donc sans cette garde on annoncerait un record battu sans aucune
             // reference anterieure a avoir battu.
-            if (data.totalRuns > 1)
+            if (data.totalRuns > 1 && GameModes.IsClassic)
             {
+                // CORRIGE (2026-09-30, retour utilisateur, capture d'écran : "à deux doigts de ton record" à
+                // 15:00 pile alors que 15:00 est le max possible avant le combat du boss 3 - "c'est pas
+                // possible") - le chrono du run se FIGE dès l'apparition d'un boss (voir WaveManager) : mourir
+                // PENDANT le combat du boss 3 donne systématiquement le même runTime au flottant près (~900s),
+                // quel que soit le run. `data.bestTime` peut différer de quelques centièmes (bruit d'une image à
+                // l'autre au moment exact où le chrono s'est figé) sans que ça se voie sur l'affichage
+                // (FormatTime tronque à la seconde) : ratio 0,9994 par exemple déclenchait "si proche" pour un
+                // temps affiché IDENTIQUE. Comparaison à la seconde tronquée (comme l'affichage) pour ce check
+                // uniquement : un temps qui s'affiche pareil que le record compte comme égalé, pas "presque".
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !", nearRecordMessage = "À deux doigts de ton record de survie..." },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(data.bestTime), newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !", nearRecordMessage = "À deux doigts de ton record de survie..." },
                     new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record d'éliminations : {killCount} !", nearRecordMessage = "Si proche de ton record d'éliminations..." },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = $"Nouveau record de niveau : {levelReached} !", nearRecordMessage = "Un cheveu de ton meilleur niveau..." },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = $"Nouveau record d'Or en une partie : {goldThisRun} !", nearRecordMessage = "Tout près de ton record d'Or..." },
@@ -626,27 +650,285 @@ public class GameUI : MonoBehaviour
     // portrait quand le joueur meurt/gagne sans avoir pris une seule upgrade
     // (mort tres precoce - trouve en conditions reelles sur le Game Over,
     // theoriquement possible aussi sur la Victoire meme si beaucoup plus rare).
+    // (2026-09-27) Grille 3x3 pilotée par les fusions : ligne = les 2 armes qui fusionnent ensemble (celle du
+    // personnage d'abord, puis les paires universelles), colonne 3 = toujours une passive (Dégâts/Cadence/Soin).
+    // Une fusion DÉJÀ complétée prend la place de ses 2 armes en une seule tuile large. Voir GetArsenalRows().
+    private struct ArsenalRow
+    {
+        public UpgradeData weapon1, weapon2, fusion, passive;
+    }
+
     private int PopulateBuildGrid(Transform gridContent)
     {
-        foreach (GameObject old in _spawnedBuildGridSlots)
-            if (old != null) Destroy(old);
-        _spawnedBuildGridSlots.Clear();
+        return PopulateBuildGrid(gridContent, _buildGridSlotPrefab, _spawnedBuildGridSlots, _arsenalCellSize, _arsenalSpacing, false, null, null, null, null);
+    }
 
-        if (gridContent == null || _buildGridSlotPrefab == null || LevelUpManager.Instance == null)
+    // Version générique (cellule/espacement/style paramétrables) : réutilisée telle quelle par PauseMenuUI.PopulateGrid()
+    // pour la même grille en plus grand, avec son propre look (parchemin), sans dupliquer la logique de
+    // disposition/fusion. parchmentSober, s'il est fourni (non-null), active le style "parchemin" du menu Pause
+    // (même sprite sobre pour toutes les cartes) ; laissé à null pour garder le style "tuile teintée" par défaut
+    // de cet écran (Victoire/Défaite).
+    public int PopulateBuildGrid(Transform gridContent, GameObject slotPrefab, List<GameObject> spawnedSlots, Vector2 cellSize, Vector2 spacing, bool showNames,
+        Sprite parchmentSober, Color? dotEmpty, Color? dotFilled, Color? dotMax, System.Action<UpgradeData> onSlotClicked = null)
+    {
+        foreach (GameObject old in spawnedSlots)
+            if (old != null) Destroy(old);
+        spawnedSlots.Clear();
+
+        if (gridContent == null || slotPrefab == null || LevelUpManager.Instance == null)
             return 0;
 
-        System.Collections.Generic.IReadOnlyList<UpgradeData> obtained = LevelUpManager.Instance.ObtainedOrder;
-        if (obtained == null) return 0;
+        // Positionnement manuel ci-dessous (nécessaire pour les tuiles de fusion, larges de 2 colonnes) : toute mise
+        // en page automatique du conteneur doit être désactivée, sinon elle écrase ou re-clippe nos positions.
+        GridLayoutGroup layoutGroup = gridContent.GetComponent<GridLayoutGroup>();
+        if (layoutGroup != null) layoutGroup.enabled = false;
+        ContentSizeFitter fitter = gridContent.GetComponent<ContentSizeFitter>();
+        if (fitter != null) fitter.enabled = false;
+
+        // Centre la grille dans le conteneur si celui-ci est plus large qu'elle (ex: menu Pause, dont le contenu
+        // n'a plus besoin de remplir toute la largeur d'un ancien ScrollView une fois la grille fixée à 3x3).
+        float gridWidth = cellSize.x * 3f + spacing.x * 2f;
+        float originX = Mathf.Max(0f, (((RectTransform)gridContent).rect.width - gridWidth) * 0.5f);
 
         int count = 0;
-        foreach (UpgradeData upgrade in obtained)
+        List<ArsenalRow> rows = GetArsenalRows();
+
+        void PlaceSlot(UpgradeData upgrade, int row, int col, int colSpan)
         {
-            if (upgrade == null) continue;
-            GameObject slotGO = Instantiate(_buildGridSlotPrefab, gridContent);
-            ConfigureBuildGridSlot(slotGO, upgrade);
-            _spawnedBuildGridSlots.Add(slotGO);
+            GameObject slotGO = Instantiate(slotPrefab, gridContent);
+            ConfigureBuildGridSlot(slotGO, upgrade, showNames, parchmentSober, dotEmpty, dotFilled, dotMax, cellSize, onSlotClicked);
+            PositionArsenalSlot(slotGO, row, col, colSpan, cellSize, spacing, originX);
+            spawnedSlots.Add(slotGO);
             count++;
         }
+
+        for (int row = 0; row < rows.Count; row++)
+        {
+            ArsenalRow r = rows[row];
+            bool fused = r.fusion != null && r.fusion.GetCurrentLevel() > 0;
+
+            if (fused)
+            {
+                PlaceSlot(r.fusion, row, 0, 2);
+            }
+            else
+            {
+                if (r.weapon1 != null) PlaceSlot(r.weapon1, row, 0, 1);
+                if (r.weapon2 != null) PlaceSlot(r.weapon2, row, 1, 1);
+            }
+
+            if (r.passive != null) PlaceSlot(r.passive, row, 2, 1);
+        }
+
+        // Hauteur réelle du contenu (nécessaire au ScrollRect du menu Pause pour savoir jusqu'où défiler - sans ça,
+        // avec la mise en page automatique désactivée plus haut, Content garde une hauteur figée qui ne correspond
+        // plus aux rangées réellement positionnées).
+        // CORRIGE (2026-09-27) - ne le fait QUE si un ScrollRect existe au-dessus (menu Pause) : sur Victoire/Défaite,
+        // BuildGridContent a un pivot CENTRÉ (0.5) et non haut-gauche comme le Content du Pause - toucher sa
+        // sizeDelta déplaçait tout le contenu vers le haut (la moitié de la hauteur ajoutée), faisant déborder la
+        // 1re rangée au-dessus du cadre (retour utilisateur, capture d'écran : grille "décalée" sur l'écran Défaite).
+        if (rows.Count > 0 && gridContent.GetComponentInParent<ScrollRect>() != null)
+        {
+            RectTransform contentRt = (RectTransform)gridContent;
+            float totalHeight = rows.Count * cellSize.y + (rows.Count - 1) * spacing.y;
+            contentRt.sizeDelta = new Vector2(contentRt.sizeDelta.x, totalHeight);
+        }
+
+        return count;
+    }
+
+    // Convention identique à GridLayoutGroup (UpperLeft / Horizontal) : ancre et pivot en haut-gauche, position
+    // calculée à partir de la colonne/ligne et du nombre de colonnes occupées (2 pour une tuile de fusion).
+    private static void PositionArsenalSlot(GameObject slotGO, int row, int col, int colSpan, Vector2 cellSize, Vector2 spacing, float originX)
+    {
+        RectTransform rt = (RectTransform)slotGO.transform;
+        rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+        rt.pivot = new Vector2(0f, 1f);
+        rt.anchoredPosition = new Vector2(originX + col * (cellSize.x + spacing.x), -(row * (cellSize.y + spacing.y)));
+        rt.sizeDelta = new Vector2(cellSize.x * colSpan + spacing.x * (colSpan - 1), cellSize.y);
+    }
+
+    private static readonly Vector2 _arsenalCellSize = new Vector2(125f, 125f);
+    private static readonly Vector2 _arsenalSpacing = new Vector2(20f, 20f);
+
+    // Les 6 armes disponibles CETTE partie (la carte spéciale du perso + les 5 universelles), groupées par paire de
+    // fusion quand une paire a une fusion définie et que les 2 armes sont encore libres — la fusion du personnage
+    // passe toujours en premier (ligne 1). Les armes sans partenaire de fusion applicable (ex: Double tir pour Lyra,
+    // dont le seul partenaire — l'Orbe rebondissant — est déjà pris par sa fusion perso) sont simplement regroupées
+    // 2 par 2 dans l'ordre restant : elles cohabitent sur la même ligne sans jamais pouvoir fusionner.
+    private List<ArsenalRow> GetArsenalRows()
+    {
+        List<ArsenalRow> rows = new List<ArsenalRow>();
+        List<(UpgradeData, UpgradeData, UpgradeData)> pairs = GetWeaponFusionPairs();
+        if (pairs == null) return rows;
+
+        UpgradeData[] all = LevelUpManager.Instance.AllUpgrades;
+        UpgradeData dmg = null, fr = null, heal = null;
+        foreach (UpgradeData u in all)
+        {
+            if (u == null) continue;
+            if (u.upgradeType == UpgradeType.Damage) dmg = u;
+            else if (u.upgradeType == UpgradeType.FireRate) fr = u;
+            else if (u.upgradeType == UpgradeType.Heal) heal = u;
+        }
+        UpgradeData[] passives = { dmg, fr, heal };
+
+        for (int i = 0; i < 3 && i < pairs.Count; i++)
+            rows.Add(new ArsenalRow { weapon1 = pairs[i].Item1, weapon2 = pairs[i].Item2, fusion = pairs[i].Item3, passive = i < passives.Length ? passives[i] : null });
+
+        return rows;
+    }
+
+    // Extrait de GetArsenalRows() (2026-09-27) - les 3 paires d'armes (fusion du perso d'abord, puis fusions/paires
+    // restantes dans l'ordre stable de LevelUpManager) sont réutilisées telles quelles par la grille compacte du
+    // menu Pause (GetPauseArsenalItems), qui a juste une mise en page différente (4 colonnes au lieu de 3).
+    private List<(UpgradeData, UpgradeData, UpgradeData)> GetWeaponFusionPairs()
+    {
+        UpgradeData[] all = LevelUpManager.Instance != null ? LevelUpManager.Instance.AllUpgrades : null;
+        if (all == null) return null;
+
+        int character = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.GetSelectedCharacterIndex() : 0;
+        UpgradeBranch mine = character == 1 ? UpgradeBranch.Kael : character == 2 ? UpgradeBranch.Lyra : UpgradeBranch.Aether;
+        UpgradeType myWeapon = character == 1 ? UpgradeType.AuraUpgrade : character == 2 ? UpgradeType.Knives : UpgradeType.Fireball;
+
+        UpgradeType[] weaponTypes = { myWeapon, UpgradeType.DoubleShot, UpgradeType.Orbital, UpgradeType.Lightning, UpgradeType.MudPuddle, UpgradeType.BouncingOrb };
+        List<UpgradeData> weapons = new List<UpgradeData>();
+        foreach (UpgradeType t in weaponTypes)
+            foreach (UpgradeData u in all)
+                if (u != null && u.upgradeType == t) { weapons.Add(u); break; }
+
+        UpgradeData Get(UpgradeType t) { foreach (UpgradeData w in weapons) if (w.upgradeType == t) return w; return null; }
+
+        // La fusion du personnage d'abord, puis les autres dans l'ordre de LevelUpManager (ordre stable, pas de tri).
+        List<UpgradeData> fusionsMineFirst = new List<UpgradeData>();
+        foreach (UpgradeData u in all)
+            if (u != null && u.upgradeType == UpgradeType.Fusion && u.Branch == mine) fusionsMineFirst.Add(u);
+        foreach (UpgradeData u in all)
+            if (u != null && u.upgradeType == UpgradeType.Fusion && u.Branch != mine && (u.Branch == UpgradeBranch.Universal || true)) fusionsMineFirst.Add(u);
+
+        HashSet<UpgradeData> used = new HashSet<UpgradeData>();
+        List<(UpgradeData, UpgradeData, UpgradeData)> pairs = new List<(UpgradeData, UpgradeData, UpgradeData)>();
+
+        // CORRIGE (2026-09-28, retour utilisateur : "je prends Marécage Maudit en première fusion, elle ne se
+        // met pas dans le pause panel") - certaines armes universelles sont sources de PLUSIEURS fusions (ex: la
+        // Foudre pour "Orbes Foudroyants" ET "Marécage Maudit"). L'ancienne boucle unique réclamait les sources
+        // dans l'ordre FIXE de fusionsMineFirst (branche du perso puis ordre des assets), sans regarder si la
+        // fusion avait réellement été prise - si "Orbes Foudroyants" arrivait avant "Marécage Maudit" dans cet
+        // ordre, elle réservait la Foudre EN PREMIER même si le joueur n'avait jamais pris cette fusion,
+        // laissant "Marécage Maudit" (réellement complétée) sans Foudre à associer - jamais ajoutée à pairs,
+        // donc jamais affichée en tuile fusionnée. Corrigé en 2 passes : les fusions RÉELLEMENT complétées
+        // (GetCurrentLevel() > 0 - état de jeu réel) réclament leurs sources en premier, quel que soit l'ordre de
+        // la liste ; les fusions pas encore prises ne réclament ensuite que ce qu'il reste, uniquement pour
+        // regrouper visuellement 2 sources encore libres côte à côte.
+        foreach (UpgradeData f in fusionsMineFirst)
+        {
+            if (f.GetCurrentLevel() <= 0) continue;
+            UpgradeData s1 = Get(f.FusionSource1);
+            UpgradeData s2 = Get(f.FusionSource2);
+            if (s1 == null || s2 == null || used.Contains(s1) || used.Contains(s2)) continue;
+            pairs.Add((s1, s2, f));
+            used.Add(s1); used.Add(s2);
+        }
+        foreach (UpgradeData f in fusionsMineFirst)
+        {
+            if (f.GetCurrentLevel() > 0) continue; // déjà traitée ci-dessus
+            UpgradeData s1 = Get(f.FusionSource1);
+            UpgradeData s2 = Get(f.FusionSource2);
+            if (s1 == null || s2 == null || used.Contains(s1) || used.Contains(s2)) continue;
+            pairs.Add((s1, s2, f));
+            used.Add(s1); used.Add(s2);
+        }
+
+        List<UpgradeData> leftovers = new List<UpgradeData>();
+        foreach (UpgradeData w in weapons) if (!used.Contains(w)) leftovers.Add(w);
+        for (int i = 0; i < leftovers.Count; i += 2)
+            pairs.Add((leftovers[i], i + 1 < leftovers.Count ? leftovers[i + 1] : null, null));
+
+        return pairs;
+    }
+
+    // AJOUTE (2026-09-27) - grille compacte du menu Pause (retour utilisateur : "on revient sur un modèle un peu
+    // plus compact... 2 lignes, 4 cartes par ligne", Soin exclu car "pas informatif sur du build"). Chaque paire
+    // d'armes (fusionnée ou non) occupe TOUJOURS exactement 2 cases (une tuile large de colSpan=2, ou 2 tuiles
+    // simples) : avec 3 paires + Dégâts + Cadence, ça tombe pile sur 8 cases = 2 rangées de 4, sans jamais qu'une
+    // tuile large ne puisse chevaucher une fin de rangée (chaque paire commence toujours sur une colonne paire).
+    private struct GridItem { public UpgradeData upgrade; public int colSpan; }
+
+    private List<GridItem> GetPauseArsenalItems()
+    {
+        List<GridItem> items = new List<GridItem>();
+        List<(UpgradeData, UpgradeData, UpgradeData)> pairs = GetWeaponFusionPairs();
+        if (pairs == null) return items;
+
+        for (int i = 0; i < 3 && i < pairs.Count; i++)
+        {
+            var (w1, w2, fusion) = pairs[i];
+            bool fused = fusion != null && fusion.GetCurrentLevel() > 0;
+            if (fused)
+            {
+                items.Add(new GridItem { upgrade = fusion, colSpan = 2 });
+            }
+            else
+            {
+                if (w1 != null) items.Add(new GridItem { upgrade = w1, colSpan = 1 });
+                if (w2 != null) items.Add(new GridItem { upgrade = w2, colSpan = 1 });
+            }
+        }
+
+        UpgradeData[] all = LevelUpManager.Instance.AllUpgrades;
+        UpgradeData dmg = null, fr = null;
+        foreach (UpgradeData u in all)
+        {
+            if (u == null) continue;
+            if (u.upgradeType == UpgradeType.Damage) dmg = u;
+            else if (u.upgradeType == UpgradeType.FireRate) fr = u;
+        }
+        if (dmg != null) items.Add(new GridItem { upgrade = dmg, colSpan = 1 });
+        if (fr != null) items.Add(new GridItem { upgrade = fr, colSpan = 1 });
+
+        return items;
+    }
+
+    // Version compacte de PopulateBuildGrid, réservée au menu Pause : N colonnes (4) au lieu de 3, pas de logique de
+    // "passive en 3e colonne par ligne" - un simple flot gauche→droite/haut→bas des items de GetPauseArsenalItems(),
+    // avec retour à la ligne automatique. onSlotClicked : callback clic-pour-décrire (voir PauseMenuUI).
+    public int PopulatePauseGrid(Transform gridContent, GameObject slotPrefab, List<GameObject> spawnedSlots,
+        Vector2 cellSize, Vector2 spacing, int columns, Sprite parchmentSober, Color dotEmpty, Color dotFilled, Color dotMax,
+        System.Action<UpgradeData> onSlotClicked, System.Action<UpgradeData> onSlotHoverEnter = null, System.Action<UpgradeData> onSlotHoverExit = null,
+        float dotSizeFew = 17f, float dotSizeMany = 12f, float dotSpacing = 6f, float unlockDotSize = 20f, float unlockDotGap = 12f)
+    {
+        foreach (GameObject old in spawnedSlots)
+            if (old != null) Destroy(old);
+        spawnedSlots.Clear();
+
+        if (gridContent == null || slotPrefab == null || LevelUpManager.Instance == null)
+            return 0;
+
+        GridLayoutGroup layoutGroup = gridContent.GetComponent<GridLayoutGroup>();
+        if (layoutGroup != null) layoutGroup.enabled = false;
+        ContentSizeFitter fitter = gridContent.GetComponent<ContentSizeFitter>();
+        if (fitter != null) fitter.enabled = false;
+
+        float gridWidth = cellSize.x * columns + spacing.x * (columns - 1);
+        float originX = Mathf.Max(0f, (((RectTransform)gridContent).rect.width - gridWidth) * 0.5f);
+
+        List<GridItem> items = GetPauseArsenalItems();
+        int count = 0, col = 0, row = 0;
+        foreach (GridItem item in items)
+        {
+            if (col + item.colSpan > columns) { col = 0; row++; }
+
+            GameObject slotGO = Instantiate(slotPrefab, gridContent);
+            PositionArsenalSlot(slotGO, row, col, item.colSpan, cellSize, spacing, originX);
+            ConfigureBuildGridSlot(slotGO, item.upgrade, true, parchmentSober, dotEmpty, dotFilled, dotMax, cellSize, onSlotClicked, onSlotHoverEnter, onSlotHoverExit,
+                dotSizeFew, dotSizeMany, dotSpacing, unlockDotSize, unlockDotGap);
+            spawnedSlots.Add(slotGO);
+            count++;
+
+            col += item.colSpan;
+            if (col >= columns) { col = 0; row++; }
+        }
+
         return count;
     }
 
@@ -681,7 +963,18 @@ public class GameUI : MonoBehaviour
             emptyText.text = pool[UnityEngine.Random.Range(0, pool.Length)];
     }
 
-    private void ConfigureBuildGridSlot(GameObject slotGO, UpgradeData upgrade)
+    // showNames : false pour la grille compacte des écrans de fin (jamais de nom), true pour la grande grille du
+    // menu Pause (assez de place pour afficher le nom de chaque carte, y compris les fusions).
+    // parchmentSober non-null → style "parchemin" du menu Pause (même sprite sobre pour toutes les cartes) ;
+    // laissé à null → style "tuile teintée" compact des écrans de fin (même sprite pour tous, couleur = teinte de
+    // branche, assombrie si pas obtenue).
+    // dotEmpty/Filled/Max : couleurs des pastilles, par défaut celles de cet écran si non fournies (permet à Pause
+    // de réutiliser les siennes).
+    private void ConfigureBuildGridSlot(GameObject slotGO, UpgradeData upgrade, bool showNames = false,
+        Sprite parchmentSober = null, Color? dotEmpty = null, Color? dotFilled = null, Color? dotMax = null,
+        Vector2 cellSize = default, System.Action<UpgradeData> onSlotClicked = null,
+        System.Action<UpgradeData> onSlotHoverEnter = null, System.Action<UpgradeData> onSlotHoverExit = null,
+        float dotSizeFew = 17f, float dotSizeMany = 12f, float dotSpacing = 6f, float unlockDotSize = 20f, float unlockDotGap = 12f)
     {
         UpgradeSlotRefs refs = slotGO.GetComponent<UpgradeSlotRefs>();
         if (refs == null)
@@ -690,56 +983,432 @@ public class GameUI : MonoBehaviour
             return;
         }
 
-        if (refs.background != null)
-            refs.background.color = GetTileTint(upgrade.Branch);
-
-        if (refs.icon != null)
-            refs.icon.sprite = upgrade.icon;
-
-        // Grille compacte : jamais de nom.
-        if (refs.nameText != null)
-            refs.nameText.gameObject.SetActive(false);
+        Color colEmpty = dotEmpty ?? _emptyTierColor;
+        Color colFilled = dotFilled ?? _filledTierColor;
+        Color colMax = dotMax ?? _maxTierColor;
 
         int maxLevel = upgrade.MaxLevel;
         int currentLevel = upgrade.GetDisplayLevel();
-        bool alreadyMaxed = currentLevel >= maxLevel;
-        bool showDots = maxLevel > 1 && maxLevel <= 3 && refs.tierDots != null;
+        bool owned = upgrade.GetCurrentLevel() > 0;          // au moins un pick (le déblocage compte)
+        bool alreadyMaxed = currentLevel >= maxLevel && (owned);
+        bool isFusion = upgrade.upgradeType == UpgradeType.Fusion;
 
-        if (refs.tierDots != null)
+        if (refs.background != null)
         {
-            for (int d = 0; d < refs.tierDots.Length; d++)
+            if (parchmentSober != null)
             {
-                if (refs.tierDots[d] == null) continue;
-
-                bool dotExists = showDots && d < maxLevel;
-                refs.tierDots[d].gameObject.SetActive(dotExists);
-                if (!dotExists) continue;
-
-                bool filled = d < currentLevel;
-                if (!filled)
-                    refs.tierDots[d].color = _emptyTierColor;
-                else
-                    refs.tierDots[d].color = alreadyMaxed ? _maxTierColor : _filledTierColor;
+                refs.background.sprite = parchmentSober;
+                refs.background.color = owned ? Color.white : new Color(0.55f, 0.55f, 0.55f, 0.75f);
+            }
+            else
+            {
+                // MODIFIE (2026-09-30, retour utilisateur : "le fond de carte d'une fusion doit être d'une
+                // couleur spéciale, violet") - une fusion garde son identité visuelle propre plutôt que la
+                // couleur de la branche de son arme (qui n'a plus de sens une fois les 2 armes fusionnées).
+                Color tint = isFusion ? _tileTintFusion : GetTileTint(upgrade.Branch);
+                refs.background.color = owned ? tint : new Color(tint.r * 0.55f, tint.g * 0.55f, tint.b * 0.55f, tint.a * 0.55f);
             }
         }
 
-        // "xN" pour les upgrades à cap élevé (Dégâts/Cadence/Soin), pas de pastilles.
-        bool showStackCount = !showDots && maxLevel > 1 && currentLevel >= 1;
-        if (refs.stackCountText != null)
+        // MODIFIE (2026-09-28, retour utilisateur : "je veux faire les réglages manuellement, comment je peux
+        // faire ?") - jusqu'ici la position/taille de CHAQUE élément (icône, pastilles, icônes sources de
+        // fusion, séparateur) était recalculée EN CODE à chaque peuplement de grille, écrasant systématiquement
+        // tout ajustement manuel fait dans l'Inspector. fusionIcon/sourceIconTop/sourceIconBottom/fusionDivider
+        // sont maintenant de VRAIS enfants du prefab UpgradeSlot (voir UpgradeSlotRefs) : le code ne touche plus
+        // QUE sprite/couleur/visibilité ci-dessous, JAMAIS leur RectTransform (position/taille/rotation) - ces
+        // valeurs sont éditables à la main directement dans le prefab et persistent réellement. Pour ajuster :
+        // ouvrir Assets/Game/Prefabs/UI/UpgradeSlot.prefab, sélectionner l'enfant voulu (icon/nameText/
+        // TierDotsRow/FusionIcon/SourceIconTop/SourceIconBottom/FusionDivider), modifier son RectTransform dans
+        // l'Inspector, puis Ctrl+S pour sauvegarder le prefab (Play Mode pour prévisualiser en direct).
+        //
+        // MODIFIE (2026-09-30, retour utilisateur : "pas assez de place pour mettre 3 icônes [sur Victoire/
+        // Défaite], on revient à la disposition d'avant, met que l'icône de fusion au milieu") - le visuel dédié
+        // (icône de fusion + 2 icônes sources + séparateur + "+") reste réservé au menu Pause (carte 716px de
+        // large pour une fusion, largement assez de place) ; Victoire/Défaite (tuile 270px) retrouve son icône
+        // normale (upgrade.icon), simplement centrée - toujours identifiable par son fond violet (voir plus
+        // haut) et l'absence de pastilles de palier (variable séparée juste en dessous, PAS celle-ci : une
+        // fusion n'a qu'un seul palier sur AUCUN des 2 écrans, indépendamment de ce visuel dédié).
+        bool showFusionVisual = isFusion && parchmentSober != null;
+
+        if (refs.icon != null)
         {
-            refs.stackCountText.gameObject.SetActive(showStackCount);
-            if (showStackCount)
-                refs.stackCountText.text = $"x{currentLevel}";
+            refs.icon.gameObject.SetActive(!showFusionVisual);
+            refs.icon.sprite = upgrade.icon;
+            refs.icon.color = owned ? Color.white : new Color(0.42f, 0.42f, 0.42f, 0.7f);   // carte pas obtenue : icône éteinte
+            // AJOUTE (2026-09-27, retour utilisateur : "certaines icones sont déformés") - les icônes de fusion
+            // n'ont pas toutes le même ratio W/H (contrairement aux icônes d'upgrade de base, plus uniformes) ;
+            // sans preserveAspect, Image les étire pour remplir tout le cadre carré/rectangulaire de la tuile.
+            refs.icon.preserveAspect = true;
+
+            // AJOUTE (2026-09-30, retour utilisateur : "baisse légèrement en Y l'icône uniquement pour Double
+            // Tir") - une seule et même Icon (RectTransform du prefab) sert à toutes les upgrades ; ce cas
+            // particulier ne peut donc pas se régler dans le prefab sans décaler tout le monde.
+            // MODIFIE (2026-09-30, retour utilisateur : "baisse les icônes des cartes normales, SAUF Double
+            // Tir") - un décalage RELATIF à la position du prefab aurait fait descendre Double Tir un peu plus
+            // à chaque fois que la position par défaut (partagée par toutes les cartes) est elle-même baissée.
+            // Valeur ABSOLUE ici : Double Tir garde sa position déjà validée, indépendamment des réglages des
+            // autres cartes.
+            // CORRIGE (2026-09-30, retour utilisateur : "l'icône de tir x2 est totalement décalée" sur
+            // Victoire/Défaite) - cette valeur absolue (-18) est calibrée pour le repère du prefab UpgradeSlot
+            // (carte 350×265, icône centrée verticalement) : appliquée telle quelle sur UpgradeGridSlot (tuile
+            // 125×125, icône ANCRÉE EN HAUT, par défaut à +37), elle envoyait l'icône loin en dehors de sa
+            // position normale. Réservé au menu Pause (seul écran où -18 a du sens).
+            // MODIFIE (2026-09-30, retour utilisateur : "décale légèrement l'icône des cartes à droite, sauf
+            // pour Double Tir") - le X par défaut du prefab (partagé par toutes les cartes) a bougé légèrement
+            // à droite ; fixe ici en X ABSOLU (comme en Y) pour que Double Tir garde sa position déjà validée
+            // au lieu de suivre ce décalage commun.
+            if (upgrade.upgradeType == UpgradeType.DoubleShot)
+            {
+                RectTransform iconRt = (RectTransform)refs.icon.transform;
+                // MODIFIE (2026-09-30, retour utilisateur : "sur Victoire/Défaite, l'icône de Double Tir est
+                // trop haute, baisse-la") - même icône (les 2 gouttes) visuellement plus haute que les autres
+                // dans son cadre sur CETTE tuile aussi (repère différent du menu Pause, valeur absolue distincte).
+                iconRt.anchoredPosition = parchmentSober != null ? new Vector2(-47f, -18f) : new Vector2(iconRt.anchoredPosition.x, 26f);
+            }
         }
 
-        // Losange de déblocage (armes à pick séparé : Orbital, Foudre, Boue, etc.).
+        if (refs.fusionIcon != null)
+        {
+            refs.fusionIcon.gameObject.SetActive(showFusionVisual);
+            if (showFusionVisual)
+            {
+                refs.fusionIcon.sprite = upgrade.icon;
+                refs.fusionIcon.color = owned ? Color.white : new Color(0.42f, 0.42f, 0.42f, 0.7f);
+            }
+        }
+
+        if (showFusionVisual)
+        {
+            UpgradeData source1 = FindUpgradeByType(upgrade.FusionSource1);
+            UpgradeData source2 = FindUpgradeByType(upgrade.FusionSource2);
+            Color sourceIconColor = owned ? Color.white : new Color(0.5f, 0.5f, 0.5f, 0.75f);
+
+            if (refs.sourceIconTop != null)
+            {
+                refs.sourceIconTop.gameObject.SetActive(true);
+                refs.sourceIconTop.sprite = source1 != null ? source1.icon : null;
+                refs.sourceIconTop.color = refs.sourceIconTop.sprite != null ? sourceIconColor : new Color(0f, 0f, 0f, 0f);
+            }
+            if (refs.sourceIconBottom != null)
+            {
+                refs.sourceIconBottom.gameObject.SetActive(true);
+                refs.sourceIconBottom.sprite = source2 != null ? source2.icon : null;
+                refs.sourceIconBottom.color = refs.sourceIconBottom.sprite != null ? sourceIconColor : new Color(0f, 0f, 0f, 0f);
+            }
+            if (refs.fusionDivider != null)
+                refs.fusionDivider.gameObject.SetActive(true);
+            // AJOUTE (2026-09-30, retour utilisateur : "mets un petit + entre les 2 icônes de droite pour
+            // montrer que c'est une fusion de 2 items") - purement décoratif, toujours "+" (pas de sprite/texte
+            // par arme), juste activé/désactivé avec le reste du visuel de fusion.
+            if (refs.fusionPlusText != null)
+                refs.fusionPlusText.gameObject.SetActive(true);
+        }
+        else
+        {
+            if (refs.sourceIconTop != null) refs.sourceIconTop.gameObject.SetActive(false);
+            if (refs.sourceIconBottom != null) refs.sourceIconBottom.gameObject.SetActive(false);
+            if (refs.fusionDivider != null) refs.fusionDivider.gameObject.SetActive(false);
+            if (refs.fusionPlusText != null) refs.fusionPlusText.gameObject.SetActive(false);
+        }
+
+        // Une tuile de fusion n'affiche jamais de pastilles de palier, sur AUCUN écran (une fusion n'a qu'un
+        // seul palier - les pastilles n'y ont jamais rien apporté) : basé sur isFusion, pas showFusionVisual, pour
+        // rester vrai sur Victoire/Défaite même sans le visuel dédié (icône simple + fond violet) ci-dessus.
+        if (refs.tierDotsRow != null)
+            refs.tierDotsRow.gameObject.SetActive(!isFusion);
+
+        if (refs.nameText != null)
+        {
+            refs.nameText.gameObject.SetActive(showNames);
+            if (showNames)
+            {
+                refs.nameText.text = upgrade.upgradeName;
+                refs.nameText.color = owned ? Color.white : new Color(0.75f, 0.75f, 0.75f, 0.8f);
+                ApplyReadableOutline(refs.nameText);
+            }
+        }
+        if (refs.stackCountText != null)
+            refs.stackCountText.gameObject.SetActive(false);
+
+        // Pastilles : une par palier (1 pour Double tir/Fusion, 3 pour les armes, 5 pour Dégâts / Cadence / Soin).
+        int dotCount = Mathf.Clamp(maxLevel, 1, 5);
+
+        bool requiresUnlock = upgrade.RequiresUnlockPick;
+        bool showUnlockDot = refs.unlockDot != null && requiresUnlock;
+
+        // AJOUTE (2026-09-30, retour utilisateur : "le losange bleu est mal positionné, remets-le bien sur le
+        // coin en haut à droite" + "pour les fusions, le losange en haut à gauche" + "pour tir x2, la même
+        // taille que les autres") - sur Victoire/Défaite (parchmentSober == null), le losange n'est plus
+        // positionné via le calcul de curseur partagé avec les pastilles ci-dessous (celui-ci suppose que le
+        // losange est un ENFANT de TierDotsRow, comme dans le menu Pause - ce n'est PAS le cas sur
+        // UpgradeGridSlot, où le losange est un enfant direct de la tuile : la même formule y produisait un
+        // résultat sans rapport). Position fixe dans un coin, taille uniforme (jamais agrandie, contrairement au
+        // menu Pause où le losange seul de Double Tir est volontairement plus gros) : un coin différent pour
+        // une fusion (haut-gauche, libère la place à droite pour son visuel dédié) qu'une upgrade normale
+        // (haut-droite).
+        // CORRIGE (2026-09-30, retour utilisateur : "le losange n'est pas bien dans l'angle, c'est parce que tu
+        // mets déjà le carré puis tu fais la rotation, sauf que la rotation ça fait bouger") - le losange est un
+        // carré tourné à 45° (rotation héritée du prefab). Une rotation RectTransform tourne autour du PIVOT :
+        // avec pivot=(1,1) (le coin), le carré pivotait autour de son propre coin au lieu de son centre, donc le
+        // "losange" résultant n'était PAS centré sur le point d'ancrage - ses 4 pointes n'étaient pas à égale
+        // distance des bords. Pivot=(0.5,0.5) (rotation autour du VRAI centre du carré) corrige ça ; il faut
+        // alors décaler ce centre plus loin du coin que pour un simple carré, pour que la POINTE (pas le centre)
+        // se retrouve à `gap` du bord : un carré de côté W tourné à 45° a ses pointes à W/√2 de son centre.
+        if (parchmentSober == null && refs.unlockDot != null)
+        {
+            RectTransform cornerRt = (RectTransform)refs.unlockDot.transform;
+            float gap = 10f;
+            float offset = gap + unlockDotSize * 0.70710678f;
+            cornerRt.pivot = new Vector2(0.5f, 0.5f);
+            if (isFusion)
+            {
+                cornerRt.anchorMin = cornerRt.anchorMax = new Vector2(0f, 1f);
+                cornerRt.anchoredPosition = new Vector2(offset, -offset);
+            }
+            else
+            {
+                cornerRt.anchorMin = cornerRt.anchorMax = new Vector2(1f, 1f);
+                cornerRt.anchoredPosition = new Vector2(-offset, -offset);
+            }
+            cornerRt.sizeDelta = new Vector2(unlockDotSize, unlockDotSize);
+        }
+
+        // AJOUTE (2026-09-30, retour utilisateur : "pour Double Tir, la dot qui s'affiche c'est celle de
+        // déblocage uniquement, le losange doit être centré") - une arme à un seul palier (maxLevel<=1, donc
+        // jamais réellement "graduée") gagne à afficher un simple losange (obtenue/pas obtenue) plutôt qu'une
+        // pastille de palier qui n'aurait jamais de sens intermédiaire. Règle générale par maxLevel (pas un cas
+        // spécial "Double Tir" codé en dur) plutôt que basée sur RequiresUnlockPick : Double Tir n'a PAS ce flag
+        // (son déblocage se fait en 1 seul pick, sans étape de "déblocage" séparée d'un palier - voir
+        // TotalAllowedPicks) - passer RequiresUnlockPick à true aurait changé cette mécanique de jeu (2 picks
+        // nécessaires au lieu d'1) juste pour un besoin visuel, donc pas touché ici. Exclut les fusions (isFusion,
+        // elles aussi maxLevel=1) : leur tierDotsRow est déjà masquée dans le menu Pause, et sur Victoire/Défaite
+        // elles gardent leur pastille unique existante, jamais demandée à changer.
+        bool unlockOnly = maxLevel <= 1 && !isFusion && refs.unlockDot != null;
+        int effectiveDotCount = unlockOnly ? 0 : dotCount;
+
+        System.Collections.Generic.List<Image> dots = new System.Collections.Generic.List<Image>();
+        if (refs.tierDots != null)
+            foreach (Image d in refs.tierDots) if (d != null) dots.Add(d);
+
+        // CORRIGE (2026-09-30, retour utilisateur : "centré en Y avec un vertical layout") - refs.tierDots ne
+        // référence QUE les 3 pastilles d'origine du prefab : un clone créé par la boucle ci-dessous lors d'un
+        // appel PRÉCÉDENT (grille repeuplée plusieurs fois pour le même slot, ex. Dégâts+/Cadence+ à 5 paliers)
+        // n'y est jamais ajouté - il restait donc orphelin dans TierDotsRow, actif, jamais désactivé par la
+        // boucle de visibilité plus bas, et faussait le centrage du VerticalLayoutGroup (compté par le layout
+        // sans qu'aucun code ne le gère). On récupère ici tout clone déjà présent dans la hiérarchie (nommé
+        // "DotN", au-delà des 3 d'origine) pour qu'il soit repris par la logique existante (activé/désactivé/
+        // redimensionné comme les autres) au lieu de créer un doublon en plus de lui.
+        if (refs.tierDotsRow != null)
+        {
+            for (int i = 0; i < refs.tierDotsRow.childCount; i++)
+            {
+                Image existing = refs.tierDotsRow.GetChild(i).GetComponent<Image>();
+                if (existing == null || dots.Contains(existing) || existing.gameObject == (refs.unlockDot != null ? refs.unlockDot.gameObject : null))
+                    continue;
+                if (existing.name.StartsWith("Dot"))
+                    dots.Add(existing);
+            }
+        }
+
+        // Le prefab n'a que 3 pastilles : on clone la dernière pour les cartes à 4-5 paliers.
+        while (dots.Count < effectiveDotCount && dots.Count > 0)
+        {
+            Image last = dots[dots.Count - 1];
+            Image clone = Instantiate(last, last.transform.parent);
+            clone.name = "Dot" + (dots.Count + 1);
+            dots.Add(clone);
+        }
+
+        // CORRIGE (2026-09-27, retour utilisateur : "on voit que 3 dots sur 5" + "pas bien centré") - le prefab
+        // n'a PAS de mise en page automatique fonctionnelle sur TierDotsRow : chaque pastille clonée héritait
+        // simplement de la position EXACTE de la dernière pastille existante (toutes empilées au même endroit,
+        // invisibles les unes derrière les autres). Repositionnement explicite de chaque pastille (+ le losange de
+        // déblocage s'il est visible), toute la rangée centrée sur TierDotsRow, quel que soit le nombre de paliers.
+        //
+        // MODIFIE (2026-09-27, retour utilisateur : "l'icône à gauche, les dots à droite, du haut vers le bas, pas
+        // de gauche à droite") - sur une carte normale (pas fusion) du menu Pause, les pastilles s'empilent
+        // maintenant en COLONNE verticale (à droite de l'icône, voir LayoutParchmentCard) plutôt qu'en ligne
+        // horizontale en dessous - gagne de la place en hauteur. Les tuiles de fusion et Victoire/Défaite gardent
+        // la ligne horizontale d'origine (aucun changement pour elles).
+        bool verticalDots = parchmentSober != null && !isFusion;
+
+        if (refs.tierDotsRow != null)
+        {
+            VerticalLayoutGroup vlg = refs.tierDotsRow.GetComponent<VerticalLayoutGroup>();
+
+            float dotSize = dotCount > 3 ? dotSizeMany : dotSizeFew;
+
+            float dotsSpan = effectiveDotCount * dotSize + Mathf.Max(0, effectiveDotCount - 1) * dotSpacing;
+            // unlockOnly : pas de marge (unlockDotGap) après le losange, il n'y a rien à espacer de lui.
+            // MODIFIE (2026-09-30) - sur Victoire/Défaite (parchmentSober == null), le losange est désormais fixe
+            // dans un coin (voir plus haut) au lieu de partager la ligne avec les pastilles : ne plus lui
+            // réserver de place ici, sinon les pastilles restent décalées pour un emplacement qui n'existe plus.
+            float totalSpan = dotsSpan + (showUnlockDot && parchmentSober != null ? unlockDotSize + (effectiveDotCount > 0 ? unlockDotGap : 0f) : 0f);
+
+            if (unlockOnly)
+            {
+                if (vlg != null) vlg.enabled = false;
+                if (refs.unlockDot != null && parchmentSober != null)
+                {
+                    // CORRIGE (2026-09-30, retour utilisateur : "le losange doit être centré") - le losange est
+                    // un ENFANT de TierDotsRow, donc son anchoredPosition est relatif au centre de TierDotsRow,
+                    // pas au centre de la carte : (0,0) ici plaçait le losange au centre de TierDotsRow, qui
+                    // lui-même n'est PAS au centre de la carte (il est décalé à droite pour la colonne de
+                    // pastilles). Annuler ce décalage (-anchoredPosition de TierDotsRow) recentre bien le
+                    // losange sur le centre RÉEL de la carte, quelle que soit la position de TierDotsRow.
+                    Vector2 centerOfCard = -refs.tierDotsRow.anchoredPosition;
+                    RectTransform unlockOnlyRt = (RectTransform)refs.unlockDot.transform;
+                    unlockOnlyRt.anchoredPosition = centerOfCard;
+                    // CORRIGE (2026-09-30, retour utilisateur : "c'est l'inverse qu'il fallait faire, c'est pour
+                    // Double Tir qu'il doit être plus gros") - ce losange est le SEUL indicateur de la carte
+                    // (pas de pastilles à côté) : plus grand que le losange normal (qui, lui, n'est qu'un élément
+                    // parmi d'autres dans la colonne) pour ne pas paraître chétif seul au centre de la carte.
+                    unlockOnlyRt.sizeDelta = new Vector2(unlockDotSize, unlockDotSize) * 1.6f;
+                }
+            }
+            else if (verticalDots)
+            {
+                // MODIFIE (2026-09-30, retour utilisateur : "dots à droite de l'icône, centrés en Y avec un
+                // vertical layout, pour rester centrés quel que soit le nombre de dots") - l'ancien calcul
+                // manuel de cursorY supposait à tort que l'ancre des pastilles était le CENTRE de TierDotsRow
+                // (elle est en haut : anchorMin/Max = (0,1)), donc le cluster ressortait décalé vers le haut de
+                // la carte au lieu d'être centré sur l'icône. Remplacé par un vrai VerticalLayoutGroup
+                // (MiddleCenter, posé sur TierDotsRow) : il centre lui-même le cluster sur toute la hauteur de
+                // la rangée à chaque activation/désactivation de pastille, sans recalcul de position à la main.
+                // Désactivé ici : le nombre d'enfants ACTIFS n'est fixé que plus bas (boucle des dots +
+                // visibilité du losange) - le layout est (ré)activé juste après, une fois ce nombre connu (voir
+                // plus bas, "vlg.enabled = false; vlg.enabled = true;").
+                if (vlg != null) vlg.enabled = false;
+
+                if (refs.unlockDot != null && showUnlockDot)
+                    ((RectTransform)refs.unlockDot.transform).sizeDelta = new Vector2(unlockDotSize, unlockDotSize);
+                for (int d = 0; d < dots.Count && d < effectiveDotCount; d++)
+                    ((RectTransform)dots[d].transform).sizeDelta = new Vector2(dotSize, dotSize);
+            }
+            else
+            {
+                if (vlg != null) vlg.enabled = false;
+                // CORRIGE (2026-09-27, retour utilisateur + capture d'écran : "les dots ne sont pas centrés") - le
+                // losange/les pastilles ont leur ancre sur le bord GAUCHE de TierDotsRow (anchorMin.x=0), pas son
+                // centre : démarrer le curseur à -totalSpan/2 centrait donc la grappe sur le bord gauche de la
+                // ligne au lieu de son centre. Uniquement pour le menu Pause (parchmentSober != null, où la largeur
+                // de ligne est un point fixe non-étiré) : sur Victoire/Défaite, TierDotsRow est étiré sur toute la
+                // largeur de la tuile et ce calcul restait correct tel quel.
+                float rowLeftEdgeOffset = parchmentSober != null ? refs.tierDotsRow.sizeDelta.x / 2f : 0f;
+                float cursorX = rowLeftEdgeOffset - totalSpan / 2f;
+
+                // Le losange/les pastilles ont leur ancre en HAUT de TierDotsRow : recentre aussi verticalement
+                // dans la hauteur réelle de la ligne (Pause uniquement) plutôt que l'ancien offset figé -30.
+                bool recenterY = parchmentSober != null;
+                float dotY = recenterY ? -refs.tierDotsRow.sizeDelta.y / 2f : 0f;
+
+                if (refs.unlockDot != null && showUnlockDot && parchmentSober != null)
+                {
+                    RectTransform unlockRt = (RectTransform)refs.unlockDot.transform;
+                    float y = recenterY ? dotY : unlockRt.anchoredPosition.y;
+                    unlockRt.anchoredPosition = new Vector2(cursorX + unlockDotSize / 2f, y);
+                    cursorX += unlockDotSize + unlockDotGap;
+                }
+                for (int d = 0; d < dots.Count && d < effectiveDotCount; d++)
+                {
+                    RectTransform dotRt = (RectTransform)dots[d].transform;
+                    dotRt.sizeDelta = new Vector2(dotSize, dotSize);
+                    float y = recenterY ? dotY : dotRt.anchoredPosition.y;
+                    dotRt.anchoredPosition = new Vector2(cursorX + dotSize / 2f, y);
+                    cursorX += dotSize + dotSpacing;
+                }
+            }
+        }
+
+        for (int d = 0; d < dots.Count; d++)
+        {
+            bool dotExists = d < effectiveDotCount;
+            dots[d].gameObject.SetActive(dotExists);
+            if (!dotExists) continue;
+
+            bool filled = d < currentLevel;
+            dots[d].color = !filled ? colEmpty : (alreadyMaxed ? colMax : colFilled);
+        }
+
+        // Losange de déblocage (armes à pick séparé : Orbital, Foudre, Boue, etc. - OU une arme à un seul
+        // palier comme Double Tir, voir unlockOnly plus haut : même losange, mais coloré selon "obtenue" plutôt
+        // que "déjà débloquée avant ce pick", puisqu'il n'y a pas d'étape de déblocage séparée à distinguer).
+        bool showDiamond = showUnlockDot || unlockOnly;
         if (refs.unlockDot != null)
         {
-            bool requiresUnlock = upgrade.RequiresUnlockPick;
-            refs.unlockDot.gameObject.SetActive(requiresUnlock);
-            if (requiresUnlock)
-                refs.unlockDot.color = upgrade.IsUnlocked() ? _filledTierColor : _emptyTierColor;
+            refs.unlockDot.gameObject.SetActive(showDiamond);
+            if (showDiamond)
+                refs.unlockDot.color = unlockOnly ? (owned ? colFilled : colEmpty) : (upgrade.IsUnlocked() ? colFilled : colEmpty);
         }
+
+        // AJOUTE (2026-09-30) - le VerticalLayoutGroup de TierDotsRow ne reconstruit sa liste d'enfants actifs
+        // qu'à son propre OnEnable (pas simplement quand un enfant change d'état actif/inactif au-dessus) : le
+        // rebasculer OFF puis ON ICI, une fois le nombre RÉEL de pastilles/losange actifs connu (boucles
+        // ci-dessus), force cette liste à jour avant le calcul de centrage - sinon un enfant resté "vu" par le
+        // groupe depuis un état précédent (ex. losange compté alors qu'il vient d'être désactivé) décale tout le
+        // cluster au lieu de le centrer sur l'icône.
+        if (verticalDots && refs.tierDotsRow != null)
+        {
+            VerticalLayoutGroup vlg = refs.tierDotsRow.GetComponent<VerticalLayoutGroup>();
+            if (vlg != null)
+            {
+                vlg.enabled = false;
+                vlg.spacing = dotSpacing;
+                vlg.enabled = true;
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(refs.tierDotsRow);
+        }
+
+        // AJOUTE (2026-09-27) - clic sur une carte (menu Pause uniquement, onSlotClicked fourni par
+        // PauseMenuUI) : affiche sa description. Aucun effet visuel de survol/pression (Transition.None) pour ne
+        // pas casser le style "parchemin" existant des tuiles.
+        Button btn = slotGO.GetComponent<Button>();
+        if (onSlotClicked != null)
+        {
+            if (btn == null) btn = slotGO.AddComponent<Button>();
+            btn.transition = Selectable.Transition.None;
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => onSlotClicked(upgrade));
+        }
+        else if (btn != null)
+        {
+            btn.onClick.RemoveAllListeners();
+        }
+
+        // AJOUTE (2026-09-27) - survol (entrée/sortie souris) de la carte, transmis à PauseMenuUI pour fermer le
+        // panneau de description en fondu quand la souris quitte la carte active (retour utilisateur).
+        UpgradeCardHover hover = slotGO.GetComponent<UpgradeCardHover>();
+        if (onSlotHoverEnter != null || onSlotHoverExit != null)
+        {
+            if (hover == null) hover = slotGO.AddComponent<UpgradeCardHover>();
+            hover.Upgrade = upgrade;
+            hover.OnEnter = onSlotHoverEnter;
+            hover.OnExit = onSlotHoverExit;
+        }
+        else if (hover != null)
+        {
+            hover.OnEnter = null;
+            hover.OnExit = null;
+        }
+    }
+
+    private UpgradeData FindUpgradeByType(UpgradeType type)
+    {
+        if (LevelUpManager.Instance == null || LevelUpManager.Instance.AllUpgrades == null) return null;
+        foreach (UpgradeData u in LevelUpManager.Instance.AllUpgrades)
+            if (u != null && u.upgradeType == type) return u;
+        return null;
+    }
+
+    // AJOUTE (2026-09-27) - retour utilisateur : "le texte blanc sur ce genre de fond pour les cartes est pas très
+    // visible". Contour sombre via les propriétés natives de TMP (matériau SDF, aucun assombrissement du fond
+    // requis) - garantit la lisibilité du texte blanc quel que soit l'endroit du parchemin où il tombe.
+    public static void ApplyReadableOutline(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        text.fontMaterial.EnableKeyword("OUTLINE_ON");
+        text.outlineWidth = 0.22f;
+        text.outlineColor = new Color32(30, 18, 10, 255);
     }
 
     private Color GetTileTint(UpgradeBranch branch)
@@ -895,7 +1564,6 @@ public class GameUI : MonoBehaviour
     private static readonly string[] _gameOverEmptyBuildLines =
     {
         "Pas eu le temps de récupérer la moindre compétence.",
-        "Mort avant le premier level-up. Ça arrive.",
         "Aucune compétence récupérée cette fois.",
     };
 
@@ -914,9 +1582,132 @@ public class GameUI : MonoBehaviour
     };
 
     // AJOUTE - récap avec du ton (temps 1), remplace l'ancien SubtitleText statique.
+    // ---- Adaptation des écrans de fin au mode de jeu (2026-09-26) ------------------------------------------------------------
+
+    // "Tentative n°X" propre à chaque mode ; le nom du mode précède le numéro hors Classique.
+    private string BuildAttemptLabel()
+    {
+        int n = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.GetModeAttemptNumber(GameModes.Current) : 1;
+        return GameModes.IsClassic
+            ? $"Tentative n°{n}"
+            : $"{GameModes.ShortName(GameModes.Current)}\nTentative n°{n}";
+    }
+
+    // Écrit "Tentative n°X" (précédé du nom du mode hors Classique, sur 2 lignes) dans un cadre assez large pour ne jamais
+    // couper ni décaler le texte.
+    private void ApplyAttemptLabel(TextMeshProUGUI label)
+    {
+        if (label == null) return;
+        label.text = BuildAttemptLabel();
+        if (!GameModes.IsClassic)
+        {
+            label.enableWordWrapping = false;
+            label.rectTransform.sizeDelta = new Vector2(460f, 60f);
+        }
+    }
+
+    // Le liseré sous le message doit toujours dépasser le texte : on adapte sa largeur (et celle du cadre du message) à la
+    // longueur réelle du texte affiché.
+    private void FitSeparatorToText(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        text.ForceMeshUpdate();
+        float preferred = text.GetPreferredValues(text.text, 100000f, 0f).x;
+
+        RectTransform box = text.rectTransform;
+        box.sizeDelta = new Vector2(Mathf.Clamp(preferred + 40f, 1150f, 1560f), box.sizeDelta.y);
+
+        Transform separator = text.transform.parent != null ? text.transform.parent.Find("Separator1") : null;
+        if (separator != null)
+        {
+            RectTransform line = (RectTransform)separator;
+            line.sizeDelta = new Vector2(Mathf.Clamp(preferred + 160f, 950f, 1600f), line.sizeDelta.y);
+        }
+    }
+
+    // Modes sans XP (Choc des titans) : la barre d'XP et le niveau disparaissent du HUD, et la rangée de compétences
+    // (Clone / Esquive / Ultime) descend à la place qu'ils occupaient.
+    public void HideXpHud()
+    {
+        if (_xpBar == null) return;
+        Transform group = _xpBar.transform.parent;
+        if (group != null) group.gameObject.SetActive(false);
+
+        Transform hud = group != null ? group.parent : null;
+        HudStyler styler = hud != null ? hud.GetComponent<HudStyler>() : null;
+        if (styler != null) styler.SetXpHidden(true);
+    }
+
+    // Ligne de stats : "Boss N/3" en classique, "Boss N/total" en ruée, "Boss N" en sans fin (pas de plafond).
+    private string BuildStatLine(int mins, int secs, int killCount, int level, int bossKills)
+    {
+        // Choc des titans : ni ennemis ni niveaux, seulement le temps et les titans abattus.
+        if (GameModes.IsTitans) return $"Survie {mins:00}:{secs:00}    ·    Titans {bossKills}/3";
+
+        string boss;
+        if (GameModes.IsEndless) boss = $"Boss {bossKills}";
+        else if (GameModes.IsTitans) boss = $"Titans {bossKills}/3";
+        else if (GameModes.IsBossRush)
+        {
+            int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
+            boss = $"Boss {bossKills}/{total}";
+        }
+        else boss = $"Boss {bossKills}/3";
+
+        return $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    {boss}";
+    }
+
+    // Le titre est du texte de scène (CenterCard/Crown/TitleText) : réécrit à CHAQUE affichage pour ne jamais garder
+    // le titre d'un autre mode.
+    private void SetEndScreenTitle(GameObject panel, string text)
+    {
+        if (panel == null) return;
+        Transform t = panel.transform.Find("CenterCard/Crown/TitleText");
+        TextMeshProUGUI tmp = t != null ? t.GetComponent<TextMeshProUGUI>() : null;
+        if (tmp != null) tmp.text = text;
+    }
+
+    private static readonly string[] _endlessEndLines =
+    {
+        "{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps.",
+        "Tu as tenu {t} face à des boss de plus en plus féroces.",
+        "{b} boss vaincus avant la chute. Le prochain record est à portée.",
+    };
+
+    private string BuildModeGameOverMessage(float runTime, int bossKillCount)
+    {
+        if (GameModes.IsBossRush)
+        {
+            int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
+            return $"{bossKillCount} boss sur {total}. La ruée ne pardonne pas — reviens plus fort.";
+        }
+        if (GameModes.IsTitans)
+        {
+            string killed = bossKillCount <= 0 ? "Aucun titan abattu"
+                : bossKillCount == 1 ? "1 titan abattu"
+                : $"{bossKillCount} titans abattus";
+            return $"{killed} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.";
+        }
+
+        string line = _endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)];
+        return line.Replace("{t}", FormatTime(runTime)).Replace("{b}", bossKillCount.ToString());
+    }
+
     private void PopulateVictoryRecap(float runTime, int killCount)
     {
         if (_victoryRecapText == null) return;
+
+        if (GameModes.IsBossRush)
+        {
+            int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
+            _victoryRecapText.text = $"{total} boss abattus en {FormatTime(runTime)}. La ruée est à toi.";
+            return;
+        }
+        if (GameModes.IsTitans)
+        {
+            _victoryRecapText.text = $"Les 3 titans terrassés en {FormatTime(runTime)}. Rien ne t'arrête.";
+            return;
+        }
 
         string closer = _victoryClosers[UnityEngine.Random.Range(0, _victoryClosers.Length)];
         _victoryRecapText.text = $"{FormatTime(runTime)} au compteur, {killCount} ennemis au tapis. {closer}";
@@ -937,13 +1728,22 @@ public class GameUI : MonoBehaviour
 
         string message = null;
 
+        if (!GameModes.IsClassic)
+        {
+            message = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.LastRunRecordMessage : null;
+            _victoryRecordHighlight.SetActive(message != null);
+            if (message != null && _victoryRecordHighlightText != null)
+                _victoryRecordHighlightText.text = message;
+            return message != null;
+        }
+
         if (MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
         {
             SaveData data = MetaProgressionManager.Instance.Data;
 
             // totalRuns > 1 : meme garde que PopulateGameOverMessage, jamais de
             // "nouveau record" sur la toute premiere partie (rien a battre).
-            if (data.totalRuns > 1)
+            if (data.totalRuns > 1 && GameModes.IsClassic)
             {
                 RecordCheck[] checks =
                 {
@@ -1015,10 +1815,13 @@ public class GameUI : MonoBehaviour
         // MODIFIE - refonte 3-temps : une seule ligne compacte au lieu du pavé de
         // 3 lignes. "Boss 3/3" est fixe : la Victoire ne se déclenche QUE quand
         // les 3 boss sont vaincus (invariant WaveManager.OnBossDied -> GameManager).
+        int victoryBossKills = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 3;
         if (_victoryStatsText != null)
-            _victoryStatsText.text = $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    Boss 3/3";
+            _victoryStatsText.text = BuildStatLine(mins, secs, killCount, level, victoryBossKills);
 
+        SetEndScreenTitle(_victoryPanel, "VICTOIRE !");
         PopulateVictoryRecap(runTimer, killCount);
+        FitSeparatorToText(_victoryRecapText);
         bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
         PopulateVictoryQuietLine(recordShown, challengeCompleted);
         PopulateVictoryPortrait();
@@ -1030,7 +1833,7 @@ public class GameUI : MonoBehaviour
         // SaveRunResults() avant l'appel a cette methode.
         if (_victoryAttemptText != null && MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
         {
-            _victoryAttemptText.text = $"Tentative n°{MetaProgressionManager.Instance.Data.totalRuns}";
+            ApplyAttemptLabel(_victoryAttemptText);
         }
 
         // MODIFIE - le bouton Rejouer reste verrouille jusqu'a la fin de la
@@ -1304,6 +2107,10 @@ public class GameUI : MonoBehaviour
 
     public void UpdateBossHP(float current, float max)
     {
+        // Choc des titans : une seule barre pour les 3 boss = somme de leurs PV.
+        if (GameModes.IsTitans && WaveManager.Instance != null)
+            WaveManager.Instance.GetTitansHealth(out current, out max);
+
         if (_bossHPSlider != null)
         {
             _bossHPSlider.value = (max > 0) ? current / max : 0f;
@@ -1312,6 +2119,8 @@ public class GameUI : MonoBehaviour
 
     public void HideBossHP()
     {
+        // Choc des titans : la barre reste tant qu'il reste au moins 2 boss (celui qui meurt est encore compté ici).
+        if (GameModes.IsTitans && WaveManager.Instance != null && WaveManager.Instance.TitansRemaining > 1) return;
         if (_bossHPBar != null) _bossHPBar.SetActive(false);
         if (_bossNameText != null) _bossNameText.gameObject.SetActive(false);
         if (_bossIcon != null) _bossIcon.SetActive(false);
@@ -1334,7 +2143,10 @@ public class GameUI : MonoBehaviour
         // MODIFIE - refonte 3-temps, meme format compact que la Victoire (une
         // seule ligne) plutot que le pave de 3 lignes d'avant.
         if (_statsText != null)
-            _statsText.text = $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    Boss {bossKillCount}/3";
+            _statsText.text = BuildStatLine(mins, secs, killCount, level, bossKillCount);
+
+        // Sans fin : on ne "perd" pas, la partie se termine. Classique et Ruée gardent DÉFAITE.
+        SetEndScreenTitle(_gameOverPanel, GameModes.IsEndless ? "FIN DE PARTIE" : "DÉFAITE");
 
         PopulateGameOverPortrait();
         int gameOverTileCount = PopulateBuildGrid(_gameOverBuildGridContent);
@@ -1347,13 +2159,14 @@ public class GameUI : MonoBehaviour
 
         // MODIFIE - passe desormais le niveau atteint et l'Or total (bonus de
         // defi inclus) pour couvrir les 4 records au lieu de 2.
-        PopulateGameOverMessage(runTimer, killCount, level, totalGold, deathCause);
+        PopulateGameOverMessage(runTimer, killCount, level, totalGold, deathCause, bossKillCount);
+        FitSeparatorToText(_gameOverMessageText);
 
         // AJOUTE - "Tentative n°X", Data.totalRuns a deja ete incremente par
         // SaveRunResults() avant l'appel a cette methode.
         if (_gameOverAttemptText != null && MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.Data != null)
         {
-            _gameOverAttemptText.text = $"Tentative n°{MetaProgressionManager.Instance.Data.totalRuns}";
+            ApplyAttemptLabel(_gameOverAttemptText);
         }
 
         // MODIFIE - le bouton Rejouer reste verrouille jusqu'a la fin complete

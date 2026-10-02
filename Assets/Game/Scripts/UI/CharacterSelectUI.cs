@@ -222,7 +222,7 @@ public class CharacterSelectUI : MonoBehaviour
                 infoAccent           = new Color32(0xF2, 0x8A, 0x2E, 0xFF),
                 displayName           = "AETHER",
                 tags                 = new[] { "DISTANCE", "ZONE", "BRÛLURE" },
-                weaponName           = "Fireball",
+                weaponName           = "Boule de feu",
                 weaponDescription    = "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité.",
                 weaponUpgrades       = "Rayon / Dégâts / Brûlure",
                 branch               = SkillTreeData.CharacterBranch.Guerrier,

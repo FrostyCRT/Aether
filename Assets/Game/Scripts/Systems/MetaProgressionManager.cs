@@ -57,6 +57,16 @@ public class MetaProgressionManager : MonoBehaviour
     {
         Data = SaveSystem.Load();
         if (Data == null) Data = new SaveData();
+        MigrateClassicBossProgress();
+    }
+
+    // Saves d'avant les modes de jeu : on retrouve la progression boss d'après les déblocages existants
+    // (Lyra = victoire = 3 boss ; Kael = boss 2 atteint donc boss 1 battu = 1). Ne fait que monter, jamais descendre.
+    private void MigrateClassicBossProgress()
+    {
+        if (Data.bestClassicBossKills >= 3) return;
+        if (Data.lyraUnlocked) Data.bestClassicBossKills = 3;
+        else if (Data.kaelUnlocked && Data.bestClassicBossKills < 1) Data.bestClassicBossKills = 1;
     }
 
     public void AddRunGold(int amount)
@@ -76,29 +86,104 @@ public class MetaProgressionManager : MonoBehaviour
         if (Data == null) LoadData();
         Data.totalRuns++;
         Data.totalGold += RunGold;
-        if (runTime > Data.bestTime) Data.bestTime = runTime;
-        if (kills > Data.bestKills) Data.bestKills = kills;
-        // AJOUTE - 2 records supplementaires. RunGold est lu AVANT d'etre remis a
-        // 0 plus bas, et reflete deja le bonus de defi eventuel (deja applique
-        // par ChallengeManager avant l'appel a SaveRunResults) - donc "meilleur
-        // or en une partie" inclut logiquement le bonus, comme le montant reel
-        // que le joueur repart avec.
-        if (levelReached > Data.bestLevel) Data.bestLevel = levelReached;
-        if (RunGold > Data.bestGoldInRun) Data.bestGoldInRun = RunGold;
+        GameMode mode = GameModes.Current;
+        bool endless = mode == GameMode.Endless;
+        bool rush = mode == GameMode.BossRush;
+        bool classic = mode == GameMode.Classic;
+        LastRunRecordMessage = null;
 
-        RecordCharacterRun(runTime, victory);
+        switch (mode)
+        {
+            case GameMode.Endless:
+            {
+                // Mode sans fin : records à part, les records du classique (15 min) ne sont pas touchés.
+                bool hadRecord = Data.bestEndlessTime > 0f;
+                if (hadRecord && runTime > Data.bestEndlessTime)
+                    LastRunRecordMessage = $"Nouveau record sans fin : {FormatClock(runTime)} !";
+                else if (hadRecord && bossKills > Data.bestEndlessBossKills)
+                    LastRunRecordMessage = $"Nouveau record sans fin : {bossKills} boss vaincus !";
+                if (runTime > Data.bestEndlessTime) Data.bestEndlessTime = runTime;
+                if (kills > Data.bestEndlessKills) Data.bestEndlessKills = kills;
+                if (bossKills > Data.bestEndlessBossKills) Data.bestEndlessBossKills = bossKills;
+                Data.endlessRuns++;
+                break;
+            }
+            case GameMode.BossRush:
+            {
+                if (Data.rushBestBossKills > 0 && bossKills > Data.rushBestBossKills)
+                    LastRunRecordMessage = $"Nouveau record de ruée : {bossKills} boss vaincus !";
+                if (bossKills > Data.rushBestBossKills) Data.rushBestBossKills = bossKills;
+                Data.rushRuns++;
+                if (victory) Data.rushWins++;
+                break;
+            }
+            case GameMode.Titans:
+            {
+                bool hadWin = Data.titansBestTime > 0f;
+                if (victory && (!hadWin || runTime < Data.titansBestTime))
+                {
+                    if (hadWin) LastRunRecordMessage = $"Nouveau record du Choc des titans : {FormatClock(runTime)} !";
+                    Data.titansBestTime = runTime;
+                }
+                else if (!victory && Data.titansBestBossKills > 0 && bossKills > Data.titansBestBossKills)
+                    LastRunRecordMessage = bossKills > 1 ? $"Nouveau record : {bossKills} titans abattus !" : $"Nouveau record : {bossKills} titan abattu !";
+                if (bossKills > Data.titansBestBossKills) Data.titansBestBossKills = bossKills;
+                Data.titansRuns++;
+                if (victory) Data.titansWins++;
+                break;
+            }
+            default:
+            {
+                if (runTime > Data.bestTime) Data.bestTime = runTime;
+                if (kills > Data.bestKills) Data.bestKills = kills;
+                // AJOUTE - 2 records supplementaires. RunGold est lu AVANT d'etre remis a
+                // 0 plus bas, et reflete deja le bonus de defi eventuel (deja applique
+                // par ChallengeManager avant l'appel a SaveRunResults) - donc "meilleur
+                // or en une partie" inclut logiquement le bonus, comme le montant reel
+                // que le joueur repart avec.
+                if (levelReached > Data.bestLevel) Data.bestLevel = levelReached;
+                if (RunGold > Data.bestGoldInRun) Data.bestGoldInRun = RunGold;
+                // Progression des modes : combien de boss ce joueur a déjà battus en classique (ouvre / dimensionne la Ruée).
+                if (bossKills > Data.bestClassicBossKills) Data.bestClassicBossKills = Mathf.Min(bossKills, 3);
+                break;
+            }
+        }
 
-        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory);
+        RecordCharacterRun(runTime, victory && classic, !classic);
+
+        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode);
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
 
         SaveSystem.Save(Data);
         RunGold = 0;
 
-        // Déblocage de Lyra : gagner une partie complète (Boss 3). Idempotent,
+        // Déblocage de Lyra : gagner une partie complète (Boss 3) - EN CLASSIQUE uniquement. Idempotent,
         // se sauvegarde lui-même si c'est un nouveau déblocage.
-        if (victory)
+        if (victory && classic)
             UnlockCharacter(2);
+    }
+
+    // Dernier record battu par la partie qui vient de se terminer (modes Sans fin / Ruée), null sinon. Lu par les écrans de fin.
+    public string LastRunRecordMessage { get; private set; }
+
+    // Numéro de la partie qui vient d'être enregistrée DANS SON MODE (pour "Tentative n°X" : chaque mode a son compteur).
+    public int GetModeAttemptNumber(GameMode mode)
+    {
+        if (Data == null) return 1;
+        switch (mode)
+        {
+            case GameMode.Endless: return Mathf.Max(1, Data.endlessRuns);
+            case GameMode.BossRush: return Mathf.Max(1, Data.rushRuns);
+            case GameMode.Titans: return Mathf.Max(1, Data.titansRuns);
+            default: return Mathf.Max(1, Data.totalRuns - Data.endlessRuns - Data.rushRuns - Data.titansRuns);
+        }
+    }
+
+    private static string FormatClock(float seconds)
+    {
+        int total = Mathf.FloorToInt(seconds);
+        return (total / 60).ToString("00") + ":" + (total % 60).ToString("00");
     }
 
     // =====================
@@ -119,13 +204,14 @@ public class MetaProgressionManager : MonoBehaviour
 
     // Le personnage joué = celui sélectionné (la sélection ne change pas en cours de partie),
     // avec le même repli de sécurité que le spawn (perso verrouillé -> Aether).
-    private void RecordCharacterRun(float runTime, bool victory)
+    private void RecordCharacterRun(float runTime, bool victory, bool endless = false)
     {
         EnsureCharacterStatArrays();
         int c = Mathf.Clamp(GetSelectedCharacterIndex(), 0, 2);
         Data.runsByCharacter[c]++;
         if (victory) Data.winsByCharacter[c]++;
-        if (runTime > Data.bestTimeByCharacter[c]) Data.bestTimeByCharacter[c] = runTime;
+        // Le "meilleur temps" du parcours est celui du classique (comparable d'un perso à l'autre) : pas le sans fin.
+        if (!endless && runTime > Data.bestTimeByCharacter[c]) Data.bestTimeByCharacter[c] = runTime;
     }
 
     public int GetCharacterRuns(int index)
@@ -146,11 +232,41 @@ public class MetaProgressionManager : MonoBehaviour
         return Data != null && index >= 0 && index < 3 ? Data.bestTimeByCharacter[index] : 0f;
     }
 
-    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory)
+    // ÉCLATS PAR MODE - le classique est la référence (une partie de 15 min). Les autres modes sont plafonnés pour ne pas
+    // devenir une ferme à Éclats :
+    //  - Sans fin : niveau compté jusqu'à 30 et 9 boss au plus (une partie de 15 min vaut ~ 24 niveaux + 3 boss).
+    //  - Ruée de boss : moitié moins par boss, aucun point "niveau" (l'XP x3 gonfle les niveaux) ; la victoire rapporte
+    //    le bonus proportionnellement à sa taille (1 / 2 / 3 tiers du bonus classique).
+    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode = GameMode.Classic)
     {
-        int total = (levelReached * _eclatsPerLevel) + (bossKills * _eclatsPerBossKill);
-        if (victory) total += _eclatsVictoryBonus;
-        return total;
+        switch (mode)
+        {
+            case GameMode.Endless:
+                return (Mathf.Min(levelReached, 30) * _eclatsPerLevel) + (Mathf.Min(bossKills, 9) * _eclatsPerBossKill);
+            case GameMode.BossRush:
+            {
+                int total = (bossKills * _eclatsPerBossKill) / 2;
+                if (victory)
+                {
+                    int progress = Mathf.Max(1, GameModes.ClassicBossProgress(Data));
+                    total += (_eclatsVictoryBonus * progress) / 3;
+                }
+                return total;
+            }
+            case GameMode.Titans:
+            {
+                // ~2 min de jeu : un demi-boss classique par titan, un tiers du bonus de victoire (pas de ferme à Éclats).
+                int total = (bossKills * _eclatsPerBossKill) / 2;
+                if (victory) total += _eclatsVictoryBonus / 3;
+                return total;
+            }
+            default:
+            {
+                int total = (levelReached * _eclatsPerLevel) + (bossKills * _eclatsPerBossKill);
+                if (victory) total += _eclatsVictoryBonus;
+                return total;
+            }
+        }
     }
 
     // =====================

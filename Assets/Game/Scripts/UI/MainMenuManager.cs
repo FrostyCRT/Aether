@@ -25,12 +25,43 @@ public class MainMenuManager : MonoBehaviour
     private static readonly Vector3 _activeTabScale = new Vector3(1.08f, 1.08f, 1f);
     private static readonly Vector3 _inactiveTabScale = Vector3.one;
     [SerializeField] private AudioMixer _mainAudioMixer;
+    private MenuTabBarFX _tabBarFX;
+    private bool _firstShow = true;
+
+    // AJOUTÉ (2026-10-02) - page actuellement affichée. Cliquer sur l'onglet de la page où l'on est DÉJÀ ne doit rien
+    // refaire : avant, ShowPanel() désactivait puis réactivait ce même panneau, ce qui relançait toutes ses animations
+    // d'ouverture (OnEnable) alors que rien n'avait changé.
+    private GameObject _currentPanel;
+
+    // AJOUTE (2026-09-26) - barre de navigation dynamique (survol / appui / clic animés + liseré doré qui glisse) :
+    // MenuTabBarFX est ajouté tout seul sur le parent des onglets, aucun objet à poser dans la scène.
+    private void Awake()
+    {
+        Image[] tabs = { _upgradesTabImage, _menuTabImage, _settingsTabImage, _characterSelectTabImage, _reputationTabImage };
+        Transform bar = null;
+        foreach (Image t in tabs)
+        {
+            if (t != null) { bar = t.transform.parent; break; }
+        }
+        if (bar == null) return;
+
+        _tabBarFX = bar.GetComponent<MenuTabBarFX>();
+        if (_tabBarFX == null) _tabBarFX = bar.gameObject.AddComponent<MenuTabBarFX>();
+        _tabBarFX.Init(tabs);
+    }
+
     private void Start()
     {
         ShowPanel(_menuPanel);
     }
     public void ShowPanel(GameObject panel)
     {
+        if (panel == null) return;
+
+        // Déjà sur cette page (et elle est bien affichée) : on ne touche à rien, elle garde son état et ses animations.
+        if (panel == _currentPanel && panel.activeInHierarchy) return;
+        _currentPanel = panel;
+
         _upgradesPanel.SetActive(false);
         _menuPanel.SetActive(false);
         _settingsPanel.SetActive(false);
@@ -45,10 +76,29 @@ public class MainMenuManager : MonoBehaviour
         SetTabState(_characterSelectTabImage, panel == _characterSelectPanel);
         // AJOUTE
         SetTabState(_reputationTabImage, panel == _reputationPanel);
+
+        if (_tabBarFX != null)
+        {
+            Image activeTab = panel == _upgradesPanel ? _upgradesTabImage
+                : panel == _menuPanel ? _menuTabImage
+                : panel == _settingsPanel ? _settingsTabImage
+                : panel == _characterSelectPanel ? _characterSelectTabImage
+                : panel == _reputationPanel ? _reputationTabImage : null;
+            if (activeTab != null) _tabBarFX.SetActiveTab(activeTab.rectTransform, _firstShow);
+        }
+        _firstShow = false;
     }
     private void SetTabState(Image tabImage, bool isActive)
     {
         if (tabImage == null) return;
+
+        MenuTabAnimator animator = tabImage.GetComponent<MenuTabAnimator>();
+        if (animator != null)
+        {
+            animator.SetActiveState(isActive, _firstShow);
+            return;
+        }
+
         tabImage.color = isActive ? _activeTabColor : _inactiveTabColor;
         tabImage.rectTransform.localScale = isActive ? _activeTabScale : _inactiveTabScale;
     }
@@ -60,6 +110,11 @@ public class MainMenuManager : MonoBehaviour
     public void ShowReputation() => ShowPanel(_reputationPanel);
     public void PlayGame()
     {
+        // Un mode verrouillé (ex. Ruée de boss sans progression en Classique) ne se lance pas ; le bouton est déjà grisé
+        // par GameModeSelector, ceci couvre un éventuel raccourci clavier.
+        SaveData data = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null;
+        GameModes.EnsureCurrentIsAvailable(data);
+
         // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
         // chargement async + retour visuel) au lieu d'un SceneManager.LoadScene
         // brut et synchrone : c'est la transition la plus lourde du jeu (Jeu

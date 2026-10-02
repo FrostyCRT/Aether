@@ -220,7 +220,7 @@ public static class GameInput
     {
         switch (a)
         {
-            case GameAction.Dash: return "Esquive rapide : invincible un court instant, absorbe les projectiles.";
+            case GameAction.Dash: return "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles.";
             case GameAction.Ultimate: return "Déclenche l'ultime quand le cristal est chargé.";
             case GameAction.PhantomClone: return "Invoque le clone spectral. Nécessite la compétence correspondante.";
             case GameAction.Card1: return "Choisit la 1re carte à la montée de niveau.";

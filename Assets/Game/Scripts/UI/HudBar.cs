@@ -31,6 +31,10 @@ public class HudBar : MonoBehaviour
     private GameObject _trailGo;
 
     private float _shown, _trailV, _vel, _flash, _trailHold, _prevTarget, _lastFillAnchor = -1f, _lastTrailAnchor = -1f;
+    // AJOUTE (2026-09-27) - temps total où la traînée reste figée (PAS réarmé par chaque coup, contrairement à
+    // _trailHold) : au-delà de _maxTrailStuckTime, force le rattrapage même si les coups continuent d'arriver.
+    private float _trailStuckTimer;
+    private const float MaxTrailStuckTime = 2f;
     private bool _init, _levelUp;
     private TextMeshProUGUI _valueText;
 
@@ -38,6 +42,10 @@ public class HudBar : MonoBehaviour
     // se rejoue qu'après ce délai (en secondes) SANS aucun coup ; chaque coup remet le compteur à zéro.
     public float hitFlashQuietTime = 0f;
     public float FlashAmount { get { return _flash; } }        // lecture seule (tests)
+    public float TrailValue { get { return _trailV; } }        // lecture seule (tests)
+    public float ShownValue { get { return _shown; } }         // lecture seule (tests)
+    public float TrailHoldValue { get { return _trailHold; } }        // lecture seule (tests)
+    public float TrailStuckTimerValue { get { return _trailStuckTimer; } } // lecture seule (tests)
 
     // Couleur de remplissage imposée (palette du HUD). Sans elle, la barre reprend la couleur écrite par GameUI sur son Fill.
     private bool _hasFixedColor;
@@ -109,7 +117,7 @@ public class HudBar : MonoBehaviour
     public void PlayIntro()
     {
         _shown = 0f; _trailV = 0f; _vel = 0f; _prevTarget = 0f; _init = true; _levelUp = false; _lastHitTime = -999f;
-        _lastFillAnchor = _lastTrailAnchor = -1f;
+        _lastFillAnchor = _lastTrailAnchor = -1f; _trailStuckTimer = 0f;
     }
 
     private static RectTransform NewRect(string name, Transform parent)
@@ -288,9 +296,27 @@ public class HudBar : MonoBehaviour
         }
 
         // ----- traînée : elle attend, puis rattrape le remplissage -----
-        if (_trailV < _shown) _trailV = _shown;
-        else if (_trailHold > 0f) _trailHold -= dt;
-        else _trailV = Mathf.MoveTowards(_trailV, _shown, dt * 0.55f);
+        // CORRIGE (2026-09-27, retour utilisateur : "si on met des dégâts en continue, la barre [blanche] ne
+        // s'actualise presque jamais... trouve un moyen... toutes les 2sec") - _trailHold se réarmait à 0.40s à
+        // CHAQUE coup reçu (voir plus haut) : sous des dégâts vraiment continus (boss touché par plusieurs armes en
+        // permanence), il n'atteignait jamais 0 et le rattrapage ne démarrait jamais. _trailStuckTimer, lui,
+        // continue de courir sans être réarmé par les coups - passé MaxTrailStuckTime, il force le rattrapage même
+        // si des coups continuent d'arriver.
+        if (_trailV < _shown) { _trailV = _shown; _trailStuckTimer = 0f; }
+        else if (_trailV > _shown)
+        {
+            if (_trailHold > 0f && _trailStuckTimer < MaxTrailStuckTime)
+            {
+                _trailHold -= dt;
+                _trailStuckTimer += dt;
+            }
+            else
+            {
+                _trailV = Mathf.MoveTowards(_trailV, _shown, dt * 0.55f);
+                if (Mathf.Approximately(_trailV, _shown)) _trailStuckTimer = 0f;
+            }
+        }
+        else _trailStuckTimer = 0f;
 
         _flash = Mathf.MoveTowards(_flash, 0f, dt * 3.5f);
 

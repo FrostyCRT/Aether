@@ -13,6 +13,9 @@ GameObject:
   - component: {fileID: 6240002360621346435}
   - component: {fileID: 5984681562282364703}
   - component: {fileID: 6961507489953504040}
+  - component: {fileID: 2653943079287069866}
+  - component: {fileID: -7549729021279255499}
+  - component: {fileID: 17609259270219023}
   m_Layer: 6
   m_Name: BossCorruptedSource
   m_TagString: Enemy
@@ -105,6 +108,7 @@ MonoBehaviour:
   _moveSpeed: 4
   _xpValue: 0
   _goldValue: 120
+  _healPlayerOnDeath: 1
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
   _fireRate: 1
@@ -175,6 +179,10 @@ MonoBehaviour:
     type: 3}
   _summonedVisualScale: 0.75
   _minSummonInterval: 25
+  _summonCircleRadius: 3.5
+  _summonRuneSprite: {fileID: 0}
+  _summonColor: {r: 0.62, g: 0.28, b: 1, a: 1}
+  _summonedEmergeDuration: 0.35
   _implosionPullDuration: 1.5
   _implosionPullForce: 15
   _implosionRadius: 10
@@ -208,6 +216,42 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 0
   m_Center: {x: 0.3, y: 0, z: -0.1}
+--- !u!114 &2653943079287069866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8352327220285549118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfaaacc21da898643bc51af0494bf905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-7549729021279255499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8352327220285549118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde97c9c461c0c74c81fc02df7bcbc3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &17609259270219023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8352327220285549118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9423bad43b583d4887c405f11c9f2b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5290551867295270980
 PrefabInstance:
   m_ObjectHideFlags: 0

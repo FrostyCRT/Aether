@@ -136,6 +136,9 @@ public class WeaponShurikenBarrage : MonoBehaviour
     public void AddDamage(float value) => _damage += _damage * value;
     public void AddFireRate(float value) => _fireRate += _fireRate * value;
 
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamage => _damage;
+
     // AJOUTE - palier 1 : +1 couteau a la salve.
     public void AddKnife() => _knifeCount += 1;
 

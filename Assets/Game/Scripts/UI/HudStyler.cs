@@ -87,7 +87,7 @@ public class HudStyler : MonoBehaviour
     [SerializeField] private float _bottomMargin = 60f;
     [Tooltip("Position Y du groupe d'éléments au-dessus de la barre d'XP (Action Cluster), mesurée depuis le bas de l'écran. En X il reste centré sur la barre d'XP, même quand des éléments apparaissent (ULT x1 / x2...).")]
     [SerializeField] private float _clusterY = 150f;
-    [Tooltip("Décalage horizontal du texte « ESQUIVE ».")]
+    [Tooltip("Décalage horizontal du texte « DASH ».")]
     [SerializeField] private float _dashCaptionX = 0f;
     [SerializeField] private float _captionFontSize = 27f;
     [SerializeField] private Color _captionColor = new Color(0.96f, 0.89f, 0.72f, 1f);
@@ -108,7 +108,7 @@ public class HudStyler : MonoBehaviour
     [SerializeField] private Color _bossNameColor = new Color32(0xE8, 0x3A, 0x32, 255); // nom du boss en rouge (demande utilisateur, 2026-09-24)
     [Tooltip("Barre d'XP : bleu azur (l'or est réservé à la monnaie et aux états « prêt / maximum »).")]
     [SerializeField] private Color _xpColor = new Color32(0x3E, 0x84, 0xD6, 255);
-    [Tooltip("Esquive : argent bleuté (mobilité).")]
+    [Tooltip("Dash : argent bleuté (mobilité).")]
     [SerializeField] private Color _dashColor = new Color32(0xBC, 0xD2, 0xE3, 255);
     [Tooltip("Ultime / magie : turquoise sourd (cristaux chargés, « ULT x1 », Concentration).")]
     [SerializeField] private Color _crystalFilledColor = new Color32(0x6F, 0xDC, 0xEB, 255);   // bleu clair (retour utilisateur, 2026-09-24)
@@ -260,7 +260,7 @@ public class HudStyler : MonoBehaviour
         }
 
         var dash = Find<Slider>("ActionCluster/DashCooldownBar");
-        if (dash != null) AddCaption(dash.transform, "ESQUIVE", () => Mathf.Max(_dashThickness, _crystalSize.y) * 0.5f, () => _dashCaptionX);   // même ligne de base que « ULTIME »
+        if (dash != null) AddCaption(dash.transform, "DASH", () => Mathf.Max(_dashThickness, _crystalSize.y) * 0.5f, () => _dashCaptionX);   // même ligne de base que « ULTIME »
 
         Transform crystals = transform.Find("ActionCluster/UltimateGroup/CrystalBar");
         if (crystals != null) AddCaption(crystals, "ULTIME", () => _crystalSize.y * 0.5f);
@@ -496,6 +496,11 @@ public class HudStyler : MonoBehaviour
     }
 
     private RectTransform _hudRt, _xpBarRt, _xpGroupRt, _clusterRt;
+
+    // Modes sans XP (Choc des titans) : la barre d'XP est masquée par GameUI ; la rangée du bas prend sa place (elle est
+    // normalement posée au-dessus de la barre, à _clusterY).
+    private bool _xpHidden = false;
+    public void SetXpHidden(bool hidden) { _xpHidden = hidden; }
     private int _layoutSig;
 
     // Bas de l'écran : la barre d'XP est placée à _bottomMargin du bas ; le groupe d'éléments au-dessus est centré sur elle.
@@ -547,7 +552,7 @@ public class HudStyler : MonoBehaviour
 
         // Horizontalement le groupe reste centré sur la barre d'XP (il s'élargit des deux côtés quand un élément apparaît) ;
         // verticalement il est à la position réglée dans l'inspecteur.
-        _clusterRt.anchoredPosition = new Vector2(center.x - hud.center.x, _clusterY);
+        _clusterRt.anchoredPosition = new Vector2(center.x - hud.center.x, _xpHidden ? wantY : _clusterY);
     }
 
     // ---------------------------------------------------------------------------------------------------------------

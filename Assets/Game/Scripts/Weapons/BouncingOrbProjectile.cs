@@ -160,8 +160,55 @@ public class BouncingOrbProjectile : MonoBehaviour
         return transform.position;
     }
 
-    private void OnTriggerEnter(Collider other) => TryHit(other);
-    private void OnTriggerStay(Collider other) => TryHit(other);
+    private void OnTriggerEnter(Collider other) { TryHit(other); TryBounceOffOrb(other); }
+    private void OnTriggerStay(Collider other) { TryHit(other); TryBounceOffOrb(other); }
+
+    // Choc entre 2 orbes rebondissantes (2026-09-27 : elles se traversaient sans interagir).
+    // MODIFIÉ (2026-10-01, retour utilisateur : "leur vitesse est modifiée après l'impact") : ce n'est plus
+    // un choc élastique (qui échangeait les composantes de vitesse et changeait donc la vitesse de chaque
+    // orbe). Chaque orbe ne fait plus que RÉFLÉCHIR sa direction sur la normale de contact, comme sur un
+    // mur : sa vitesse (_speed) n'est jamais touchée.
+    private void TryBounceOffOrb(Collider other)
+    {
+        BouncingOrbProjectile otherOrb = other.GetComponent<BouncingOrbProjectile>();
+        if (otherOrb == null || otherOrb == this) return;
+
+        // Une seule des 2 orbes traite la collision (celle avec le plus petit InstanceID) - sinon les 2
+        // recalculeraient le même rebond indépendamment le même frame, avec un risque de double-application.
+        if (GetInstanceID() >= otherOrb.GetInstanceID()) return;
+
+        // Normale aplatie sur le plan du sol : les orbes se déplacent toujours à _groundY.
+        Vector3 delta = otherOrb.transform.position - transform.position;
+        delta.y = 0f;
+        float dist = delta.magnitude;
+        float minDist = _orbRadius + otherOrb._orbRadius;
+        if (dist >= minDist || dist < 0.0001f) return;
+
+        Vector3 normal = delta / dist; // pointe de this vers otherOrb
+
+        Vector3 velA = _direction * _speed;
+        Vector3 velB = otherOrb._direction * otherOrb._speed;
+
+        // Ne rebondit que si elles se rapprochent encore - évite un rebond répété en boucle si elles restent
+        // chevauchées un instant après coup. Dot(velA-velB, normal) > 0 <=> la distance entre les 2 diminue.
+        float approachSpeed = Vector3.Dot(velA - velB, normal);
+        if (approachSpeed <= 0f) return;
+
+        // Chaque orbe ne réfléchit sa direction QUE si elle se dirige vers l'autre (sinon, ex. une orbe qui
+        // s'éloigne pendant que l'autre la rattrape, la réfléchir l'enverrait vers l'autre au lieu de l'en
+        // éloigner). Vector3.Reflect conserve la longueur : _speed n'est jamais modifié.
+        if (Vector3.Dot(_direction, normal) > 0f)
+            _direction = Vector3.Reflect(_direction, normal).normalized;
+        if (Vector3.Dot(otherOrb._direction, normal) < 0f)
+            otherOrb._direction = Vector3.Reflect(otherOrb._direction, normal).normalized;
+
+        // Sépare les 2 orbes de la moitié du chevauchement chacune, pour ne pas rester imbriquées et
+        // redéclencher le même rebond en boucle la frame suivante.
+        float overlap = minDist - dist;
+        Vector3 separation = normal * (overlap * 0.5f + 0.01f);
+        transform.position -= separation;
+        otherOrb.transform.position += separation;
+    }
 
     private void TryHit(Collider other)
     {

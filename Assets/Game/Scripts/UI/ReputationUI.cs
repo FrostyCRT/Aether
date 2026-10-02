@@ -499,6 +499,8 @@ public class ReputationUI : MonoBehaviour
     private void PunchPreview()
     {
         if (_punch != null) StopCoroutine(_punch);
+        // (2026-09-26) coupé en plein rebond, le portrait resterait agrandi : on le remet à sa taille avant de relancer.
+        if (_preview != null && _preview.portrait != null) _preview.portrait.localScale = Vector3.one;
         _punch = StartCoroutine(PunchRoutine(_preview != null ? _preview.portrait : null, 0.06f));
     }
 

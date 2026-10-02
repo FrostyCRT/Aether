@@ -28,6 +28,9 @@ public class XPSystem : MonoBehaviour
     public void AddXP(float amount)
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        // Ruée de boss : le joueur doit monter beaucoup plus vite (XP x3), voir GameModes.RushXpMultiplier.
+        amount *= GameModes.XpMultiplier;
+
         // Application du bonus méta d'XP s'il existe
         if (MetaProgressionManager.Instance != null)
         {

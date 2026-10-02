@@ -12,6 +12,21 @@ public class UpgradeSlotRefs : MonoBehaviour
     public Image background;
     public Image icon;
 
+    // AJOUTE (2026-09-28, retour utilisateur : "je veux faire les réglages manuellement") - jusqu'ici ces 4
+    // éléments (icône de fusion + les 2 icônes sources + le séparateur) étaient recréés ENTIÈREMENT EN CODE à
+    // chaque peuplement de grille (GameUI.BuildFusionSourcesVisual) : aucune existence dans le prefab, donc
+    // aucun moyen de les ajuster à la main dans l'Inspector - toute position/taille devait passer par du code.
+    // Maintenant de vrais enfants du prefab : le code ne touche plus que leur sprite/couleur/visibilité, jamais
+    // leur RectTransform - ajuste position/taille/rotation directement ici, ça persiste.
+    [Header("Fusion uniquement (icône dédiée + visuel des 2 armes sources)")]
+    [Tooltip("Icône affichée UNIQUEMENT sur une tuile de fusion (position/taille différentes de l'icône normale ci-dessus, qui reste cachée sur une tuile de fusion).")]
+    public Image fusionIcon;
+    public Image sourceIconTop;
+    public Image sourceIconBottom;
+    public Image fusionDivider;
+    [Tooltip("Petit \"+\" entre les 2 icônes sources, pour montrer que la fusion combine ces 2 armes.")]
+    public TextMeshProUGUI fusionPlusText;
+
     [Header("Nom")]
     public TextMeshProUGUI nameText;
 

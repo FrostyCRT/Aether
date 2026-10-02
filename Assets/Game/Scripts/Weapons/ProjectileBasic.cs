@@ -27,6 +27,15 @@ public class ProjectileBasic : MonoBehaviour
     private float _burnDamagePerSecond = 0f;
     private float _burnDuration = 0f;
 
+    // AJOUTE (2026-09-27) - Ricochet (fusion "Lames Ricochet" : Couteaux + Orbe rebondissant). Une fois le budget de
+    // perforation épuisé, le projectile se redirige vers l'ennemi non touché le plus proche au lieu de disparaître,
+    // jusqu'à épuiser son nombre de rebonds. Générique : n'importe quel ProjectileBasic peut en profiter.
+    private bool _hasRicochet = false;
+    private int _ricochetsLeft = 0;
+    private float _ricochetRange = 10f;
+    private readonly System.Collections.Generic.List<int> _hitInstanceIds = new System.Collections.Generic.List<int>(4);
+    private static readonly Collider[] _ricochetBuffer = new Collider[32];
+
     private void Awake()
     {
         _maxRangeSqr = _maxRange * _maxRange;
@@ -45,6 +54,17 @@ public class ProjectileBasic : MonoBehaviour
         // si l'objet vient d'etre recycle depuis le pool.
         _burnDamagePerSecond = 0f;
         _burnDuration = 0f;
+        _hasRicochet = false;
+        _ricochetsLeft = 0;
+        _hitInstanceIds.Clear();
+    }
+
+    // AJOUTE - Ricochet (voir plus haut). bounceCount = nombre de rebonds APRÈS la perforation initiale.
+    public void SetRicochet(int bounceCount, float range)
+    {
+        _hasRicochet = bounceCount > 0;
+        _ricochetsLeft = bounceCount;
+        _ricochetRange = range;
     }
 
     public void SetFragmentation(float chance, float damage, float radius)
@@ -80,6 +100,7 @@ public class ProjectileBasic : MonoBehaviour
         if (!other.CompareTag("Enemy")) return;
         ApplyDamage(other, _damage, DamageNumberSpawner.ColorProjectile, false);
         ApplyBurnIfNeeded(other);
+        _hitInstanceIds.Add(other.GetInstanceID());
 
         if (_fragmentChance > 0f && Random.value < _fragmentChance)
         {
@@ -107,7 +128,43 @@ public class ProjectileBasic : MonoBehaviour
             if (_currentPierceHits < _maxPierceCount)
                 return;
         }
+
+        if (_hasRicochet && _ricochetsLeft > 0 && TryRicochet())
+            return;
+
         ReturnToPool();
+    }
+
+    // Cherche l'ennemi le plus proche PAS ENCORE TOUCHÉ dans _ricochetRange et redirige le projectile vers lui.
+    // Renvoie false (et laisse ReturnToPool faire son travail) si aucune cible n'est trouvée.
+    private bool TryRicochet()
+    {
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _ricochetRange, _ricochetBuffer);
+        Transform nearest = null;
+        float minDistSqr = _ricochetRange * _ricochetRange;
+        for (int i = 0; i < count; i++)
+        {
+            Collider hit = _ricochetBuffer[i];
+            if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (_hitInstanceIds.Contains(hit.GetInstanceID())) continue;
+            float distSqr = (hit.transform.position - transform.position).sqrMagnitude;
+            if (distSqr < minDistSqr)
+            {
+                minDistSqr = distSqr;
+                nearest = hit.transform;
+            }
+        }
+        if (nearest == null) return false;
+
+        Vector3 dir = nearest.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return false;
+
+        _direction = dir.normalized;
+        _ricochetsLeft--;
+        _currentPierceHits = 0;              // budget de perforation renouvelé après chaque rebond
+        _startPosition = transform.position;  // la portée max repart de ce point, pas de repartir à vide
+        return true;
     }
 
     // AJOUTE - applique la Brulure sur une cible touchee (directe ou via l'explosion),

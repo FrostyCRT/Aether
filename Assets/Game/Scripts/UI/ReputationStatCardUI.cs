@@ -71,6 +71,7 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
         _hover = false; _hoverT = 0f;
         if (_body != null) _body.localScale = Vector3.one;
         _shownLevel = -1;          // pas de "pop" au premier affichage
+        ResetFx();
     }
 
     public void OnPointerEnter(PointerEventData e) => _hover = true;
@@ -180,7 +181,27 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
     private void StartFx(int pipIndex)
     {
         if (_fx != null) StopCoroutine(_fx);
+        // CORRIGE (2026-09-26) - en spammant l'achat, l'animation précédente était coupée en plein « pop » : son palier
+        // restait agrandi pour toujours (les barres se collaient en un seul bloc). On remet TOUT à l'état normal avant
+        // de relancer l'animation.
+        ResetFx();
         _fx = StartCoroutine(UpgradeFx(pipIndex));
+    }
+
+    private void ResetFx()
+    {
+        if (_pips != null)
+            foreach (Image pip in _pips)
+                if (pip != null) pip.rectTransform.localScale = Vector3.one;
+        if (_value != null) _value.rectTransform.localScale = Vector3.one;
+        if (_flash != null) _flash.color = new Color(1f, 1f, 1f, 0f);
+    }
+
+    private void OnDisable()
+    {
+        // La page peut être fermée en plein « pop » (les coroutines s'arrêtent avec l'objet) : rien ne doit rester agrandi.
+        if (_fx != null) { StopCoroutine(_fx); _fx = null; }
+        ResetFx();
     }
 
     private IEnumerator UpgradeFx(int pipIndex)

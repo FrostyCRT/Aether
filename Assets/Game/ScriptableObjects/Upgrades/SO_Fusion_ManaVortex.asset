@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1428e6999d2a31348a9800bb7957652e, type: 3}
+  m_Name: SO_Fusion_ManaVortex
+  m_EditorClassIdentifier: 
+  upgradeName: Vortex de Mana
+  description: "FUSION \u2014 Aura + Orbitaux : un tourbillon d'\xE9clats de mana,
+    bien plus large et bien plus puissant, tourne d\xE9sormais autour de toi."
+  icon: {fileID: 21300000, guid: fff06a5bf0db4154496a4f184d56bff8, type: 3}
+  upgradeType: 11
+  value: 0
+  _fusionSource1: 5
+  _fusionSource2: 7
+  _fusionResultId: ManaVortex
+  _fusionBranch: 1
+  _levelValues:
+  - 0
+  - 0
+  - 0
+  _maxLevel: 1
+  _requiresUnlockPick: 0

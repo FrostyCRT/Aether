@@ -127,17 +127,17 @@ public class BossDeer : BossBase
     {
         if (_jumpState != JumpState.None) return;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+        float distanceToPlayer = Vector3.Distance(transform.position, AimTarget.position);
 
         if (distanceToPlayer <= _biteRange)
         {
             _isBiting = true;
-            RotateTowards(_playerTransform.position - transform.position);
+            RotateTowards(AimTarget.position - transform.position);
             return;
         }
         _isBiting = false;
 
-        Vector3 direction = (_playerTransform.position - transform.position).normalized;
+        Vector3 direction = (AimTarget.position - transform.position).normalized;
         float speed = _moveSpeed * (_isPhase2 ? _phase2SpeedMultiplier : 1f) * _speedMultiplier;
         Vector3 nextPosition = transform.position + direction * speed * Time.deltaTime;
         transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
@@ -146,7 +146,7 @@ public class BossDeer : BossBase
 
     private bool IsInForbiddenJumpZone()
     {
-        Vector3 toDeer = transform.position - _playerTransform.position;
+        Vector3 toDeer = transform.position - AimTarget.position;
         toDeer.y = 0f;
         if (toDeer.sqrMagnitude < 0.01f) return false;
 
@@ -211,7 +211,7 @@ public class BossDeer : BossBase
         _jumpState = JumpState.WindingUp;
         _jumpStateTimer = 0f;
         _jumpTakeoffPosition = transform.position;
-        _jumpLandingPosition = MapBoundaryUtils.ClampToZone(_playerTransform.position);
+        _jumpLandingPosition = MapBoundaryUtils.ClampToZone(AimTarget.position);
 
         float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
         _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition, effectiveRadius);
@@ -233,7 +233,7 @@ public class BossDeer : BossBase
         {
             HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
             if (playerHealth != null)
-                playerHealth.TakeDamage(_jumpDamage);
+                playerHealth.TakeDamage(_jumpDamage * GameModes.EnemyDamageScale);
         }
 
         _jumpState = JumpState.None;
@@ -354,7 +354,7 @@ public class BossDeer : BossBase
         if (_deerAnimator == null) return;
 
         bool isJumping = _jumpState != JumpState.None;
-        bool isMoving = !isJumping && !_isBiting && (_playerTransform.position - transform.position).sqrMagnitude > 0.04f;
+        bool isMoving = !isJumping && !_isBiting && (AimTarget.position - transform.position).sqrMagnitude > 0.04f;
 
         _deerAnimator.SetBool("IsJumping", isJumping);
         _deerAnimator.SetBool("IsBiting", _isBiting);

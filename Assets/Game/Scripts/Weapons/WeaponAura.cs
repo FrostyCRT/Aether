@@ -171,7 +171,18 @@ public class WeaponAura : MonoBehaviour
             }
         }
     }
+    // AJOUTE (2026-09-27) - meme correctif que WeaponOrbital.OnDestroy() : AuraRingVisual est un GameObject créé à
+    // la main (new GameObject), jamais nettoyé par Unity quand ce composant est détruit (ex: fusion ManaVortex).
+    // Sans ça, l'anneau restait un enfant orphelin fixe du joueur pour le reste de la partie.
+    private void OnDestroy()
+    {
+        if (_auraRingRenderer != null) Destroy(_auraRingRenderer.gameObject);
+    }
+
     public void AddDamage(float value) => _damagePerSecond += _damagePerSecond * value;
+
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamagePerSecond => _damagePerSecond;
 
     // MODIFIE - redessine le visuel de zone a chaque fois que le rayon change.
     public void AddRadius(float value)

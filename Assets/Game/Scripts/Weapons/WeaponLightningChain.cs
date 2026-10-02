@@ -58,6 +58,11 @@ public class WeaponLightningChain : MonoBehaviour
         }
     }
 
+    // AJOUTE (2026-09-27, retour utilisateur) - couleur électrique jaune-blanc pâle, volontairement indépendante
+    // de la couleur de branche de l'upgrade (la foudre doit se reconnaître d'un coup d'œil, peu importe l'arme
+    // qui la déclenche - voir aussi LightningChainUtility, qui reprend la même teinte pour les fusions).
+    private static readonly Color _lightningVfxColor = new Color(1f, 0.95f, 0.55f);
+
     private IEnumerator ChainLightning(Transform firstTarget)
     {
         List<GameObject> hit = new List<GameObject>();
@@ -73,11 +78,15 @@ public class WeaponLightningChain : MonoBehaviour
             BossBase boss = current.GetComponent<BossBase>();
             if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
             hit.Add(current.gameObject);
-            Debug.DrawLine(
+            // MODIFIE (2026-09-27, retour utilisateur : "un effet... qu'on voit quand la foudre frappe, et
+            // qu'on voit le ricochet entre ennemis") - remplace le Debug.DrawLine (invisible hors Scene view de
+            // l'éditeur) par un vrai éclair visible en jeu (LightningBoltVFX) + un flash au point d'impact.
+            LightningBoltVFX.SpawnBolt(
                 i == 0 ? transform.position : hit[i - 1].transform.position,
                 current.position,
-                Color.yellow, 0.1f
+                _lightningVfxColor
             );
+            LightningBoltVFX.SpawnStrikeFlash(current.position, _lightningVfxColor);
             current = FindNextChainTarget(current.position, hit);
             yield return new WaitForSeconds(0.05f);
         }
@@ -124,4 +133,7 @@ public class WeaponLightningChain : MonoBehaviour
 
     public void AddDamage(float value) => _damage += _damage * value;
     public void AddFireRate(float value) => _fireRate += _fireRate * value;
+
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
+    public float CurrentDamage => _damage;
 }
