@@ -50,6 +50,50 @@ public class EnemyBase : MonoBehaviour
     private Color _spriteBaseColor = Color.white;
     private bool _spriteBaseColorCaptured = false;
 
+    // AJOUTÉ (2026-10-03) - flash de dégâts : jusqu'ici, un coup reçu n'avait AUCUN retour sur le modèle lui-même (seul
+    // le chiffre de DamageNumberSpawner signalait quoi que ce soit). Un bref pulse d'émission blanche donne du poids à
+    // CHAQUE tir, pas seulement au kill (déjà couvert par EnemyDeathFX). Sur le Renderer 3D (MeshRenderer/
+    // SkinnedMeshRenderer), via MaterialPropertyBlock - jamais de Material instancié, aucun risque de fuite mémoire
+    // avec le pooling. _suppressHitFlash : EnemyKaiju gère DÉJÀ sa propre émission (lueur de rage avant charge, voir
+    // UpdateGlow) sur le même Renderer - lui laisser la main plutôt que de risquer que les deux s'écrasent l'un
+    // l'autre selon l'ordre d'exécution dans la frame.
+    private const float HitFlashDuration = 0.12f;
+    private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
+    private Renderer _bodyRenderer;
+    private MaterialPropertyBlock _hitFlashPropBlock;
+    private float _hitFlashTimer;
+    protected virtual bool SuppressHitFlash => false;
+
+    // Pas de Renderer trouvé (configuration inattendue) : on ne retente pas à chaque coup, coûteux pour rien.
+    private bool _hitFlashUnavailable;
+
+    private void TriggerHitFlash()
+    {
+        if (SuppressHitFlash || _hitFlashUnavailable) return;
+        if (_bodyRenderer == null) _bodyRenderer = GetComponentInChildren<Renderer>();
+        if (_bodyRenderer == null) { _hitFlashUnavailable = true; return; }
+        _hitFlashTimer = HitFlashDuration;
+    }
+
+    private void UpdateHitFlash()
+    {
+        if (_hitFlashTimer <= 0f || _bodyRenderer == null) return;
+
+        _hitFlashTimer -= Time.deltaTime;
+        float t = Mathf.Clamp01(_hitFlashTimer / HitFlashDuration);
+
+        if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
+        _bodyRenderer.GetPropertyBlock(_hitFlashPropBlock);
+        _hitFlashPropBlock.SetColor(EmissionColorID, Color.white * (t * t * 2.2f));
+        _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+
+        if (_hitFlashTimer <= 0f)
+        {
+            _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
+            _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+        }
+    }
+
     public void SetHealthMultiplier(float multiplier)
     {
         _healthMultiplier = multiplier;
@@ -72,6 +116,17 @@ public class EnemyBase : MonoBehaviour
         _currentHealth = _maxHealth * _healthMultiplier;
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
+
+        // AJOUTÉ (2026-10-03) - un ennemi qui revient du pool en pleine capture du flash de dégâts (mort juste après
+        // un coup) ne doit pas repartir avec une émission blanche encore allumée sur sa prochaine vie.
+        if (_hitFlashTimer > 0f && _bodyRenderer != null)
+        {
+            if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
+            _bodyRenderer.GetPropertyBlock(_hitFlashPropBlock);
+            _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
+            _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+        }
+        _hitFlashTimer = 0f;
 
         if (_playerTransform == null)
         {
@@ -158,6 +213,10 @@ public class EnemyBase : MonoBehaviour
         UpdateBehaviour(_currentTarget);
 
         OnEnemyUpdate();
+
+        // Après OnEnemyUpdate() : si un ennemi (ex. EnemyKaiju) gère sa propre émission dans son hook, elle garde la
+        // main sur le Renderer. Ne s'exécute de toute façon jamais pour lui (SuppressHitFlash => true).
+        UpdateHitFlash();
     }
 
     protected virtual void OnEnemyUpdate() { }
@@ -282,6 +341,8 @@ public class EnemyBase : MonoBehaviour
 
         if (_currentHealth <= 0)
             Die(fromNova);
+        else
+            TriggerHitFlash(); // pas sur le coup fatal : EnemyDeathFX prend le relais tout de suite, le flash n'aurait pas le temps de se voir
     }
 
     // AJOUTE - point d'entree public de la Brulure, appele par ProjectileBasic quand

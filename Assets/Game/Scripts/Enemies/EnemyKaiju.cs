@@ -35,6 +35,11 @@ public class EnemyKaiju : EnemyBase
     private bool _comboAvailable = false;
     private float _comboTimer = 0f;
 
+    // AJOUTÉ (2026-10-03) - EnemyKaiju gère déjà sa propre émission (lueur de rage avant l'attaque, voir UpdateGlow
+    // ci-dessous) sur le même Renderer que le flash de dégâts générique d'EnemyBase : lui laisser la main plutôt que
+    // de risquer que les deux s'écrasent l'un l'autre selon l'ordre d'exécution dans la frame.
+    protected override bool SuppressHitFlash => true;
+
     // Même pattern que EnemyTank : override du hook, pas de 2e Update()
     protected override void OnEnemyUpdate()
     {
