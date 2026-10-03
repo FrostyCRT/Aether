@@ -21,6 +21,9 @@ public class HealthSystem : MonoBehaviour
 
     public bool IsInvincible => _isInvincible || _externalInvincibilitySources > 0;
     public float MaxHealth => _maxHealth;
+    // AJOUTÉ (2026-10-03) - même pattern que EnemyBase.CurrentHealth : utile pour tout outil de test/debug qui doit
+    // lire les PV du joueur sans réflexion (ex. le bot de playtest d'équilibrage, voir GameInput.DebugMoveOverride).
+    public float CurrentHealth => _currentHealth;
 
     private float _armorReduction = 0f;
     private float _regenPerSecond = 0f;

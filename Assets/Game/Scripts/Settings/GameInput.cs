@@ -14,6 +14,11 @@ public static class GameInput
 {
     private static bool _padAxesMissing;
 
+    // AJOUTÉ (2026-10-03) - même esprit que DebugCheats.cs (F6/F8) : permet à un script de test (ex. un "bot" de
+    // playtest automatisé pour juger l'équilibrage) de piloter le déplacement sans clavier, sans toucher à
+    // PlayerController. Ignoré par défaut (null) ; jamais actif en dehors de l'Éditeur/d'un build de développement.
+    public static Vector2? DebugMoveOverride = null;
+
     public static bool Held(GameAction action)
     {
         for (int s = 0; s < InputBindings.Slots; s++)
@@ -36,6 +41,9 @@ public static class GameInput
 
     public static Vector2 Move()
     {
+        if (DebugMoveOverride.HasValue && (Application.isEditor || Debug.isDebugBuild))
+            return DebugMoveOverride.Value;
+
         float x = (Held(GameAction.MoveRight) ? 1f : 0f) - (Held(GameAction.MoveLeft) ? 1f : 0f);
         float y = (Held(GameAction.MoveUp) ? 1f : 0f) - (Held(GameAction.MoveDown) ? 1f : 0f);
         Vector2 v = new Vector2(x, y);

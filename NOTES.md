@@ -1,7 +1,30 @@
 # Aether Storm Survivor — Notes de travail
 
 Deux listes vivantes tenues au fil des sessions. Mises à jour à chaque passe.
-Dernière mise à jour : 2026-10-03 (liste de priorités "polish" établie par l'assistant à la demande de l'utilisateur + mort des ennemis normaux animée, voir section tout en dessous).
+Dernière mise à jour : 2026-10-03 (premier passage d'équilibrage du mode Classique - analyse de code + playtest automatisé -, voir section tout en dessous).
+
+## Session 2026-10-03 (suite 2) — Premier passage d'équilibrage du Classique (analyse de code + playtest automatisé)
+
+Demande de l'utilisateur : juger l'équilibrage, l'ordre d'arrivée des ennemis, où ça s'ennuie / devient injuste. Deux méthodes combinées : lecture des données réelles de `EnemySpawner`/`GameModes` (fiable, indépendant de tout bot) + un bot de test autonome en Play pour une première donnée empirique (voir limites ci-dessous).
+
+### Courbe d'arrivée des ennemis (données de `Game.unity`, composant EnemySpawner)
+- **Cadence (`_phasesDeJeu`)** : 0 min (20 max/2/2s) → 1 min (45/4/1,5s) → 3 min (75/6/1,2s) → 5 min (120/9/1s, pic) → 9 min (105/6/1,5s, **accalmie volontaire avant le Boss 2**) → 12 min (160/13/0,6s, **chaos final avant le Boss 3**, ~21 ennemis/s en théorique).
+- **Variété (`_paliersEnnemis`)** : seulement 3 types (Enemy/Shooter/Tank, PV x1) de 0 à 4 min - **4 minutes pleines sans la moindre variété nouvelle**, seule la densité augmente (phases 01→03 couvrent cette période). Corbeau (volant) ajouté à 4 min (PV x1,5, 1 min avant le Boss 1 à 5 min) ; Tisseuse à 8 min (**PV x3, saut qui double le palier précédent** - net, à surveiller) ; Kaiju (10 % du tirage) à 12 min (PV x5).
+- Les ennemis normaux sont retirés avant chaque combat de boss (`WaveManager.SpawnBoss` → `ClearAllEnemies()` + spawner désactivé) : aucun chevauchement entre la phase de densité max et un combat de boss, confirmé par lecture de code.
+- Les dégâts de contact des ennemis normaux ne scalent PAS avec le temps en Classique (`GameModes.EnemyDamageScale` ne bouge qu'en Sans fin/Ruée) : toute la difficulté vient du NOMBRE d'ennemis, pas de leurs dégâts individuels - cohérent avec le genre, mais veut dire qu'être encerclé par plusieurs ennemis à la fois est TRÈS punitif (plusieurs `_contactDamage` de 150 cumulés, chacun son propre cooldown de 0,5 s).
+
+### Trouvaille la plus importante (vérifiée dans le code, pas supposée) : le ramassage de l'XP avant le niveau 3
+`XPGemSpawner.AttractionRadius` vaut **0 par défaut et ne passe à 4 qu'à partir du niveau 3** (`OnLevelUp`, `if (level >= 3)`). Avant ça, aucun magnétisme : une gemme ne se ramasse QUE si le joueur marche exactement dessus (`XPGem.OnTriggerEnter`), sans la moindre tolérance. Combiné au fait que les gemmes tombent pile où l'ennemi vient de mourir (souvent dans la zone que le joueur vient de fuir), ça peut freiner la progression des tout premiers niveaux pour un style de jeu prudent (kiter loin du danger plutôt que retraverser l'amas de cadavres pour ramasser). **Pas encore de recommandation chiffrée** - à confirmer en jouant une vraie run humaine en y prêtant attention, mais c'est un point concret à surveiller en priorité.
+
+### Playtest automatisé (bot en Play, voir limites)
+Outil ajouté : `GameInput.DebugMoveOverride` (`Vector2?` statique, ignoré hors Éditeur/build de dev) - permet à un script de piloter le déplacement sans clavier, même esprit que `DebugCheats.cs`. Gardé en place (réutilisable pour de futurs tests), aucun effet en jeu normal.
+- **1er bot (fuit le barycentre des ennemis proches)** : mort à 42 s. Trop simpliste (peut foncer vers un ennemi isolé en évitant le groupe) - pas représentatif, écarté.
+- **2ᵉ bot (fuit la somme pondérée par proximité, évite les bords de la zone)** : survit largement l'intro (220 s+ testés, 40 kills, toujours en vie) avec la SEULE arme de départ, sans jamais choisir une seule amélioration - **jamais passé niveau 2**, confirmant par l'expérience la trouvaille ci-dessus (un style 100 % fuite ne ramasse jamais rien). Les dégâts encaissés n'ont pas pu être mesurés cette fois (`HealthSystem` n'a pas de `CurrentHealth` public, contrairement à `EnemyBase` - ajouté nulle part encore, à faire si on rejoue un test de ce genre).
+- **Limite importante** : un bot de pure fuite est un cas extrême, pas un joueur réel (qui retraverse naturellement les zones de combat en se repositionnant). Les chiffres de survie sont un bon signal ("le combat de base encaisse bien tant qu'on esquive"), les chiffres de progression ne doivent PAS être pris au pied de la lettre.
+
+### Pour la suite
+- Vraie run humaine recommandée pour trancher le ressenti de rythme (variété manquante 0-4 min, ramassage d'XP, saut de PV x3 à la Tisseuse) - l'analyse de code donne la structure, pas le ressenti.
+- Si on rejoue un test automatisé : ajouter `HealthSystem.CurrentHealth` (public, même pattern que `EnemyBase`) et faire chercher les gemmes au bot quand aucune menace proche, pour une mesure de progression plus représentative.
 
 ## Liste de priorités "polish" (2026-10-03, à la demande de l'utilisateur : "tu dirais quoi en voyant l'état actuel du jeu ?")
 
