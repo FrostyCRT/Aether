@@ -423,9 +423,13 @@ public class WaveManager : MonoBehaviour
         }
 
         _bossAlive = false;
-        _enemySpawner.gameObject.SetActive(true);
+        // CORRIGÉ (2026-10-03) - trouvé en testant un boss tué très tôt après le chargement de la scène (avant que
+        // Start() n'ait eu l'occasion de peupler _enemySpawner) : NullReferenceException ici. Même garde défensive
+        // que les autres usages de _enemySpawner dans ce fichier (TitansStart, SetSpawnInterval...).
+        if (_enemySpawner == null) _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        if (_enemySpawner != null) _enemySpawner.gameObject.SetActive(true);
 
-        if (BossCameraZoom.Instance != null) BossCameraZoom.Instance.ResetZoom(); 
+        if (BossCameraZoom.Instance != null) BossCameraZoom.Instance.ResetZoom();
 
         GameModes.ClearRushBossDamage();
 

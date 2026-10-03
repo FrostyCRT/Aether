@@ -53,6 +53,10 @@ public class EnemyProjectile : MonoBehaviour
                     CrystalSystem crystal = other.GetComponent<CrystalSystem>();
                     if (crystal != null) crystal.AbsorbProjectile();
 
+                    // AJOUTÉ (2026-10-03) - absorption par le Dash/Cristal : jusqu'ici muette, comme tout impact de ce
+                    // projectile. Même bleu que le chiffre de dégâts "Projectile" (DamageNumberSpawner.ColorProjectile).
+                    ExpandingRingVFX.Spawn(transform.position, 0.9f, new Color(0f, 0.8f, 1f, 0.85f), 0.3f);
+
                     _hasHit = true;
                     Despawn();
                 }
@@ -65,6 +69,9 @@ public class EnemyProjectile : MonoBehaviour
             ManaShield shield = other.GetComponent<ManaShield>();
             if (shield != null && shield.TryAbsorb())
             {
+                // AJOUTÉ (2026-10-03) - absorption par le Bouclier de Mana : même vert que la bulle (#36D936).
+                ExpandingRingVFX.Spawn(transform.position, 0.9f, new Color(0.212f, 0.851f, 0.212f, 0.85f), 0.3f);
+
                 _hasHit = true;
                 Despawn();
                 return;
@@ -75,6 +82,11 @@ public class EnemyProjectile : MonoBehaviour
             if (health != null)
             {
                 health.TakeDamage(_damage * GameModes.EnemyDamageScale);
+
+                // AJOUTÉ (2026-10-03) - jusqu'ici le projectile disparaissait sans rien au moment même où il touche le
+                // joueur (seul le chiffre de dégâts, un peu après, signalait le coup). Même rouge que
+                // DamageNumberSpawner.ColorPlayer, pour que l'œil associe tout de suite éclat ↔ dégât subi.
+                ExpandingRingVFX.Spawn(transform.position, 0.7f, new Color(1f, 0.2f, 0.2f, 0.85f), 0.25f);
             }
 
             _hasHit = true;

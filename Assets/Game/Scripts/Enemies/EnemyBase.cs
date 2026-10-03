@@ -56,10 +56,12 @@ public class EnemyBase : MonoBehaviour
     // SkinnedMeshRenderer), via MaterialPropertyBlock - jamais de Material instancié, aucun risque de fuite mémoire
     // avec le pooling. _suppressHitFlash : EnemyKaiju gère DÉJÀ sa propre émission (lueur de rage avant charge, voir
     // UpdateGlow) sur le même Renderer - lui laisser la main plutôt que de risquer que les deux s'écrasent l'un
-    // l'autre selon l'ordre d'exécution dans la frame.
+    // l'autre selon l'ordre d'exécution dans la frame. Nom _hitFlashRenderer (pas _bodyRenderer) : EnemyKaiju a DÉJÀ
+    // un champ sérialisé "_bodyRenderer" - Unity refuse deux champs du même nom entre classe de base et dérivée
+    // ("field serialized multiple times"), même quand l'un des deux n'est pas [SerializeField].
     private const float HitFlashDuration = 0.12f;
     private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
-    private Renderer _bodyRenderer;
+    private Renderer _hitFlashRenderer;
     private MaterialPropertyBlock _hitFlashPropBlock;
     private float _hitFlashTimer;
     protected virtual bool SuppressHitFlash => false;
@@ -70,27 +72,27 @@ public class EnemyBase : MonoBehaviour
     private void TriggerHitFlash()
     {
         if (SuppressHitFlash || _hitFlashUnavailable) return;
-        if (_bodyRenderer == null) _bodyRenderer = GetComponentInChildren<Renderer>();
-        if (_bodyRenderer == null) { _hitFlashUnavailable = true; return; }
+        if (_hitFlashRenderer == null) _hitFlashRenderer = GetComponentInChildren<Renderer>();
+        if (_hitFlashRenderer == null) { _hitFlashUnavailable = true; return; }
         _hitFlashTimer = HitFlashDuration;
     }
 
     private void UpdateHitFlash()
     {
-        if (_hitFlashTimer <= 0f || _bodyRenderer == null) return;
+        if (_hitFlashTimer <= 0f || _hitFlashRenderer == null) return;
 
         _hitFlashTimer -= Time.deltaTime;
         float t = Mathf.Clamp01(_hitFlashTimer / HitFlashDuration);
 
         if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
-        _bodyRenderer.GetPropertyBlock(_hitFlashPropBlock);
+        _hitFlashRenderer.GetPropertyBlock(_hitFlashPropBlock);
         _hitFlashPropBlock.SetColor(EmissionColorID, Color.white * (t * t * 2.2f));
-        _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+        _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
 
         if (_hitFlashTimer <= 0f)
         {
             _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
-            _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+            _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
         }
     }
 
@@ -119,12 +121,12 @@ public class EnemyBase : MonoBehaviour
 
         // AJOUTÉ (2026-10-03) - un ennemi qui revient du pool en pleine capture du flash de dégâts (mort juste après
         // un coup) ne doit pas repartir avec une émission blanche encore allumée sur sa prochaine vie.
-        if (_hitFlashTimer > 0f && _bodyRenderer != null)
+        if (_hitFlashTimer > 0f && _hitFlashRenderer != null)
         {
             if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
-            _bodyRenderer.GetPropertyBlock(_hitFlashPropBlock);
+            _hitFlashRenderer.GetPropertyBlock(_hitFlashPropBlock);
             _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
-            _bodyRenderer.SetPropertyBlock(_hitFlashPropBlock);
+            _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
         }
         _hitFlashTimer = 0f;
 
