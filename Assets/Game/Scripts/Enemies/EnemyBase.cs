@@ -359,8 +359,20 @@ public class EnemyBase : MonoBehaviour
             _spriteRenderer.color = _spriteBaseColor;
     }
 
+    // AJOUTÉ (2026-10-03) - couleur par défaut du pop de mort (EnemyDeathFX) quand l'ennemi n'a pas de SpriteRenderer
+    // coloré à reprendre (la plupart des ennemis sont des modèles 3D, pas des sprites) : blanc chaud neutre, cohérent
+    // avec la teinte "_hot" (Color.Lerp vers le blanc) déjà utilisée par BossFX/GroundTelegraphFX pour les éclats.
+    private static readonly Color DefaultDeathFxColor = new Color(1f, 0.92f, 0.78f);
+
     private void Die(bool fromNova = false)
     {
+        // AJOUTÉ (2026-10-03) - retour visuel à la mort : jusqu'ici instantané et muet (ReturnToPool direct), alors
+        // que c'est l'événement le plus fréquent de toute la partie. Couleur reprise du sprite si l'ennemi en a un
+        // (CacheSpriteRenderer, déjà utilisé par la Brûlure), sinon un blanc chaud neutre.
+        CacheSpriteRenderer();
+        Color fxColor = _spriteBaseColorCaptured ? _spriteBaseColor : DefaultDeathFxColor;
+        EnemyDeathFX.Play(transform.position + Vector3.up * 0.5f, fxColor);
+
         if (XPGemSpawner.Instance != null)
             XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
 

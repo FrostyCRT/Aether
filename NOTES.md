@@ -1,7 +1,21 @@
 # Aether Storm Survivor — Notes de travail
 
 Deux listes vivantes tenues au fil des sessions. Mises à jour à chaque passe.
-Dernière mise à jour : 2026-10-03 (bug d'affichage du couloir de charge corrigé à la racine, voir section tout en dessous).
+Dernière mise à jour : 2026-10-03 (liste de priorités "polish" établie par l'assistant à la demande de l'utilisateur + mort des ennemis normaux animée, voir section tout en dessous).
+
+## Liste de priorités "polish" (2026-10-03, à la demande de l'utilisateur : "tu dirais quoi en voyant l'état actuel du jeu ?")
+
+Établie après audit du code (pas seulement des retours utilisateur) : recherche de tout ce qui reste "muet" (`Destroy`/`ReturnToPool` instantané sans le moindre retour visuel) dans tout ce qui n'attend pas un modèle Tripo. Le jeu est un horde-survivor : les moments les PLUS FRÉQUENTS (donc les plus rentables à soigner) passent avant les moments rares mais déjà traités (arrivée/mort de boss, invocation, level-up, écrans de fin - tous déjà faits et bons).
+
+1. **[FAIT] Mort des ennemis normaux (`EnemyBase.Die`)** — zéro retour visuel jusqu'ici (le plus fréquent événement de toute la partie, des centaines de fois par run) alors que la mort des boss est déjà spectaculaire. `EnemyDeathFX.cs` : flash + 5 éclats, ~0,32 s, volontairement très léger (testé à 15 morts simultanées sans souci). Touche tous les ennemis normaux (Loup/Gobelin/Golem/Corbeau/Araignée/Kaiju) automatiquement, aucun n'a de `Die()` dédié.
+2. **Flash d'impact à chaque coup reçu par un ennemi normal (pas seulement à la mort).** Aujourd'hui seul le chiffre de dégâts (`DamageNumberSpawner`) signale un coup — aucune réaction sur le modèle lui-même. Donnerait du poids à chaque tir, pas seulement au kill. Nécessite de vérifier le shader/l'émission de chacun des 6 modèles d'ennemis normaux (Loup/Gobelin/Golem/Corbeau/Araignée/Kaiju) avant de généraliser - pas encore fait.
+3. **Impact des projectiles ennemis (`EnemyProjectile`) sur le joueur/bouclier/absorption.** Disparaît aujourd'hui sans rien, même quand le Bouclier de Mana ou le Cristal absorbent le tir (moment qui mériterait un petit éclat pour confirmer l'absorption au joueur).
+4. **Rejouer un combat complet contre chacun des 3 boss** pour confirmer qu'aucun autre angle de caméra/timing ne fait réapparaître un défaut proche de celui corrigé ce jour (voir section juste en dessous) - vérifié seulement en spawn isolé jusqu'ici, pas en combat réel.
+5. Pistes plus mineures, pas urgentes : un éclat dédié au moment où une carte de FUSION est choisie au level-up (aujourd'hui même traitement qu'une carte normale) ; `WeaponAOE.cs` signalé orphelin dans une session précédente, à vérifier.
+
+## Session 2026-10-03 (suite) — Mort des ennemis normaux : `EnemyDeathFX`
+
+Voir point 1 de la liste ci-dessus pour le contexte. Fichier `Music & VFX/EnemyDeathFX.cs`, appelé depuis `EnemyBase.Die()` juste avant `ReturnToPool`. Couleur reprise de `_spriteBaseColor` (déjà captée par `CacheSpriteRenderer`, utilisée par la Brûlure) si l'ennemi a un `SpriteRenderer`, sinon un blanc chaud neutre par défaut (la plupart des ennemis sont des modèles 3D sans `SpriteRenderer`). Vérifié en Play à 15 morts simultanées (ralenti extrême `Time.timeScale = 0.02` pour avoir le temps d'inspecter l'état des sprites entre deux appels) : couleur et positions des éclats corrects, aucune erreur console.
 
 Voir aussi `SCRIPTS_INDEX.md` (nouveau, 2026-09-30) : table de référence de TOUS les scripts du projet avec leur rôle en une ligne - à consulter en premier pour se repérer avant de chercher dans ces notes.
 
