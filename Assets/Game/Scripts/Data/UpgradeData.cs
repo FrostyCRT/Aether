@@ -377,7 +377,6 @@ public class UpgradeData : ScriptableObject
         PlayerController player = playerGO.GetComponent<PlayerController>();
         WeaponBase weapon = playerGO.GetComponent<WeaponBase>();
         HealthSystem health = playerGO.GetComponent<HealthSystem>();
-        WeaponAOE aoe = playerGO.GetComponent<WeaponAOE>();
 
         switch (upgradeType)
         {
@@ -630,7 +629,6 @@ public class UpgradeData : ScriptableObject
                     if (twinOrbs != null) twinOrbs.AddDamage(value);
 
                     if (weapon != null) weapon.AddDamage(value);
-                    if (aoe != null) aoe.AddDamage(value);
                     break;
                 }
 
@@ -651,7 +649,6 @@ public class UpgradeData : ScriptableObject
                     if (lightningWeapon != null) lightningWeapon.AddFireRate(value);
 
                     if (weapon != null) weapon.AddFireRate(value);
-                    if (aoe != null) aoe.AddFireRate(value);
                     break;
                 }
 
