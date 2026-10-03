@@ -1,18 +1,35 @@
 using UnityEngine;
 
-// Bibliothèque partagée des effets visuels de combat (BossFX, GroundTelegraphFX, ChargeLaneFX) : sprites générés par
-// le code (aucune image à importer), matériau commun, courbes d'animation et pose à plat sur le sol.
+// Bibliothï¿½que partagï¿½e des effets visuels de combat (BossFX, GroundTelegraphFX, ChargeLaneFX) : sprites gï¿½nï¿½rï¿½s par
+// le code (aucune image ï¿½ importer), matï¿½riau commun, courbes d'animation et pose ï¿½ plat sur le sol.
 // Tous les sprites sont BLANCS : la couleur vient du SpriteRenderer (SpriteRenderer.color).
 public static class FXSprites
 {
-    private static Material _mat;
+    // CORRIGE (2026-10-03) - retour utilisateur : le couloir de charge (et les autres effets de cette bibliotheque)
+    // affichait des blocs rectangulaires nets a la place des chevrons/anneaux. Cause trouvee par test empirique :
+    // TOUS les sprites proceduraux (carre, chevron, anneau...) partageaient UN SEUL Material. Quand plusieurs
+    // SpriteRenderer utilisant des sprites DIFFERENTS (ex. Square pour Base/Fill et Chevron pour les chevrons) mais le
+    // MEME Material se superposent, le moteur en affiche certains avec la forme/texture d'un AUTRE (le chevron prenait
+    // l'aspect plein du carre) - confirme en isolant : seul(e) le chevron rendait juste ; des que Base (Square) etait
+    // present a cote avec le meme Material, le chevron redevenait un bloc plein, meme decale de 1 unite en Y (donc pas
+    // un probleme de Z-fighting). Un Material DEDIE par chevron supprimait le bug net. Desormais : un Material par
+    // SPRITE DISTINCT (mis en cache), partage seulement entre renderers qui affichent le MEME sprite (ex. les 6
+    // chevrons entre eux, ou les ~140 etincelles de BossFX entre elles) - sans danger, deja le cas avant et jamais
+    // fautif dans les tests. Impact perf negligeable (une poignee de Material par effet, effets courts/transitoires).
+    private static readonly System.Collections.Generic.Dictionary<Sprite, Material> _matBySprite = new System.Collections.Generic.Dictionary<Sprite, Material>();
+
     private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar;
 
-    // Même matériau que le télégraphe de charge historique de BossBase (Sprites/Default) : fonctionne en 3D, sans éclairage.
-    public static Material SpriteMaterial()
+    // Un Material par sprite (voir commentaire ci-dessus) : jamais partage entre deux sprites DIFFERENTS.
+    public static Material SpriteMaterial(Sprite sprite)
     {
-        if (_mat == null) _mat = new Material(Shader.Find("Sprites/Default"));
-        return _mat;
+        if (sprite == null) return new Material(Shader.Find("Sprites/Default"));
+        if (!_matBySprite.TryGetValue(sprite, out Material m) || m == null)
+        {
+            m = new Material(Shader.Find("Sprites/Default"));
+            _matBySprite[sprite] = m;
+        }
+        return m;
     }
 
     // ------------------------------------------------------------------
@@ -43,7 +60,7 @@ public static class FXSprites
         return 1f - u * u;
     }
 
-    // Rebond léger : dépasse un peu la valeur finale puis revient.
+    // Rebond lï¿½ger : dï¿½passe un peu la valeur finale puis revient.
     public static float EaseOutBack(float t, float c1 = 1.5f)
     {
         float c3 = c1 + 1f;
@@ -52,7 +69,7 @@ public static class FXSprites
     }
 
     // ------------------------------------------------------------------
-    // Création / pose
+    // Crï¿½ation / pose
     // ------------------------------------------------------------------
 
     public static SpriteRenderer MakeRenderer(Transform parent, string objName, Sprite sprite, int sortingOrder, float localY)
@@ -63,7 +80,7 @@ public static class FXSprites
 
         SpriteRenderer sr = g.AddComponent<SpriteRenderer>();
         sr.sprite = sprite;
-        sr.sharedMaterial = SpriteMaterial();
+        sr.sharedMaterial = SpriteMaterial(sprite);
         sr.sortingOrder = sortingOrder;
         sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         sr.receiveShadows = false;
@@ -71,7 +88,7 @@ public static class FXSprites
         return sr;
     }
 
-    // Pose le sprite À PLAT sur le sol, à un diamètre monde donné, tourné de angleDeg autour de la verticale.
+    // Pose le sprite ï¿½ PLAT sur le sol, ï¿½ un diamï¿½tre monde donnï¿½, tournï¿½ de angleDeg autour de la verticale.
     public static void SetFlat(SpriteRenderer sr, float diameter, float angleDeg)
     {
         float s = diameter / Mathf.Max(0.01f, sr.sprite.bounds.size.x);
@@ -80,7 +97,7 @@ public static class FXSprites
     }
 
     // ------------------------------------------------------------------
-    // Sprites procéduraux
+    // Sprites procï¿½duraux
     // ------------------------------------------------------------------
 
     private static Texture2D NewTexture(int w, int h, FilterMode filter)
@@ -98,7 +115,7 @@ public static class FXSprites
         return Smooth((r - lo) / 0.01f) * Smooth((hi - r) / 0.01f);
     }
 
-    // Disque doux (halo, éclat, étincelles).
+    // Disque doux (halo, ï¿½clat, ï¿½tincelles).
     public static Sprite Glow()
     {
         if (_glow != null) return _glow;
@@ -122,7 +139,7 @@ public static class FXSprites
         return _glow;
     }
 
-    // Disque plein, bord légèrement adouci (remplissage des zones de danger).
+    // Disque plein, bord lï¿½gï¿½rement adouci (remplissage des zones de danger).
     public static Sprite Disc()
     {
         if (_disc != null) return _disc;
@@ -144,8 +161,8 @@ public static class FXSprites
         return _disc;
     }
 
-    // Anneau fin dont le trait est centré à 94 % du rayon du sprite (donc pour que le trait tombe à R, utiliser un
-    // diamètre de 2R / 0,94), avec un léger dégradé vers l'intérieur.
+    // Anneau fin dont le trait est centrï¿½ ï¿½ 94 % du rayon du sprite (donc pour que le trait tombe ï¿½ R, utiliser un
+    // diamï¿½tre de 2R / 0,94), avec un lï¿½ger dï¿½gradï¿½ vers l'intï¿½rieur.
     public static Sprite ThinRing()
     {
         if (_thinRing != null) return _thinRing;
@@ -206,7 +223,7 @@ public static class FXSprites
         return _tickRing;
     }
 
-    // Carré blanc de 1 x 1 unité exactement (bandes de la zone de charge : on le met à l'échelle largeur x longueur).
+    // Carrï¿½ blanc de 1 x 1 unitï¿½ exactement (bandes de la zone de charge : on le met ï¿½ l'ï¿½chelle largeur x longueur).
     public static Sprite Square()
     {
         if (_square != null) return _square;
@@ -220,7 +237,7 @@ public static class FXSprites
         return _square;
     }
 
-    // Chevron "^" de 1 x 1 unité, pointe vers le haut du sprite (donc vers l'avant une fois posé à plat et orienté).
+    // Chevron "^" de 1 x 1 unitï¿½, pointe vers le haut du sprite (donc vers l'avant une fois posï¿½ ï¿½ plat et orientï¿½).
     public static Sprite Chevron()
     {
         if (_chevron != null) return _chevron;
@@ -245,7 +262,7 @@ public static class FXSprites
         return _chevron;
     }
 
-    // Pilier de lumière : bords doux, s'estompe vers le haut, pivot en bas.
+    // Pilier de lumiï¿½re : bords doux, s'estompe vers le haut, pivot en bas.
     public static Sprite Pillar()
     {
         if (_pillar != null) return _pillar;

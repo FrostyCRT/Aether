@@ -1,17 +1,17 @@
 using UnityEngine;
 
 // Effet visuel d'invocation du mini-boss de La Source Corrompue (boss 3). Remplace l'ancien cercle violet simple
-// (_riftPortalPrefab) : tout est construit en code, aucun prefab à poser. Seule l'image du cercle runique est
-// optionnelle (sinon un cercle procédural est généré).
+// (_riftPortalPrefab) : tout est construit en code, aucun prefab ï¿½ poser. Seule l'image du cercle runique est
+// optionnelle (sinon un cercle procï¿½dural est gï¿½nï¿½rï¿½).
 //
-// Déroulé sur `duration` secondes (le windup de l'invocation) :
-//   - le cercle runique GRANDIT d'un coup (0,45 s, léger rebond), avec un halo violet qui respire en dessous ;
-//   - le grand cercle et un cercle intérieur tournent en sens inverses, de plus en plus vite ;
-//   - des étincelles montent depuis toute la zone, de plus en plus nombreuses ;
-//   - dans le dernier tiers, un anneau SE RESSERRE vers le centre (le "ça va arriver") ;
-//   - dans la 2e moitié, un pilier de lumière monte du centre ;
-//   - Burst() (appelé par le boss au moment exact de l'apparition) : éclat blanc-violet, onde de choc
-//     (ExpandingRingVFX), explosion d'étincelles, fondu de tout puis auto-destruction.
+// Dï¿½roulï¿½ sur `duration` secondes (le windup de l'invocation) :
+//   - le cercle runique GRANDIT d'un coup (0,45 s, lï¿½ger rebond), avec un halo violet qui respire en dessous ;
+//   - le grand cercle et un cercle intï¿½rieur tournent en sens inverses, de plus en plus vite ;
+//   - des ï¿½tincelles montent depuis toute la zone, de plus en plus nombreuses ;
+//   - dans le dernier tiers, un anneau SE RESSERRE vers le centre (le "ï¿½a va arriver") ;
+//   - dans la 2e moitiï¿½, un pilier de lumiï¿½re monte du centre ;
+//   - Burst() (appelï¿½ par le boss au moment exact de l'apparition) : ï¿½clat blanc-violet, onde de choc
+//     (ExpandingRingVFX), explosion d'ï¿½tincelles, fondu de tout puis auto-destruction.
 // Le temps utilise Time.deltaTime : tout se fige tout seul en pause.
 public class SummonPortalFX : MonoBehaviour
 {
@@ -51,10 +51,10 @@ public class SummonPortalFX : MonoBehaviour
     private Transform _cam;
 
     // ------------------------------------------------------------------
-    // Création
+    // Crï¿½ation
     // ------------------------------------------------------------------
 
-    // position : centre de la zone (le Y est forcé au sol). runeSprite : image du cercle runique (optionnelle).
+    // position : centre de la zone (le Y est forcï¿½ au sol). runeSprite : image du cercle runique (optionnelle).
     public static SummonPortalFX Spawn(Vector3 position, float radius, float duration, Sprite runeSprite, Color color)
     {
         GameObject go = new GameObject("SummonPortalFX");
@@ -96,7 +96,7 @@ public class SummonPortalFX : MonoBehaviour
             _motes[i] = m;
         }
 
-        // Etat de départ : tout invisible/minuscule avant le premier rendu.
+        // Etat de dï¿½part : tout invisible/minuscule avant le premier rendu.
         SetFlat(_glow, 0.05f, 0f);
         SetFlat(_outer, 0.05f, 0f);
         SetFlat(_inner, 0.05f, 0f);
@@ -110,7 +110,7 @@ public class SummonPortalFX : MonoBehaviour
 
         SpriteRenderer sr = g.AddComponent<SpriteRenderer>();
         sr.sprite = sprite;
-        sr.sharedMaterial = SpriteMaterial();
+        sr.sharedMaterial = SpriteMaterial(sprite);
         sr.sortingOrder = order;
         sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         sr.receiveShadows = false;
@@ -162,7 +162,7 @@ public class SummonPortalFX : MonoBehaviour
             _converge.color = A(_hot, Mathf.Sin(cp * Mathf.PI) * 0.9f);
         }
 
-        // Pilier de lumière dans la 2e moitié.
+        // Pilier de lumiï¿½re dans la 2e moitiï¿½.
         float pp = Mathf.Clamp01((p - 0.5f) / 0.5f);
         if (pp > 0f && _cam != null)
         {
@@ -175,7 +175,7 @@ public class SummonPortalFX : MonoBehaviour
         UpdateMotes(dt, p, true);
     }
 
-    // Appelé par le boss au moment exact où le mini-boss apparaît.
+    // Appelï¿½ par le boss au moment exact oï¿½ le mini-boss apparaï¿½t.
     public void Burst()
     {
         if (_bursting) return;
@@ -187,7 +187,7 @@ public class SummonPortalFX : MonoBehaviour
 
         ExpandingRingVFX.Spawn(transform.position + Vector3.up * 0.15f, _radius * 1.7f, A(_bright, 0.8f), 0.45f);
 
-        // Explosion d'étincelles : toutes les particules sont relancées, plus rapides et plus courtes.
+        // Explosion d'ï¿½tincelles : toutes les particules sont relancï¿½es, plus rapides et plus courtes.
         for (int i = 0; i < _motes.Length; i++)
             SpawnMote(_motes[i], 1f, true);
     }
@@ -223,7 +223,7 @@ public class SummonPortalFX : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Étincelles
+    // ï¿½tincelles
     // ------------------------------------------------------------------
 
     private void UpdateMotes(float dt, float p, bool spawning)
@@ -282,7 +282,7 @@ public class SummonPortalFX : MonoBehaviour
     // Utilitaires de mise en forme
     // ------------------------------------------------------------------
 
-    // Pose le sprite À PLAT sur le sol, à un diamètre monde donné, tourné de angleDeg autour de la verticale.
+    // Pose le sprite ï¿½ PLAT sur le sol, ï¿½ un diamï¿½tre monde donnï¿½, tournï¿½ de angleDeg autour de la verticale.
     private static void SetFlat(SpriteRenderer sr, float diameter, float angleDeg)
     {
         float s = diameter / Mathf.Max(0.01f, sr.sprite.bounds.size.x);
@@ -309,7 +309,7 @@ public class SummonPortalFX : MonoBehaviour
         return t * t * (3f - 2f * t);
     }
 
-    // Rebond léger : dépasse un peu la valeur finale puis revient.
+    // Rebond lï¿½ger : dï¿½passe un peu la valeur finale puis revient.
     private static float EaseOutBack(float t)
     {
         const float c1 = 1.5f;
@@ -319,18 +319,26 @@ public class SummonPortalFX : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Matériau + sprites procéduraux (générés une seule fois, aucun asset à importer)
+    // Matï¿½riau + sprites procï¿½duraux (gï¿½nï¿½rï¿½s une seule fois, aucun asset ï¿½ importer)
     // ------------------------------------------------------------------
 
-    private static Material _spriteMat;
-    private static Material SpriteMaterial()
+    // CORRIGE (2026-10-03) - mÃªme bug que FXSprites (voir son commentaire) : un Material partagÃ© entre sprites
+    // DIFFÃ‰RENTS (ici Glow/Ring/Pillar) fait parfois apparaÃ®tre l'un Ã  la place d'un autre (bloc plein au lieu de la
+    // forme attendue). Un Material par sprite distinct, mis en cache, jamais partagÃ© entre deux sprites diffÃ©rents.
+    private static readonly System.Collections.Generic.Dictionary<Sprite, Material> _matBySprite = new System.Collections.Generic.Dictionary<Sprite, Material>();
+    private static Material SpriteMaterial(Sprite sprite)
     {
-        if (_spriteMat == null) _spriteMat = new Material(Shader.Find("Sprites/Default"));
-        return _spriteMat;
+        if (sprite == null) return new Material(Shader.Find("Sprites/Default"));
+        if (!_matBySprite.TryGetValue(sprite, out Material m) || m == null)
+        {
+            m = new Material(Shader.Find("Sprites/Default"));
+            _matBySprite[sprite] = m;
+        }
+        return m;
     }
 
     // Anneaux fins + graduations (cercle de repli si aucune image de cercle runique n'est fournie ; sert aussi de
-    // cercle intérieur et d'anneau qui se resserre). Blanc : la couleur vient du SpriteRenderer.
+    // cercle intï¿½rieur et d'anneau qui se resserre). Blanc : la couleur vient du SpriteRenderer.
     private static Sprite _ringSprite;
     private static Sprite RingSprite()
     {
@@ -348,21 +356,21 @@ public class SummonPortalFX : MonoBehaviour
                 float ang = Mathf.Atan2(py, px);
 
                 float a = 0f;
-                a = Mathf.Max(a, Band(r, 0.93f, 0.030f));   // anneau extérieur épais
+                a = Mathf.Max(a, Band(r, 0.93f, 0.030f));   // anneau extï¿½rieur ï¿½pais
                 a = Mathf.Max(a, Band(r, 0.84f, 0.010f));   // anneau fin
-                a = Mathf.Max(a, Band(r, 0.62f, 0.012f));   // anneau intérieur
+                a = Mathf.Max(a, Band(r, 0.62f, 0.012f));   // anneau intï¿½rieur
 
-                // 24 graduations entre les deux anneaux extérieurs
+                // 24 graduations entre les deux anneaux extï¿½rieurs
                 float seg = (ang + Mathf.PI) / (2f * Mathf.PI) * 24f;
                 float tick = Smooth(1f - Mathf.Abs(seg - Mathf.Round(seg)) / 0.07f);
                 a = Mathf.Max(a, tick * RangeMask(r, 0.855f, 0.915f));
 
-                // 12 graduations plus courtes à l'intérieur
+                // 12 graduations plus courtes ï¿½ l'intï¿½rieur
                 float seg2 = (ang + Mathf.PI) / (2f * Mathf.PI) * 12f;
                 float tick2 = Smooth(1f - Mathf.Abs(seg2 - Mathf.Round(seg2)) / 0.06f);
                 a = Mathf.Max(a, tick2 * RangeMask(r, 0.64f, 0.74f));
 
-                // voile très léger dans le disque central
+                // voile trï¿½s lï¿½ger dans le disque central
                 if (r < 0.6f) a = Mathf.Max(a, 0.06f);
 
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
@@ -383,7 +391,7 @@ public class SummonPortalFX : MonoBehaviour
         return Smooth((r - lo) / 0.01f) * Smooth((hi - r) / 0.01f);
     }
 
-    // Disque doux (halo, éclat, étincelles).
+    // Disque doux (halo, ï¿½clat, ï¿½tincelles).
     private static Sprite _glowSprite;
     private static Sprite GlowSprite()
     {
@@ -408,7 +416,7 @@ public class SummonPortalFX : MonoBehaviour
         return _glowSprite;
     }
 
-    // Pilier de lumière : bords doux, s'estompe vers le haut, pivot en bas.
+    // Pilier de lumiï¿½re : bords doux, s'estompe vers le haut, pivot en bas.
     private static Sprite _pillarSprite;
     private static Sprite PillarSprite()
     {

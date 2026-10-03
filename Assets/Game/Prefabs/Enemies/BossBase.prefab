@@ -14,9 +14,6 @@ GameObject:
   - component: {fileID: 3911599992007106987}
   - component: {fileID: 6890409855985010424}
   - component: {fileID: 4482558440533347634}
-  - component: {fileID: -5863876394305283771}
-  - component: {fileID: -3180751648068491054}
-  - component: {fileID: 7335312140591587108}
   m_Layer: 6
   m_Name: BossBase
   m_TagString: Enemy
@@ -131,6 +128,11 @@ MonoBehaviour:
   _xpValue: 1400
   _goldValue: 40
   _healPlayerOnDeath: 1
+  _deathSequenceEnabled: 1
+  _deathSequenceDuration: 1.4
+  _deathFxColor: {r: 1, g: 0.72, b: 0.3, a: 1}
+  _deathSlowMotion: 1
+  _arrivalFxEnabled: 1
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
   _fireRate: 3
@@ -188,42 +190,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 116
   m_CollisionDetection: 0
---- !u!114 &-5863876394305283771
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7732996451166620575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dde97c9c461c0c74c81fc02df7bcbc3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-3180751648068491054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7732996451166620575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ed1ae2edf74bfe438541f114315717d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &7335312140591587108
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7732996451166620575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9423bad43b583d4887c405f11c9f2b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &693107782940600069
 PrefabInstance:
   m_ObjectHideFlags: 0

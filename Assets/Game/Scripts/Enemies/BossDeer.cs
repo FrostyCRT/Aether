@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class BossDeer : BossBase
 {
@@ -54,7 +53,9 @@ public class BossDeer : BossBase
     private float _jumpStateTimer = 0f;
     private Vector3 _jumpTakeoffPosition;
     private Vector3 _jumpLandingPosition;
-    private GameObject _telegraphObject;
+    // MODIFIÉ (2026-10-03) - le télégraphe du saut n'est plus un cylindre rouge qui grossit mais une zone de danger
+    // animée (GroundTelegraphFX) : contour complet visible dès le début, remplissage qui avance avec le windup.
+    private GroundTelegraphFX _telegraphObject;
 
     private Animator _deerAnimator;
 
@@ -177,11 +178,7 @@ public class BossDeer : BossBase
             float progress = Mathf.Clamp01(_jumpStateTimer / _jumpWindupDuration);
 
             if (_telegraphObject != null)
-            {
-                float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
-                float diameter = effectiveRadius * 2f * progress;
-                _telegraphObject.transform.localScale = new Vector3(diameter, 0.02f, diameter);
-            }
+                _telegraphObject.SetProgress(progress);
 
             RotateTowards(_jumpLandingPosition - transform.position);
 
@@ -214,16 +211,17 @@ public class BossDeer : BossBase
         _jumpLandingPosition = MapBoundaryUtils.ClampToZone(AimTarget.position);
 
         float effectiveRadius = IsSummoned ? _jumpRadius * _summonedScaleFactor : _jumpRadius;
-        _telegraphObject = CreateTelegraphReticle(_jumpLandingPosition, effectiveRadius);
+        _telegraphObject = GroundTelegraphFX.Spawn(_jumpLandingPosition, effectiveRadius, _telegraphColor, GroundTelegraphFX.Style.Zone);
     }
 
     private void LandJumpAttack()
     {
         transform.position = new Vector3(_jumpLandingPosition.x, 0f, _jumpLandingPosition.z);
 
+        // L'atterrissage touche : éclat blanc puis fondu (le télégraphe se détruit tout seul).
         if (_telegraphObject != null)
         {
-            Destroy(_telegraphObject);
+            _telegraphObject.Impact();
             _telegraphObject = null;
         }
 
@@ -238,30 +236,6 @@ public class BossDeer : BossBase
 
         _jumpState = JumpState.None;
         _jumpStateTimer = 0f;
-    }
-
-    private GameObject CreateTelegraphReticle(Vector3 position, float radius)
-    {
-        GameObject reticle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        Destroy(reticle.GetComponent<Collider>());
-
-        reticle.transform.position = new Vector3(position.x, 0.05f, position.z);
-        reticle.transform.localEulerAngles = Vector3.zero;
-        reticle.transform.localScale = new Vector3(0.01f, 0.02f, 0.01f);
-
-        Renderer rend = reticle.GetComponent<Renderer>();
-        Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        mat.color = _telegraphColor;
-        mat.SetFloat("_Surface", 1f);
-        mat.SetOverrideTag("RenderType", "Transparent");
-        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-        mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-        mat.SetInt("_ZWrite", 0);
-        rend.material = mat;
-
-        reticle.name = $"JumpTelegraph_{radius:F1}";
-
-        return reticle;
     }
 
     private void HandleSpiral()
@@ -318,19 +292,29 @@ public class BossDeer : BossBase
         }
     }
 
+    // MODIFIÉ (2026-10-03) - la mort passe par BossBase.Die() IMMÉDIATEMENT (récompenses, victoire, musique) puis par
+    // la séquence BossFX (le boss se débat, s'embrase, rétrécit, explose). L'animation "Death" du cerf joue pendant cette
+    // séquence, dont la durée est alignée sur _deathAnimDuration. Avant, on attendait l'animation PUIS la mort :
+    // le joueur patientait 2 s sans récompense, et la séquence BossFX serait venue s'ajouter après.
     protected override void Die()
     {
         if (_isDead) return;
         _isDead = true;
 
-        if (_telegraphObject != null)
+        // Mort en plein saut : on repose le cerf au sol pour que les effets partent du bon endroit.
+        if (_jumpState != JumpState.None)
         {
-            Destroy(_telegraphObject);
-            _telegraphObject = null;
+            _jumpState = JumpState.None;
+            Vector3 pos = transform.position;
+            pos.y = 0f;
+            transform.position = pos;
         }
 
-        Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+        if (_telegraphObject != null)
+        {
+            _telegraphObject.Dismiss();
+            _telegraphObject = null;
+        }
 
         if (_deerAnimator != null)
         {
@@ -340,13 +324,15 @@ public class BossDeer : BossBase
             _deerAnimator.SetTrigger("Death");
         }
 
-        StartCoroutine(DeathSequence());
+        _deathSequenceDuration = _deathAnimDuration;
+        base.Die();
     }
 
-    private IEnumerator DeathSequence()
+    protected override void OnDestroy()
     {
-        yield return new WaitForSeconds(_deathAnimDuration);
-        base.Die();
+        if (_telegraphObject != null)
+            Destroy(_telegraphObject.gameObject);
+        base.OnDestroy();
     }
 
     protected override void UpdateAnimatorState()

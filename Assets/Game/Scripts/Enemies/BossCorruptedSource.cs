@@ -13,12 +13,16 @@ using System.Collections.Generic;
 /// Contrainte animation (Mesh2Motion) : seulement 6 clips disponibles — Idle, SideWinding,
 /// Death, Coiled, Bite, Dance. Chacun est réutilisé pour plusieurs attaques distinctes plutôt
 /// que d'avoir un clip dédié par attaque (budget anim limité, cf. deadline 1 mois).
+///
+/// MODIFIÉ (2026-10-03) : tous les signaux d'attaque au sol sont maintenant construits en code
+/// (GroundTelegraphFX / SummonPortalFX) au lieu de prefabs de cercle. Les anciens champs prefab sont
+/// conservés (obsolètes, peuvent rester vides) pour ne pas casser la sérialisation du prefab du boss.
 /// </summary>
 public class BossCorruptedSource : BossBase
 {
     private enum AttackType { CrystalPulse, RearingStrike, CorruptionWave, Summon, Implosion }
 
-    // NOTE : Le champ _animator est déjà déclaré et géré dans BossBase. 
+    // NOTE : Le champ _animator est déjà déclaré et géré dans BossBase.
     // Le redéclarer ici provoquait une erreur de sérialisation (CS0108 / champ dupliqué).
 
     [Header("Ancrage / Rift")]
@@ -40,14 +44,20 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _strikeLungeSpeed = 22f;
     [SerializeField] private float _strikeImpactRadius = 2.5f;
     [SerializeField] private float _strikeDamage = 30f;
-    [SerializeField] private GameObject _strikeTelegraphPrefab; // cercle rouge au sol, position d'impact
+    // OBSOLÈTE (2026-10-03) : remplacé par GroundTelegraphFX (zone de danger animée construite en code). Peut rester vide.
+    [SerializeField] private GameObject _strikeTelegraphPrefab;
+    [Tooltip("Couleur du signal de la Frappe (zone d'impact au sol).")]
+    [SerializeField] private Color _strikeTelegraphColor = new Color(1f, 0.28f, 0.18f, 1f);
 
     [Header("Vague de Corruption (ex Slow Wave)")]
     [SerializeField] private float _waveExpandSpeed = 6f;
     [SerializeField] private float _waveMaxRadius = 9f;
     [SerializeField] private float _slowDuration = 3f;
     [SerializeField] private float _slowMultiplier = 0.4f;
+    // OBSOLÈTE (2026-10-03) : remplacé par GroundTelegraphFX (onde animée construite en code). Peut rester vide.
     [SerializeField] private GameObject _waveRingPrefab;
+    [Tooltip("Couleur de l'onde de la Vague de Corruption.")]
+    [SerializeField] private Color _waveColor = new Color(0.62f, 0.28f, 1f, 1f);
 
     [Header("Repositionnement Slither — Phase 2 uniquement")]
     [SerializeField] private float _diveCheckInterval = 4f;
@@ -95,7 +105,10 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _implosionPullForce = 15f;
     [SerializeField] private float _implosionRadius = 10f;
     [SerializeField] private float _implosionDamage = 40f;
+    // OBSOLÈTE (2026-10-03) : remplacé par GroundTelegraphFX (zone qui se remplit + anneaux qui aspirent vers le centre).
     [SerializeField] private GameObject _implosionWarningPrefab;
+    [Tooltip("Couleur du signal de l'Implosion.")]
+    [SerializeField] private Color _implosionColor = new Color(0.78f, 0.22f, 1f, 1f);
 
     [Header("Rythme du pattern")]
     [SerializeField] private float _minSafeWindow = 1.5f;
@@ -290,6 +303,8 @@ public class BossCorruptedSource : BossBase
     // ---------- FRAPPE (Coiled -> Slither -> Bite) ----------
     // Se love (tell), vise la position du joueur au moment du windup (comme le saut du Cerf),
     // glisse rapidement jusqu'à l'impact, puis mord.
+    // MODIFIÉ (2026-10-03) : le cercle rouge est maintenant une zone de danger animée (GroundTelegraphFX) : contour complet
+    // visible dès le début (rayon réel de l'impact), remplissage qui grandit avec le windup, éclat à l'impact.
     private IEnumerator RearingStrikeAttack()
     {
         _lockRotation = true;
@@ -301,24 +316,16 @@ public class BossCorruptedSource : BossBase
         if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
         Quaternion targetRot = Quaternion.LookRotation(dir);
 
-        GameObject telegraph = null;
         Vector3 impactPos = transform.position + dir * _strikeLungeDistance;
-        if (_strikeTelegraphPrefab != null)
-        {
-            telegraph = Track(Instantiate(_strikeTelegraphPrefab, impactPos, Quaternion.identity));
-            telegraph.transform.localScale = Vector3.zero;
-        }
+        GroundTelegraphFX telegraph = GroundTelegraphFX.Spawn(impactPos, _strikeImpactRadius, _strikeTelegraphColor, GroundTelegraphFX.Style.Zone);
+        Track(telegraph.gameObject);
 
         float t = 0f;
         while (t < _rearWindupDuration)
         {
             t += Time.deltaTime;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _bodyRotationSpeed * 2f * Time.deltaTime);
-            if (telegraph != null)
-            {
-                float scale = Mathf.Lerp(0f, _strikeImpactRadius * 2f, t / _rearWindupDuration);
-                telegraph.transform.localScale = new Vector3(scale, 0.02f, scale);
-            }
+            if (telegraph != null) telegraph.SetProgress(t / _rearWindupDuration);
             yield return null;
         }
 
@@ -348,11 +355,13 @@ public class BossCorruptedSource : BossBase
         {
             lungeElapsed += Time.deltaTime;
             transform.position = Vector3.Lerp(startPos, endPos, lungeElapsed / lungeDuration);
+            if (telegraph != null) telegraph.SetProgress(1f);
             yield return null;
         }
         _contactDamageSuppressed = false;
 
         if (_animator != null) _animator.SetTrigger("Bite");
+        if (telegraph != null) telegraph.Impact();
 
         Collider[] hits = Physics.OverlapSphere(endPos, _strikeImpactRadius);
         foreach (Collider hit in hits)
@@ -364,30 +373,25 @@ public class BossCorruptedSource : BossBase
             }
         }
 
-        if (telegraph != null) Destroy(telegraph);
         _lockRotation = false;
         yield return new WaitForSeconds(0.4f); // recovery avant la prochaine attaque
     }
 
     // ---------- CORRUPTION WAVE (ex Slow Wave) ----------
-    // Anneau visible qui grandit au sol avant d'appliquer le ralentissement.
+    // Onde visible qui grandit au sol avant d'appliquer le ralentissement.
+    // MODIFIÉ (2026-10-03) : onde animée (GroundTelegraphFX, style Wave) à la place du prefab d'anneau.
     private IEnumerator CorruptionWaveAttack()
     {
         if (_animator != null) _animator.SetBool("IsCoiling", true);
 
-        GameObject ring = null;
-        if (_waveRingPrefab != null)
-        {
-            ring = Track(Instantiate(_waveRingPrefab, transform.position, Quaternion.identity));
-            ring.transform.localScale = Vector3.zero;
-        }
+        GroundTelegraphFX ring = GroundTelegraphFX.Spawn(transform.position, _waveMaxRadius, _waveColor, GroundTelegraphFX.Style.Wave);
+        Track(ring.gameObject);
 
         float radius = 0f;
         while (radius < _waveMaxRadius)
         {
             radius += _waveExpandSpeed * Time.deltaTime;
-            if (ring != null)
-                ring.transform.localScale = new Vector3(radius * 2f, 0.02f, radius * 2f);
+            if (ring != null) ring.SetRadius(radius);
 
             float distToPlayer = Vector3.Distance(_playerTransform.position, transform.position);
             if (distToPlayer <= radius && _cachedPlayerController != null)
@@ -398,7 +402,7 @@ public class BossCorruptedSource : BossBase
             yield return null;
         }
 
-        if (ring != null) Destroy(ring);
+        if (ring != null) ring.Dismiss();
         if (_animator != null) _animator.SetBool("IsCoiling", false);
     }
 
@@ -463,6 +467,10 @@ public class BossCorruptedSource : BossBase
             GameObject burst = Instantiate(_resurfaceBurstPrefab, transform.position, Quaternion.identity);
             Destroy(burst, 1f);
         }
+
+        // AJOUTÉ (2026-10-03) - onde de choc procédurale au point de ressurgissement (même zone que les dégâts).
+        ExpandingRingVFX.Spawn(new Vector3(transform.position.x, 0.15f, transform.position.z), _resurfaceBurstRadius,
+            new Color(_waveColor.r, _waveColor.g, _waveColor.b, 0.8f), 0.35f);
 
         Collider[] hits = Physics.OverlapSphere(transform.position, _resurfaceBurstRadius);
         foreach (Collider hit in hits)
@@ -603,16 +611,14 @@ public class BossCorruptedSource : BossBase
     }
 
     // ---------- IMPLOSION — signature Phase 2 (Dance) ----------
+    // MODIFIÉ (2026-10-03) : zone de danger au rayon réel de l'explosion, visible dès le début, qui se remplit pendant
+    // l'aspiration, avec des anneaux qui se resserrent en boucle vers le centre ("ça aspire") et un éclat à l'explosion.
     private IEnumerator ImplosionAttack()
     {
         if (_animator != null) _animator.SetTrigger("Dance");
 
-        GameObject warning = null;
-        if (_implosionWarningPrefab != null)
-        {
-            warning = Track(Instantiate(_implosionWarningPrefab, transform.position, Quaternion.identity));
-            warning.transform.localScale = Vector3.zero;
-        }
+        GroundTelegraphFX warning = GroundTelegraphFX.Spawn(transform.position, _implosionRadius, _implosionColor, GroundTelegraphFX.Style.Zone, true);
+        Track(warning.gameObject);
 
         float elapsed = 0f;
         float minDistance = 3f;
@@ -627,11 +633,7 @@ public class BossCorruptedSource : BossBase
 
             elapsed += Time.deltaTime;
 
-            if (warning != null)
-            {
-                float scale = Mathf.Lerp(0f, _implosionRadius * 2f, elapsed / _implosionPullDuration);
-                warning.transform.localScale = new Vector3(scale, 0.05f, scale);
-            }
+            if (warning != null) warning.SetProgress(elapsed / _implosionPullDuration);
 
             if (_playerTransform != null && _cachedPlayerController != null && _cachedPlayerRigidbody != null)
             {
@@ -646,7 +648,9 @@ public class BossCorruptedSource : BossBase
             yield return null;
         }
 
-        if (warning != null) Destroy(warning);
+        if (warning != null) warning.Impact();
+        ExpandingRingVFX.Spawn(new Vector3(transform.position.x, 0.15f, transform.position.z), _implosionRadius,
+            new Color(_implosionColor.r, _implosionColor.g, _implosionColor.b, 0.85f), 0.45f);
 
         Collider[] hits = Physics.OverlapSphere(transform.position, _implosionRadius);
         foreach (Collider hit in hits)

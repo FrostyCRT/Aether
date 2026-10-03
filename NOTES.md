@@ -1,9 +1,23 @@
 # Aether Storm Survivor — Notes de travail
 
 Deux listes vivantes tenues au fil des sessions. Mises à jour à chaque passe.
-Dernière mise à jour : 2026-09-30 (refonte complète des cartes d'upgrade - menu Pause, Victoire/Défaite et choix de level-up -, système de fusion visuel, corrections diverses - voir section juste en dessous).
+Dernière mise à jour : 2026-10-03 (bug d'affichage du couloir de charge corrigé à la racine, voir section tout en dessous).
 
 Voir aussi `SCRIPTS_INDEX.md` (nouveau, 2026-09-30) : table de référence de TOUS les scripts du projet avec leur rôle en une ligne - à consulter en premier pour se repérer avant de chercher dans ces notes.
+
+## Session 2026-10-03 — Bug d'affichage des nouveaux effets de boss (couloir de charge, zones au sol, arrivée/mort) corrigé à la racine
+
+Retour utilisateur : l'affichage de la ruée (couloir de charge) du boss 1 montrait des blocs rectangulaires nets à la place des chevrons qui filent le long du couloir — "on dirait un bug".
+
+**Cause trouvée par test empirique en Play (spawn direct de `ChargeLaneFX`, captures top-down comparées pixel à pixel) :** `FXSprites.MakeRenderer()` donnait à TOUS les `SpriteRenderer` qu'elle crée **un seul et même `Material` partagé** (un seul `Shader.Find("Sprites/Default")` statique pour toute la bibliothèque). Tant que deux `SpriteRenderer` voisins affichent le MÊME sprite (ex. les 6 chevrons entre eux), aucun souci. Mais dès que DEUX sprites DIFFÉRENTS (ex. `Square` pour la base/le remplissage du couloir et `Chevron` pour les flèches qui défilent) partagent ce même Material et se superposent, l'un se met à s'afficher avec la silhouette/texture de l'autre (le chevron devenait un rectangle plein). Confirmé par élimination : chevron seul = correct ; chevron + n'importe quel autre sprite "Square" du même effet, même décalé d'1 unité en Y (donc pas un problème de Z-fighting) = corrompu ; chevron avec son propre Material dédié, à côté des mêmes autres sprites = correct.
+
+Le même défaut existait dans `SummonPortalFX.cs` (Glow/Ring/Pillar partageant aussi un seul Material statique) — effet que l'utilisateur avait pourtant validé sans remarquer de défaut visible (sans doute moins flagrant sur un halo/anneau que sur un chevron à bord net).
+
+**Corrigé dans `FXSprites.cs` et `SummonPortalFX.cs` :** un `Material` par SPRITE DISTINCT, mis en cache dans un `Dictionary<Sprite, Material>`, au lieu d'un seul Material global. Les renderers qui partagent le même sprite (les 6 chevrons entre eux, les ~140 étincelles de `BossFX` entre elles) continuent de partager un seul Material entre eux — sans danger, jamais fautif dans les tests. Coût négligeable (quelques Material de plus par effet, effets courts/transitoires).
+
+Revérifié en Play après correctif : `ChargeLaneFX` (couloir du boss 1), `GroundTelegraphFX` (zone du boss 3) et `BossFX.PlayArrival` (flash d'arrivée) s'affichent tous proprement, plus aucun bloc. Ce bug touchait potentiellement TOUS les effets ajoutés le 2026-10-03 (couloir de charge, zones/vague/implosion du boss 3, saut du boss 2, arrivée/mort de boss) puisqu'ils partagent tous `FXSprites`.
+
+**À tester en jeu réel** (pas seulement en spawn isolé) : la charge complète des 3 boss, le saut du boss 2, et les attaques du boss 3, pour confirmer qu'aucun autre angle de caméra ou timing ne fait réapparaître le défaut.
 
 ## Session 2026-09-30 — Refonte complète des cartes d'upgrade (Pause / Victoire-Défaite / choix de level-up), système de fusion visuel, corrections
 

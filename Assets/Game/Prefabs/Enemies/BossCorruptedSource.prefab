@@ -13,9 +13,6 @@ GameObject:
   - component: {fileID: 6240002360621346435}
   - component: {fileID: 5984681562282364703}
   - component: {fileID: 6961507489953504040}
-  - component: {fileID: 2653943079287069866}
-  - component: {fileID: -7549729021279255499}
-  - component: {fileID: 17609259270219023}
   m_Layer: 6
   m_Name: BossCorruptedSource
   m_TagString: Enemy
@@ -108,7 +105,12 @@ MonoBehaviour:
   _moveSpeed: 4
   _xpValue: 0
   _goldValue: 120
-  _healPlayerOnDeath: 1
+  _healPlayerOnDeath: 0
+  _deathSequenceEnabled: 1
+  _deathSequenceDuration: 1.4
+  _deathFxColor: {r: 1, g: 0.72, b: 0.3, a: 1}
+  _deathSlowMotion: 1
+  _arrivalFxEnabled: 1
   _projectilePrefab: {fileID: 3850434933786925153, guid: 50b7828a1606993489083e8d2c39c0f9,
     type: 3}
   _fireRate: 1
@@ -156,12 +158,14 @@ MonoBehaviour:
   _strikeDamage: 300
   _strikeTelegraphPrefab: {fileID: 4439751606259745131, guid: 978e702dc5a27a34f8e2c773f6ce90f8,
     type: 3}
+  _strikeTelegraphColor: {r: 1, g: 0.28, b: 0.18, a: 1}
   _waveExpandSpeed: 6
   _waveMaxRadius: 9
   _slowDuration: 2.5
   _slowMultiplier: 0.4
   _waveRingPrefab: {fileID: 1689758347154334370, guid: 24beff46f9a76b74b9a09a1fd11bbabe,
     type: 3}
+  _waveColor: {r: 0.62, g: 0.28, b: 1, a: 1}
   _diveCheckInterval: 4
   _repositionTelegraphDuration: 0.6
   _repositionTravelDuration: 1
@@ -189,6 +193,7 @@ MonoBehaviour:
   _implosionDamage: 400
   _implosionWarningPrefab: {fileID: 4439751606259745131, guid: 978e702dc5a27a34f8e2c773f6ce90f8,
     type: 3}
+  _implosionColor: {r: 0.78, g: 0.22, b: 1, a: 1}
   _minSafeWindow: 0.6
   _maxSafeWindow: 1.2
   _bodyRotationSpeed: 150
@@ -216,42 +221,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 0
   m_Center: {x: 0.3, y: 0, z: -0.1}
---- !u!114 &2653943079287069866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8352327220285549118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfaaacc21da898643bc51af0494bf905, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-7549729021279255499
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8352327220285549118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dde97c9c461c0c74c81fc02df7bcbc3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &17609259270219023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8352327220285549118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9423bad43b583d4887c405f11c9f2b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &5290551867295270980
 PrefabInstance:
   m_ObjectHideFlags: 0

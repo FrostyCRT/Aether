@@ -15,6 +15,20 @@ public class BossBase : MonoBehaviour
     [Tooltip("Si coché, le joueur est soigné de 50 % de ses PV max quand ce boss meurt. À décocher sur le boss 3.")]
     [SerializeField] protected bool _healPlayerOnDeath = true;
 
+    // AJOUTÉ (2026-10-03) - effets d'arrivée et de mort des boss (voir BossFX). La mort n'est plus un simple
+    // Destroy() : le boss reste en place quelques instants, inoffensif, se débat, s'embrase et rétrécit, puis explose.
+    [Header("Effets d'arrivée et de mort (BossFX)")]
+    [Tooltip("Décoche pour revenir à l'ancienne mort instantanée (le boss disparaît d'un coup).")]
+    [SerializeField] protected bool _deathSequenceEnabled = true;
+    [Tooltip("Durée (secondes) entre le dernier coup et l'explosion finale. Pour le boss final, garde cette durée inférieure au Victory Delay du GameManager (2 s par défaut). Les mini-boss invoqués utilisent 60 % de cette durée.")]
+    [SerializeField] protected float _deathSequenceDuration = 1.4f;
+    [Tooltip("Couleur dominante des effets d'arrivée et de mort de ce boss.")]
+    [SerializeField] protected Color _deathFxColor = new Color(1f, 0.72f, 0.3f, 1f);
+    [Tooltip("Court ralenti de tout le jeu au dernier coup (jamais pour un mini-boss).")]
+    [SerializeField] protected bool _deathSlowMotion = true;
+    [Tooltip("Onde de choc et colonne de lumière à l'apparition du boss.")]
+    [SerializeField] protected bool _arrivalFxEnabled = true;
+
     [Header("Attaque")]
     [SerializeField] protected GameObject _projectilePrefab;
     [SerializeField] protected float _fireRate = 1f;
@@ -41,10 +55,13 @@ public class BossBase : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] protected float _rotationSpeed = 500f;
 
-    [Header("Telegraphe de charge (zone rouge au sol)")]
+    // MODIFIÉ (2026-10-03) - le télégraphe de charge n'est plus un cube rouge uni mais un couloir animé (ChargeLaneFX) :
+    // visible sur toute sa longueur dès le début, remplissage qui avance avec le windup, bords nets, chevrons qui
+    // défilent, anneau d'arrivée. Seule la COULEUR de ce champ est utilisée (la transparence est gérée par l'effet).
+    [Header("Telegraphe de charge (couloir au sol)")]
     [SerializeField] protected Color _chargeTelegraphColor = new Color(1f, 0f, 0f, 0.4f);
     [SerializeField] protected float _chargeTelegraphHeightOffset = 0.05f;
-    private GameObject _chargeTelegraphInstance;
+    private ChargeLaneFX _chargeLane;
 
     [Header("Corps à corps")]
     [SerializeField] protected float _contactDamage = 300f; // MODIFIE - x10, cf. rescale global des degats/PV
@@ -156,6 +173,10 @@ public class BossBase : MonoBehaviour
         if (!IsSummoned)
         {
             GameUI.Instance.ShowBossHP(_bossName);
+
+            // AJOUTÉ (2026-10-03) - onde de choc + colonne de lumière à l'apparition du boss.
+            if (_arrivalFxEnabled)
+                BossFX.PlayArrival(transform.position, ComputeFxRadius(), _deathFxColor);
 
             // AJOUTE - bascule sur la musique de ce boss, seulement pour un vrai
             // boss (pas une invocation) et seulement si un clip est assigne.
@@ -364,11 +385,15 @@ public class BossBase : MonoBehaviour
         }
     }
 
+    // MODIFIÉ (2026-10-03) - même contrat qu'avant (créer / mettre à jour / détruire le télégraphe de charge, les trois
+    // restent virtuelles pour les boss qui ont leur propre signal), mais le visuel est maintenant un ChargeLaneFX :
+    // le couloir est tracé sur toute la longueur réelle de la charge (même largeur et même longueur que la zone de dégâts)
+    // et son remplissage suit la progression du windup.
     protected virtual void UpdateTelegraphZone(float progress)
     {
         if (_playerTransform == null) return;
 
-        if (_chargeTelegraphInstance == null)
+        if (_chargeLane == null)
             CreateTelegraphZone();
 
         Vector3 dir = AimTarget.position - transform.position;
@@ -376,40 +401,23 @@ public class BossBase : MonoBehaviour
         if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
         dir.Normalize();
 
-        Quaternion rot = Quaternion.LookRotation(dir);
+        Vector3 origin = transform.position;
+        origin.y = _chargeTelegraphHeightOffset;
 
-        float length = Mathf.Max(0.05f, _chargeDistance * progress);
-        float width = _chargeHitRadius * 2f;
-        _chargeTelegraphInstance.transform.rotation = rot;
-        _chargeTelegraphInstance.transform.localScale = new Vector3(width, 0.05f, length);
-
-        Vector3 basePos = transform.position + Vector3.up * _chargeTelegraphHeightOffset;
-        _chargeTelegraphInstance.transform.position = basePos + rot * new Vector3(0f, 0f, length * 0.5f);
+        _chargeLane.UpdateLane(origin, dir, _chargeDistance, _chargeHitRadius * 2f, progress);
     }
 
     protected virtual void CreateTelegraphZone()
     {
-        _chargeTelegraphInstance = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _chargeTelegraphInstance.name = "ChargeTelegraphZone";
-
-        Collider col = _chargeTelegraphInstance.GetComponent<Collider>();
-        if (col != null) Destroy(col);
-
-        Renderer rend = _chargeTelegraphInstance.GetComponent<Renderer>();
-        if (rend != null)
-        {
-            Material mat = new Material(Shader.Find("Sprites/Default"));
-            mat.color = _chargeTelegraphColor;
-            rend.material = mat;
-        }
+        _chargeLane = ChargeLaneFX.Spawn(_chargeTelegraphColor);
     }
 
     protected virtual void DestroyTelegraphZone()
     {
-        if (_chargeTelegraphInstance != null)
+        if (_chargeLane != null)
         {
-            Destroy(_chargeTelegraphInstance);
-            _chargeTelegraphInstance = null;
+            Destroy(_chargeLane.gameObject);
+            _chargeLane = null;
         }
     }
 
@@ -527,7 +535,56 @@ public class BossBase : MonoBehaviour
             }
         }
 
-        Destroy(gameObject);
+        FinishDeath();
+    }
+
+    // AJOUTÉ (2026-10-03) - toute la logique de jeu de la mort (XP, or, victoire, musique, défis, soin) s'est déjà
+    // exécutée dans Die() : ce qui suit ne concerne QUE le visuel. Le boss reste en place pendant la séquence mais
+    // devient totalement inoffensif (script coupé, coroutines arrêtées, colliders désactivés, retiré de la liste des
+    // cibles), puis BossFX le détruit au moment de l'explosion finale.
+    private void FinishDeath()
+    {
+        if (!_deathSequenceEnabled)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        StopAllCoroutines();
+        enabled = false;
+        _contactDamageSuppressed = true;
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+            c.enabled = false;
+
+        // Plus ciblable par les armes à visée automatique.
+        foreach (Transform t in GetComponentsInChildren<Transform>(true))
+            if (t.CompareTag("Enemy")) t.gameObject.tag = "Untagged";
+
+        float duration = IsSummoned ? _deathSequenceDuration * 0.6f : _deathSequenceDuration;
+        BossFX.PlayDeath(
+            transform,
+            ComputeFxRadius(),
+            _deathFxColor,
+            duration,
+            _deathSlowMotion && !IsSummoned,
+            _bodyRenderer,
+            _emissionColorProperty,
+            Color.Lerp(_deathFxColor, Color.white, 0.5f));
+    }
+
+    // Rayon des effets (arrivée / mort) déduit automatiquement de la taille visible du boss : pas de réglage par boss.
+    protected float ComputeFxRadius()
+    {
+        Bounds bounds = new Bounds(transform.position, Vector3.zero);
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+            bounds.Encapsulate(r.bounds);
+
+        float radius = Mathf.Clamp(Mathf.Max(bounds.extents.x, bounds.extents.z), 1.5f, 7f);
+        return IsSummoned ? radius * 0.7f : radius;
     }
 
     protected virtual void OnDestroy()
