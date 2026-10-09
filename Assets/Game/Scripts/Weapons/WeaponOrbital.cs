@@ -158,4 +158,10 @@ public class WeaponOrbital : MonoBehaviour
 
     // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
     public float CurrentDamage => _currentDamage;
+
+    // Lu par UpgradeData.ApplyFusionResult() pour hériter le VRAI nombre d'orbitaux au moment d'une fusion (voir
+    // WeaponFusionManaVortex/ThunderingOrbs - avant ce correctif, ces fusions fixaient le nombre d'orbites à 3 en
+    // dur, quel que soit le nombre réel accumulé par le joueur (jusqu'à 5 avec Orbitaux maxé seul) : une fusion
+    // perdait jusqu'à 2 orbites sur 5, soit -40% de dégâts orbitaux jamais compensés).
+    public int OrbitalCount => _orbitalCount;
 }

@@ -19,6 +19,14 @@ public class ObjectPool : MonoBehaviour
     // Dictionnaire : tag → file d'objets disponibles
     private Dictionary<string, Queue<GameObject>> _poolDictionary;
 
+    // AJOUTE (2026-10-07, retour utilisateur FPS) - ReturnToPool() utilisait queue.Contains(obj) (scan O(n)) comme
+    // garde anti-doublon. Un pool ne RÉTRÉCIT jamais une fois agrandi au-delà de sa taille pré-chauffée (voir Get
+    // ci-dessous, branche Instantiate) : plus une run dure et plus un pic de demande passé a pu arriver, plus ce
+    // scan devient coûteux pour TOUT retour futur sur ce tag - y compris pendant un combat de boss presque vide,
+    // où les projectiles du joueur/du boss continuent de revenir au pool en continu. Un HashSet parallèle (lookup
+    // O(1)) remplace ce scan sans changer le comportement.
+    private Dictionary<string, HashSet<GameObject>> _poolMembership;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -34,19 +42,23 @@ public class ObjectPool : MonoBehaviour
     private void InitializePools()
     {
         _poolDictionary = new Dictionary<string, Queue<GameObject>>();
+        _poolMembership = new Dictionary<string, HashSet<GameObject>>();
 
         foreach (Pool pool in _pools)
         {
             Queue<GameObject> objectQueue = new Queue<GameObject>();
+            HashSet<GameObject> membership = new HashSet<GameObject>();
 
             for (int i = 0; i < pool.size; i++)
             {
                 GameObject obj = Instantiate(pool.prefab);
                 obj.SetActive(false);
                 objectQueue.Enqueue(obj);
+                membership.Add(obj);
             }
 
             _poolDictionary.Add(pool.tag, objectQueue);
+            _poolMembership.Add(pool.tag, membership);
         }
     }
 
@@ -63,6 +75,7 @@ public class ObjectPool : MonoBehaviour
         if (queue.Count > 0)
         {
             obj = queue.Dequeue();
+            _poolMembership[tag].Remove(obj);
         }
         else
         {
@@ -86,7 +99,6 @@ public class ObjectPool : MonoBehaviour
     }
 
     // Remet un objet dans le pool
-    // Remet un objet dans le pool
     public void ReturnToPool(string tag, GameObject obj)
     {
         if (!_poolDictionary.ContainsKey(tag))
@@ -95,14 +107,13 @@ public class ObjectPool : MonoBehaviour
             return;
         }
 
-        // CORRECTION : On récupère d'abord la file d'attente
-        Queue<GameObject> queue = _poolDictionary[tag];
+        HashSet<GameObject> membership = _poolMembership[tag];
 
-        // Sécurité pour éviter d'ajouter deux fois le même objet dans la file
-        if (queue.Contains(obj)) return;
+        // Sécurité pour éviter d'ajouter deux fois le même objet dans la file (O(1) au lieu d'un scan de la file)
+        if (!membership.Add(obj)) return;
 
         obj.SetActive(false);
-        queue.Enqueue(obj);
+        _poolDictionary[tag].Enqueue(obj);
     }
 
     // AJOUT : Méthode ClearPool requise par le GameManager pour nettoyer l'écran à la victoire
@@ -150,6 +161,7 @@ public class ObjectPool : MonoBehaviour
         if (queue.Count > 0)
         {
             obj = queue.Dequeue();
+            _poolMembership[tag].Remove(obj);
         }
         else
         {

@@ -22,6 +22,16 @@ public class EnemySpawner : MonoBehaviour
     [Header("Paramètres de Rayon")]
     [SerializeField] private float _spawnRadius = 15f;
 
+    // AJOUTE (2026-10-07, retour utilisateur : "il faut que les bulbes spawn plus proche du player, parce que vu
+    // qu'ils bougent pas, si on reste là où on est on ne les voit jamais" + "il faut aussi faire en sorte qu'ils ne
+    // spawn pas au même endroit, donc pas collé") - le Bulbe est un tireur FIXE (ne poursuit jamais le joueur,
+    // contrairement aux autres ennemis) : au _spawnRadius générique (bien au-delà de la vue), il reste invisible
+    // tant qu'on ne marche pas explicitement dessus. Rayon dédié, plus proche, + distance minimale dédiée (plus
+    // grande que les 1,5 génériques) pour qu'ils ne s'empilent jamais les uns sur les autres.
+    [Header("Paramètres de Rayon — Bulbe (tireur fixe, voir EnemyBulb)")]
+    [SerializeField] private float _bulbSpawnRadius = 10f;
+    [SerializeField] private float _bulbMinSeparation = 4f;
+
     // Variables de contrôle internes synchronisées par les phases
     private float _spawnInterval = 2f;
     private int _enemiesPerWave = 1;
@@ -126,7 +136,10 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPos = FindFreeSpawnPosition();
+        bool isBulb = tag == "EnemyBulb";
+        Vector3 spawnPos = isBulb
+            ? FindFreeSpawnPosition(_bulbSpawnRadius, _bulbMinSeparation)
+            : FindFreeSpawnPosition(_spawnRadius, 1.5f);
         if (spawnPos == Vector3.zero) return;
         if (ObjectPool.Instance == null) return;
 
@@ -141,9 +154,8 @@ public class EnemySpawner : MonoBehaviour
     }
 
 
-    private Vector3 FindFreeSpawnPosition()
+    private Vector3 FindFreeSpawnPosition(float radius, float minDistance)
     {
-        float minDistance = 1.5f;
         int maxAttempts = 10;
 
         // Détection physique filtrée sur la couche des ennemis
@@ -154,9 +166,9 @@ public class EnemySpawner : MonoBehaviour
         {
             Vector2 randomCircle = Random.insideUnitCircle.normalized;
             Vector3 candidatePos = _playerTransform.position + new Vector3(
-                randomCircle.x * _spawnRadius,
+                randomCircle.x * radius,
                 0f,
-                randomCircle.y * _spawnRadius
+                randomCircle.y * radius
             );
             candidatePos = MapBoundaryUtils.ClampToZone(candidatePos);
 
@@ -207,7 +219,17 @@ public class EnemySpawner : MonoBehaviour
         public float healthMultiplier; // scaling PV pour ce palier — valeurs à ajuster en playtest
     }
 
-    [Header("Pool pondéré par palier de temps")]
+    // MODIFIE (2026-10-07, retour utilisateur : "je voulais qu'on fasse en sorte qu'on ait pas tous les ennemis en
+    // même temps peu importe le temps où on est... max 2 ou 3 ennemis différents par palier, quand on atteint le
+    // palier suivant... le pool change, les types qu'il y avait change, et laisse place à 2 ou 3 autres types") -
+    // les paliers (réglés dans l'Inspector de ce composant, voir le GameObject EnemySpawner de la scène Game)
+    // étaient ACCUMULATIFS : chaque palier ajoutait un type sans jamais en retirer, jusqu'à avoir les 6 types en
+    // même temps en fin de partie. Chaque palier liste maintenant SEULEMENT ses 2-3 types actifs (remplace le
+    // précédent plutôt que de s'y ajouter), et contient TOUJOURS EnemyShooter (Goblin) et/ou EnemyBulb (Bulbe) -
+    // les 2 seuls ennemis qui tirent des projectiles, nécessaires pour charger le Bouclier de Mana/l'Ultime (voir
+    // EnemyProjectile.OnTriggerEnter, ManaShield.TryAbsorb/CrystalSystem.AbsorbProjectile) - sans ça un palier
+    // 100% mêlée (Loup/Golem/Corbeau/Araignée) rendrait ces mécaniques injouables.
+    [Header("Pool pondéré par palier de temps (2-3 types actifs max, voir commentaire ci-dessus)")]
     [SerializeField] private List<PalierEnnemis> _paliersEnnemis = new List<PalierEnnemis>();
 
     private PalierEnnemis GetCurrentPalier()

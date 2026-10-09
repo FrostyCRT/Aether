@@ -96,7 +96,7 @@ public class WeaponFireball : MonoBehaviour
             // si aucun buff actif.
             float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
 
-            projectile.Init(direction, dmg);
+            projectile.Init(direction, dmg, DamageNumberSpawner.ColorFireball);
 
             // MODIFIE - explosion toujours a 100%, plus de chance meta/carte a combiner.
             projectile.SetFragmentation(1f, dmg * _fragmentDamageRatio, _fragmentRadius);

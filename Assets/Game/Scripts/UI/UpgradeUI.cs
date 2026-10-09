@@ -76,6 +76,14 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private Sprite _parchmentKael;
     [Tooltip("Parchemin des upgrades de Lyra (Couteaux et ses fusions exclusives).")]
     [SerializeField] private Sprite _parchmentLyra;
+    // AJOUTE (2026-10-07, retour utilisateur : "la carte doit être différente, genre un style Violet qui montre
+    // que c'est une fusion") - jusqu'ici une carte de fusion reprenait le parchemin de la BRANCHE du personnage
+    // propriétaire (rouge/vert/bleu, comme n'importe quelle autre upgrade) : rien ne la distinguait visuellement
+    // d'une upgrade normale au premier coup d'œil. Prioritaire sur le parchemin de branche dans GetParchmentFor()
+    // ci-dessous ; retombe sur le parchemin de branche tant qu'aucune image n'est assignée ici (voir le prompt
+    // MetaIA fourni à l'utilisateur pour générer ce parchemin, même famille visuelle que ParcheminRouge/Vert/Bleu).
+    [Tooltip("Parchemin des cartes de FUSION, toutes branches confondues (prioritaire sur le parchemin de personnage). Laisser vide pour garder l'ancien comportement (couleur de branche) en attendant l'asset.")]
+    [SerializeField] private Sprite _parchmentFusion;
 
     [Header("Position de la ligne de pastilles (ProgressionRow)")]
     [Tooltip("Anchored Position X a appliquer quand le losange de deblocage est visible (ex: Orbital, Eclair, Boue).")]
@@ -163,6 +171,17 @@ public class UpgradeUI : MonoBehaviour
                 _cards[i].chooseButton.onClick.RemoveAllListeners();
                 _cards[i].chooseButton.onClick.AddListener(() => OnCardSelected(index));
             }
+
+            // CORRIGÉ (2026-10-07, retour utilisateur : "il faut trouver une autre couleur de texte qui vient sur
+            // les parchemins, parce que c'est blanc sur beige, donc on ne voit pas trop", puis après un 1er essai
+            // au contour seul : "c'est toujours aussi clair, difficile de lire de loin") - texte blanc remplacé
+            // par la couleur "encre" partagée avec les cartes du Pause/Build (GameUI.ParchmentInkColor), plus
+            // lisible qu'un simple contour sur fond clair. ApplyReadableOutline fournit maintenant un halo CLAIR
+            // (plus un contour sombre, qui n'a plus de sens sur du texte déjà sombre).
+            _cards[i].nameText.color = GameUI.ParchmentInkColor;
+            _cards[i].descriptionText.color = GameUI.ParchmentInkColor;
+            GameUI.ApplyReadableOutline(_cards[i].nameText);
+            GameUI.ApplyReadableOutline(_cards[i].descriptionText);
         }
     }
 
@@ -170,6 +189,9 @@ public class UpgradeUI : MonoBehaviour
     // personnage n'est pas encore assigné dans l'Inspector, retombe sur le doré (jamais de carte sans fond).
     private Sprite GetParchmentFor(UpgradeData upgrade)
     {
+        if (upgrade.upgradeType == UpgradeType.Fusion && _parchmentFusion != null)
+            return _parchmentFusion;
+
         Sprite branchSprite = null;
         switch (upgrade.Branch)
         {
@@ -212,17 +234,26 @@ public class UpgradeUI : MonoBehaviour
                 // l'icône, ici l'inverse) - repositionnement direct des 2 éléments, aucune fusion n'a de
                 // pastilles ni de losange de déblocage (RequiresUnlockPick=false, maxLevel=1) donc l'espace en
                 // dessous est libre.
-                _cards[i].nameText.text = isFusionCard ? "FUSION" : upgrades[i].upgradeName;
+                // MODIFIE (2026-10-07, retour utilisateur : "le nom de la fusion doit apparaitre sous le texte
+                // Fusion de la carte") - le mot générique "FUSION" reste la 1re ligne (titre), le nom spécifique
+                // (ex: "Terre Calcinée") apparaît maintenant en 2e ligne, plus petit - jusqu'ici réservé à la
+                // description, jamais visible dans ce titre.
+                _cards[i].nameText.text = isFusionCard ? $"FUSION\n<size=65%>{upgrades[i].upgradeName}</size>" : upgrades[i].upgradeName;
                 _cards[i].descriptionText.text = upgrades[i].GetDynamicDescription();
                 if (_cards[i].iconImage != null)
                 {
                     RectTransform iconRt = (RectTransform)_cards[i].iconImage.transform;
-                    iconRt.anchoredPosition = new Vector2(iconRt.anchoredPosition.x, isFusionCard ? 10f : -13f);
+                    // MODIFIE (2026-10-07, retour utilisateur : "il y a un trop grand écart entre les éléments") -
+                    // icône et description étaient proches en bordure de boîte (RectTransform), mais la plupart
+                    // des icônes de fusion ne remplissent pas leur cadre 225×225 (beaucoup de marge transparente
+                    // autour du dessin) : à l'écran, ça laissait un grand vide visuel entre le dessin réel et le
+                    // texte. Icône et description rapprochées du centre de la carte.
+                    iconRt.anchoredPosition = new Vector2(iconRt.anchoredPosition.x, isFusionCard ? -30f : -13f);
                 }
                 if (_cards[i].descriptionText != null)
                 {
                     RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
-                    descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, isFusionCard ? -160f : 140f);
+                    descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, isFusionCard ? -95f : 140f);
                 }
 
                 // MODIFIÉ (2026-10-01) - parchemin choisi selon la branche de l'upgrade (voir GetParchmentFor).

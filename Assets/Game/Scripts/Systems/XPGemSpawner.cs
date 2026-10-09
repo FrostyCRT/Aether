@@ -51,15 +51,18 @@ public class XPGemSpawner : MonoBehaviour
                 Random.Range(-0.8f, 0.8f)
             );
 
-            // CORRECTION CRITIQUE : Utilisation de l'ObjectPool au lieu d'Instantiate
-            GameObject gemGO = ObjectPool.Instance.Get("XPGem", position + offset, Quaternion.identity);
+            // MODIFIÉ (2026-10-04) - la gemme spawne maintenant PILE au point de mort (position), pas déjà décalée :
+            // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
+            // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
+            // "pas le côté satisfaisant").
+            GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
 
             if (gemGO != null)
             {
                 XPGem gem = gemGO.GetComponent<XPGem>();
                 if (gem != null)
                 {
-                    gem.Init(gemType, _playerTransform);
+                    gem.Init(gemType, _playerTransform, position + offset);
                 }
             }
         }
@@ -85,6 +88,89 @@ public class XPGemSpawner : MonoBehaviour
         {
             _gemsCalculationCache.Add(XPGem.GemType.Small);
             remaining -= 10;
+        }
+    }
+
+    // AJOUTÉ (2026-10-04, suite 3) - retour utilisateur sur la mort d'un boss : "y'a juste un tas de gemme qui se
+    // superpose, moi je veux que ce soit impressionnant et gratifiant visuellement". SpawnGems() (au-dessus) convient
+    // pour un ennemi normal (peu de gemmes, pas d'enjeu visuel), mais un boss donne souvent assez d'XP pour produire
+    // une dizaine de gemmes qui, avec un simple petit offset aléatoire, retombent toutes les unes sur les autres.
+    // Ici : (1) un flash + anneau d'onde de choc au moment de l'impact, (2) un NOMBRE PLAFONNÉ de gemmes - au-delà du
+    // plafond, on consolide le surplus dans une seule grosse gemme plutôt que d'en empiler davantage, (3) chaque
+    // gemme est tirée dans une direction radiale distincte (fontaine à 360°) avec un retard en cascade, au lieu d'un
+    // offset aléatoire local.
+    private const int MaxBurstGems = 10;
+
+    public void SpawnBossGemBurst(Vector3 position, float xpValue)
+    {
+        if (ObjectPool.Instance == null) return;
+        StartCoroutine(BossGemBurstRoutine(position, xpValue));
+    }
+
+    private System.Collections.IEnumerator BossGemBurstRoutine(Vector3 position, float xpValue)
+    {
+        ExpandingRingVFX.Spawn(position, 3.5f, new Color(1f, 0.93f, 0.6f), 0.5f);
+
+        CalculateGems(xpValue); // remplit _gemsCalculationCache normalement (règle "rendre la monnaie")
+
+        // Au-delà du plafond, on fusionne tout le surplus (du début de la liste, donc les plus petites valeurs
+        // d'abord) dans UNE seule grosse gemme qui porte leur XP cumulée - jamais de gemme perdue, juste moins
+        // d'objets à l'écran.
+        int count = _gemsCalculationCache.Count;
+        float overflowXP = 0f;
+        int burstCount = count;
+        int startIndex = 0;
+        if (count > MaxBurstGems)
+        {
+            int overflowCount = count - (MaxBurstGems - 1);
+            for (int i = 0; i < overflowCount; i++)
+                overflowXP += GemTypeValue(_gemsCalculationCache[i]);
+            startIndex = overflowCount;
+            burstCount = MaxBurstGems - 1 + 1; // les restantes + la gemme consolidée
+        }
+
+        int spawned = 0;
+        int totalToSpawn = burstCount;
+        float angleStep = Mathf.PI * 2f / Mathf.Max(1, totalToSpawn);
+        float angleJitterRange = angleStep * 0.3f;
+        float startAngle = Random.Range(0f, Mathf.PI * 2f);
+
+        if (overflowXP > 0f)
+        {
+            SpawnBurstGem(position, XPGem.GemType.Large, overflowXP, startAngle, spawned, totalToSpawn);
+            spawned++;
+            yield return new WaitForSeconds(0.03f);
+        }
+
+        for (int i = startIndex; i < count; i++)
+        {
+            SpawnBurstGem(position, _gemsCalculationCache[i], null, startAngle, spawned, totalToSpawn);
+            spawned++;
+            yield return new WaitForSeconds(0.03f);
+        }
+    }
+
+    private void SpawnBurstGem(Vector3 position, XPGem.GemType type, float? xpOverride, float startAngle, int index, int total)
+    {
+        float angle = startAngle + (Mathf.PI * 2f / Mathf.Max(1, total)) * index + Random.Range(-0.2f, 0.2f);
+        float burstRadius = Random.Range(1.8f, 3.2f);
+        Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * burstRadius;
+
+        GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
+        if (gemGO == null) return;
+
+        XPGem gem = gemGO.GetComponent<XPGem>();
+        if (gem != null)
+            gem.Init(type, _playerTransform, position + offset, xpOverride);
+    }
+
+    private static float GemTypeValue(XPGem.GemType type)
+    {
+        switch (type)
+        {
+            case XPGem.GemType.Large: return 50f;
+            case XPGem.GemType.Medium: return 20f;
+            default: return 10f;
         }
     }
 }

@@ -46,9 +46,17 @@ public class EnemyProjectile : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             PlayerController player = other.GetComponent<PlayerController>();
-            if (player != null && player.IsInvincible)
+            HealthSystem playerHealthCheck = other.GetComponent<HealthSystem>();
+            // CORRIGÉ (2026-10-07, retour utilisateur : "quand Lyra met son clone et qu'elle est invisible/invincible,
+            // elle peut toujours se prendre des projectiles, même si elle ne se prend pas les dégâts") - ce bloc lisait
+            // player.IsInvincible (PlayerController), qui ne vaut vrai QUE pendant le Dash (StartDash) ; l'invincibilité
+            // du Clone Fantôme passe par HealthSystem.AddExternalInvincibility() et ne touche jamais ce flag. Résultat :
+            // pendant le clone, on tombait dans la branche "dégâts normaux" plus bas - TakeDamage() ne faisait rien
+            // (HealthSystem bloque bien les PV), mais le VFX d'impact rouge jouait quand même et le projectile était
+            // détruit. Lit maintenant HealthSystem.IsInvincible (la vraie source de vérité, qui inclut le clone).
+            if (playerHealthCheck != null && playerHealthCheck.IsInvincible)
             {
-                if (player.CanAbsorb)
+                if (player != null && player.CanAbsorb)
                 {
                     CrystalSystem crystal = other.GetComponent<CrystalSystem>();
                     if (crystal != null) crystal.AbsorbProjectile();
@@ -78,10 +86,9 @@ public class EnemyProjectile : MonoBehaviour
             }
 
             // CORRECTION LOGIQUE : Application des dégâts si le joueur n'est pas invincible
-            HealthSystem health = other.GetComponent<HealthSystem>();
-            if (health != null)
+            if (playerHealthCheck != null)
             {
-                health.TakeDamage(_damage * GameModes.EnemyDamageScale);
+                playerHealthCheck.TakeDamage(_damage * GameModes.EnemyDamageScale);
 
                 // AJOUTÉ (2026-10-03) - jusqu'ici le projectile disparaissait sans rien au moment même où il touche le
                 // joueur (seul le chiffre de dégâts, un peu après, signalait le coup). Même rouge que

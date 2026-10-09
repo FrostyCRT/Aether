@@ -30,6 +30,17 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Slider _xpBar;
     [SerializeField] private TextMeshProUGUI _levelText;
 
+    // AJOUTÉ (2026-10-04) - retour utilisateur sur le ramassage d'XP : "pas le côté satisfaisant". La barre
+    // sautait instantanément à la nouvelle valeur à chaque gemme ramassée - aucun lien visuel entre "une gemme
+    // vient de voler jusqu'au joueur" et "la barre bouge". Remplit maintenant en douceur vers la cible (lissage
+    // exponentiel, indépendant du framerate) + un petit "punch" d'échelle à chaque gain, pour que le ramassage se
+    // ressente jusque dans la barre elle-même.
+    private float _xpBarTargetValue;
+    private float _xpBarDisplayedValue;
+    private float _xpBarPunchTimer = -1f;
+    private const float XPBarFillLerpRate = 9f;
+    private const float XPBarPunchDuration = 0.16f;
+
     [Header("HP")]
     [SerializeField] private Slider _hpBar;
     [SerializeField] private TextMeshProUGUI _hpText;
@@ -52,6 +63,14 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Slider _bossHPSlider;
     [SerializeField] private TextMeshProUGUI _bossNameText;
     [SerializeField] private GameObject _bossIcon;
+
+    // AJOUTE (2026-10-07, retour utilisateur : "pendant le boss 3 il faudrait ajouter une petite barre de vie
+    // pour les mini boss qui arrive uniquement quand le mini boss spawn, et disparait quand le mini boss est
+    // mort, et reviens si un autre mini boss spawn") - clone de _bossHPBar (MiniBossHPBar dans la scène), taille
+    // divisée par 2, positionné à gauche de la barre du boss principal. Voir BossBase.TakeDamage/Die (branche
+    // IsSummoned) et BossCorruptedSource.InitSummonedBoss pour les appels.
+    [SerializeField] private GameObject _miniBossHPBar;
+    [SerializeField] private Slider _miniBossHPSlider;
 
     [Header("Game Over")]
     [SerializeField] private GameObject _gameOverPanel;
@@ -311,6 +330,8 @@ public class GameUI : MonoBehaviour
         // la fenêtre a changé de taille : le panneau HUD doit suivre
         if (_hudRect != null && _hudRect.parent is RectTransform p && (p.rect.size - _hudParentSize).sqrMagnitude > 0.25f)
             ApplyHudScale();
+
+        UpdateXPBarSmoothing();
     }
 
     private void ApplyHudScale()
@@ -739,12 +760,14 @@ public class GameUI : MonoBehaviour
 
     // Convention identique à GridLayoutGroup (UpperLeft / Horizontal) : ancre et pivot en haut-gauche, position
     // calculée à partir de la colonne/ligne et du nombre de colonnes occupées (2 pour une tuile de fusion).
-    private static void PositionArsenalSlot(GameObject slotGO, int row, int col, int colSpan, Vector2 cellSize, Vector2 spacing, float originX)
+    // originY (2026-10-07, retour utilisateur : "les cartes ne sont pas bien centré en Y par rapport à leur cadre
+    // gris derrière") : décalage vertical additionnel, 0 par défaut (comportement inchangé pour PopulateBuildGrid).
+    private static void PositionArsenalSlot(GameObject slotGO, int row, int col, int colSpan, Vector2 cellSize, Vector2 spacing, float originX, float originY = 0f)
     {
         RectTransform rt = (RectTransform)slotGO.transform;
         rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
         rt.pivot = new Vector2(0f, 1f);
-        rt.anchoredPosition = new Vector2(originX + col * (cellSize.x + spacing.x), -(row * (cellSize.y + spacing.y)));
+        rt.anchoredPosition = new Vector2(originX + col * (cellSize.x + spacing.x), -originY - (row * (cellSize.y + spacing.y)));
         rt.sizeDelta = new Vector2(cellSize.x * colSpan + spacing.x * (colSpan - 1), cellSize.y);
     }
 
@@ -913,13 +936,37 @@ public class GameUI : MonoBehaviour
         float originX = Mathf.Max(0f, (((RectTransform)gridContent).rect.width - gridWidth) * 0.5f);
 
         List<GridItem> items = GetPauseArsenalItems();
+
+        // AJOUTE (2026-10-07, retour utilisateur : "les cartes ne sont pas bien centré en Y par rapport à leur
+        // cadre gris derrière, il doit y avoir le même écart entre le haut et le bas") - mesuré en jeu : la grille
+        // (2 rangées de 265 + 16 d'espacement = 546) était plaquée en haut du cadre gris du ScrollView (573.75 de
+        // haut), laissant tout l'écart (27.75) en bas et aucun en haut. Centrée verticalement dans le Viewport
+        // (son parent direct, dont .rect.height donne la hauteur réelle du cadre indépendamment du scale du
+        // Canvas) en pré-calculant d'abord le nombre de rangées via la même logique col/row que la boucle de
+        // placement ci-dessous, sans encore instancier quoi que ce soit.
+        int totalRows;
+        {
+            int c = 0, r = 0;
+            foreach (GridItem item in items)
+            {
+                if (c + item.colSpan > columns) { c = 0; r++; }
+                c += item.colSpan;
+                if (c >= columns) { c = 0; r++; }
+            }
+            totalRows = c > 0 ? r + 1 : r;
+        }
+        float totalGridHeight = totalRows > 0 ? totalRows * cellSize.y + (totalRows - 1) * spacing.y : 0f;
+        RectTransform viewportRt = gridContent.parent as RectTransform;
+        float availableHeight = viewportRt != null ? viewportRt.rect.height : totalGridHeight;
+        float originY = Mathf.Max(0f, (availableHeight - totalGridHeight) * 0.5f);
+
         int count = 0, col = 0, row = 0;
         foreach (GridItem item in items)
         {
             if (col + item.colSpan > columns) { col = 0; row++; }
 
             GameObject slotGO = Instantiate(slotPrefab, gridContent);
-            PositionArsenalSlot(slotGO, row, col, item.colSpan, cellSize, spacing, originX);
+            PositionArsenalSlot(slotGO, row, col, item.colSpan, cellSize, spacing, originX, originY);
             ConfigureBuildGridSlot(slotGO, item.upgrade, true, parchmentSober, dotEmpty, dotFilled, dotMax, cellSize, onSlotClicked, onSlotHoverEnter, onSlotHoverExit,
                 dotSizeFew, dotSizeMany, dotSpacing, unlockDotSize, unlockDotGap);
             spawnedSlots.Add(slotGO);
@@ -1123,7 +1170,7 @@ public class GameUI : MonoBehaviour
             if (showNames)
             {
                 refs.nameText.text = upgrade.upgradeName;
-                refs.nameText.color = owned ? Color.white : new Color(0.75f, 0.75f, 0.75f, 0.8f);
+                refs.nameText.color = owned ? ParchmentInkColor : ParchmentInkColorDim;
                 ApplyReadableOutline(refs.nameText);
             }
         }
@@ -1400,15 +1447,29 @@ public class GameUI : MonoBehaviour
         return null;
     }
 
-    // AJOUTE (2026-09-27) - retour utilisateur : "le texte blanc sur ce genre de fond pour les cartes est pas très
-    // visible". Contour sombre via les propriétés natives de TMP (matériau SDF, aucun assombrissement du fond
-    // requis) - garantit la lisibilité du texte blanc quel que soit l'endroit du parchemin où il tombe.
+    // MODIFIE (2026-10-07, retour utilisateur : "c'est toujours aussi clair, et c'est difficile de lire de loin")
+    // - le texte blanc + contour sombre (voir ancien commentaire ci-dessous) reste trop peu contrasté sur un
+    // parchemin clair, vu de loin ou compressé. Remplacé par une couleur "encre" (comme le reste du dessin du
+    // parchemin, bordure végétale incluse - cohérent avec le style plutôt qu'un ajout) + un fin halo clair à la
+    // place du contour sombre, pour que le texte se détache sans jamais disparaître dans le papier.
+    // ANCIEN (2026-09-27) : "le texte blanc sur ce genre de fond pour les cartes est pas très visible" - ce
+    // correctif-ci avait déjà tenté de régler le même retour avec un contour sombre sur texte BLANC ; insuffisant.
+    // RETOUCHÉ (2026-10-07, retour utilisateur : 1er essai en brun quasi-noir "je ne sais pas trop quoi en
+    // penser, c'est très différent d'avant" → "trouve un entre deux, essaie de faire de la même couleur que les
+    // dessins sur les côtés des parchemins") - éclairci pour reprendre la teinte sépia/brun réelle du TRAIT de la
+    // bordure végétale dessinée (mesurée à l'œil sur parchment_sobre_final.jpg/ParcheminDoré.png : un brun sienna
+    // moyen, pas un brun-noir) plutôt qu'une encre plus sombre inventée.
+    public static readonly Color ParchmentInkColor = new Color32(0x6B, 0x42, 0x26, 0xFF);
+    // Variante atténuée (upgrade pas encore possédée) : même famille "encre", juste plus claire/moins saturée -
+    // remplace l'ancien gris neutre, qui détonnait sur un fond parchemin.
+    public static readonly Color ParchmentInkColorDim = new Color32(0x9C, 0x82, 0x6A, 0xD9);
+
     public static void ApplyReadableOutline(TextMeshProUGUI text)
     {
         if (text == null) return;
         text.fontMaterial.EnableKeyword("OUTLINE_ON");
-        text.outlineWidth = 0.22f;
-        text.outlineColor = new Color32(30, 18, 10, 255);
+        text.outlineWidth = 0.16f;
+        text.outlineColor = new Color32(0xF5, 0xEC, 0xD6, 0xFF);
     }
 
     private Color GetTileTint(UpgradeBranch branch)
@@ -2053,11 +2114,36 @@ public class GameUI : MonoBehaviour
     {
         if (_xpBar != null)
         {
-            _xpBar.value = (xpToNextLevel > 0) ? currentXP / xpToNextLevel : 0f;
+            _xpBarTargetValue = (xpToNextLevel > 0) ? currentXP / xpToNextLevel : 0f;
+            _xpBarPunchTimer = 0f; // relance le petit "punch" a chaque gain - voir LateUpdate
         }
 
         if (_levelText != null)
             _levelText.text = $"Niv. {level}";
+    }
+
+    // AJOUTÉ (2026-10-04) - voir le commentaire sur _xpBarTargetValue. Lissage exponentiel (jamais de
+    // Time.deltaTime brut multiplié - indépendant du framerate) + petit punch d'échelle synchronisé.
+    private void UpdateXPBarSmoothing()
+    {
+        if (_xpBar == null) return;
+
+        _xpBarDisplayedValue = Mathf.Lerp(_xpBarDisplayedValue, _xpBarTargetValue, 1f - Mathf.Exp(-XPBarFillLerpRate * Time.deltaTime));
+        if (Mathf.Abs(_xpBarDisplayedValue - _xpBarTargetValue) < 0.0005f) _xpBarDisplayedValue = _xpBarTargetValue;
+        _xpBar.value = _xpBarDisplayedValue;
+
+        if (_xpBarPunchTimer >= 0f)
+        {
+            _xpBarPunchTimer += Time.deltaTime;
+            float p = Mathf.Clamp01(_xpBarPunchTimer / XPBarPunchDuration);
+            float punch = 1f + 0.1f * (1f - p) * Mathf.Sin(p * Mathf.PI); // part a 1, bombe, revient a 1
+            _xpBar.transform.localScale = new Vector3(1f, punch, 1f);
+            if (_xpBarPunchTimer >= XPBarPunchDuration)
+            {
+                _xpBarPunchTimer = -1f;
+                _xpBar.transform.localScale = Vector3.one;
+            }
+        }
     }
 
     public void UpdateHPBar(float currentHP, float maxHP)
@@ -2124,6 +2210,25 @@ public class GameUI : MonoBehaviour
         if (_bossHPBar != null) _bossHPBar.SetActive(false);
         if (_bossNameText != null) _bossNameText.gameObject.SetActive(false);
         if (_bossIcon != null) _bossIcon.SetActive(false);
+    }
+
+    // AJOUTE (2026-10-07, retour utilisateur : barre de vie dédiée aux mini-boss du Boss 3) - même trio
+    // Show/Update/Hide que la barre du boss principal, en parallèle.
+    public void ShowMiniBossHP()
+    {
+        if (_miniBossHPBar != null) _miniBossHPBar.SetActive(true);
+        if (_miniBossHPSlider != null) _miniBossHPSlider.value = 1f;
+    }
+
+    public void UpdateMiniBossHP(float current, float max)
+    {
+        if (_miniBossHPSlider != null)
+            _miniBossHPSlider.value = (max > 0) ? current / max : 0f;
+    }
+
+    public void HideMiniBossHP()
+    {
+        if (_miniBossHPBar != null) _miniBossHPBar.SetActive(false);
     }
 
     // MODIFIE - ajout de "deathCause" (transmis par HealthSystem -> GameManager)

@@ -30,6 +30,16 @@ public class DebugCheats : MonoBehaviour
     [SerializeField] private KeyCode _toggleGodModeKey = KeyCode.F6;
     [Tooltip("Bascule l'invincibilite de TOUS les ennemis (normaux ET boss) - pour observer un combat/pattern sans rien tuer.")]
     [SerializeField] private KeyCode _toggleEnemiesInvincibleKey = KeyCode.F7;
+    // F10 evite expres (2026-10-04) - retour utilisateur : raccourci "lancer l'enregistrement" de son
+    // outil de capture d'ecran/jeu, qui le sortait du test a chaque fois qu'il appuyait dessus.
+    [Tooltip("Fait apparaitre une gemme d'XP PETITE pres du joueur.")]
+    [SerializeField] private KeyCode _spawnSmallGemKey = KeyCode.F8;
+    [Tooltip("Fait apparaitre une gemme d'XP MOYENNE pres du joueur.")]
+    [SerializeField] private KeyCode _spawnMediumGemKey = KeyCode.F9;
+    [Tooltip("Fait apparaitre une gemme d'XP GRANDE pres du joueur.")]
+    [SerializeField] private KeyCode _spawnLargeGemKey = KeyCode.F11;
+    [Tooltip("Retire tous les ennemis normaux actuellement sur la carte (boss non compris).")]
+    [SerializeField] private KeyCode _clearEnemiesKey = KeyCode.F12;
 
     // Securite max par ameliorations pour eviter une boucle infinie si
     // IsAvailable() ne redevient jamais false pour une raison inattendue.
@@ -74,6 +84,18 @@ public class DebugCheats : MonoBehaviour
 
         if (Input.GetKeyDown(_toggleEnemiesInvincibleKey))
             ToggleEnemiesInvincible();
+
+        if (Input.GetKeyDown(_spawnSmallGemKey))
+            SpawnDebugGem(XPGem.GemType.Small);
+
+        if (Input.GetKeyDown(_spawnMediumGemKey))
+            SpawnDebugGem(XPGem.GemType.Medium);
+
+        if (Input.GetKeyDown(_spawnLargeGemKey))
+            SpawnDebugGem(XPGem.GemType.Large);
+
+        if (Input.GetKeyDown(_clearEnemiesKey))
+            ClearEnemies();
     }
 
     // CORRIGE (2026-09-27) - ne fait plus QUE avancer le chrono : ne spawne plus le boss directement (c'était le bug
@@ -171,5 +193,44 @@ public class DebugCheats : MonoBehaviour
         EnemyBase.DebugInvincible = newState;
         BossBase.DebugInvincible = newState;
         Debug.Log($"[DebugCheats] Invincibilité des ennemis (normaux + boss) {(newState ? "ACTIVÉE" : "désactivée")}.");
+    }
+
+    // AJOUTE (2026-10-04) - fait apparaître une gemme d'XP d'un type donné juste devant le joueur, en passant
+    // directement par l'ObjectPool/XPGem.Init comme le ferait XPGemSpawner (sans passer par CalculateGems, puisqu'on
+    // veut UN type précis, pas une somme d'XP à convertir).
+    private void SpawnDebugGem(XPGem.GemType type)
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player == null || ObjectPool.Instance == null)
+        {
+            Debug.LogWarning("[DebugCheats] Joueur ou ObjectPool introuvable.");
+            return;
+        }
+
+        Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
+        GameObject gemGO = ObjectPool.Instance.Get("XPGem", spawnPos, Quaternion.identity);
+        if (gemGO == null)
+        {
+            Debug.LogWarning("[DebugCheats] Echec du spawn de la gemme (pool \"XPGem\" introuvable).");
+            return;
+        }
+
+        XPGem gem = gemGO.GetComponent<XPGem>();
+        if (gem != null)
+            gem.Init(type, player.transform, spawnPos);
+
+        Debug.Log($"[DebugCheats] Gemme {type} spawnée.");
+    }
+
+    private void ClearEnemies()
+    {
+        if (WaveManager.Instance == null)
+        {
+            Debug.LogWarning("[DebugCheats] WaveManager introuvable.");
+            return;
+        }
+
+        WaveManager.Instance.DebugClearAllEnemies();
+        Debug.Log("[DebugCheats] Ennemis retirés.");
     }
 }

@@ -30,6 +30,10 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private GameObject _ultVFXPrefab;
     [SerializeField] private float _ultVFXDuration = 0.55f;
     [SerializeField] private float _hitstopDuration = 0.08f;
+    // AJOUTÉ (2026-10-06, "hiérarchie Y des effets au sol") - même bug que la Nova juste au-dessus (voir son
+    // commentaire dans NovaRoutine, corrigé le 2026-09-17) : jamais appliqué ici. Le VFX de l'Ultime flottait
+    // réellement à hauteur de torse (~1,5, mesuré en jeu) au lieu d'être une onde de choc au sol comme la Nova.
+    [SerializeField] private float _ultGroundY = 0.2f;
 
     [Header("Ulti — Absorption XP")]
     [SerializeField] private float _gemAttractRange = 14f;
@@ -163,14 +167,14 @@ public class CrystalSystem : MonoBehaviour
         foreach (EnemyBase enemy in allEnemies)
         {
             if (enemy != null)
-                enemy.TakeDamage(empoweredDamage, DamageNumberSpawner.ColorCritical);
+                enemy.TakeDamage(empoweredDamage, DamageNumberSpawner.ColorUltimate);
         }
 
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
         foreach (Collider hit in hits)
         {
             BossBase boss = hit.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale);
+            if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale, DamageNumberSpawner.ColorUltimate);
         }
 
         StartCoroutine(SlowAllEnemies());
@@ -187,10 +191,10 @@ public class CrystalSystem : MonoBehaviour
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_ultDamage * multiplier, DamageNumberSpawner.ColorCritical);
+                if (eb != null) eb.TakeDamage(_ultDamage * multiplier, DamageNumberSpawner.ColorUltimate);
 
                 BossBase boss = hit.GetComponent<BossBase>();
-                if (boss != null) boss.TakeDamage(_ultDamage * multiplier);
+                if (boss != null) boss.TakeDamage(_ultDamage * multiplier, DamageNumberSpawner.ColorUltimate);
             }
         }
     }
@@ -235,10 +239,10 @@ public class CrystalSystem : MonoBehaviour
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorCritical, true);
+                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorNova, true);
 
                 BossBase boss = hit.GetComponent<BossBase>();
-                if (boss != null) boss.TakeDamage(_novaDamage);
+                if (boss != null) boss.TakeDamage(_novaDamage, DamageNumberSpawner.ColorNova);
             }
         }
     }
@@ -273,7 +277,9 @@ public class CrystalSystem : MonoBehaviour
     {
         if (_ultVFXPrefab == null) yield break;
 
-        GameObject vfx = Instantiate(_ultVFXPrefab, transform.position, Quaternion.identity);
+        Vector3 vfxSpawnPos = transform.position;
+        vfxSpawnPos.y = _ultGroundY;
+        GameObject vfx = Instantiate(_ultVFXPrefab, vfxSpawnPos, Quaternion.identity);
         float elapsed = 0f;
 
         while (elapsed < _ultVFXDuration)

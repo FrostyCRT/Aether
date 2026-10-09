@@ -29,6 +29,11 @@ public class BouncingOrbProjectile : MonoBehaviour
     private readonly Dictionary<int, float> _recentHits = new Dictionary<int, float>();
     private List<int> _hitCleanupBuffer;
 
+    // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences [...]
+    // pour les autres il y a rien" - l'Orbe rebondissant n'avait ni traînée ni éclat d'impact. Couleur azur
+    // (ColorBouncingOrb, même teinte que les chiffres de dégâts).
+    private TrailRenderer _trail;
+
     private void Awake()
     {
         _poolKey = name.Replace("(Clone)", "").Trim();
@@ -40,6 +45,29 @@ public class BouncingOrbProjectile : MonoBehaviour
         _orbRadius = sphereCollider != null
             ? sphereCollider.radius * transform.lossyScale.x
             : _fallbackOrbRadius;
+
+        // RÉGLÉ (2026-10-05) - 1er essai (0,22 de large, 65% d'opacité, bleu) quasi invisible en jeu : confirmé par
+        // diagnostic (le TrailRenderer existait bien, se remplissait bien - juste trop fin/transparent pour se voir
+        // à l'écran, surtout vu l'angle de caméra assez plongeant qui aplatit visuellement la traînée). Élargie et
+        // éclaircie jusqu'à bien se voir sans devenir un gros ruban blanc criard (testé en Play, capture à l'appui).
+        _trail = gameObject.AddComponent<TrailRenderer>();
+        _trail.time = 0.4f;
+        _trail.minVertexDistance = 0.05f;
+        _trail.widthMultiplier = 0.4f;
+        _trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+        _trail.material = new Material(Shader.Find("Sprites/Default"));
+        _trail.startColor = FXSprites.A(DamageNumberSpawner.ColorBouncingOrb, 0.85f);
+        _trail.endColor = FXSprites.A(DamageNumberSpawner.ColorBouncingOrb, 0f);
+        _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _trail.receiveShadows = false;
+        _trail.sortingOrder = 3;
+    }
+
+    // AJOUTÉ - même raison que OrbitalProjectile.OnEnable : sans ça, un orbe recyclé dessinerait une traînée
+    // reliant sa position précédente à sa nouvelle position de réapparition.
+    private void OnEnable()
+    {
+        if (_trail != null) _trail.Clear();
     }
 
     public void Init(Vector3 direction, float damage, float speed, float groundY)
@@ -62,6 +90,14 @@ public class BouncingOrbProjectile : MonoBehaviour
         _damage = damage;
         _speed = speed;
     }
+
+    // AJOUTÉ (2026-10-05) - utilisé par WeaponFusionTwinOrbs pour agrandir visuellement les 2 orbes ("duo
+    // iconique") via transform.localScale : _orbRadius n'est calculé qu'UNE FOIS dans Awake() (à partir du
+    // SphereCollider et de l'échelle du moment), donc un changement d'échelle APRÈS coup (sur une instance poolée
+    // déjà vivante) ne s'y répercute jamais tout seul - sans ce setter, l'orbe rebondirait visuellement trop tôt/
+    // tard sur les bords (son rayon de rebond resterait celui d'un orbe normal, pas celui, agrandi, affiché).
+    public void SetOrbRadius(float radius) => _orbRadius = radius;
+    public float OrbRadius => _orbRadius;
 
     private void Update()
     {
@@ -226,11 +262,16 @@ public class BouncingOrbProjectile : MonoBehaviour
         EnemyBase enemy = other.GetComponent<EnemyBase>();
         if (enemy != null)
         {
-            enemy.TakeDamage(dmg, DamageNumberSpawner.ColorProjectile);
+            enemy.TakeDamage(dmg, DamageNumberSpawner.ColorBouncingOrb);
+            ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorBouncingOrb);
             return;
         }
         BossBase boss = other.GetComponent<BossBase>();
-        if (boss != null) boss.TakeDamage(dmg);
+        if (boss != null)
+        {
+            boss.TakeDamage(dmg, DamageNumberSpawner.ColorBouncingOrb);
+            ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorBouncingOrb);
+        }
     }
 
     // Nettoie régulièrement le dictionnaire de cooldowns pour éviter qu'il ne grossisse

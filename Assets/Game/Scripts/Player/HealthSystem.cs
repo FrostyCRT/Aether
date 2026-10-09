@@ -25,6 +25,13 @@ public class HealthSystem : MonoBehaviour
     // lire les PV du joueur sans réflexion (ex. le bot de playtest d'équilibrage, voir GameInput.DebugMoveOverride).
     public float CurrentHealth => _currentHealth;
 
+    // AJOUTE (2026-10-07, retour utilisateur : "même si on a pas pris réputation régén, on récupère 5pv toutes
+    // les secondes") - jusqu'ici _regenPerSecond venait UNIQUEMENT du nœud méta "Réputation - Régénération" :
+    // sans lui, _regenPerSecond valait 0 et le bloc de régénération plus bas (Update) ne faisait jamais rien.
+    // Ce socle s'additionne au bonus du nœud (voir Awake) - un joueur qui a investi dans le nœud cumule les 2.
+    [Header("Régénération")]
+    [SerializeField] private float _baseRegenPerSecond = 5f;
+
     private float _armorReduction = 0f;
     private float _regenPerSecond = 0f;
     private float _regenTimer = 0f;
@@ -53,7 +60,7 @@ public class HealthSystem : MonoBehaviour
         _maxHealth += _maxHealth * bonusHP;
         _currentHealth = _maxHealth;
         _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
-        _regenPerSecond = MetaProgressionManager.Instance.GetReputationBonusRegen();
+        _regenPerSecond = _baseRegenPerSecond + MetaProgressionManager.Instance.GetReputationBonusRegen();
         _secondWindUsed = false;
         _isDead = false;
         _playerBuffs = GetComponent<PlayerBuffs>();

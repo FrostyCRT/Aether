@@ -129,6 +129,19 @@ public class BossBase : MonoBehaviour
     protected Transform AimTarget =>
         PlayerController.ActivePhantomClone != null ? PlayerController.ActivePhantomClone : _playerTransform;
 
+    // AJOUTÉ (2026-10-04) - retour utilisateur : "quand un boss spawn trop rapidement, des fois... il meurt
+    // instantanément". Cause trouvée : `_currentHealth` n'était initialisé que dans Start(), qui ne s'exécute
+    // qu'AVANT le premier Update() du boss - donc PAS synchrone avec Instantiate(). Si quoi que ce soit lui inflige
+    // des dégâts dans la MÊME frame que son apparition (une zone d'Aura/Boue déjà active à cet endroit, un orbital
+    // qui le touche au moment exact où son collider s'active...), `_currentHealth` valait encore 0 (défaut C#) ->
+    // `TakeDamage` le passait directement en négatif -> mort instantanée, aléatoirement, sans rapport apparent avec
+    // les dégâts réellement infligés. `Awake()` s'exécute lui de façon synchrone à Instantiate(), AVANT que quoi
+    // que ce soit d'autre puisse interagir avec le nouvel objet - élimine la fenêtre de course entièrement.
+    protected virtual void Awake()
+    {
+        _currentHealth = _maxHealth;
+    }
+
     protected virtual void Start()
     {
         _currentHealth = _maxHealth;
@@ -421,6 +434,14 @@ public class BossBase : MonoBehaviour
         }
     }
 
+    // CORRIGÉ (2026-10-03) - cette lueur ne s'affichait jamais en jeu : les modèles importés de Tripo utilisent un
+    // Shader Graph glTF ("Shader Graphs/glTF-pbrMetallicRoughness") dont les propriétés s'appellent baseColorFactor/
+    // emissiveFactor, PAS _BaseColor/_EmissionColor (noms standard Unity, uniquement valables sur Universal Render
+    // Pipeline/Lit) - _emissionColorProperty ne faisait donc rien, sans la moindre erreur. En plus, même sur le bon
+    // nom, l'émission dépend d'un mot-clé/poids d'exposition pas garanti actif. On pulse maintenant aussi la
+    // COULEUR DE BASE (toujours active, sur n'importe quel shader) en plus de la tentative d'émission d'origine
+    // (gardée, inoffensive si elle ne fait rien) - teinte vers _manaGlowColor au lieu d'un blanc neutre, pour rester
+    // dans l'esprit "mana" de ce signal plutôt qu'un flash générique.
     protected void UpdateGlowEffect(float progress)
     {
         if (_bodyRenderer == null) return;
@@ -431,6 +452,11 @@ public class BossBase : MonoBehaviour
         _bodyRenderer.GetPropertyBlock(_propBlock);
         Color emission = _manaGlowColor * Mathf.Lerp(0f, _maxEmissionIntensity, progress);
         _propBlock.SetColor(_emissionColorProperty, emission);
+        _propBlock.SetColor("emissiveFactor", emission);
+        Color baseTint = Color.Lerp(Color.white, _manaGlowColor, progress * 0.8f) * Mathf.Lerp(1f, 1.8f, progress);
+        baseTint.a = 1f;
+        _propBlock.SetColor("_BaseColor", baseTint);
+        _propBlock.SetColor("baseColorFactor", baseTint);
         _bodyRenderer.SetPropertyBlock(_propBlock);
     }
 
@@ -448,27 +474,108 @@ public class BossBase : MonoBehaviour
     // Invisible en classique, mais en Choc des titans un seul boss tué déclenchait la victoire.
     private bool _deathTriggered = false;
 
+    // AJOUTÉ (2026-10-04) - retour utilisateur : "l'indicateur de dégât on ne le voit pas car le boss est gros, et
+    // l'affichage est sous le boss, donc le modèle 3D du boss passe devant l'affichage". `DamageNumberSpawner.Spawn`
+    // ajoute +1,5 unité à la position reçue (pensé pour des ennemis normaux, bien plus petits) - sur un boss de
+    // plusieurs unités de haut, ça tombe en plein milieu du torse/des jambes, caché par le modèle vu de la caméra
+    // top-down du jeu. Calculé UNE SEULE FOIS (pas de GetComponent/bounds à chaque coup) à partir du haut réel du
+    // modèle (`_bodyRenderer.bounds`, déjà assigné pour la lueur de charge) : les nombres flottent maintenant
+    // au-dessus de la tête du boss, jamais cachés derrière lui vu d'en haut.
+    private float? _damageNumberHeight;
+    private float DamageNumberHeight()
+    {
+        if (_damageNumberHeight.HasValue) return _damageNumberHeight.Value;
+        float topY = _bodyRenderer != null ? _bodyRenderer.bounds.max.y - transform.position.y : 3.5f;
+        _damageNumberHeight = Mathf.Max(1.5f, topY + 0.6f) - 1.5f; // -1,5 pour compenser le +1,5 déjà ajouté par Spawn()
+        return _damageNumberHeight.Value;
+    }
+
+    // AJOUTÉ (2026-10-06, retour utilisateur "boss pas assez résistants, trop de sources de dégâts cumulables") -
+    // mesuré : un build avec les 10 types d'améliorations au palier max tue le Boss 1 (20 000 PV) en ~6,5 s, le
+    // Boss 2 (50 000) en ~11,5 s, le Boss 3 (125 000) en ~19,4 s - chaque arme ajoute son propre DPS sans aucune
+    // limite de cumul. Plafond de dégâts par FENÊTRE GLISSANTE courte, en % des PV MAX (proportionnel aux 3
+    // paliers 20k/50k/125k, aucun réglage par boss) : un build faible/partiel reste toujours sous ce plafond et
+    // n'est jamais affecté ; seul le PIC (beaucoup de sources qui tapent dans la même fenêtre) est écrêté.
+    // MODIFIE (2026-10-07, retour utilisateur : "la limite de dégâts qu'on peut leur infliger est trop faible...
+    // il y aura le système de niveau de difficulté donc si dans la meta progression on a plein de moyen d'avoir
+    // plus de dégâts, ils servent surtout pour les moyens de difficulté qu'on va bientôt mettre en place") - le
+    // plancher de ~30s minimum (0,5%) ne laissait plus aucune marge à un futur build méta très investi pour tuer
+    // un boss plus vite qu'un build de base : le plafond devenait le vrai facteur limitant, pas l'équipement du
+    // joueur. Relevé ×5 (plancher ramené à ~6s minimum) : un build faible/partiel reste sous ce plafond comme
+    // avant, mais un build très optimisé (actuel OU futur via la méta-progression) peut enfin aller nettement
+    // plus vite - à réajuster une fois le système de difficulté en place si besoin.
+    [Header("Boss — Anti-cumul (plafond de dégâts simultanés)")]
+    [SerializeField] private float _burstWindowDuration = 0.15f;
+    [SerializeField] private float _maxBurstPercentPerWindow = 0.025f; // 2,5 % des PV max / fenêtre ≈ plancher ~6 s même en cumul extrême
+
+    private float _burstWindowStart = -999f;
+    private float _burstWindowDamageDealt = 0f;
+
+    // CORRIGE (2026-10-07, retour utilisateur : "la limite est aussi compté pour les mini boss, est-ce que c'est
+    // voulu ?") - non : _maxBurstPercentPerWindow est un pourcentage des PV MAX de CETTE instance, donc un
+    // mini-boss (PV déjà réduits à 30% via InitWithReducedHP, voir BossCorruptedSource) héritait du même PLANCHER
+    // DE TEMPS minimum (~6 s) qu'un vrai boss avec ses PV complets, alors qu'il est censé être un objectif
+    // secondaire rapide à abattre pendant le combat principal. Les mini-boss ne sont plus jamais plafonnés.
+    private float ClampBurstDamage(float damage)
+    {
+        if (IsSummoned) return damage;
+
+        float now = Time.time;
+        if (now - _burstWindowStart > _burstWindowDuration)
+        {
+            _burstWindowStart = now;
+            _burstWindowDamageDealt = 0f;
+        }
+
+        float budget = _maxHealth * _maxBurstPercentPerWindow;
+        float allowed = Mathf.Max(0f, budget - _burstWindowDamageDealt);
+        float applied = Mathf.Min(damage, allowed);
+        _burstWindowDamageDealt += applied;
+        return applied;
+    }
+
     public virtual void TakeDamage(float damage, Color color = default)
     {
         if (DebugInvincible) return;
         if (_deathTriggered) return;
 
-        _currentHealth -= damage;
+        float applied = ClampBurstDamage(damage);
+        if (applied <= 0f) return;
+
+        _currentHealth -= applied;
 
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorCritical : color;
-            DamageNumberSpawner.Instance.Spawn(transform.position, damage, c, transform, true);
+            Vector3 spawnPos = transform.position + Vector3.up * DamageNumberHeight();
+            DamageNumberSpawner.Instance.Spawn(spawnPos, applied, c, transform, true);
         }
 
+        // MODIFIE (2026-10-07) - un mini-boss invoqué (IsSummoned=true) a sa propre barre, voir GameUI.UpdateMiniBossHP.
         if (!IsSummoned)
             GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
+        else
+            GameUI.Instance.UpdateMiniBossHP(_currentHealth, _maxHealth);
 
         if (_currentHealth <= 0)
         {
             _deathTriggered = true;
             Die();
         }
+    }
+
+    // AJOUTE (2026-10-07, retour utilisateur : "si on tue le boss 3 alors qu'un mini boss est encore en vie, il
+    // ne faut pas lancer le Victory panel tout de suite, il faut abattre le mini boss même si la source est
+    // morte") - mise à mort immédiate, SANS passer par TakeDamage()/ClampBurstDamage() (le plafond anti-cumul
+    // plus haut écrêterait un gros dégât ponctuel à ~0,5 % des PV max, donc ne tuerait pas le mini-boss d'un
+    // coup). Réservé à ce genre de mise à mort scriptée (voir BossCorruptedSource.Die()), jamais aux dégâts du
+    // joueur.
+    public void ForceKill()
+    {
+        if (_deathTriggered) return;
+        _deathTriggered = true;
+        _currentHealth = 0f;
+        Die();
     }
 
     protected virtual void Die()
@@ -488,7 +595,15 @@ public class BossBase : MonoBehaviour
             // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
             if (_xpBarFraction > 0f && XPSystem.Instance != null)
                 xpReward = XPSystem.Instance.XPToNextLevel * _xpBarFraction;
-            XPGemSpawner.Instance.SpawnGems(gemSpawnPos, xpReward);
+
+            // AJOUTÉ (2026-10-04, suite 3) - retour utilisateur : "quand on tue un boss... je veux que ce soit
+            // impressionnant et gratifiant visuellement" au lieu d'un simple tas de gemmes superposées. Un VRAI
+            // boss (pas un mini-boss invoqué) a droit à la fontaine en cascade ; un mini-boss invoqué reste sur le
+            // comportement normal (discret, cohérent avec un ennemi un peu plus gros).
+            if (!IsSummoned)
+                XPGemSpawner.Instance.SpawnBossGemBurst(gemSpawnPos, xpReward);
+            else
+                XPGemSpawner.Instance.SpawnGems(gemSpawnPos, xpReward);
         }
 
         GameManager.Instance.AddKill();
@@ -533,6 +648,12 @@ public class BossBase : MonoBehaviour
                     }
                 }
             }
+        }
+        else
+        {
+            // AJOUTE (2026-10-07) - un mini-boss invoqué masque sa propre barre à sa mort (jamais celle du boss
+            // principal, qui garde la sienne tant que la Source elle-même n'est pas morte).
+            GameUI.Instance.HideMiniBossHP();
         }
 
         FinishDeath();

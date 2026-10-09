@@ -37,13 +37,43 @@ public class MudPuddleZone : MonoBehaviour
     private string _poolKey;
     private bool _isActive = false;
 
+    // AJOUTÉ (2026-10-05) - retour utilisateur : les fusions qui réutilisent cette zone (Terre Calcinée = feu+boue,
+    // Marécage Maudit = boue+foudre) affichaient exactement la même flaque brune que la Boue toute seule, aucun
+    // moyen de les distinguer d'un coup d'œil. Teinte via MaterialPropertyBlock (jamais le Material partagé
+    // "Maron" lui-même, qui resterait inchangé pour toutes les flaques de Boue normale) - _BaseColor est le nom de
+    // propriété du shader URP Lit utilisé par ce matériau (vérifié dans Maron.mat).
+    private MeshRenderer _meshRenderer;
+    private MaterialPropertyBlock _propBlock;
+    private static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
+
     private void Awake()
     {
         _poolKey = name.Replace("(Clone)", "").Trim();
+        _meshRenderer = GetComponentInChildren<MeshRenderer>();
+        _propBlock = new MaterialPropertyBlock();
+    }
+
+    // Appelé par les fusions juste après Init() pour se démarquer visuellement de la Boue normale (ex: orange
+    // "braises" pour Terre Calcinée, vert sickly pour Marécage Maudit).
+    public void SetColorTint(Color tint)
+    {
+        if (_meshRenderer == null) return;
+        _meshRenderer.GetPropertyBlock(_propBlock);
+        _propBlock.SetColor(BaseColorID, tint);
+        _meshRenderer.SetPropertyBlock(_propBlock);
+    }
+
+    // Efface toute teinte précédente (property block vidé) pour retrouver la couleur D'ORIGINE du matériau
+    // "Maron" - PAS un blanc qui écraserait/éclaircirait la couleur, juste "plus aucune surcharge".
+    public void ClearColorTint()
+    {
+        if (_meshRenderer == null) return;
+        _meshRenderer.SetPropertyBlock(null);
     }
 
     public void Init(float duration, float radius, float slowMultiplier, float damagePerSecond)
     {
+        ClearColorTint(); // remet la couleur d'origine à chaque réutilisation depuis le pool - les fusions la retintent juste après via SetColorTint()
         _duration = duration;
         _radius = radius;
         _slowMultiplier = slowMultiplier;
@@ -127,7 +157,7 @@ public class MudPuddleZone : MonoBehaviour
                 if (enemy.IsFlying) continue;
 
                 if (_damagePerSecond > 0f)
-                    enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorAOE);
+                    enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorMud);
 
                 if (!_currentlySlowed.ContainsKey(enemyId))
                 {
@@ -151,7 +181,7 @@ public class MudPuddleZone : MonoBehaviour
                 if (!_inRangeThisTick.Add(boss.GetInstanceID())) continue; // déjà traité ce tick (plusieurs colliders)
 
                 if (_damagePerSecond > 0f)
-                    boss.TakeDamage(tickDamage);
+                    boss.TakeDamage(tickDamage, DamageNumberSpawner.ColorMud);
 
                 boss.SetSpeedMultiplier(_slowMultiplier);
                 _currentlySlowedBoss = boss;

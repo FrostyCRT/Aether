@@ -63,7 +63,6 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
-        EnemyKaiju.ResetRunState();
         SpawnSelectedCharacter();
     }
 

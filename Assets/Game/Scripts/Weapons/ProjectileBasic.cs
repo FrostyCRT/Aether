@@ -14,6 +14,11 @@ public class ProjectileBasic : MonoBehaviour
     private Vector3 _direction;
     private float _maxRangeSqr;
     private string _poolKey;
+    // AJOUTÉ (2026-10-04) - ce même script sert au tir de base ET à Boule de Feu ET aux Couteaux (seul le prefab
+    // visuel change) : jusqu'ici tous les trois teintaient leurs dégâts en `ColorProjectile`, indifféremment. Une
+    // couleur par arme, injectée par l'appelant (WeaponBase/WeaponFireball/WeaponShurikenBarrage/fusions), au lieu
+    // d'un hardcode unique dans OnTriggerEnter.
+    private Color _damageColor = DamageNumberSpawner.ColorProjectile;
     private float _fragmentChance = 0f;
     private float _fragmentDamage = 0f;
     private float _fragmentRadius = 2f;
@@ -36,16 +41,37 @@ public class ProjectileBasic : MonoBehaviour
     private readonly System.Collections.Generic.List<int> _hitInstanceIds = new System.Collections.Generic.List<int>(4);
     private static readonly Collider[] _ricochetBuffer = new Collider[32];
 
+    // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences [...]
+    // pour les autres il y a rien" - ProjectileBasic sert au tir de base ET Boule de Feu ET Couteaux ET Lames
+    // Ricochet (fusion), donc une seule traînée ici profite à 4 armes/fusions d'un coup. Couleur = _damageColor
+    // (déjà par-arme, voir plus haut), donc chaque traînée reste identifiable comme les chiffres de dégâts.
+    private TrailRenderer _trail;
+
     private void Awake()
     {
         _maxRangeSqr = _maxRange * _maxRange;
         _poolKey = name.Replace("(Clone)", "").Trim();
+
+        // Largeur relevée (2026-10-05) - voir note équivalente dans BouncingOrbProjectile.cs : un trait trop fin
+        // devient quasi invisible vu l'angle de caméra plongeant du jeu, surtout sur une trajectoire rectiligne
+        // qui peut se retrouver presque "de face" par rapport à la caméra.
+        _trail = gameObject.AddComponent<TrailRenderer>();
+        _trail.time = 0.12f;
+        _trail.minVertexDistance = 0.05f;
+        _trail.widthMultiplier = 0.2f;
+        _trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+        _trail.material = new Material(Shader.Find("Sprites/Default"));
+        _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _trail.receiveShadows = false;
+        _trail.sortingOrder = 3;
     }
-    public void Init(Vector3 direction, float damage)
+    // color : optionnel - défaut ColorProjectile (tir de base/Double Tir). Fireball/Knives/fusions passent la leur.
+    public void Init(Vector3 direction, float damage, Color? color = null)
     {
         _direction = direction.normalized;
         _startPosition = transform.position;
         _damage = damage;
+        _damageColor = color ?? DamageNumberSpawner.ColorProjectile;
         _fragmentChance = 0f;
         _hasPiercing = false;
         _currentPierceHits = 0;
@@ -57,6 +83,10 @@ public class ProjectileBasic : MonoBehaviour
         _hasRicochet = false;
         _ricochetsLeft = 0;
         _hitInstanceIds.Clear();
+
+        _trail.Clear(); // sans ça, un projectile recyclé depuis le pool dessinerait une traînée depuis sa position précédente
+        _trail.startColor = FXSprites.A(_damageColor, 0.7f);
+        _trail.endColor = FXSprites.A(_damageColor, 0f);
     }
 
     // AJOUTE - Ricochet (voir plus haut). bounceCount = nombre de rebonds APRÈS la perforation initiale.
@@ -98,8 +128,9 @@ public class ProjectileBasic : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Enemy")) return;
-        ApplyDamage(other, _damage, DamageNumberSpawner.ColorProjectile, false);
+        ApplyDamage(other, _damage, _damageColor, false);
         ApplyBurnIfNeeded(other);
+        ImpactSparkVFX.Spawn(transform.position, _damageColor);
         _hitInstanceIds.Add(other.GetInstanceID());
 
         if (_fragmentChance > 0f && Random.value < _fragmentChance)
@@ -110,6 +141,14 @@ public class ProjectileBasic : MonoBehaviour
             // visuelle, seuls les chiffres de degats des cibles secondaires trahissaient
             // qu'il s'etait passe quelque chose.
             ExpandingRingVFX.Spawn(transform.position, _fragmentRadius, new Color(1f, 0.5f, 0.15f, 0.85f), 0.35f);
+            // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences".
+            // L'anneau seul marque bien la LIMITE de la zone, mais manquait de "punch" au centre, au moment pile
+            // de l'explosion. Éclat agrandi (même composant que les impacts normaux, juste plus gros).
+            ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorFireball, 2f);
+            // AJOUTÉ (2026-10-05) - secousse de caméra modérée : une explosion doit se SENTIR, pas seulement se
+            // voir. Réservé à Boule de feu (l'un des rares "gros impacts" ponctuels du jeu) - jamais sur les
+            // armes à cadence élevée, pour ne pas secouer l'écran en permanence en plein combat.
+            CameraShakeFX.Shake(0.35f);
 
             int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _fragmentRadius, _overlapBuffer);
             for (int i = 0; i < hitCount; i++)
@@ -164,6 +203,10 @@ public class ProjectileBasic : MonoBehaviour
         _ricochetsLeft--;
         _currentPierceHits = 0;              // budget de perforation renouvelé après chaque rebond
         _startPosition = transform.position;  // la portée max repart de ce point, pas de repartir à vide
+        // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut toujours qu'on voit ce qu'il se passe" - sans ça, un
+        // ricochet (changement de cible en cours de vol) était invisible, seule la trajectoire qui tourne le
+        // trahissait. Éclat un peu plus grand que l'impact normal pour marquer le changement de cap.
+        ImpactSparkVFX.Spawn(transform.position, _damageColor, 1.4f);
         return true;
     }
 
@@ -185,10 +228,16 @@ public class ProjectileBasic : MonoBehaviour
             enemy.TakeDamage(damage, numberColor);
             return;
         }
+        // CORRIGÉ (2026-10-04) - retour utilisateur : "sur le boss ça fait la même couleur avec un point
+        // d'exclamation... je veux qu'on fasse comme avec les ennemis de base". La branche ennemi juste au-dessus
+        // passe bien `numberColor` (donc Fireball/Couteaux/tir de base ressortent chacun avec leur couleur sur un
+        // ennemi normal) - cette branche boss l'ignorait et retombait toujours sur la couleur par défaut de
+        // `BossBase.TakeDamage` (orange, critique). Résultat : tous les coups de CES armes sur un boss fusionnaient
+        // ensemble sous la même couleur/clé, au lieu de rester séparés par arme comme sur un ennemi normal.
         BossBase boss = target.GetComponent<BossBase>();
         if (boss != null)
         {
-            boss.TakeDamage(damage);
+            boss.TakeDamage(damage, numberColor);
         }
     }
     private void ReturnToPool()

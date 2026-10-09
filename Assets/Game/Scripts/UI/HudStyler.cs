@@ -194,6 +194,7 @@ public class HudStyler : MonoBehaviour
     {
         Safe(ApplyBars);
         Safe(ApplyBoss);
+        Safe(ApplyMiniBoss);
         Safe(ApplyCluster);
         Safe(ApplyTopRight);
         Safe(ApplyTimer);
@@ -418,6 +419,42 @@ public class HudStyler : MonoBehaviour
                 name.fontSharedMaterial = HudBar.OutlinedMaterial(_ref.fontSharedMaterial, 0.22f, new Color32(14, 9, 5, 255));
             }
         }
+    }
+
+    // AJOUTE (2026-10-07, retour utilisateur : "pendant le boss 3 il faudrait ajouter une petite barre de vie
+    // pour les mini boss... Elle apparaitrait à gauche de la barre de vie du gros boss, et la taille de la barre
+    // serait divisé par 2") - même style (HudBar, vertical, bord droit) que ApplyBoss() ci-dessus, décalée vers
+    // la gauche de sa propre largeur + une marge, moitié moins longue (sizeDelta fixe centré verticalement sur le
+    // même axe que la barre principale, au lieu du plein-étirement haut/bas de la barre du boss). Visible/masquée
+    // par GameUI.ShowMiniBossHP/HideMiniBossHP (SetActive sur ce GameObject), jamais par ce styler.
+    private void ApplyMiniBoss()
+    {
+        var bar = Find<Slider>("BossGroup/MiniBossHPBar");
+        if (bar == null) return;
+
+        float mainW = _bossBarThickness + 10f;
+        float miniThickness = _bossBarThickness * 0.5f;
+        float miniW = miniThickness + 10f;
+        const float gap = 16f;
+        float mainCx = -(_rightMargin + 22f + _bossSideShift);
+        float miniCx = mainCx - mainW * 0.5f - gap - miniW * 0.5f;
+
+        // Référence 1920x1080 (voir en-tête de fichier) : hauteur de la barre principale = écran - ses 2 marges ;
+        // la mini-barre fait la moitié de cette hauteur, centrée sur le même axe vertical qu'elle.
+        const float refHeight = 1080f;
+        float mainHeight = refHeight - _bossTopGap - _bossBottomGap;
+        float miniHeight = mainHeight * 0.5f;
+        float mainCenterFromTop = _bossTopGap + mainHeight * 0.5f;
+        float miniCenterY = refHeight * 0.5f - mainCenterFromTop;
+
+        var rt = (RectTransform)bar.transform;
+        rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(miniW, miniHeight);
+        rt.anchoredPosition = new Vector2(miniCx, miniCenterY);
+
+        HudBar mini = HudBar.Attach(bar, HudBar.Kind.Boss, miniThickness, 0f, null, Color.white, 0f, null, 0f, true, 1.2f);
+        if (mini != null) { mini.hitFlashQuietTime = _bossHitFlashQuietTime; mini.SetFixedColor(_bossColor); }
     }
 
     // ---------------------------------------------------------------------------------------------------------------

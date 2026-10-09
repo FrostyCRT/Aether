@@ -118,7 +118,28 @@ public class LevelUpManager : MonoBehaviour
         List<UpgradeData> choices = GetRandomUpgrades(3);
         if (choices.Count == 0)
         {
-            if (_pendingLevelUps > 0) DisplayLevelUp();
+            if (_pendingLevelUps > 0)
+            {
+                DisplayLevelUp();
+            }
+            else
+            {
+                // CORRIGÉ (2026-10-06, retour utilisateur : "je prends plusieurs niveaux d'affilée, la dernière
+                // carte prise complète ma dernière fusion possible, l'écran se fige" - figé en pause, obligé
+                // d'appuyer sur Échap pour reprendre). Cause : ce cas ("plus rien à proposer") n'est atteint SANS
+                // passer par SelectUpgrade() - uniquement SelectUpgrade() remet `Time.timeScale`/`IsPaused`/le HUD
+                // dans leur état normal (son bloc `else`, voir plus bas). Si CE palier-ci (dans une rafale de
+                // plusieurs niveaux d'un coup) tombe sur "plus rien à offrir" en dernier, le jeu restait figé en
+                // pause pour toujours, sans carte à l'écran ni façon d'en sortir autrement qu'Échap (qui force sa
+                // propre remise à `Time.timeScale = 1`). Remise en état IDENTIQUE à SelectUpgrade() - idempotente :
+                // si le jeu n'était pas en pause (ex. ce palier est le tout premier de la rafale, jamais mis en
+                // pause), ces 3 lignes ne changent rien.
+                Time.timeScale = 1f;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.SetPausedFlag(false);
+                if (GameUI.Instance != null)
+                    GameUI.Instance.SetHUDVisible(true);
+            }
             return;
         }
 

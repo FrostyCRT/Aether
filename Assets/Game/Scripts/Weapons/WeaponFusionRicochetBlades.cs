@@ -13,14 +13,30 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
     // même enrichie du ricochet, ne compensait pas cette perte (mesuré à seulement 1,14x les 2 cartes maxées
     // ensemble). Cadence et nombre de lames augmentés + bonus de dégâts explicite pour combler cet écart - retesté
     // à ~4x après ce changement (voir NOTES.md).
+    // REVERTE (2026-10-07, retour utilisateur : "je ne sais pas pourquoi tu as ramené la taille des lames à 2,
+    // remet comme c'est au max" + "ça doit être aussi fort que couteaux au max, et orbes rebondissant au max") -
+    // la réduction du 2026-10-05 (nombre de lames 5→2, dégâts ×1,3→×0,65) n'était pas demandée et rendait la fusion
+    // plus faible que les 2 cartes sources maxées, contrairement à l'objectif explicite du design d'origine
+    // (voir plus haut, ~4x mesuré). Lames et dégâts remis à leurs valeurs maximales.
     [Header("Stats (héritées des Couteaux + de l'Orbe rebondissant)")]
     [SerializeField] private float _fireRate = 0.65f;
     [SerializeField] private float _detectionRange = 15f;
     [SerializeField] private int _knifeCount = 5;
     [SerializeField] private float _fanAngleSpread = 15f;
-    [SerializeField] private int _pierceCount = 2;
+    // CORRIGÉ (2026-10-06, retour utilisateur : "la fusion lame ricochet ne fait pas le rebond entre ennemi
+    // actuellement en jeu") - mesuré en jeu (10 ennemis dispersés, pas groupés) : avec perforation=2, une lame doit
+    // transpercer 2 ennemis ALIGNÉS avant même d'essayer de ricocher (voir ProjectileBasic.OnTriggerEnter, le
+    // ricochet n'est vérifié qu'une fois le budget de perforation épuisé) - une condition rarement remplie avec des
+    // ennemis dispersés (3 ricochets observés sur ~16 lames tirées en 6 s). Perforation ramenée à 1 : dès le 1er
+    // ennemi touché, la lame tente immédiatement un ricochet vers un 2e - beaucoup plus facile à satisfaire, et
+    // fidèle au nom de la fusion (le ricochet doit être le comportement visible, pas un cas rare).
+    [SerializeField] private int _pierceCount = 1;
     [SerializeField] private int _ricochetCount = 2;
-    [SerializeField] private float _ricochetRange = 9f;
+    // MODIFIE (2026-10-07, retour utilisateur : "ça ricoche pas assez entre les ennemis") - 9 restait trop court
+    // pour trouver une 2e cible avec des ennemis dispersés (voir TryRicochet, ProjectileBasic.cs - plus proche
+    // ennemi PAS ENCORE touché dans ce rayon). Aligné sur _detectionRange (15, la portée à laquelle l'arme choisit
+    // déjà sa cible initiale) : pas de raison que le rebond soit nettement plus myope que le tir initial.
+    [SerializeField] private float _ricochetRange = 15f;
 
     private float _damage;
     private float _cooldownTimer = 0f;
@@ -86,7 +102,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         if (go == null) return;
         ProjectileBasic projectile = go.GetComponent<ProjectileBasic>();
         if (projectile == null) return;
-        projectile.Init(direction, _damage);
+        projectile.Init(direction, _damage, DamageNumberSpawner.ColorKnives);
         projectile.SetPiercing(true, _pierceCount);
         projectile.SetRicochet(_ricochetCount, _ricochetRange);
     }

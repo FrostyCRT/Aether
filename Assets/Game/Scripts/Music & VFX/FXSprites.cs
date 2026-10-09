@@ -18,7 +18,7 @@ public static class FXSprites
     // fautif dans les tests. Impact perf negligeable (une poignee de Material par effet, effets courts/transitoires).
     private static readonly System.Collections.Generic.Dictionary<Sprite, Material> _matBySprite = new System.Collections.Generic.Dictionary<Sprite, Material>();
 
-    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar;
+    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar, _gem;
 
     // Un Material par sprite (voir commentaire ci-dessus) : jamais partage entre deux sprites DIFFERENTS.
     public static Material SpriteMaterial(Sprite sprite)
@@ -221,6 +221,62 @@ public static class FXSprites
         tex.Apply();
         _tickRing = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
         return _tickRing;
+    }
+
+    // AJOUTÉ (2026-10-04) - retour utilisateur sur les gemmes d'XP : "une gemme c'est un losange, pas un rond...
+    // pas de relief, motif, dessin, rien". Contrairement à TOUS les autres sprites de cette bibliothèque (blancs,
+    // la couleur ne vient QUE de SpriteRenderer.color), celui-ci encode un vrai dégradé de LUMINOSITÉ par facette
+    // directement dans le RGB (pas seulement l'alpha) : multiplié par une teinte au runtime, les facettes
+    // sombres/claires restent lisibles - c'est ce qui donne le relief "pierre taillée" plutôt qu'un aplat uni.
+    // Losange élancé (proportions gemme, plus haut que large), 8 facettes à luminosité alternée (aucun dégradé
+    // lissé entre elles - un vrai diamant taillé a des arêtes nettes), un reflet décalé en haut à gauche (comme une
+    // lumière qui accroche une facette) et un cerne sombre au contour pour détacher la gemme du fond.
+    public static Sprite Gem()
+    {
+        if (_gem != null) return _gem;
+
+        const int n = 160;
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        // ÉCLAIRCI (2026-10-04, suite 2) - retour utilisateur : "c'est un peu sombre". Plancher remonté nettement
+        // (0.45-0.58 -> 0.65-0.78), le contraste entre facettes reste lisible mais plus aucune ne tombe dans le gris foncé.
+        float[] facetBrightness = { 0.7f, 1.0f, 0.78f, 1.1f, 0.65f, 0.95f, 0.72f, 1.05f };
+
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float px = (x + 0.5f) / n * 2f - 1f;
+                float py = (y + 0.5f) / n * 2f - 1f;
+
+                // Losange (norme L1), élancé verticalement.
+                float dist = Mathf.Abs(px) / 0.72f + Mathf.Abs(py) / 0.95f;
+                if (dist >= 1f) { tex.SetPixel(x, y, new Color(0f, 0f, 0f, 0f)); continue; }
+
+                float alpha = Smooth((1f - dist) / 0.035f);
+
+                float angle = Mathf.Atan2(py, px);
+                int segIndex = Mathf.FloorToInt((angle + Mathf.PI) / (2f * Mathf.PI) * facetBrightness.Length) % facetBrightness.Length;
+                float brightness = facetBrightness[segIndex];
+
+                // Profondeur : plus sombre vers le bord, plus clair vers le centre.
+                brightness *= Mathf.Lerp(1.2f, 0.88f, Smooth(dist));
+
+                // Reflet décalé (lumière qui accroche une facette).
+                float hdx = px + 0.25f;
+                float hdy = py - 0.35f;
+                float highlight = Smooth(1f - Mathf.Sqrt(hdx * hdx + hdy * hdy) / 0.38f);
+                brightness = Mathf.Lerp(brightness, 1.5f, highlight * 0.75f);
+
+                // Cerne sombre au contour (détache la gemme du sol/fond) - adouci pour ne pas trop assombrir l'ensemble.
+                float edge = 1f - Smooth((1f - dist) / 0.07f);
+                brightness *= Mathf.Lerp(1f, 0.6f, edge);
+
+                tex.SetPixel(x, y, new Color(brightness, brightness, brightness, alpha));
+            }
+        }
+        tex.Apply();
+        _gem = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _gem;
     }
 
     // Carr� blanc de 1 x 1 unit� exactement (bandes de la zone de charge : on le met � l'�chelle largeur x longueur).

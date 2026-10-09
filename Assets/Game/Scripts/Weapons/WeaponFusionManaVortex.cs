@@ -12,10 +12,18 @@ public class WeaponFusionManaVortex : MonoBehaviour
     [SerializeField] private float _tickRate = 0.25f;
     [SerializeField] private float _slowMultiplier = 0.55f;
 
+    // CORRIGÉ (2026-10-05) - retour utilisateur : "les fusions ne sont pas très efficaces [...] pas plus
+    // puissant que 2 upgrades améliorées au max". Cause trouvée en relisant le code : _orbitalCount était fixé
+    // à 3 EN DUR ici, alors qu'Orbitaux maxé seul atteint 5 orbitaux (2 de base + 3 upgrades) - fusionner perdait
+    // donc jusqu'à 2 orbitaux sur 5 (-40% de dégâts orbitaux), jamais compensé par ailleurs. Mesuré en jeu avec
+    // des ennemis DISPERSÉS ET MOBILES (pas des mannequins groupés comme la passe du 2026-09-27, qui masquait ce
+    // genre de perte) : ×0,73 - plus FAIBLE que les 2 cartes maxées. Passé en valeur par défaut seulement (sert
+    // de plancher si jamais Init() n'est pas appelé) ; Init() écrase maintenant cette valeur avec le VRAI nombre
+    // d'orbitaux hérité (voir UpgradeData.ApplyFusionResult, WeaponOrbital.OrbitalCount).
     [Header("Éclats en orbite (hérités des Orbitaux)")]
     [SerializeField] private float _orbitRadius = 4f;
     [SerializeField] private float _orbitSpeed = 220f;
-    [SerializeField] private int _orbitalCount = 3;
+    [SerializeField] private int _orbitalCount = 5;
 
     // AJOUTE (2026-09-27) - manquait entièrement (retour utilisateur : "le A/E pour la range ne fonctionne pas") :
     // WeaponOrbital a ce contrôle, ces deux champs et le Update() associé n'avaient jamais été portés ici lors de
@@ -42,11 +50,14 @@ public class WeaponFusionManaVortex : MonoBehaviour
     private const int RingSegments = 48;
     [SerializeField] private Color _ringColor = new Color(0.55f, 0.55f, 1f, 0.55f);
 
-    // Appelé une fois par UpgradeData.ApplyFusionResult, avec les dégâts hérités des 2 armes d'origine.
-    public void Init(GameObject orbitalPrefab, float inheritedFieldDamage, float inheritedOrbitalDamage)
+    // Appelé une fois par UpgradeData.ApplyFusionResult, avec les dégâts hérités des 2 armes d'origine et le VRAI
+    // nombre d'orbitaux accumulé (voir note ci-dessus) - au moins _orbitalCount (5), jamais moins même si l'appelant
+    // passe une valeur inférieure par erreur.
+    public void Init(GameObject orbitalPrefab, float inheritedFieldDamage, float inheritedOrbitalDamage, int inheritedOrbitalCount)
     {
-        _fieldDamagePerSecond = inheritedFieldDamage;
-        _orbitalDamage = inheritedOrbitalDamage;
+        _fieldDamagePerSecond = inheritedFieldDamage * 3f;
+        _orbitalDamage = inheritedOrbitalDamage * 3f;
+        _orbitalCount = Mathf.Max(_orbitalCount, inheritedOrbitalCount);
         CreateRingVisual();
         SpawnOrbitals(orbitalPrefab);
     }
@@ -146,7 +157,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
             EnemyBase enemy = hit.GetComponent<EnemyBase>();
             if (enemy != null)
             {
-                enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorAOE);
+                enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorManaVortex);
                 if (!_currentlySlowed.ContainsKey(enemyId)) { enemy.SetSpeedMultiplier(_slowMultiplier); _currentlySlowed[enemyId] = enemy; }
                 continue;
             }
@@ -154,7 +165,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
             if (boss != null)
             {
                 if (!_inRangeThisTick.Add(boss.GetInstanceID())) continue;
-                boss.TakeDamage(tickDamage);
+                boss.TakeDamage(tickDamage, DamageNumberSpawner.ColorManaVortex);
                 boss.SetSpeedMultiplier(_slowMultiplier);
                 _currentlySlowedBoss = boss;
             }

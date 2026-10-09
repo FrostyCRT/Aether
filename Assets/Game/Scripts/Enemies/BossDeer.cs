@@ -22,11 +22,6 @@ public class BossDeer : BossBase
     [SerializeField] private int _spiralBurstCount = 36;
     [SerializeField] private bool _doubleSpiral = true;
 
-    [Header("Cerf — Régénération")]
-    // MODIFIE - x10, cf. rescale global des degats/PV
-    [SerializeField] private float _regenAmount = 1000f;
-    [SerializeField] private float _regenCooldown = 30f;
-
     [Header("Cerf — Phases")]
     [SerializeField] private float _phase2Threshold = 0.5f;
     [SerializeField] private float _rageThreshold = 0.3f;
@@ -44,7 +39,6 @@ public class BossDeer : BossBase
     private bool _isBiting = false;
 
     private float _jumpTimer = 0f;
-    private float _regenTimer = 0f;
     private float _spiralAngle = 0f;
     private float _spiralTimer = 0f;
 
@@ -99,7 +93,8 @@ public class BossDeer : BossBase
         HandleMovement();
         HandleJumpAttack();
         HandleSpiral();
-        HandleRegen();
+        // RETIRÉ (2026-10-07, retour utilisateur : "il faut enlever la méthode de heal que se met le boss 2, parce
+        // que ça rend juste le combat plus long") - régénération périodique (HandleRegen(), +1000 PV/30s) supprimée.
         UpdateAnimatorState();
     }
 
@@ -120,7 +115,6 @@ public class BossDeer : BossBase
             _isRaging = true;
             _spiralFireRate *= 0.7f;
             _jumpCooldown *= 0.6f;
-            _regenCooldown *= 0.7f;
         }
     }
 
@@ -277,19 +271,6 @@ public class BossDeer : BossBase
         }
 
         _spiralAngle += angleStep;
-    }
-
-    private void HandleRegen()
-    {
-        _regenTimer += Time.deltaTime;
-        if (_regenTimer >= _regenCooldown)
-        {
-            _regenTimer = 0f;
-            _currentHealth = Mathf.Min(_currentHealth + _regenAmount, _maxHealth);
-
-            if (GameUI.Instance != null)
-                GameUI.Instance.UpdateBossHP(_currentHealth, _maxHealth);
-        }
     }
 
     // MODIFIÉ (2026-10-03) - la mort passe par BossBase.Die() IMMÉDIATEMENT (récompenses, victoire, musique) puis par

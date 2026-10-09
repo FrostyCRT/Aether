@@ -700,6 +700,7 @@ public class UpgradeData : ScriptableObject
 
                     float inheritedField = aura != null ? aura.CurrentDamagePerSecond : 0f;
                     float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
+                    int inheritedOrbitalCount = orbital != null ? orbital.OrbitalCount : 0;
 
                     if (aura != null) Object.Destroy(aura);
                     if (orbital != null) Object.Destroy(orbital);
@@ -709,7 +710,7 @@ public class UpgradeData : ScriptableObject
                         WeaponFusionManaVortex fused = playerGO.AddComponent<WeaponFusionManaVortex>();
                         GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
                         if (prefab != null)
-                            fused.Init(prefab, Mathf.Max(1f, inheritedField), Mathf.Max(1f, inheritedOrbital));
+                            fused.Init(prefab, Mathf.Max(1f, inheritedField), Mathf.Max(1f, inheritedOrbital), inheritedOrbitalCount);
                         else
                             Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
                     }
@@ -740,6 +741,7 @@ public class UpgradeData : ScriptableObject
 
                     float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
                     float inheritedLightning = lightning != null ? lightning.CurrentDamage : 0f;
+                    int inheritedOrbitalCount = orbital != null ? orbital.OrbitalCount : 0;
 
                     if (orbital != null) Object.Destroy(orbital);
                     if (lightning != null) Object.Destroy(lightning);
@@ -749,7 +751,7 @@ public class UpgradeData : ScriptableObject
                         WeaponFusionThunderingOrbs fused = playerGO.AddComponent<WeaponFusionThunderingOrbs>();
                         GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
                         if (prefab != null)
-                            fused.Init(prefab, Mathf.Max(1f, inheritedOrbital), Mathf.Max(1f, inheritedLightning));
+                            fused.Init(prefab, Mathf.Max(1f, inheritedOrbital), Mathf.Max(1f, inheritedLightning), inheritedOrbitalCount);
                         else
                             Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
                     }
@@ -782,9 +784,9 @@ public class UpgradeData : ScriptableObject
             case "TwinOrbs":
                 {
                     // Double tir n'a pas de composant propre (voir WeaponFusionTwinOrbs) : seul l'Orbe rebondissant
-                    // est détruit. Un petit bonus (+30%) représente le "jumelage" apporté par le Double tir.
+                    // est détruit. Le bonus du "jumelage" (dégâts + nombre d'orbes) est appliqué dans Init().
                     WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
-                    float inheritedDamage = orb != null ? orb.CurrentDamage * 1.3f : 1f;
+                    float inheritedDamage = orb != null ? orb.CurrentDamage : 1f;
 
                     if (orb != null) Object.Destroy(orb);
 

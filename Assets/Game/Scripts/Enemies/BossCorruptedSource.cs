@@ -492,6 +492,20 @@ public class BossCorruptedSource : BossBase
     // exact où le mini-boss apparaît (Burst). Pendant le windup, le corps du boss brille de plus en plus (même glow que les
     // autres boss, si "Body Renderer" est assigné sur le prefab). Le mini-boss, lui, émerge en grandissant
     // (voir InitSummonedBoss / EmergeRoutine). L'effet est suivi (Track) : détruit si le boss meurt en plein windup.
+    // DEBUG/TEST uniquement (même famille que WaveManager.DebugSkipToBoss3/DebugSpawnBossIndex) : déclenche
+    // l'invocation d'un mini-boss sans attendre le timer/tirage aléatoire normal de la machine à attaques.
+    public void DebugForceSummon()
+    {
+        StartCoroutine(SummonAttack());
+    }
+
+    // DEBUG/TEST uniquement : force _activeMiniBossInstance sans passer par la coroutine SummonAttack (son windup
+    // dépend de plusieurs ticks d'Update() réels, peu fiable à piloter depuis un outil externe).
+    public void DebugSetMiniBoss(GameObject go)
+    {
+        _activeMiniBossInstance = go;
+    }
+
     private IEnumerator SummonAttack()
     {
         if (_animator != null) _animator.SetBool("IsCoiling", true);
@@ -544,6 +558,10 @@ public class BossCorruptedSource : BossBase
             // (20 000 PV de base) tombait en quelques secondes face à un build complet, contrairement au mini Boss 2 (50 000).
             if (GameModes.IsTitans) boss.InitWithHealth(GameModes.TitansBossHealth(boss is BossDeer ? 2 : 1) * percent);
             else boss.InitWithReducedHP(percent);
+
+            // AJOUTE (2026-10-07, retour utilisateur : barre de vie dédiée au mini-boss) - affichée dès que ses PV
+            // sont fixés, masquée automatiquement à sa mort (voir BossBase.Die(), branche IsSummoned).
+            if (GameUI.Instance != null) GameUI.Instance.ShowMiniBossHP();
 
             // MODIFIÉ — recherche par composant plutôt que par nom d'enfant : trouve tout
             // SkinnedMeshRenderer peu importe sa profondeur/nom dans la hiérarchie (ex: "Skinned Mesh 0"),
@@ -718,8 +736,23 @@ public class BossCorruptedSource : BossBase
         return effect;
     }
 
+    // MODIFIÉ (2026-10-07, retour utilisateur : "si on tue le boss 3 alors qu'un mini boss est encore en vie, il
+    // ne faut pas lancer le Victory panel tout de suite, il faut abattre le mini boss même si la source est
+    // morte, pour après lancer le panel de victoire uniquement si tout les ennemis sont mort") - base.Die() (plus
+    // bas) appelle WaveManager.OnBossDied() -> Victoire IMMÉDIATEMENT, sans savoir qu'un mini-boss invoqué (voir
+    // SummonAttack/_activeMiniBossInstance) peut encore être vivant. On le tue d'abord, de façon synchrone, via
+    // ForceKill() (sa propre Die() ne redéclenche jamais OnBossDied() elle-même, voir IsSummoned dans BossBase) :
+    // la Victoire ne se déclenche donc qu'une fois le mini-boss déjà mort (XP/kill comptés), même si sa propre
+    // séquence de mort visuelle continue en arrière-plan.
     protected override void Die()
     {
+        if (MiniBossAlive)
+        {
+            BossBase mini = _activeMiniBossInstance.GetComponent<BossBase>();
+            if (mini != null) mini.ForceKill();
+            _activeMiniBossInstance = null;
+        }
+
         StopAllCoroutines();
         foreach (GameObject effect in _transientEffects)
             if (effect != null) Destroy(effect);

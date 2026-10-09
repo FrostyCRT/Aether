@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeName: Orbes Foudroyants
   description: "FUSION \u2014 Orbitaux + Foudre : tes \xE9clats en orbite d\xE9chargent
     d\xE9sormais la foudre en cha\xEEne \xE0 chaque contact."
-  icon: {fileID: 21300000, guid: 8b075b25011908d499160e42ed982cdd, type: 3}
+  icon: {fileID: 21300000, guid: 2b3b13ec67e0f074fa98f165184fd0bc, type: 3}
   upgradeType: 11
   value: 0
   _fusionSource1: 7

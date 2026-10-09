@@ -19,6 +19,9 @@ public static class LightningChainUtility
 
     // AJOUTE (2026-09-27, retour utilisateur) - même teinte que WeaponLightningChain (voir son commentaire) :
     // la foudre doit se reconnaître d'un coup d'œil peu importe l'arme/fusion qui la déclenche.
+    // MODIFIÉ (2026-10-04) puis RE-MODIFIÉ (2026-10-04, suite) - redevient jaune/or (voir
+    // WeaponLightningChain._lightningVfxColor pour le détail : retour utilisateur "pas assez de couleur chaude",
+    // l'icône "Foudre" va être régénérée en jaune pour correspondre plutôt que l'inverse).
     private static readonly Color _lightningVfxColor = new Color(1f, 0.95f, 0.55f);
 
     private static System.Collections.IEnumerator ChainRoutine(Vector3 origin, Transform firstTarget, float baseDamage, int maxChains, float chainRange)
@@ -31,9 +34,9 @@ public static class LightningChainUtility
             if (current == null) break;
             float damage = buffedBase * Mathf.Pow(0.7f, i);
             EnemyBase eb = current.GetComponent<EnemyBase>();
-            if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
+            if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
             BossBase boss = current.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
+            if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
             // MODIFIE (2026-09-27, retour utilisateur : "un effet... qu'on voit quand la foudre frappe, et
             // qu'on voit le ricochet entre ennemis") - remplace le Debug.DrawLine (invisible hors Scene view de
             // l'éditeur) par un vrai éclair visible en jeu (LightningBoltVFX) + un flash au point d'impact.

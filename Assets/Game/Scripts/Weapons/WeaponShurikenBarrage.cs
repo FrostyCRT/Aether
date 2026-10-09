@@ -129,7 +129,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
         {
-            projectile.Init(direction, _damage);
+            projectile.Init(direction, _damage, DamageNumberSpawner.ColorKnives);
             projectile.SetPiercing(true, _maxPierceCount);
         }
     }

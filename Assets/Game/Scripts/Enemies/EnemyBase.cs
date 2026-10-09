@@ -51,16 +51,30 @@ public class EnemyBase : MonoBehaviour
     private bool _spriteBaseColorCaptured = false;
 
     // AJOUTÉ (2026-10-03) - flash de dégâts : jusqu'ici, un coup reçu n'avait AUCUN retour sur le modèle lui-même (seul
-    // le chiffre de DamageNumberSpawner signalait quoi que ce soit). Un bref pulse d'émission blanche donne du poids à
-    // CHAQUE tir, pas seulement au kill (déjà couvert par EnemyDeathFX). Sur le Renderer 3D (MeshRenderer/
-    // SkinnedMeshRenderer), via MaterialPropertyBlock - jamais de Material instancié, aucun risque de fuite mémoire
-    // avec le pooling. _suppressHitFlash : EnemyKaiju gère DÉJÀ sa propre émission (lueur de rage avant charge, voir
-    // UpdateGlow) sur le même Renderer - lui laisser la main plutôt que de risquer que les deux s'écrasent l'un
-    // l'autre selon l'ordre d'exécution dans la frame. Nom _hitFlashRenderer (pas _bodyRenderer) : EnemyKaiju a DÉJÀ
-    // un champ sérialisé "_bodyRenderer" - Unity refuse deux champs du même nom entre classe de base et dérivée
-    // ("field serialized multiple times"), même quand l'un des deux n'est pas [SerializeField].
+    // le chiffre de DamageNumberSpawner signalait quoi que ce soit). Un bref pulse donne du poids à CHAQUE tir, pas
+    // seulement au kill (déjà couvert par EnemyDeathFX). Via MaterialPropertyBlock - jamais de Material instancié,
+    // aucun risque de fuite mémoire avec le pooling.
+    //
+    // CORRIGÉ (2026-10-03) - retour utilisateur : "je ne vois presque aucune différence". Deux bugs trouvés en
+    // inspectant le vrai Renderer en Play (capture + lecture directe des propriétés du shader) :
+    //  1) GetComponentInChildren<Renderer>() attrapait le MeshRenderer placeholder du prefab d'ORIGINE
+    //     (desactive, jamais affiché) plutôt que le vrai SkinnedMeshRenderer importé de Tripo - le flash
+    //     s'appliquait donc sur un objet invisible. → on cherche maintenant explicitement un SkinnedMeshRenderer
+    //     en priorité, un Renderer "enabled" en repli.
+    //  2) Le roster utilise DEUX familles de shader : "Universal Render Pipeline/Lit" (Goblin/Golem - propriétés
+    //     _BaseColor/_EmissionColor) ET "Shader Graphs/glTF-pbrMetallicRoughness" pour les modèles importés de
+    //     Tripo (Loup, boss... - propriétés baseColorFactor/emissiveFactor, noms standard glTF, PAS les noms
+    //     Unity). _EmissionColor ne fait RIEN sur ce 2e shader (aucune erreur, juste aucun effet - c'est ce qui
+    //     rendait le flash invisible). Et même sur le 1er shader, l'émission dépend d'un mot-clé _EMISSION pas
+    //     forcément actif sur le matériau. → on pulse maintenant la COULEUR DE BASE (toujours active, sur
+    //     n'importe quel shader, jamais de mot-clé optionnel à activer), en écrivant les DEUX noms de propriété
+    //     à chaque frame (celui qui n'existe pas sur le shader du matériau est silencieusement ignoré, sans
+    //     erreur - sans risque à laisser les deux). NOTE : ce même bug touche très probablement la lueur de rage
+    //     d'EnemyKaiju (_emissionColorProperty = "_EmissionColor" sur un Renderer Tripo) - pas corrigé ici, à
+    //     vérifier séparément si besoin.
     private const float HitFlashDuration = 0.12f;
-    private static readonly int EmissionColorID = Shader.PropertyToID("_EmissionColor");
+    private static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
+    private static readonly int GltfBaseColorID = Shader.PropertyToID("baseColorFactor");
     private Renderer _hitFlashRenderer;
     private MaterialPropertyBlock _hitFlashPropBlock;
     private float _hitFlashTimer;
@@ -69,12 +83,48 @@ public class EnemyBase : MonoBehaviour
     // Pas de Renderer trouvé (configuration inattendue) : on ne retente pas à chaque coup, coûteux pour rien.
     private bool _hitFlashUnavailable;
 
-    private void TriggerHitFlash()
+    private Renderer FindVisibleRenderer()
+    {
+        SkinnedMeshRenderer skinned = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (skinned != null) return skinned;
+
+        foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
+            if (r.enabled) return r;
+
+        return null;
+    }
+
+    // AJOUTÉ (2026-10-03) - teinte du flash = couleur de dégâts de l'arme qui a touché (déjà distincte par arme,
+    // voir DamageNumberSpawner.ColorXXX : foudre/critique orange, Orbital gris clair, Aura/AOE vert...) plutôt
+    // qu'un blanc neutre générique pour tout le monde - cohérent avec la demande "un feedback avec la foudre" :
+    // le flash se teinte déjà différemment par arme sans code dédié par arme.
+    private Color _hitFlashColor = Color.white;
+
+    private void TriggerHitFlash(Color color)
     {
         if (SuppressHitFlash || _hitFlashUnavailable) return;
-        if (_hitFlashRenderer == null) _hitFlashRenderer = GetComponentInChildren<Renderer>();
+        if (_hitFlashRenderer == null) _hitFlashRenderer = FindVisibleRenderer();
         if (_hitFlashRenderer == null) { _hitFlashUnavailable = true; return; }
+        _hitFlashColor = color;
         _hitFlashTimer = HitFlashDuration;
+    }
+
+    // p : 0 = teinte normale (identité, blanc = pas de changement), 1 = flash au plus fort (surbrillance,
+    // teintée vers _hitFlashColor - la couleur de dégâts de l'arme qui vient de toucher).
+    // MODIFIÉ (2026-10-03) - retour utilisateur : "le flash est un peu trop fort". ×4,5 avait été monté pour
+    // compenser l'invisibilité du flash (cause réelle trouvée depuis : mauvais renderer/mauvais nom de propriété
+    // shader, voir FindVisibleRenderer) - maintenant que la vraie cause est corrigée, plus besoin d'une telle
+    // surenchère. Redescendu à ×2,2, nettement visible sans éblouir.
+    private void SetHitFlashIntensity(float p)
+    {
+        Color hue = Color.Lerp(Color.white, _hitFlashColor, p * 0.7f);
+        Color c = hue * Mathf.Lerp(1f, 2.2f, p);
+        c.a = 1f;
+        if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
+        _hitFlashRenderer.GetPropertyBlock(_hitFlashPropBlock);
+        _hitFlashPropBlock.SetColor(BaseColorID, c);
+        _hitFlashPropBlock.SetColor(GltfBaseColorID, c);
+        _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
     }
 
     private void UpdateHitFlash()
@@ -83,17 +133,9 @@ public class EnemyBase : MonoBehaviour
 
         _hitFlashTimer -= Time.deltaTime;
         float t = Mathf.Clamp01(_hitFlashTimer / HitFlashDuration);
+        SetHitFlashIntensity(t * t);
 
-        if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
-        _hitFlashRenderer.GetPropertyBlock(_hitFlashPropBlock);
-        _hitFlashPropBlock.SetColor(EmissionColorID, Color.white * (t * t * 2.2f));
-        _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
-
-        if (_hitFlashTimer <= 0f)
-        {
-            _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
-            _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
-        }
+        if (_hitFlashTimer <= 0f) SetHitFlashIntensity(0f);
     }
 
     public void SetHealthMultiplier(float multiplier)
@@ -103,7 +145,11 @@ public class EnemyBase : MonoBehaviour
 
     public float CurrentHealth => _currentHealth;
 
-    private Vector3 _smoothedMoveDirection = Vector3.forward;
+    // CORRIGÉ (2026-10-05) - private -> protected : EnemyShooter réutilise maintenant ce même lissage (voir son
+    // UpdateBehaviour) au lieu de dupliquer sa propre logique de déplacement SANS lissage - c'était la cause du
+    // tremblement signalé (retour utilisateur : "les ennemis shooter [...] tremblent car ils changent de direction
+    // tout le temps quand ils sont proches les uns des autres").
+    protected Vector3 _smoothedMoveDirection = Vector3.forward;
     protected float MoveSpeed => _moveSpeed;
 
     private float _currentHealth;
@@ -113,22 +159,91 @@ public class EnemyBase : MonoBehaviour
     protected float _speedMultiplier = 1f;
     private float _speedMultiplierTarget = 1f;
 
+    // AJOUTÉ (2026-10-05) - retour utilisateur : "~30 FPS quand il y a beaucoup d'ennemis", flaggé comme
+    // EXTRÊMEMENT important. Benchmark en Play (EditorApplication.Step + Time.realtimeSinceStartup, sans AUCUNE
+    // arme équipée) : 0 ennemis = 7,1 ms/frame, 50 = 8,1 ms, 150 = 12,5 ms, 300 = 19,0 ms - une pente quasi
+    // linéaire d'environ 0,04 ms/ennemi QUI EXISTE MÊME SANS COMBAT. Équiper 4 armes à 300 ennemis n'a quasiment
+    // rien changé (17,3 ms) : le coût dominant est donc le PAR-ENNEMI lui-même, pas les armes/VFX. Inspection
+    // directe d'un clone en Play (Wolf) a trouvé 2 causes précises, toutes deux des réglages par défaut coûteux
+    // à l'échelle d'une horde de centaines d'unités, aucune des deux visible à l'œil :
+    //  1) Animator.cullingMode = AlwaysAnimate sur chaque ennemi -> évalue le squelette complet (51 Transform
+    //     ici) MÊME HORS CHAMP DE CAMÉRA. -> CullUpdateTransforms : ne calcule plus l'animation pour un ennemi
+    //     invisible (aucun artefact possible, il n'est par définition pas affiché), reprend normalement dès qu'il
+    //     revient dans le champ.
+    //  2) shadowCastingMode = On sur CHAQUE Renderer de CHAQUE ennemi -> avec 150-300 ennemis simultanés, ça fait
+    //     autant d'ombres dynamiques à culler/trier (CPU) et rendre dans l'atlas d'ombres (GPU) pour un confort
+    //     visuel quasi nul sur de si petites unités vues de haut - aucun jeu du genre (Vampire Survivors, Brotato,
+    //     HoloCure...) ne projette d'ombre dynamique sur ses sbires. -> Off pour les ennemis courants.
+    // Fait UNE SEULE FOIS par instance poolée (Awake, pas OnEnable) car ces réglages ne changent jamais d'une vie
+    // à l'autre - inutile de refaire le GetComponentsInChildren à chaque réapparition du pool.
+    private Animator[] _cachedAnimators;
+    private int _animLodGroup;
+    private static int _animLodCounter;
+
+    private void Awake()
+    {
+        _cachedAnimators = GetComponentsInChildren<Animator>(true);
+        foreach (Animator a in _cachedAnimators)
+            a.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer r in renderers)
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+        // AJOUTÉ (2026-10-05) - suite du correctif perf ci-dessus : le culling hors-champ + le GPU Resident Drawer
+        // (activé sur les 3 profils URP) n'ont donné que +10 FPS en vrai jeu - pas assez, le vrai poste de coût
+        // reste l'évaluation du squelette elle-même, confirmée par A/B direct (désactiver tous les Animators sur
+        // 300 ennemis = -22% du temps de frame, 4,26 ms sur 19,7 ms). Ni le culling (ne joue que sur "visible ou
+        // pas") ni le GPU Resident Drawer (optimise la SOUMISSION du rendu, pas le calcul du squelette, et le
+        // rendu piloté par GPU des meshs skinnés reste de toute façon limité sur cette version d'Unity) ne
+        // touchaient à ce coût precis. _animLodGroup réparti par compteur statique (round-robin, jamais 2 ennemis
+        // nés au même moment dans le même groupe) pour qu'un ennemi loin sur 3 saute l'évaluation de son
+        // Animator CETTE frame plutôt que CELLE-LÀ - la réduction de coût est la même, mais répartie dans le
+        // temps au lieu que tous les ennemis lointains gèlent/reprennent sur la MÊME frame (qui ferait un à-coup
+        // visible groupé plutôt qu'une réduction discrète).
+        _animLodGroup = _animLodCounter++ % AnimLodSkipGroups;
+    }
+
+    // CORRIGÉ (2026-10-05) - retour utilisateur critique : "dans ce champ de vision on voit les ennemis, donc on
+    // les voit lag". Le seuil de 12 était choisi à l'aveugle, sans vérifier le vrai champ visible de la caméra -
+    // mesuré après coup (caméra orthographique, taille 10) : les 4 coins de l'écran touchent le sol à ~20-21
+    // unités du joueur. Un ennemi à 12-20 unités est donc ENCORE À L'ÉCRAN mais se faisait throttle à 1 frame sur
+    // 3 - exactement le "on les voit lag" signalé. Remonté à 24 (marge au-delà du coin le plus éloigné, ~21) :
+    // ne throttle plus que les ennemis réellement hors champ (rare avec un rayon de spawn de 15 < 21 de visible -
+    // cette LOD ne concerne donc qu'une minorité d'ennemis en bordure, PAS le levier principal du problème de
+    // perf, voir plutôt la limite d'ennemis simultanés par phase dans EnemySpawner).
+    private const float AnimLodNearDistanceSqr = 24f * 24f;
+    private const int AnimLodSkipGroups = 3; // au-delà : anime 1 frame sur 3 (-66% de coût d'Animator pour ces ennemis-là)
+
+    private void UpdateAnimatorLod()
+    {
+        if (_cachedAnimators == null || _cachedAnimators.Length == 0 || _currentTarget == null) return;
+
+        float sqrDistance = (transform.position - _currentTarget.position).sqrMagnitude;
+        bool animateThisFrame = sqrDistance <= AnimLodNearDistanceSqr
+            || (Time.frameCount + _animLodGroup) % AnimLodSkipGroups == 0;
+
+        for (int i = 0; i < _cachedAnimators.Length; i++)
+        {
+            if (_cachedAnimators[i] != null) _cachedAnimators[i].enabled = animateThisFrame;
+        }
+    }
+
     protected virtual void OnEnable()
     {
+        // AJOUTÉ (2026-10-04) - voir EnemySpatialGrid : s'enregistre pour la grille de séparation (remplace
+        // Physics.OverlapSphereNonAlloc appelé individuellement par chaque ennemi chaque frame).
+        EnemySpatialGrid.Register(this);
+
         _currentHealth = _maxHealth * _healthMultiplier;
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
 
         // AJOUTÉ (2026-10-03) - un ennemi qui revient du pool en pleine capture du flash de dégâts (mort juste après
-        // un coup) ne doit pas repartir avec une émission blanche encore allumée sur sa prochaine vie.
-        if (_hitFlashTimer > 0f && _hitFlashRenderer != null)
-        {
-            if (_hitFlashPropBlock == null) _hitFlashPropBlock = new MaterialPropertyBlock();
-            _hitFlashRenderer.GetPropertyBlock(_hitFlashPropBlock);
-            _hitFlashPropBlock.SetColor(EmissionColorID, Color.black);
-            _hitFlashRenderer.SetPropertyBlock(_hitFlashPropBlock);
-        }
+        // un coup) ne doit pas repartir avec une teinte encore allumée sur sa prochaine vie.
+        if (_hitFlashTimer > 0f && _hitFlashRenderer != null) SetHitFlashIntensity(0f);
         _hitFlashTimer = 0f;
+        _knockbackVelocity = Vector3.zero;
 
         if (_playerTransform == null)
         {
@@ -155,6 +270,8 @@ public class EnemyBase : MonoBehaviour
 
     private void OnDisable()
     {
+        EnemySpatialGrid.Unregister(this);
+
         PlayerController.OnPhantomDestroyed -= HandlePhantomDestroyed;
         GameManager.OnGameEnded -= HandleGameEnded;
 
@@ -213,12 +330,43 @@ public class EnemyBase : MonoBehaviour
         }
 
         UpdateBehaviour(_currentTarget);
+        UpdateKnockback();
+        UpdateAnimatorLod();
 
         OnEnemyUpdate();
 
         // Après OnEnemyUpdate() : si un ennemi (ex. EnemyKaiju) gère sa propre émission dans son hook, elle garde la
         // main sur le Renderer. Ne s'exécute de toute façon jamais pour lui (SuppressHitFlash => true).
         UpdateHitFlash();
+    }
+
+    // AJOUTÉ (2026-10-03) - retour utilisateur : l'upgrade Orbitaux doit repousser légèrement un ennemi touché, pour
+    // montrer qu'il s'est fait percuter. Vitesse qui s'amortit vite (pas de vrai "ragdoll" physique, juste un élan
+    // bref) - APRÈS UpdateBehaviour() (qui recalcule la position vers la cible chaque frame) pour que le recul soit
+    // visible plutôt qu'écrasé aussitôt par le déplacement normal.
+    private Vector3 _knockbackVelocity;
+    private const float KnockbackDamping = 13f; // plus haut = s'arrête plus vite
+    // MODIFIÉ (2026-10-04) - retour utilisateur : "trop fort le repousse avec la vitesse actuelle des orbitaux".
+    // Chaque orbe a SON PROPRE cooldown par ennemi (_lastHitTimestamps est un champ d'instance sur
+    // OrbitalProjectile, pas partagé entre orbes) - avec plusieurs orbitaux maxés, 2-3 orbes DIFFÉRENTS peuvent
+    // toucher le même ennemi à quelques frames d'intervalle, et les forces s'additionnaient sans limite
+    // (_knockbackVelocity += force à chaque coup) - un ennemi encerclé par plusieurs orbes pouvait cumuler un élan
+    // bien plus fort qu'un seul coup, d'où l'impression de repoussement incontrôlé. Plafonné à MaxKnockbackSpeed :
+    // chaque coup pousse plus fort SI la vitesse actuelle est encore faible, mais un ennemi déjà en plein élan n'en
+    // accumule plus - jamais un à-coup qui parte dans le décor.
+    private const float MaxKnockbackSpeed = 4.5f;
+
+    public void ApplyKnockback(Vector3 force)
+    {
+        force.y = 0f;
+        _knockbackVelocity = Vector3.ClampMagnitude(_knockbackVelocity + force, MaxKnockbackSpeed);
+    }
+
+    private void UpdateKnockback()
+    {
+        if (_knockbackVelocity.sqrMagnitude < 0.0001f) { _knockbackVelocity = Vector3.zero; return; }
+        transform.position += _knockbackVelocity * Time.deltaTime;
+        _knockbackVelocity = Vector3.MoveTowards(_knockbackVelocity, Vector3.zero, _knockbackVelocity.magnitude * KnockbackDamping * Time.deltaTime);
     }
 
     protected virtual void OnEnemyUpdate() { }
@@ -292,8 +440,7 @@ public class EnemyBase : MonoBehaviour
         }
     }
 
-    private static readonly Collider[] _neighbourBuffer = new Collider[16];
-    private static int _enemyLayerMask = -1;
+    private static readonly EnemyBase[] _neighbourBuffer = new EnemyBase[16];
 
     // MODIFIE - pushDirection n'etait jamais aplati en Y. Meme cause que le bug de
     // sauts aleatoires en Y trouve sur les gobelins (EnemyShooter.GetSeparationForce,
@@ -302,20 +449,19 @@ public class EnemyBase : MonoBehaviour
     // n'importe quel type d'ennemi verticalement des qu'il a des voisins proches -
     // corrige ici de facon preventive pour tous les types d'ennemis qui utilisent
     // EnemyBase.UpdateBehaviour() directement, pas seulement les gobelins.
+    // MODIFIÉ (2026-10-04) - retour utilisateur : "toujours ~20 FPS avec beaucoup d'ennemis". Remplace
+    // Physics.OverlapSphereNonAlloc (un vrai appel moteur physique PAR ENNEMI PAR FRAME) par EnemySpatialGrid
+    // (grille reconstruite une fois par frame, interrogée ensuite en C# pur) - voir ce fichier pour le détail.
     private Vector3 GetBaseSeparation()
     {
-        if (_enemyLayerMask == -1)
-            _enemyLayerMask = 1 << LayerMask.NameToLayer("Enemy");
-
         Vector3 force = Vector3.zero;
         float separationRadius = 1.5f;
 
-        int count = Physics.OverlapSphereNonAlloc(transform.position, separationRadius, _neighbourBuffer, _enemyLayerMask);
+        int count = EnemySpatialGrid.QueryNeighbors(transform.position, separationRadius, this, _neighbourBuffer);
 
         for (int i = 0; i < count; i++)
         {
-            Collider neighbour = _neighbourBuffer[i];
-            if (neighbour.gameObject == gameObject) continue;
+            EnemyBase neighbour = _neighbourBuffer[i];
 
             Vector3 pushDirection = transform.position - neighbour.transform.position;
             pushDirection.y = 0f;
@@ -344,7 +490,8 @@ public class EnemyBase : MonoBehaviour
         if (_currentHealth <= 0)
             Die(fromNova);
         else
-            TriggerHitFlash(); // pas sur le coup fatal : EnemyDeathFX prend le relais tout de suite, le flash n'aurait pas le temps de se voir
+            // pas sur le coup fatal : EnemyDeathFX prend le relais tout de suite, le flash n'aurait pas le temps de se voir
+            TriggerHitFlash(color == default ? Color.white : color);
     }
 
     // AJOUTE - point d'entree public de la Brulure, appele par ProjectileBasic quand
@@ -354,6 +501,14 @@ public class EnemyBase : MonoBehaviour
     public void ApplyBurn(float damagePerSecond, float duration)
     {
         if (damagePerSecond <= 0f || duration <= 0f) return;
+        // CORRIGÉ (2026-10-05) - retour utilisateur, erreur console en jeu réel : "Coroutine couldn't be started
+        // because the game object 'Spider(Clone)' is inactive!". Cause : ProjectileBasic.OnTriggerEnter appelle
+        // ApplyDamage() PUIS ApplyBurnIfNeeded() sur le MÊME ennemi - si le coup est fatal, ApplyDamage() a déjà
+        // appelé Die() -> ObjectPool.ReturnToPool() -> SetActive(false) avant que ApplyBurnIfNeeded() ne tente de
+        // démarrer cette coroutine sur un GameObject désormais inactif (StartCoroutine échoue toujours dans ce
+        // cas). Inoffensif en pratique (l'ennemi est déjà mort) mais polluait la console à chaque mise à mort par
+        // Brûlure - gardé explicitement au lieu de laisser Unity émettre son avertissement.
+        if (!gameObject.activeInHierarchy) return;
 
         CacheSpriteRenderer();
 
@@ -382,6 +537,19 @@ public class EnemyBase : MonoBehaviour
 
         while (elapsed < duration)
         {
+            // CORRIGÉ (2026-10-05) - retour utilisateur : "quand il y a la mort, certains dégâts comme la brûlure
+            // de la boule de feu persiste, donc pendant le délai entre la mort et l'arrivée du panel, des fois on
+            // voit encore des dégâts s'afficher". Cause : contrairement à PRESQUE TOUT LE RESTE du jeu (chaque
+            // arme vérifie IsGameOver/IsPaused dans son Update()), cette coroutine n'avait AUCUNE garde - une
+            // Brûlure déjà active sur un ennemi encore vivant continuait de tiquer (dégâts + chiffres affichés)
+            // pendant tout le délai d'affichage du panel de fin, alors que la partie est déjà terminée. Même
+            // garde que `MudPuddleZone.Update()` : rien n'avance tant que c'est vrai (dégâts ET durée gelés).
+            if (GameManager.Instance != null && (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused))
+            {
+                yield return null;
+                continue;
+            }
+
             float dt = Time.deltaTime;
             elapsed += dt;
             tickTimer += dt;
@@ -436,8 +604,14 @@ public class EnemyBase : MonoBehaviour
         Color fxColor = _spriteBaseColorCaptured ? _spriteBaseColor : DefaultDeathFxColor;
         EnemyDeathFX.Play(transform.position + Vector3.up * 0.5f, fxColor);
 
+        // MODIFIE (2026-10-07, retour utilisateur : "au bout de plus de 8 min environ, les petits xp verts ne
+        // donnent plus rien... j'suis arrivé qu'au niveau 18" en 15 min) - _xpValue restait fixe alors que
+        // _healthMultiplier (même palier, voir EnemySpawner.SpawnEnemy) fait grossir les PV au fil du temps : un
+        // ennemi tardif prend bien plus de coups à tuer mais rapportait exactement la même XP qu'au début de la
+        // partie - l'XP par seconde de combat s'effondrait avec le temps. L'XP suit maintenant le même facteur que
+        // les PV (healthMultiplier inclut déjà le scaling Sans Fin au-delà de 15 min, voir ObjectPool.Get).
         if (XPGemSpawner.Instance != null)
-            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue);
+            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * _healthMultiplier);
 
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);

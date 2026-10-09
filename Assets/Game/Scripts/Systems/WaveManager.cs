@@ -347,6 +347,13 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    // AJOUTE (2026-10-04) - DEBUG/TEST uniquement (voir DebugCheats.cs) : simple enrobage public pour exposer
+    // ClearAllEnemies() (privee) a un raccourci clavier - "enlever les ennemis" a la demande.
+    public void DebugClearAllEnemies()
+    {
+        ClearAllEnemies();
+    }
+
     private void ClearAllEnemies()
     {
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");

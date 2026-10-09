@@ -61,6 +61,12 @@ public class WeaponLightningChain : MonoBehaviour
     // AJOUTE (2026-09-27, retour utilisateur) - couleur électrique jaune-blanc pâle, volontairement indépendante
     // de la couleur de branche de l'upgrade (la foudre doit se reconnaître d'un coup d'œil, peu importe l'arme
     // qui la déclenche - voir aussi LightningChainUtility, qui reprend la même teinte pour les fusions).
+    // MODIFIÉ (2026-10-04) - l'icône "Foudre" (bleue) avait fait passer cette couleur au bleu pour correspondre.
+    // RE-MODIFIÉ (2026-10-04, suite) - retour utilisateur après coup d'œil sur l'ensemble des couleurs : "il y a
+    // beaucoup de bleu, pas assez de couleur chaude... peut-être qu'il faudrait repasser la foudre en jaune et
+    // qu'on change l'icône". Redevient jaune/or électrique (teinte d'origine du projet) - l'icône sera régénérée
+    // pour correspondre (prompt MetaIA fourni à l'utilisateur), donc la règle "couleur = icône" reste respectée
+    // une fois le nouvel icône en place, juste dans l'autre sens (l'icône s'aligne sur la couleur voulue).
     private static readonly Color _lightningVfxColor = new Color(1f, 0.95f, 0.55f);
 
     private IEnumerator ChainLightning(Transform firstTarget)
@@ -74,9 +80,9 @@ public class WeaponLightningChain : MonoBehaviour
             if (current == null) break;
             float damage = buffedBase * Mathf.Pow(0.7f, i);
             EnemyBase eb = current.GetComponent<EnemyBase>();
-            if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
+            if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
             BossBase boss = current.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorCritical);
+            if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
             hit.Add(current.gameObject);
             // MODIFIE (2026-09-27, retour utilisateur : "un effet... qu'on voit quand la foudre frappe, et
             // qu'on voit le ricochet entre ennemis") - remplace le Debug.DrawLine (invisible hors Scene view de

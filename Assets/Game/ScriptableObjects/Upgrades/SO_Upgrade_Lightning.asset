@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: "Cha\xEEne de Foudre"
   description: "D\xE9charge \xE9lectrique qui rebondit sur les ennemis proches"
-  icon: {fileID: 21300000, guid: cd209c31ad1635b4891a1bbf547191fc, type: 3}
+  icon: {fileID: 21300000, guid: 01a54a3809418294788315a6d2b96eb6, type: 3}
   upgradeType: 8
   value: 0
   _levelValues: []
