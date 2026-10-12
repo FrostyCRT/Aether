@@ -129,6 +129,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `CharacterLockOverlay.cs` | Habillage visuel d'un personnage verrouillé (voile, chaînes, cadenas dans un médaillon), teinté à sa couleur. |
 | `CharacterNameLight.cs` | Génère la "lumière" additive (halo, reflets, étincelles) derrière/sur le logo-nom d'un personnage, calculée depuis le logo affiché. |
 | `CharacterSelectUI.cs` | Contrôleur de l'onglet Sélection de personnage : fond dédié par personnage, portrait, logo, verrouillage. |
+| `CustomCursor.cs` | Remplace le curseur système par le gantelet fantasy (`Resources/Cursor_Gauntlet`) via une Image UI qui suit la souris ; objet auto-créé dans toutes les scènes (comme `SettingsApplier`), masqué pendant le jeu actif et affiché sur les panneaux (pause/paramètres/level-up/Game Over) via `GameManager.NeedsCursor`. |
 | `DamageNumber.cs` | Instance poolée d'un nombre de dégâts flottant (texte 3D, contour, montée + fondu). |
 | `GameModeSelector.cs` | Sélecteur de mode de jeu du menu principal (flèches, nom, description, record), verrouille JOUER si le mode choisi n'est pas débloqué. |
 | `GameOverMessagePool.cs` | Classe statique : pool de messages contextuels de Game Over selon la cause de mort et le temps de survie (ton "dur mais motivant"). |

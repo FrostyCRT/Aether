@@ -200,6 +200,7 @@ Icônes Or/Éclats : réutiliser celles déjà existantes (HUD pour l'Or, page R
 - Système de skins (Or/Éclats) — aucune donnée/logique/asset construite.
 - Vérifier les 3 mécaniques spéciales par personnage (Concentration/Récupération/Impulsion Nova) — nœuds existants, effet en jeu à reconfirmer.
 - ~~Nouvel ennemi "bulbe cracheur de projectile" (shooter fixe, tir en éventail, cadence faible) — modélisation 3D prévue lors du mois dédié Tripo3D.~~ **Fait** (`EnemyBulb.cs`, voir NOTES.md session 2026-09-26).
+- ~~Curseur de souris personnalisé (remplace la flèche blanche système par un gantelet fantasy).~~ **Fait** (`CustomCursor.cs`, visible sur tous les panneaux/menus et masqué en pleine partie active via `GameManager.NeedsCursor`, voir NOTES.md session 2026-10-11/12).
 - Ordre d'introduction des types d'ennemis à réfléchir avant d'ajouter le bulbe cracheur (éviter le chaos visuel).
 - Paliers de difficulté par taille de map (3 maps, du champ infini à l'enceinte fermée) — idée posée, pas commencée.
 - Écran d'accueil adaptatif selon le personnage sélectionné.
