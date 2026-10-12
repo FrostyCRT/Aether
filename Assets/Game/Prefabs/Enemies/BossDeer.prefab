@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b973c80abcb0cd45b749671453c92f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 50000
+  _maxHealth: 90000
   _moveSpeed: 4
   _xpValue: 2450
   _goldValue: 70
@@ -190,6 +190,8 @@ MonoBehaviour:
   _isWindingUpParam: IsWindingUp
   _isCruisingParam: IsCruising
   _isRecoveringParam: IsRecovering
+  _burstWindowDuration: 0.15
+  _maxBurstPercentPerWindow: 0.025
   _jumpCooldown: 8
   _jumpWindupDuration: 0.8
   _jumpAirTime: 0.6
@@ -203,8 +205,6 @@ MonoBehaviour:
   _spiralFireRate: 0.2
   _spiralBurstCount: 24
   _doubleSpiral: 1
-  _regenAmount: 1000
-  _regenCooldown: 10
   _phase2Threshold: 0.5
   _rageThreshold: 0.35
   _phase2SpeedMultiplier: 1.4

@@ -138,10 +138,15 @@ public class GameManager : MonoBehaviour
     {
         GameUI.OnEndScreenRevealComplete -= HandleEndScreenRevealComplete;
 
-        // rend toujours le curseur en quittant la partie (retour menu, rechargement)
-        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);   // rend le curseur système (menu principal, etc.)
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // CORRIGÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - remettait ici la vraie
+        // flèche système (Cursor.SetCursor(null,...), visible=true) en quittant la partie ; comme CustomCursor
+        // (le gantelet) reste actif dans TOUTES les scènes, ça aurait affiché deux curseurs superposés en revenant
+        // au menu. Le curseur système reste maintenant masqué partout, et NeedsCursor=false laisse CustomCursor
+        // revenir à son propre comportement par défaut (gantelet affiché, voir CustomCursor.Update).
+        NeedsCursor = false;
+        Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.ForceSoftware);
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = false;
         _cursorState = -1;
     }
 
@@ -158,8 +163,15 @@ public class GameManager : MonoBehaviour
     private static Texture2D _blankCursor;
     private int _cursorState = -1;   // 0 = caché, 1 = visible
 
+    // AJOUTÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - lu par CustomCursor pour savoir
+    // s'il doit afficher le gantelet (true : pause/paramètres/level-up/Game Over, le curseur doit pouvoir cliquer)
+    // ou le masquer (false : pleine partie, comme le faisait l'ancien système avant que le gantelet n'existe).
+    public bool NeedsCursor { get; private set; }
+
     private void ApplyCursor(bool show)
     {
+        NeedsCursor = show;
+
         if (_blankCursor == null)
         {
             _blankCursor = new Texture2D(16, 16, TextureFormat.RGBA32, false);
@@ -167,13 +179,24 @@ public class GameManager : MonoBehaviour
             _blankCursor.Apply();
             _blankCursor.hideFlags = HideFlags.HideAndDontSave;
         }
-        if (_cursorState != (show ? 1 : 0))
+        // CORRIGÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - remettait ici la vraie
+        // flèche système (Cursor.SetCursor(null,...)) quand show=true, ce qui aurait affiché la flèche blanche de
+        // l'OS PAR-DESSUS le gantelet de CustomCursor (qui gère maintenant seul la visibilité via NeedsCursor
+        // ci-dessus). Le curseur système reste désormais TOUJOURS masqué (texture transparente) ; seul show change,
+        // lu par CustomCursor pour afficher ou non son image.
+        if (_cursorState != 0)
         {
-            _cursorState = show ? 1 : 0;
-            Cursor.SetCursor(show ? null : _blankCursor, Vector2.zero, CursorMode.ForceSoftware);
+            _cursorState = 0;
+            Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.ForceSoftware);
         }
-        Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Confined;
-        Cursor.visible = show;
+        // CORRIGÉ (2026-10-11, retour utilisateur : "dans le menu je peux faire sortir la souris du cadre de
+        // 1920x1080p") - lockState repassait à None dès qu'un panneau s'affichait (show=true), désactivant le
+        // confinement à la fenêtre pendant justement tous les écrans où la souris doit cliquer (pause, paramètres,
+        // level-up, game over) - c'est là que le joueur la fait le plus facilement sortir. Confined reste actif
+        // dans tous les cas : la souris peut toujours bouger librement et cliquer DANS la fenêtre, seulement plus
+        // en sortir.
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = false;
     }
 
     private void UpdateCursor()

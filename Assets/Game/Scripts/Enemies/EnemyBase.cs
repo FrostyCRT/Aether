@@ -145,6 +145,14 @@ public class EnemyBase : MonoBehaviour
 
     public float CurrentHealth => _currentHealth;
 
+    // AJOUTE (2026-10-11, retour utilisateur : "les araignées sautent sur le Lyra même si elle est invisible en
+    // lâchant son clone") - _currentTarget est déjà redirigé automatiquement vers PlayerController.ActivePhantomClone
+    // tant qu'il existe (voir Update() plus bas) ; exposé en lecture pour qu'un ennemi avec sa PROPRE logique de
+    // ciblage (ex. EnemyCorruptedWeaver.JumpAttack, qui calculait sa distance/position de saut sur une référence
+    // joueur mise en cache à part, jamais redirigée) puisse viser la même cible que tout le monde au lieu de
+    // continuer à cibler Lyra directement pendant l'invisibilité.
+    protected Transform CurrentTarget => _currentTarget;
+
     // CORRIGÉ (2026-10-05) - private -> protected : EnemyShooter réutilise maintenant ce même lissage (voir son
     // UpdateBehaviour) au lieu de dupliquer sa propre logique de déplacement SANS lissage - c'était la cause du
     // tremblement signalé (retour utilisateur : "les ennemis shooter [...] tremblent car ils changent de direction
@@ -610,8 +618,17 @@ public class EnemyBase : MonoBehaviour
         // ennemi tardif prend bien plus de coups à tuer mais rapportait exactement la même XP qu'au début de la
         // partie - l'XP par seconde de combat s'effondrait avec le temps. L'XP suit maintenant le même facteur que
         // les PV (healthMultiplier inclut déjà le scaling Sans Fin au-delà de 15 min, voir ObjectPool.Get).
+        // CORRIGÉ (2026-10-11, retour utilisateur : "en fin de partie ça donne trop d'xp, comme il y a beaucoup
+        // d'ennemis qui meurent, et que les ennemis donnent beaucoup d'xp, ça monte trop vite, il faudrait alléger
+        // un peu le scale d'xp") - le correctif ci-dessus cumulait avec la hausse du NOMBRE d'ennemis tués par
+        // seconde en fin de partie (plafond d'ennemis simultanés et cadence de spawn qui montent aussi avec le
+        // temps, voir EnemySpawner._phasesDeJeu) : les deux ensemble faisaient grimper l'XP/seconde bien plus vite
+        // que prévu. L'XP suit maintenant la MOITIÉ de la croissance des PV au lieu de la totalité (reste à 1x au
+        // palier 0, seulement 3x au lieu de 5x au dernier palier) - toujours croissant (pas de retour au problème
+        // de 2026-10-07), mais la pente est allégée.
+        float xpHealthMultiplier = 1f + (_healthMultiplier - 1f) * 0.5f;
         if (XPGemSpawner.Instance != null)
-            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * _healthMultiplier);
+            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * xpHealthMultiplier);
 
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);

@@ -225,18 +225,30 @@ public class BouncingOrbProjectile : MonoBehaviour
         Vector3 velA = _direction * _speed;
         Vector3 velB = otherOrb._direction * otherOrb._speed;
 
-        // Ne rebondit que si elles se rapprochent encore - évite un rebond répété en boucle si elles restent
-        // chevauchées un instant après coup. Dot(velA-velB, normal) > 0 <=> la distance entre les 2 diminue.
+        // Ne rebondit (change de direction) que si elles se rapprochent encore - évite un rebond répété en
+        // boucle si elles restent chevauchées un instant après coup. Dot(velA-velB, normal) > 0 <=> la distance
+        // entre les 2 diminue.
         float approachSpeed = Vector3.Dot(velA - velB, normal);
-        if (approachSpeed <= 0f) return;
 
-        // Chaque orbe ne réfléchit sa direction QUE si elle se dirige vers l'autre (sinon, ex. une orbe qui
-        // s'éloigne pendant que l'autre la rattrape, la réfléchir l'enverrait vers l'autre au lieu de l'en
-        // éloigner). Vector3.Reflect conserve la longueur : _speed n'est jamais modifié.
-        if (Vector3.Dot(_direction, normal) > 0f)
-            _direction = Vector3.Reflect(_direction, normal).normalized;
-        if (Vector3.Dot(otherOrb._direction, normal) < 0f)
-            otherOrb._direction = Vector3.Reflect(otherOrb._direction, normal).normalized;
+        // CORRIGÉ (2026-10-11, retour utilisateur : "des fois il y a un bug avec les orbes rebondissantes, des
+        // fois elles sont collées") - la séparation plus bas était à l'intérieur du "if (approachSpeed <= 0f)
+        // return;" : si les 2 orbes finissaient avec une vitesse IDENTIQUE (même direction, même vitesse - ex.
+        // spawnées ensemble par la Fusion Orbes Jumeaux, ou reflétées la même frame sur le même mur), approachSpeed
+        // restait à 0 pour toujours (Dot(velA-velB, normal) = Dot(zéro, normal) = 0) : ce early return sautait
+        // AUSSI la séparation, donc les 2 orbes continuaient à se chevaucher indéfiniment en dérivant collées l'une
+        // à l'autre, sans jamais pouvoir s'écarter. La séparation doit s'appliquer dès qu'elles se chevauchent,
+        // qu'elles se rapprochent ou non - seul le changement de DIRECTION reste conditionné à approachSpeed > 0
+        // (pour ne jamais rebondir en boucle sur un contact déjà résolu).
+        if (approachSpeed > 0f)
+        {
+            // Chaque orbe ne réfléchit sa direction QUE si elle se dirige vers l'autre (sinon, ex. une orbe qui
+            // s'éloigne pendant que l'autre la rattrape, la réfléchir l'enverrait vers l'autre au lieu de l'en
+            // éloigner). Vector3.Reflect conserve la longueur : _speed n'est jamais modifié.
+            if (Vector3.Dot(_direction, normal) > 0f)
+                _direction = Vector3.Reflect(_direction, normal).normalized;
+            if (Vector3.Dot(otherOrb._direction, normal) < 0f)
+                otherOrb._direction = Vector3.Reflect(otherOrb._direction, normal).normalized;
+        }
 
         // Sépare les 2 orbes de la moitié du chevauchement chacune, pour ne pas rester imbriquées et
         // redéclencher le même rebond en boucle la frame suivante.

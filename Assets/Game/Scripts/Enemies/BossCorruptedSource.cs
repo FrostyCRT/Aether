@@ -556,8 +556,22 @@ public class BossCorruptedSource : BossBase
         {
             // Choc des titans : PV du mini-boss = 30 % de ceux du titan correspondant (Boss 1 ou Boss 2) ; sinon le mini Boss 1
             // (20 000 PV de base) tombait en quelques secondes face à un build complet, contrairement au mini Boss 2 (50 000).
-            if (GameModes.IsTitans) boss.InitWithHealth(GameModes.TitansBossHealth(boss is BossDeer ? 2 : 1) * percent);
-            else boss.InitWithReducedHP(percent);
+            if (GameModes.IsTitans)
+            {
+                boss.InitWithHealth(GameModes.TitansBossHealth(boss is BossDeer ? 2 : 1) * percent);
+            }
+            else
+            {
+                // CORRIGE (2026-10-11, retour utilisateur : "les mini boss du boss 3 meurent trop rapidement, ils
+                // n'ont pas du tout assez de vie, je l'ai tué en 3 sec") - même symptôme que le Choc des Titans
+                // ci-dessus (même commentaire), jamais corrigé côté Classique/Sans-fin : ces mini-boss apparaissent
+                // à partir de la minute 15 (le combat du Boss 3), un joueur largement plus fort qu'au moment où
+                // Boss 1 (20 000 PV, pensé pour la minute 5) ou Boss 2 (PV pensés pour la minute 10) sont
+                // normalement affrontés seuls - 30% de ces PV d'origine ne representait donc presque rien.
+                // Pourcentage doublé (0.3 -> 0.6) UNIQUEMENT ici (le Choc des Titans, déjà réglé séparément plus
+                // haut avec son propre repère de DPS, garde son 0.3 inchangé).
+                boss.InitWithReducedHP(percent * 2f);
+            }
 
             // AJOUTE (2026-10-07, retour utilisateur : barre de vie dédiée au mini-boss) - affichée dès que ses PV
             // sont fixés, masquée automatiquement à sa mort (voir BossBase.Die(), branche IsSummoned).

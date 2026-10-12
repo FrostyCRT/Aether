@@ -86,9 +86,13 @@ public class EnemyProjectile : MonoBehaviour
             }
 
             // CORRECTION LOGIQUE : Application des dégâts si le joueur n'est pas invincible
+            // CORRIGÉ (2026-10-11, retour utilisateur : "je me fais one shot [...] si je suis dans lui, et qu'il
+            // lance ses projectiles, je les prends tous en même temps") - TakeDamage() direct n'avait aucune
+            // protection entre plusieurs projectiles distincts touchant la même frame (voir
+            // HealthSystem.TakeDamageFromProjectile, qui a maintenant sa propre fenêtre anti-cumul).
             if (playerHealthCheck != null)
             {
-                playerHealthCheck.TakeDamage(_damage * GameModes.EnemyDamageScale);
+                playerHealthCheck.TakeDamageFromProjectile(_damage * GameModes.EnemyDamageScale);
 
                 // AJOUTÉ (2026-10-03) - jusqu'ici le projectile disparaissait sans rien au moment même où il touche le
                 // joueur (seul le chiffre de dégâts, un peu après, signalait le coup). Même rouge que

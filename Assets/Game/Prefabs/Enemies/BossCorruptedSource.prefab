@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 125000
+  _maxHealth: 180000
   _moveSpeed: 4
   _xpValue: 0
   _goldValue: 120
@@ -141,6 +141,8 @@ MonoBehaviour:
   _isWindingUpParam: IsWindingUp
   _isCruisingParam: IsCruising
   _isRecoveringParam: IsRecovering
+  _burstWindowDuration: 0.15
+  _maxBurstPercentPerWindow: 0.025
   _anchorLeashRadius: 6
   _crystalPrefab: {fileID: 7410838741697927729, guid: 2a0016e916d8ea448a5c7064e0315455,
     type: 3}

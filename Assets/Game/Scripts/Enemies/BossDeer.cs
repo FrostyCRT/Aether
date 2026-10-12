@@ -180,6 +180,15 @@ public class BossDeer : BossBase
             {
                 _jumpState = JumpState.Airborne;
                 _jumpStateTimer = 0f;
+                // CORRIGE (2026-10-11, retour utilisateur : "le boss 1 one shot quand on est collé à lui, il faut
+                // lui mettre le même délai de dégâts qu'on a mis sur le boss 2") - même correctif que la Frappe
+                // du Boss 2 (BossCorruptedSource.StrikeAttack, voir _contactDamageSuppressed) : pendant le saut,
+                // transform.position est téléporté en Lerp (pas un déplacement physique classique), donc si
+                // l'atterrissage retombe sur/près du joueur, le collider générique du boss (BossBase.OnTriggerEnter/
+                // Stay) déclenchait AUSSI les dégâts de contact normaux en plus des 800 dégâts explicites de
+                // LandJumpAttack - un joueur collé au boss au moment de l'atterrissage encaissait donc les deux à
+                // la fois. Suspendu pendant toute la phase aérienne, réactivé juste après l'impact explicite.
+                _contactDamageSuppressed = true;
             }
         }
         else if (_jumpState == JumpState.Airborne)
@@ -228,6 +237,7 @@ public class BossDeer : BossBase
                 playerHealth.TakeDamage(_jumpDamage * GameModes.EnemyDamageScale);
         }
 
+        _contactDamageSuppressed = false;
         _jumpState = JumpState.None;
         _jumpStateTimer = 0f;
     }

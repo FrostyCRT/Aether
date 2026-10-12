@@ -87,6 +87,9 @@ public class HealthSystem : MonoBehaviour
         if (_damageTimer > 0f)
             _damageTimer -= Time.deltaTime;
 
+        if (_projectileDamageTimer > 0f)
+            _projectileDamageTimer -= Time.deltaTime;
+
         if (_regenPerSecond > 0f && _currentHealth < _maxHealth)
         {
             _regenTimer += Time.deltaTime;
@@ -189,9 +192,27 @@ public class HealthSystem : MonoBehaviour
             playerCtrl.ActivateInvisibility(3f);
     }
 
+    // CORRIGÉ (2026-10-11, retour utilisateur : "je me fais one shot parce que si je suis dans lui, et qu'il lance
+    // ses projectiles, je les prends tous en même temps") - BossBase.ShootRadial() (et les autres tirs à plusieurs
+    // projectiles : BossDeer.ShootSpiralProjectile x2, BossCorruptedSource CrystalPulse) spawnent TOUS leurs
+    // projectiles à la position du boss la même frame ; si le joueur se tient collé au boss, chaque projectile
+    // chevauche déjà son collider dès l'apparition et appelait TakeDamage() directement (EnemyProjectile.cs) - sans
+    // AUCUNE protection entre projectiles différents (contrairement aux dégâts de contact, qui partagent déjà
+    // _damageTimer via TryTakeContactDamage). 8 projectiles encaissés la même frame = mort instantanée. Cette
+    // méthode existait déjà mais n'était jamais appelée (EnemyProjectile appelait TakeDamage directement) : lui
+    // donne maintenant sa propre fenêtre anti-cumul très courte (0,15 s, bien plus courte que le cooldown de
+    // contact à 0,6-0,8 s) - assez longue pour fondre une salve simultanée en 1 seul coup, assez courte pour ne
+    // jamais bloquer 2 projectiles réellement distincts qui arrivent à des moments différents.
+    private float _projectileDamageTimer = 0f;
+    [SerializeField] private float _projectileDamageMergeWindow = 0.15f;
+
     public void TakeDamageFromProjectile(float damage, string source = "horde")
     {
+        if (IsInvincible) return;
+        if (_projectileDamageTimer > 0f) return;
+
         TakeDamage(damage, source);
+        _projectileDamageTimer = _projectileDamageMergeWindow;
     }
 
     public void Heal(float percent)

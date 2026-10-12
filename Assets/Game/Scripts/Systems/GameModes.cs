@@ -181,8 +181,9 @@ public static class GameModes
     // ---- Ruée de boss ----------------------------------------------------------------------------------------------------
     // ÉQUILIBRAGE (tout est ici, un seul endroit à retoucher après les playtests).
     //
-    // Le problème : un boss par minute, alors que le joueur repart de zéro. Les PV du classique (20 000 / 50 000 / 125 000) sont
-    // faits pour un joueur de 5 / 10 / 15 minutes ; à la minute 1 ils sont impossibles. Deux leviers :
+    // Le problème : un boss par minute, alors que le joueur repart de zéro. Les PV du classique (20 000 / 90 000 / 180 000,
+    // 90 000/180 000 relevés le 2026-10-11 - retour utilisateur : "boss 2 n'a pas assez de vie" / "pareil pour le boss 3")
+    // sont faits pour un joueur de 5 / 10 / 15 minutes ; à la minute 1 ils sont impossibles. Deux leviers :
     //  1) le joueur monte plus vite : XP x RushXpMultiplier (boss compris, ils donnent beaucoup d'XP) ;
     //  2) les PV de chaque boss sont fixés d'après la puissance ATTENDUE du joueur à ce moment (voir RushBossHealth) :
     //       PV = dégâts/s attendus x temps de combat visé x marge de sécurité.
@@ -224,7 +225,7 @@ public static class GameModes
 
     // ---- Choc des titans ------------------------------------------------------------------------------------------------
     // Le joueur démarre avec TOUTES les améliorations au maximum (comme le raccourci de debug F6) et affronte les 3 boss
-    // en même temps, sans aucun ennemi normal, sans niveaux ni cartes. Les PV du classique (20k / 50k / 125k) sont faits pour
+    // en même temps, sans aucun ennemi normal, sans niveaux ni cartes. Les PV du classique (20k / 90k / 180k) sont faits pour
     // un joueur en cours de progression : avec un build complet, les boss 1 et 2 tomberaient en quelques secondes.
     // PV = DPS d'un build complet (TitansPlayerDps, mesuré en jeu) x temps de combat visé x marge d'utilisation
     // (TitansUptime : le joueur esquive, se repositionne, et passe d'un boss à l'autre). Un seul endroit à retoucher.

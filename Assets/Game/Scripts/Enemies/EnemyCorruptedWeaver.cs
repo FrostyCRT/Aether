@@ -26,17 +26,10 @@ public class EnemyCorruptedWeaver : EnemyBase
     private bool _isJumping = false;
     private float _jumpCooldownTimer = 0f;
 
-    private Transform _weaverPlayerTransform;
-
     protected override void OnEnable()
     {
         base.OnEnable();
 
-        if (_weaverPlayerTransform == null)
-        {
-            GameObject player = GameObject.FindWithTag("Player");
-            if (player != null) _weaverPlayerTransform = player.transform;
-        }
         _isJumping = false;
         _jumpCooldownTimer = 0f;
 
@@ -59,9 +52,14 @@ public class EnemyCorruptedWeaver : EnemyBase
         if (_jumpCooldownTimer > 0f)
             _jumpCooldownTimer -= Time.deltaTime;
 
-        if (_jumpCooldownTimer <= 0f && _weaverPlayerTransform != null)
+        // CORRIGÉ (2026-10-11, retour utilisateur : "les araignées sautent sur le Lyra même si elle est invisible
+        // en lâchant son clone") - visait auparavant une référence joueur mise en cache à part (_weaverPlayerTransform),
+        // jamais redirigée vers le Clone Fantôme contrairement au reste du ciblage (voir EnemyBase.CurrentTarget) :
+        // l'araignée sautait donc toujours sur la vraie position de Lyra, invisible ou pas. CurrentTarget pointe
+        // maintenant vers le clone tant qu'il existe, comme tous les autres ennemis.
+        if (_jumpCooldownTimer <= 0f && CurrentTarget != null)
         {
-            float dist = Vector3.Distance(transform.position, _weaverPlayerTransform.position);
+            float dist = Vector3.Distance(transform.position, CurrentTarget.position);
             if (dist <= _jumpTriggerRange && dist > _jumpImpactRadius)
             {
                 StartCoroutine(JumpAttack());
@@ -74,7 +72,7 @@ public class EnemyCorruptedWeaver : EnemyBase
         _isJumping = true;
         _jumpCooldownTimer = _jumpCooldown;
 
-        Vector3 targetPos = _weaverPlayerTransform.position;
+        Vector3 targetPos = CurrentTarget != null ? CurrentTarget.position : transform.position;
 
         yield return new WaitForSeconds(_jumpAnticipationDuration);
 

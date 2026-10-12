@@ -21,6 +21,18 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private float _titleRaiseWithBanner = 24f;
     private float _titleDefaultY;
 
+    // AJOUTE (2026-10-11) - positions/réglages d'ORIGINE de chaque carte, mémorisés une fois au démarrage
+    // (comme _titleDefaultY ci-dessus) plutôt que redupliqués en dur dans DisplayUpgrades : une carte normale
+    // retrouve EXACTEMENT ce qu'elle avait dans la scène, même si ces valeurs sont retouchées plus tard dans
+    // l'Inspector - seule la carte de FUSION s'écarte de cette référence, via des constantes dédiées.
+    private float[] _defaultNameY;
+    private float[] _defaultIconY;
+    private Vector2[] _defaultIconSize;
+    private float[] _defaultDescY;
+    private Vector2[] _defaultDescSize;
+    private bool[] _defaultDescAutoSize;
+    private float[] _defaultDescFontSize;
+
     // AJOUTÉ (2026-10-01) - retour utilisateur : "quand le level up panel arrive, une transition rapide pour
     // afficher les cartes, pas juste un écran qui spawn comme ça, fluide et dynamique". Le fond fait un court
     // fondu, le titre "NIVEAU SUPÉRIEUR !" (et le bandeau de fusion) apparaissent en "pop" avec un petit
@@ -163,8 +175,33 @@ public class UpgradeUI : MonoBehaviour
         if (_levelUpTitleText != null)
             _titleDefaultY = _levelUpTitleText.anchoredPosition.y;
 
+        _defaultNameY = new float[_cards.Length];
+        _defaultIconY = new float[_cards.Length];
+        _defaultIconSize = new Vector2[_cards.Length];
+        _defaultDescY = new float[_cards.Length];
+        _defaultDescSize = new Vector2[_cards.Length];
+        _defaultDescAutoSize = new bool[_cards.Length];
+        _defaultDescFontSize = new float[_cards.Length];
+
         for (int i = 0; i < _cards.Length; i++)
         {
+            if (_cards[i].nameText != null)
+                _defaultNameY[i] = ((RectTransform)_cards[i].nameText.transform).anchoredPosition.y;
+            if (_cards[i].iconImage != null)
+            {
+                RectTransform iconRt = (RectTransform)_cards[i].iconImage.transform;
+                _defaultIconY[i] = iconRt.anchoredPosition.y;
+                _defaultIconSize[i] = iconRt.sizeDelta;
+            }
+            if (_cards[i].descriptionText != null)
+            {
+                RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
+                _defaultDescY[i] = descRt.anchoredPosition.y;
+                _defaultDescSize[i] = descRt.sizeDelta;
+                _defaultDescAutoSize[i] = _cards[i].descriptionText.enableAutoSizing;
+                _defaultDescFontSize[i] = _cards[i].descriptionText.fontSize;
+            }
+
             if (_cards[i].chooseButton != null)
             {
                 int index = i;
@@ -238,22 +275,99 @@ public class UpgradeUI : MonoBehaviour
                 // Fusion de la carte") - le mot générique "FUSION" reste la 1re ligne (titre), le nom spécifique
                 // (ex: "Terre Calcinée") apparaît maintenant en 2e ligne, plus petit - jusqu'ici réservé à la
                 // description, jamais visible dans ce titre.
-                _cards[i].nameText.text = isFusionCard ? $"FUSION\n<size=65%>{upgrades[i].upgradeName}</size>" : upgrades[i].upgradeName;
+                // MODIFIE (2026-10-11, retour utilisateur : "augmente la taille des caractères des noms pour les
+                // fusions") - 2e ligne (le nom spécifique) agrandie de 65% à 85% de la taille de base ("FUSION"
+                // reste à 100%, toujours la ligne la plus visible).
+                _cards[i].nameText.text = isFusionCard ? $"FUSION\n<size=85%>{upgrades[i].upgradeName}</size>" : upgrades[i].upgradeName;
                 _cards[i].descriptionText.text = upgrades[i].GetDynamicDescription();
-                if (_cards[i].iconImage != null)
+
+                // CORRIGE (2026-10-11, retour utilisateur avec capture : "le grand vide en bas", "même écart entre
+                // le haut et le bas de vide", "toutes les cartes doivent avoir la même position en Y", "même écart
+                // entre le nom, l'icône et la description") - 3 corrections précédentes (positions à vue) avaient
+                // seulement déplacé le trou sans jamais regarder le bilan de TOUTE la hauteur de la carte (800px,
+                // mesuré - PAS 670 comme supposé lors des passes précédentes) : la vraie cause du grand vide du
+                // bas, c'est que la boîte de description (85px) ne réservait de la place que pour ~2 lignes alors
+                // que `enableAutoSizing` la LAISSAIT RÉTRÉCIR pour tenir dedans au lieu de prendre la place
+                // disponible plus bas sur la carte - le bas de la carte restait donc vide quel que soit le texte.
+                // Valeurs recalculées (résolues sur les 800px réels) pour répartir titre/icône/description à
+                // écarts ÉGAUX (52,5px) avec des marges haut/bas de carte ÉGALES (90px), FIXES pour les 3 cartes
+                // (pas de centrage par carte selon son propre
+                // texte - potentiellement illisible par calcul en temps réel, les mêmes 3 valeurs s'appliquent à
+                // toute upgrade de fusion, confirmé par mesure en Play Mode avec le vrai texte le plus long des 6
+                // fusions).
+                // CORRIGE (2026-10-11, retour utilisateur avec capture : "les noms sont trop hauts") - le titre
+                // (FUSION + nom) était trop près du bord haut de la carte. Marge haut/bas remontée de 90 à 110px
+                // (le titre descend de 20px) en gardant l'invariant du dessus (marge haut = marge bas, écart
+                // titre→icône = écart icône→description) : seul le COMPROMIS marge/écart change, la somme
+                // marge+écart (142,5) reste fixe tant que l'icône (225) et la description (190) gardent leur
+                // taille - donc l'icône elle-même ne bouge pas (sa position ne dépend que de cette somme fixe),
+                // seuls le titre (descend) et la description (remonte) se rapprochent d'elle symétriquement.
+                // CORRIGE (2026-10-11, retour utilisateur avec capture : "baisse un peu l'ensemble pour les
+                // fusions, et baisse aussi un peu les textes de nom de fusion et fusion, sans décaler autre
+                // chose") - 2 décalages distincts cette fois (l'utilisateur a explicitement dit de ne PAS tout
+                // redécaler pour garder la symétrie marge/écart comme avant) : (1) tout le groupe descend de 15px
+                // (icône et description), (2) le titre descend de 15px DE PLUS que le reste (30px au total), lui
+                // seul - rapproche visuellement le titre "FUSION" du haut des cartes voisines (Dégâts+/Cadence+,
+                // dont le titre ne bouge jamais) sans toucher à l'icône ni à la description une 2e fois.
+                if (isFusionCard)
                 {
-                    RectTransform iconRt = (RectTransform)_cards[i].iconImage.transform;
-                    // MODIFIE (2026-10-07, retour utilisateur : "il y a un trop grand écart entre les éléments") -
-                    // icône et description étaient proches en bordure de boîte (RectTransform), mais la plupart
-                    // des icônes de fusion ne remplissent pas leur cadre 225×225 (beaucoup de marge transparente
-                    // autour du dessin) : à l'écran, ça laissait un grand vide visuel entre le dessin réel et le
-                    // texte. Icône et description rapprochées du centre de la carte.
-                    iconRt.anchoredPosition = new Vector2(iconRt.anchoredPosition.x, isFusionCard ? -30f : -13f);
+                    // CORRIGE (2026-10-11, retour utilisateur avec capture : "baisse tous les titres, pour la carte
+                    // d'up normal et pour la fusion" / "baisse un peu en Y la description en bas" pour la fusion) -
+                    // titre 210 -> 190 (même baisse de 20px que les cartes normales, scène, nameText.y 218 -> 198) ;
+                    // description -210 -> -230 (encore 20px de plus, rien d'autre ne bouge).
+                    if (_cards[i].nameText != null)
+                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, 190f);
+                    // CORRIGE (2026-10-11, retour utilisateur avec capture : "l'icone pour la carte de fusion doit
+                    // être de la même taille que celle des autres, et les icones de fusions et de upgrade doivent
+                    // être au même niveau en Y") - 2 corrections : (1) Y alignée sur _defaultIconY[i], la MÊME
+                    // valeur que la branche "else" ci-dessous utilise pour les cartes normales (abandon du Y fixe à
+                    // 30 qui plaçait l'icône de fusion plus haut que celles des cartes voisines) ; (2) boîte élargie
+                    // à 400x215 (au lieu de la boîte carrée 225x225 héritée de la scène, partagée avec les cartes
+                    // normales) - 5 des 6 sprites de fusion sont carrés (rendu correct même en boîte carrée), mais
+                    // "Orbes Jumeaux" (DoubleTir+OrbeRebondissante) est un sprite 1600x993 très large avec
+                    // beaucoup de vide transparent en haut/bas : en boîte 225x225, preserveAspect le contraint par
+                    // la largeur et le réduit à ~225x140, visiblement plus petit que les icônes carrées. Boîte
+                    // 400x215 contraint TOUJOURS par la hauteur (215) pour les ratios larg/haut jusqu'à ~1.86
+                    // (le plus large des 6 sprites est à 1.61) : chaque icône de fusion est donc rendue à hauteur
+                    // fixe ~215, identique à la hauteur réelle des icônes normales (~214-215 avec leur boîte 225x225
+                    // et leurs sprites quasi carrés) - tailles perçues cohérentes dans les 2 cas.
+                    if (_cards[i].iconImage != null)
+                    {
+                        RectTransform fusionIconRt = (RectTransform)_cards[i].iconImage.transform;
+                        fusionIconRt.anchoredPosition = new Vector2(fusionIconRt.anchoredPosition.x, _defaultIconY[i]);
+                        fusionIconRt.sizeDelta = new Vector2(400f, 215f);
+                    }
+                    if (_cards[i].descriptionText != null)
+                    {
+                        RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
+                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, -245f);
+                        descRt.sizeDelta = new Vector2(380f, 190f);
+                        // "pas obligé de rendre le texte plus petit quand c'est long, il faut que ça prenne de la
+                        // place" - la boîte est maintenant assez haute (190px, ~5 lignes) pour que même la
+                        // description la plus longue tienne à taille fixe ; plus besoin de laisser l'auto-size la
+                        // rétrécir.
+                        _cards[i].descriptionText.enableAutoSizing = false;
+                        _cards[i].descriptionText.fontSize = 26f;
+                    }
                 }
-                if (_cards[i].descriptionText != null)
+                else
                 {
-                    RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
-                    descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, isFusionCard ? -95f : 140f);
+                    if (_cards[i].nameText != null)
+                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, _defaultNameY[i]);
+                    if (_cards[i].iconImage != null)
+                    {
+                        RectTransform normalIconRt = (RectTransform)_cards[i].iconImage.transform;
+                        normalIconRt.anchoredPosition = new Vector2(normalIconRt.anchoredPosition.x, _defaultIconY[i]);
+                        normalIconRt.sizeDelta = _defaultIconSize[i];
+                    }
+                    if (_cards[i].descriptionText != null)
+                    {
+                        RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
+                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, _defaultDescY[i]);
+                        descRt.sizeDelta = _defaultDescSize[i];
+                        _cards[i].descriptionText.enableAutoSizing = _defaultDescAutoSize[i];
+                        _cards[i].descriptionText.fontSize = _defaultDescFontSize[i];
+                    }
                 }
 
                 // MODIFIÉ (2026-10-01) - parchemin choisi selon la branche de l'upgrade (voir GetParchmentFor).
@@ -336,16 +450,20 @@ public class UpgradeUI : MonoBehaviour
         }
 
         int maxLevel = upgrade.MaxLevel;
-        bool showDots = maxLevel > 1 && maxLevel <= 3 && card.tierDotsContainer != null && card.tierDots != null;
+        // MODIFIE (2026-10-11, retour utilisateur : "mets le système de dots pour Dégâts+ et Cadence+ comme dans
+        // le pause panel, donc 5 dots") - avant, seules les upgrades à 2-3 paliers affichaient des pastilles
+        // (Dégâts/Cadence/Soin, maxLevel=5, tombaient dans le compteur "xN" à la place). Plafond supprimé : même
+        // principe que GameUI.ConfigureBuildGridSlot (Pause/Victoire/Défaite), `dotCount` plafonné à 5 pastilles
+        // quel que soit maxLevel réel (jamais dépassé ici en pratique, aucune upgrade n'a plus de 5 paliers).
+        bool showDots = maxLevel > 1 && card.tierDotsContainer != null && card.tierDots != null;
+        int dotCount = Mathf.Clamp(maxLevel, 1, 5);
 
         if (card.tierDotsContainer != null)
             card.tierDotsContainer.SetActive(showDots);
 
-        // AJOUTE - compteur x1/x2/x3 : uniquement pour les upgrades a cap eleve/
-        // illimite (Degats/Cadence/Soin, maxLevel > 3 ou tres grand), PAS pour
-        // Tir x2 (maxLevel == 1, deblocage binaire ou "x1" n'aurait aucun sens).
-        // Ne s'affiche qu'a partir du 1er pick deja effectue (jamais "x0" sur une
-        // carte encore jamais prise, pour ne pas alourdir un premier choix).
+        // AJOUTE - compteur x1/x2/x3 : repli pour une upgrade à 1 seul palier sans pastille adaptée (aucun cas
+        // réel actuellement, showDots couvre maintenant tout maxLevel > 1) - gardé si une future upgrade à cap
+        // élevé mais sans sens de "palier" (ex: un buff purement additif) en avait besoin.
         int rawLevelForStack = upgrade.GetCurrentLevel();
         bool showStackCount = !showDots && maxLevel > 1 && rawLevelForStack >= 1;
         if (card.stackCountText != null)
@@ -374,13 +492,31 @@ public class UpgradeUI : MonoBehaviour
 
         if (!showDots) return;
 
+        // AJOUTE (2026-10-11) - taille/espacement des pastilles recalculés selon leur NOMBRE (comme
+        // GameUI.ConfigureBuildGridSlot : plus petites à partir de 4, pour que les 5 tiennent dans la même
+        // largeur de conteneur (225px) que les 3 pastilles d'origine, toujours centrées dedans - aucune carte ne
+        // bouge, seul l'intérieur de la rangée s'adapte.
+        // CORRIGE (2026-10-11, retour utilisateur : "grossis un peu les 5 dots") - 36 -> 42px. Le centrage se
+        // base sur containerWidth (225) et pas sur le total occupé par les points : même plus large que les
+        // 225px (42*5 + 6*4 = 234), la rangée reste symétrique autour du centre du conteneur (aucun clipping sur
+        // ce conteneur, c'est un simple point d'ancrage).
+        float dotSize = dotCount > 3 ? 42f : 50f;
+        float dotSpacing = dotCount > 3 ? 6f : 8f;
+        float containerWidth = card.tierDotsContainer != null ? ((RectTransform)card.tierDotsContainer.transform).sizeDelta.x : 225f;
+        float totalSpan = dotCount * dotSize + Mathf.Max(0, dotCount - 1) * dotSpacing;
+        float startX = (containerWidth - totalSpan) / 2f + dotSize / 2f;
+
         for (int d = 0; d < card.tierDots.Length; d++)
         {
             if (card.tierDots[d] == null) continue;
 
-            bool dotExists = d < maxLevel;
+            bool dotExists = d < dotCount;
             card.tierDots[d].gameObject.SetActive(dotExists);
             if (!dotExists) continue;
+
+            RectTransform dotRt = (RectTransform)card.tierDots[d].transform;
+            dotRt.sizeDelta = new Vector2(dotSize, dotSize);
+            dotRt.anchoredPosition = new Vector2(startX + d * (dotSize + dotSpacing), dotRt.anchoredPosition.y);
 
             bool dotIsFilled = d < currentLevel;
 

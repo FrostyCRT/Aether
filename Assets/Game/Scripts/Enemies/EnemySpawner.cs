@@ -229,6 +229,14 @@ public class EnemySpawner : MonoBehaviour
     // les 2 seuls ennemis qui tirent des projectiles, nécessaires pour charger le Bouclier de Mana/l'Ultime (voir
     // EnemyProjectile.OnTriggerEnter, ManaShield.TryAbsorb/CrystalSystem.AbsorbProjectile) - sans ça un palier
     // 100% mêlée (Loup/Golem/Corbeau/Araignée) rendrait ces mécaniques injouables.
+    // CORRIGÉ (2026-10-11, retour utilisateur : "le pourcentage d'apparition des tireurs... en fin de partie ça
+    // devient difficile car il y en a beaucoup, donc c'est presque impossible de tout esquiver") - le ratio tireur
+    // seul (30 %) ne montait pas en fin de partie, mais le PLAFOND d'ennemis simultanés, lui, grimpe fortement avec
+    // les phases de _phasesDeJeu (jusqu'à 160 en fin de partie, "06_L_Apocalypse_Finale") : à ratio constant, le
+    // NOMBRE de tireurs à l'écran explose quand même. Poids des tireurs divisés par 2 dans les 2 derniers paliers
+    // (Tisseuse : EnemyShooter 30 -> 15 ; Brute : EnemyBulb 30 -> 15), réglé directement dans l'Inspector de ce
+    // composant (scène Game) - jamais à 0, pour ne pas casser le Bouclier de Mana/l'Ultime (voir commentaire
+    // ci-dessus).
     [Header("Pool pondéré par palier de temps (2-3 types actifs max, voir commentaire ci-dessus)")]
     [SerializeField] private List<PalierEnnemis> _paliersEnnemis = new List<PalierEnnemis>();
 
