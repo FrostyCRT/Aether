@@ -9,6 +9,23 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver => _isGameOver;
     public bool IsPaused { get; private set; } = false;
 
+    // AJOUTÉ (2026-10-13, retour utilisateur : "pendant l'animation [...] le player ne peut pas bouger et la game
+    // n'a pas commencé, le timer est à 0") - verrou posé par GameUI pendant toute la séquence d'annonce du défi au
+    // lancement (aller au centre -> lecture -> retour au HUD). Réutilise IsPaused + Time.timeScale=0 : TOUT le
+    // gameplay (PlayerController, EnemyBase, WeaponBase, EnemySpawner, le chrono ci-dessous) vérifie déjà
+    // IsPaused, donc ce seul booléen gèle tout sans dupliquer une garde dans 6 fichiers différents. Un flag séparé
+    // (_introLockActive) sert uniquement à empêcher Échap de rouvrir le jeu via TogglePause() pendant ce verrou
+    // (sinon IsPaused repasserait à false avant la fin de l'animation) et à garder le curseur masqué (voir
+    // UpdateCursor ci-dessous - pas de panneau à cliquer pendant cette cinématique).
+    private bool _introLockActive = false;
+
+    public void SetIntroLock(bool active)
+    {
+        _introLockActive = active;
+        IsPaused = active;
+        Time.timeScale = active ? 0f : 1f;
+    }
+
     // AJOUTÉ (2026-10-01) - délais entre la fin de partie et l'apparition du panel, réglables dans l'Inspector.
     // Avant : valeurs codées en dur (1.5 s Game Over / 2 s Victoire). Le panel de Game Over arrivait avant la fin
     // de l'animation de mort du joueur. Le délai doit être AU MOINS égal à la durée du clip de mort.
@@ -201,7 +218,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateCursor()
     {
-        bool needCursor = _isGameOver || IsPaused
+        bool needCursor = _isGameOver || (IsPaused && !_introLockActive)
             || SettingsPage.InGameOpen
             || (LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice);
         ApplyCursor(needCursor);
@@ -216,6 +233,10 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         UpdateCursor();
+
+        // AJOUTÉ (2026-10-13) - verrou de l'annonce de défi : bloque tout, y compris le toggle pause (Échap) et
+        // l'incrément du chrono juste en-dessous (_runTimer += ... n'est jamais atteint).
+        if (_introLockActive) return;
 
         // MODIFIE - raccourci de relance instantanee (Entree/Espace), desormais
         // verrouille tant que _replayShortcutReady n'est pas passe a vrai par

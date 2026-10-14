@@ -58,6 +58,46 @@ public class GameUI : MonoBehaviour
     // plus rien.
     [SerializeField] private GameObject _challengeGroup;
 
+    // AJOUTÉ (2026-10-13, retour utilisateur : "quand on lance une partie, on a le message de défi qui vient en
+    // premier avec une animation en gros au milieu de l'écran et dit ce qu'il faut faire, avec l'icône de défi à
+    // côté, et après ce délai, l'animation remet fluidement les éléments en haut à droite du HUD à leur position
+    // d'origine") - réglages de timing/taille de cette annonce de lancement, voir PlayChallengeIntroRoutine plus
+    // bas. Ne se joue JAMAIS si le défi de l'heure est déjà réussi : dans ce cas ChallengeManager.RefreshDisplay()
+    // appelle HideChallengeDisplay() et jamais UpdateChallengeDisplay(), donc ce chemin n'est simplement jamais
+    // atteint - "la partie se lance directement", comme demandé, sans rien y changer de spécial.
+    //
+    // MODIFIÉ (2026-10-13, retour utilisateur : "tu peux mettre plus d'animation [...] qui part d'en haut à
+    // droite, vient au milieu, et repart à son endroit d'origine [...] il faudrait que tu mette un fond sur le
+    // panel [...] autant d'informations qu'on peut voir dans le pause panel [...] une couleur qui va avec le
+    // parchemin pour le fond [...] pendant tout le long [...] le player ne peut pas bouger et la game n'a pas
+    // commencé, le timer est à 0") - 3 changements : (1) le "pop-in au centre" devient un vrai aller-retour,
+    // la carte part de la VRAIE position du widget HUD, vole jusqu'au centre, puis en repart à l'identique à la
+    // fin (voir _challengeIntroOriginScale, PlayChallengeIntroRoutine) ; (2) le fond sombre neutre devient un
+    // parchemin (couleur chaude façon papier vieilli, encre brune pour le texte - mêmes teintes que les cartes
+    // d'upgrade, voir GameUI.ParchmentInkColor) et la carte affiche désormais nom + PALIER DE DIFFICULTÉ +
+    // description + récompense chiffrée, soit tout ce que montre déjà le menu Pause (PauseMenuUI.PullChallengeInfo)
+    // sauf le Statut (toujours "En cours" à l'instant 0 d'une run, aucune valeur informative) ; (3)
+    // GameManager.SetIntroLock(true/false) gèle tout le gameplay (joueur, ennemis, spawner, chrono - tous déjà
+    // basés sur IsPaused) pendant TOUTE la séquence, du tout premier instant du vol aller jusqu'à l'arrivée
+    // complète du vol retour.
+    [Header("Défi — annonce de lancement (grand format, centrée)")]
+    [SerializeField] private float _challengeIntroIconSize = 150f;
+    [SerializeField] private float _challengeIntroTitleFontSize = 44f;
+    [SerializeField] private float _challengeIntroDescFontSize = 26f;
+    [Tooltip("Échelle de la carte à son point de départ/arrivée (position réelle du widget HUD, bien plus petit que la carte centrale).")]
+    [SerializeField] private float _challengeIntroOriginScale = 0.22f;
+    [SerializeField] private float _challengeIntroFlyInDuration = 0.6f;
+    [SerializeField] private float _challengeIntroHoldDuration = 2.6f;
+    [SerializeField] private float _challengeIntroFlyOutDuration = 0.6f;
+
+    private bool _challengeIntroPlayed = false;
+    private RectTransform _challengeIntroRoot;     // racine plein écran (toujours visible, c'est la Card ci-dessous qui bouge/zoome)
+    private CanvasGroup _challengeIntroCanvasGroup;
+    private RectTransform _challengeIntroCard;
+    private Image _challengeIntroIconImage;
+    private TextMeshProUGUI _challengeIntroTitleText;
+    private TextMeshProUGUI _challengeIntroDescText;
+
     [Header("Boss")]
     [SerializeField] private GameObject _bossHPBar;
     [SerializeField] private Slider _bossHPSlider;
@@ -439,6 +479,63 @@ public class GameUI : MonoBehaviour
             _challengeText.text = $"{challengeName} — {progressText}";
             _challengeText.color = Color.white;
         }
+
+        // AJOUTÉ (2026-10-13) - première fois que le défi s'affiche dans CETTE run (jamais rejoué aux mises à jour
+        // de progression suivantes, qui repassent par ce même appel à chaque kill/or/niveau) : joue l'annonce en
+        // grand avant de laisser le texte ci-dessus tranquille dans le HUD.
+        if (!_challengeIntroPlayed)
+        {
+            _challengeIntroPlayed = true;
+            ChallengeDefinition def = ChallengeManager.Instance != null ? ChallengeManager.Instance.CurrentChallenge : null;
+
+            // MODIFIÉ (2026-10-13, retour utilisateur : "autant d'informations qu'on peut voir dans le pause
+            // panel") - nom + palier de difficulté colorié dans le titre, description + récompense chiffrée dans
+            // le sous-texte : même contenu que PauseMenuUI.PullChallengeInfo (sans le Statut, toujours "En cours"
+            // à l'instant 0 d'une run fraîche).
+            string introTitle = challengeName;
+            string introDesc = progressText;
+            if (def != null)
+            {
+                string difficultyHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(def.difficulty));
+                string rewardText = ChallengeManager.Instance != null
+                    ? ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent())
+                    : "";
+                introTitle = $"{challengeName} : Niv. <color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>";
+                introDesc = string.IsNullOrEmpty(rewardText) ? def.description : $"{def.description}\nRécompense : {rewardText}";
+            }
+
+            StartCoroutine(PlayChallengeIntroRoutine(introTitle, introDesc, GetChallengeIconSprite()));
+        }
+    }
+
+    // AJOUTÉ (2026-10-13) - mêmes paliers/couleurs/libellés que PauseMenuUI (_difficultyEasyColor/MediumColor/
+    // HardColor, GetDifficultyLabel) : petite duplication assumée, chaque script UI reste autonome (convention
+    // déjà suivie partout ailleurs dans ce fichier), mais la palette DOIT rester identique à l'œil entre l'annonce
+    // de lancement et le détail du menu Pause.
+    private static readonly Color DifficultyEasyColor = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54
+    private static readonly Color DifficultyMediumColor = new Color(0.910f, 0.639f, 0.239f);  // #E8A33D
+    private static readonly Color DifficultyHardColor = new Color(0.710f, 0.325f, 0.243f);    // #B5533E
+
+    private static Color GetDifficultyColor(ChallengeDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return DifficultyEasyColor;
+            case ChallengeDifficulty.Medium: return DifficultyMediumColor;
+            case ChallengeDifficulty.Hard: return DifficultyHardColor;
+            default: return Color.white;
+        }
+    }
+
+    private static string GetDifficultyLabel(ChallengeDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return "FACILE";
+            case ChallengeDifficulty.Medium: return "MOYEN";
+            case ChallengeDifficulty.Hard: return "DIFFICILE";
+            default: return "";
+        }
     }
 
     // AJOUTE (2026-09-15) - masque le rappel de defi du HUD (voir
@@ -446,6 +543,226 @@ public class GameUI : MonoBehaviour
     public void HideChallengeDisplay()
     {
         if (_challengeGroup != null) _challengeGroup.SetActive(false);
+    }
+
+    // =====================
+    // ANNONCE DE DÉFI EN GRAND AU LANCEMENT (voir UpdateChallengeDisplay ci-dessus)
+    // =====================
+
+    private Sprite GetChallengeIconSprite()
+    {
+        if (_challengeGroup == null) return null;
+        Transform icon = _challengeGroup.transform.Find("ChallengeIcon");
+        if (icon == null) return null;
+        Image img = icon.GetComponent<Image>();
+        return img != null ? img.sprite : null;
+    }
+
+    private static CanvasGroup GetOrAddCanvasGroup(GameObject go)
+    {
+        if (go == null) return null;
+        CanvasGroup cg = go.GetComponent<CanvasGroup>();
+        if (cg == null) cg = go.AddComponent<CanvasGroup>();
+        return cg;
+    }
+
+    // Construite une seule fois, en code (comme HudSprites/CustomCursor - zéro asset ni objet de scène
+    // supplémentaire à préparer à la main). Sœur du panneau HUD (PAS un enfant) : ne doit jamais être affectée
+    // par l'échelle HUD réglable dans Paramètres > Interface (ApplyHudScale ne touche QUE _hudPanel) - cette
+    // annonce doit rester à une taille confortable et constante quel que soit ce réglage.
+    private void EnsureChallengeIntroBuilt()
+    {
+        if (_challengeIntroRoot != null) return;
+        if (_hudPanel == null) return;
+        RectTransform hudRect = _hudPanel.GetComponent<RectTransform>();
+        if (hudRect == null || !(hudRect.parent is RectTransform canvasRoot)) return;
+
+        GameObject rootGO = new GameObject("ChallengeIntro", typeof(RectTransform), typeof(CanvasGroup));
+        _challengeIntroRoot = (RectTransform)rootGO.transform;
+        _challengeIntroRoot.SetParent(canvasRoot, false);
+        _challengeIntroRoot.anchorMin = Vector2.zero;
+        _challengeIntroRoot.anchorMax = Vector2.one;
+        _challengeIntroRoot.offsetMin = _challengeIntroRoot.offsetMax = Vector2.zero;
+        _challengeIntroRoot.SetAsLastSibling();   // toujours au-dessus du reste du HUD pendant l'annonce
+        _challengeIntroCanvasGroup = rootGO.GetComponent<CanvasGroup>();
+        _challengeIntroCanvasGroup.alpha = 0f;
+        _challengeIntroCanvasGroup.interactable = false;
+        _challengeIntroCanvasGroup.blocksRaycasts = false;
+
+        GameObject cardGO = new GameObject("Card", typeof(RectTransform));
+        _challengeIntroCard = (RectTransform)cardGO.transform;
+        _challengeIntroCard.SetParent(_challengeIntroRoot, false);
+        _challengeIntroCard.anchorMin = _challengeIntroCard.anchorMax = new Vector2(0.5f, 0.5f);
+        _challengeIntroCard.pivot = new Vector2(0.5f, 0.5f);
+        _challengeIntroCard.anchoredPosition = Vector2.zero;
+        // MODIFIÉ (2026-10-13) - carte plus haute (170 -> 210) : le sous-texte affiche désormais 2 lignes
+        // (description + récompense) au lieu d'une seule, voir UpdateChallengeDisplay.
+        _challengeIntroCard.sizeDelta = new Vector2(760f, 210f);
+
+        // MODIFIÉ (2026-10-13, retour utilisateur : "il faudrait que tu mette un fond sur le panel [...] une
+        // couleur qui va avec le parchemin pour le fond") - même sprite biseauté que les barres du HUD
+        // (HudSprites.Frame), mais teinté en parchemin chaud (papier vieilli) au lieu du fond sombre neutre
+        // d'origine - cohérent avec le reste de l'habillage "parchemin" du jeu (cartes d'upgrade, menu Pause).
+        GameObject bgGO = new GameObject("Backdrop", typeof(RectTransform), typeof(Image));
+        var bgRt = (RectTransform)bgGO.transform;
+        bgRt.SetParent(_challengeIntroCard, false);
+        bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
+        bgRt.offsetMin = bgRt.offsetMax = Vector2.zero;
+        Image bg = bgGO.GetComponent<Image>();
+        bg.sprite = HudSprites.Frame;
+        bg.type = Image.Type.Sliced;
+        bg.color = new Color32(0xE4, 0xD3, 0xA8, 0xF2);
+
+        GameObject iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        var iconRt = (RectTransform)iconGO.transform;
+        iconRt.SetParent(_challengeIntroCard, false);
+        iconRt.anchorMin = iconRt.anchorMax = new Vector2(0f, 0.5f);
+        iconRt.pivot = new Vector2(0f, 0.5f);
+        iconRt.anchoredPosition = new Vector2(28f, 0f);
+        iconRt.sizeDelta = new Vector2(_challengeIntroIconSize, _challengeIntroIconSize);
+        _challengeIntroIconImage = iconGO.GetComponent<Image>();
+        _challengeIntroIconImage.preserveAspect = true;
+
+        float textLeft = 28f + _challengeIntroIconSize + 24f;
+
+        GameObject titleGO = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
+        var titleRt = (RectTransform)titleGO.transform;
+        titleRt.SetParent(_challengeIntroCard, false);
+        titleRt.anchorMin = new Vector2(0f, 0.5f);
+        titleRt.anchorMax = new Vector2(1f, 1f);
+        titleRt.offsetMin = new Vector2(textLeft, 0f);
+        titleRt.offsetMax = new Vector2(-28f, -16f);
+        _challengeIntroTitleText = titleGO.GetComponent<TextMeshProUGUI>();
+        _challengeIntroTitleText.fontSize = _challengeIntroTitleFontSize;
+        _challengeIntroTitleText.alignment = TextAlignmentOptions.BottomLeft;
+        // MODIFIÉ (2026-10-13) - encre brune sur parchemin (GameUI.ParchmentInkColor) au lieu de blanc, qui ne lit
+        // plus du tout sur le nouveau fond clair - même couleur que les noms d'upgrade sur parchemin (ConfigureBuildGridSlot).
+        _challengeIntroTitleText.color = ParchmentInkColor;
+        _challengeIntroTitleText.textWrappingMode = TextWrappingModes.NoWrap;
+        // auto-tassement : les 12 défis ont des noms/descriptions de longueurs très différentes, jamais garanti de
+        // tenir sur une ligne à taille fixe - plutôt que de clipper ou déborder du cadre, le texte rapetisse au besoin.
+        _challengeIntroTitleText.enableAutoSizing = true;
+        _challengeIntroTitleText.fontSizeMin = 28f;
+        _challengeIntroTitleText.fontSizeMax = _challengeIntroTitleFontSize;
+        if (_challengeText != null) _challengeIntroTitleText.font = _challengeText.font;
+
+        GameObject descGO = new GameObject("Desc", typeof(RectTransform), typeof(TextMeshProUGUI));
+        var descRt = (RectTransform)descGO.transform;
+        descRt.SetParent(_challengeIntroCard, false);
+        descRt.anchorMin = new Vector2(0f, 0f);
+        descRt.anchorMax = new Vector2(1f, 0.5f);
+        descRt.offsetMin = new Vector2(textLeft, 16f);
+        descRt.offsetMax = new Vector2(-28f, 0f);
+        _challengeIntroDescText = descGO.GetComponent<TextMeshProUGUI>();
+        _challengeIntroDescText.fontSize = _challengeIntroDescFontSize;
+        _challengeIntroDescText.alignment = TextAlignmentOptions.TopLeft;
+        // MODIFIÉ (2026-10-13) - encre brune (atténuée) sur parchemin au lieu du gris clair d'origine (fond sombre).
+        _challengeIntroDescText.color = ParchmentInkColor;
+        // MODIFIÉ (2026-10-13) - le sous-texte a désormais 2 lignes (description + récompense, voir
+        // UpdateChallengeDisplay) : NoWrap devient Normal (retour à la ligne autorisé) pour que chacune des 2
+        // lignes puisse s'enrouler si besoin au lieu de déborder du cadre.
+        _challengeIntroDescText.textWrappingMode = TextWrappingModes.Normal;
+        _challengeIntroDescText.enableAutoSizing = true;
+        _challengeIntroDescText.fontSizeMin = 16f;
+        _challengeIntroDescText.fontSizeMax = _challengeIntroDescFontSize;
+        if (_challengeText != null) _challengeIntroDescText.font = _challengeText.font;
+    }
+
+    private static float EaseOutBack(float x)
+    {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1f;
+        float x1 = x - 1f;
+        return 1f + c3 * x1 * x1 * x1 + c1 * x1 * x1;
+    }
+
+    private static float EaseInOutCubic(float x)
+    {
+        return x < 0.5f ? 4f * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 3f) / 2f;
+    }
+
+    // MODIFIÉ (2026-10-13, retour utilisateur : "tu peux mettre plus d'animation [...] qui part d'en haut à
+    // droite, vient au milieu, et repart à son endroit d'origine") - remplace l'ancien pop-in fixe au centre par
+    // un vrai aller-retour : (1) vol depuis la VRAIE position du widget HUD jusqu'au centre de l'écran (grossit en
+    // approchant), (2) maintien immobile le temps de lire, (3) vol de retour vers cette même position (rétrécit en
+    // s'éloignant), avec un fondu croisé vers le widget réel pile pendant la seconde moitié du vol retour - aucun
+    // "pop" brutal, le widget réel est déjà bien visible quand la carte d'annonce finit de disparaître.
+    // Temps NON à l'échelle partout (WaitForSecondsRealtime / Time.unscaledDeltaTime) : cohérent avec le reste des
+    // animations HUD de ce fichier, et nécessaire puisque Time.timeScale=0 pendant tout le verrou (voir
+    // GameManager.SetIntroLock) - geler le jeu ne doit pas geler l'annonce elle-même.
+    //
+    // AJOUTÉ (2026-10-13, retour utilisateur : "pendant l'animation [...] le player ne peut pas bouger et la game
+    // n'a pas commencé, le timer est à 0") - GameManager.SetIntroLock(true) dès le tout premier instant (avant même
+    // le vol aller) et SetIntroLock(false) seulement une fois le vol retour terminé et le widget réel repris la
+    // main : le gameplay reste gelé du début à la toute fin de la séquence, jamais entre les deux.
+    private IEnumerator PlayChallengeIntroRoutine(string title, string description, Sprite icon)
+    {
+        if (GameManager.Instance != null) GameManager.Instance.SetIntroLock(true);
+
+        EnsureChallengeIntroBuilt();
+        if (_challengeIntroRoot == null || _challengeIntroCard == null)
+        {
+            if (GameManager.Instance != null) GameManager.Instance.SetIntroLock(false);
+            yield break;
+        }
+
+        _challengeIntroTitleText.text = title;
+        _challengeIntroDescText.text = description;
+        _challengeIntroIconImage.sprite = icon;
+        _challengeIntroIconImage.enabled = icon != null;
+
+        CanvasGroup realGroupFade = GetOrAddCanvasGroup(_challengeGroup);
+        if (realGroupFade != null) realGroupFade.alpha = 0f;   // invisible tant que la carte d'annonce ne l'a pas "rejoint"
+
+        Vector3 originWorldPos = _challengeGroup != null
+            ? ((RectTransform)_challengeGroup.transform).position
+            : _challengeIntroRoot.position;
+        Vector3 centerWorldPos = _challengeIntroRoot.position;
+
+        _challengeIntroCanvasGroup.alpha = 1f;
+        _challengeIntroCard.position = originWorldPos;
+        _challengeIntroCard.localScale = Vector3.one * _challengeIntroOriginScale;
+
+        // 1) Vol aller : de la place réelle dans le HUD jusqu'au centre de l'écran
+        float t = 0f;
+        while (t < _challengeIntroFlyInDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / _challengeIntroFlyInDuration);
+            _challengeIntroCard.position = Vector3.Lerp(originWorldPos, centerWorldPos, EaseInOutCubic(p));
+            // EaseOutBack peut dépasser 1 puis revenir (léger rebond à l'arrivée) - uniquement sur l'échelle, la
+            // position suit son propre easing (EaseInOutCubic) pour un déplacement qui reste bien fluide.
+            float scaleEased = EaseOutBack(p);
+            _challengeIntroCard.localScale = Vector3.LerpUnclamped(Vector3.one * _challengeIntroOriginScale, Vector3.one, scaleEased);
+            yield return null;
+        }
+        _challengeIntroCard.position = centerWorldPos;
+        _challengeIntroCard.localScale = Vector3.one;
+
+        // 2) Maintien immobile, le temps de lire
+        yield return new WaitForSecondsRealtime(_challengeIntroHoldDuration);
+
+        // 3) Vol retour : du centre vers la place réelle dans le HUD, avec fondu croisé dans la 2e moitié
+        t = 0f;
+        while (t < _challengeIntroFlyOutDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / _challengeIntroFlyOutDuration);
+            float eased = EaseInOutCubic(p);
+            _challengeIntroCard.position = Vector3.Lerp(centerWorldPos, originWorldPos, eased);
+            _challengeIntroCard.localScale = Vector3.Lerp(Vector3.one, Vector3.one * _challengeIntroOriginScale, eased);
+            _challengeIntroCanvasGroup.alpha = 1f - Mathf.Clamp01((p - 0.55f) / 0.45f);     // ne commence à s'effacer que dans la 2e moitié du vol
+            if (realGroupFade != null) realGroupFade.alpha = Mathf.Clamp01((p - 0.5f) / 0.5f);   // apparition en fondu croisé du vrai widget
+            yield return null;
+        }
+
+        _challengeIntroCanvasGroup.alpha = 0f;
+        if (realGroupFade != null) realGroupFade.alpha = 1f;
+        _challengeIntroCard.localScale = Vector3.one;
+        _challengeIntroCard.position = originWorldPos;
+
+        // Le panel est "reparti" à son endroit d'origine - le jeu peut enfin commencer.
+        if (GameManager.Instance != null) GameManager.Instance.SetIntroLock(false);
     }
 
     // =====================
