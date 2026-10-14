@@ -154,29 +154,29 @@ public class WaveManager : MonoBehaviour
         if (GameModes.IsTitans)
         {
             int killed = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 0;
-            GameUI.Instance.UpdateChallengeDisplay("Choc des titans", $"Titans {killed}/3", false);
+            GameUI.Instance.UpdateChallengeDisplay(Loc.T("Choc des titans"), Loc.F("Titans {0}/3", killed), false);
         }
         else if (GameModes.IsBossRush)
         {
             int killed = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 0;
             string progress;
-            if (_bossAlive) progress = $"Boss {Mathf.Min(_bossCount, _rushBossTotal)}/{_rushBossTotal} en cours";
-            else if (_bossCount >= _rushBossTotal) progress = $"Boss {killed}/{_rushBossTotal}";
+            if (_bossAlive) progress = Loc.F("Boss {0}/{1} en cours", Mathf.Min(_bossCount, _rushBossTotal), _rushBossTotal);
+            else if (_bossCount >= _rushBossTotal) progress = Loc.F("Boss {0}/{1}", killed, _rushBossTotal);
             else
             {
                 float remaining = Mathf.Max(0f, GameModes.RushBossInterval * (_bossCount + 1) - runTimer);
-                progress = $"Boss {killed}/{_rushBossTotal} · prochain {Mathf.CeilToInt(remaining)} s";
+                progress = Loc.F("Boss {0}/{1} · prochain {2} s", killed, _rushBossTotal, Mathf.CeilToInt(remaining));
             }
-            GameUI.Instance.UpdateChallengeDisplay("Ruée de boss", progress, false);
+            GameUI.Instance.UpdateChallengeDisplay(Loc.T("Ruée de boss"), progress, false);
         }
         else if (GameModes.IsEndless)
         {
             int loop = GameModes.BossLoop(Mathf.Max(0, _bossCount - (_bossAlive ? 1 : 0))) + 1;
             float remaining = Mathf.Max(0f, BossSpawnInterval * (_bossCount + 1) - runTimer);
             string progress = _bossAlive
-                ? $"Boucle {loop} · boss en cours"
-                : $"Boucle {loop} · boss dans {Mathf.FloorToInt(remaining / 60f):0}:{Mathf.FloorToInt(remaining % 60f):00}";
-            GameUI.Instance.UpdateChallengeDisplay("Sans fin", progress, false);
+                ? Loc.F("Boucle {0} · boss en cours", loop)
+                : Loc.F("Boucle {0} · boss dans {1:0}:{2:00}", loop, Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f));
+            GameUI.Instance.UpdateChallengeDisplay(Loc.T("Sans fin"), progress, false);
         }
     }
 

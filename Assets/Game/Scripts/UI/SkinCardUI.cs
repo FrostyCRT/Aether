@@ -60,7 +60,7 @@ public class SkinCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (_name != null) _name.gameObject.SetActive(false);
         if (_priceRoot != null) _priceRoot.SetActive(false);
         if (_chip != null) _chip.gameObject.SetActive(false);
-        if (_placeholderText != null) _placeholderText.text = "BIENTÔT";
+        if (_placeholderText != null) _placeholderText.text = Loc.T("BIENTÔT");
         ApplyColors();
     }
 
@@ -80,7 +80,7 @@ public class SkinCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         }
         if (_thumbShade != null) _thumbShade.color = new Color(0f, 0f, 0f, characterLocked ? 0.35f : 0f);
 
-        if (_name != null) { _name.gameObject.SetActive(true); _name.text = skin.displayName.ToUpperInvariant(); }
+        if (_name != null) { _name.gameObject.SetActive(true); _name.text = Loc.T(skin.displayName).ToUpperInvariant(); }
 
         // pastille d'état / prix
         bool showPrice = !owned && !characterLocked;
@@ -97,17 +97,17 @@ public class SkinCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             if (characterLocked)
             {
                 _chip.color = new Color(1f, 1f, 1f, 0.1f);
-                _chipText.text = "VERROUILLÉ"; _chipText.color = ReputationStyle.Muted;
+                _chipText.text = Loc.T("VERROUILLÉ"); _chipText.color = ReputationStyle.Muted;
             }
             else if (equipped)
             {
                 _chip.color = ReputationStyle.Gold;
-                _chipText.text = "ÉQUIPÉ"; _chipText.color = ReputationStyle.ButtonText;
+                _chipText.text = Loc.T("ÉQUIPÉ"); _chipText.color = ReputationStyle.ButtonText;
             }
             else
             {
                 _chip.color = new Color(1f, 1f, 1f, 0.14f);
-                _chipText.text = "POSSÉDÉ"; _chipText.color = ReputationStyle.Body;
+                _chipText.text = Loc.T("POSSÉDÉ"); _chipText.color = ReputationStyle.Body;
             }
         }
         ApplyColors();

@@ -1,0 +1,24 @@
+{
+  "Assets/Game/Scripts/UI/SkillDetailPanel.cs": [
+    ["        _name.text = data.displayName;", "        _name.text = Loc.T(data.displayName);"],
+    ["        SetChip(_chipKind, unique ? \"TALENT UNIQUE\" : $\"NIVEAU {level} / {max}\", maxed ? SkillTreeStyle.Gold : accent);", "        SetChip(_chipKind, unique ? Loc.T(\"TALENT UNIQUE\") : Loc.F(\"NIVEAU {0} / {1}\", level, max), maxed ? SkillTreeStyle.Gold : accent);"],
+    ["        _description.text = data.description;", "        _description.text = Loc.T(data.description);"],
+    ["                FillLevelRow(_levels[i], lvl, effects[i], price, owned, next, accent);", "                FillLevelRow(_levels[i], lvl, Loc.T(effects[i]), price, owned, next, accent);"],
+    ["            string what = p == null ? pre[i] : p.displayName;\n            string detail = p != null && p.isUnique ? \"débloqué\" : \"niveau 1\";", "            string what = p == null ? pre[i] : Loc.T(p.displayName);\n            string detail = p != null && p.isUnique ? Loc.T(\"débloqué\") : Loc.T(\"niveau 1\");"],
+    ["        row.tag.text = $\"NIV {level}\";", "        row.tag.text = Loc.F(\"NIV {0}\", level);"],
+    ["            row.right.text = \"ACQUIS\";", "            row.right.text = Loc.T(\"ACQUIS\");"],
+    ["            label = data.isUnique ? \"ACQUIS\" : \"NIVEAU MAX\";\n            status = data.isUnique ? \"Ce talent est actif.\" : \"Cette compétence est au maximum.\";", "            label = data.isUnique ? Loc.T(\"ACQUIS\") : Loc.T(\"NIVEAU MAX\");\n            status = data.isUnique ? Loc.T(\"Ce talent est actif.\") : Loc.T(\"Cette compétence est au maximum.\");"],
+    ["            label = \"INDISPONIBLE\";\n            status = $\"Sélectionne {owner} dans l'onglet Personnages pour acheter.\";", "            label = Loc.T(\"INDISPONIBLE\");\n            status = Loc.F(\"Sélectionne {0} dans l'onglet Personnages pour acheter.\", owner);"],
+    ["            label = \"VERROUILLÉ\";\n            status = \"Débloque d'abord les prérequis ci-dessus.\";", "            label = Loc.T(\"VERROUILLÉ\");\n            status = Loc.T(\"Débloque d'abord les prérequis ci-dessus.\");"],
+    ["            label = \"OR INSUFFISANT\";\n            status = $\"Il te manque {cost - gold} or.\";", "            label = Loc.T(\"OR INSUFFISANT\");\n            status = Loc.F(\"Il te manque {0} or.\", cost - gold);"],
+    ["            label = \"ACHETER\";\n            canBuy = true;", "            label = Loc.T(\"ACHETER\");\n            canBuy = true;"],
+    ["        if (hasCost && canBuy) _afterValue.text = $\"reste {gold - cost}\";", "        if (hasCost && canBuy) _afterValue.text = Loc.F(\"reste {0}\", gold - cost);"]
+  ],
+  "Assets/Game/Scripts/UI/SkillTreeUI.cs": [
+    ["                ? $\"<color=#{gold}>{buyable}</color> compétence{(buyable > 1 ? \"s\" : \"\")} achetable{(buyable > 1 ? \"s\" : \"\")}  ·  repère le halo doré\"\n                : $\"<color=#{muted}>Clique sur un médaillon pour voir ses niveaux et ses prérequis</color>\";", "                ? Loc.F(buyable > 1 ? \"{0} compétences achetables  ·  repère le halo doré\" : \"{0} compétence achetable  ·  repère le halo doré\", $\"<color=#{gold}>{buyable}</color>\")\n                : $\"<color=#{muted}>\" + Loc.T(\"Clique sur un médaillon pour voir ses niveaux et ses prérequis\") + \"</color>\";"],
+    ["                string label = isActive ? \"PERSONNAGE ACTIF\" : \"COMPÉTENCES\";", "                string label = isActive ? Loc.T(\"PERSONNAGE ACTIF\") : Loc.T(\"COMPÉTENCES\");"]
+  ],
+  "Assets/Game/Scripts/UI/SkillNode.cs": [
+    ["            if (_nameLabel != null) _nameLabel.text = data.displayName;", "            if (_nameLabel != null) _nameLabel.text = Loc.T(data.displayName);"]
+  ]
+}

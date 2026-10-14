@@ -1,0 +1,16 @@
+{
+  "Assets/Game/Scripts/UI/GameUI.cs": [
+    ["            _bossNameText.text = bossName;", "            _bossNameText.text = Loc.T(bossName);"]
+  ],
+  "Assets/Game/Scripts/UI/GameOverMessagePool.cs": [
+    ["            return _bossMessages[Random.Range(0, _bossMessages.Length)];", "            return Loc.T(_bossMessages[Random.Range(0, _bossMessages.Length)]);"],
+    ["        return pool[Random.Range(0, pool.Count)];", "        return Loc.T(pool[Random.Range(0, pool.Count)]);"]
+  ],
+  "Assets/Game/Scripts/Systems/WaveManager.cs": [
+    ["            GameUI.Instance.UpdateChallengeDisplay(\"Choc des titans\", $\"Titans {killed}/3\", false);", "            GameUI.Instance.UpdateChallengeDisplay(Loc.T(\"Choc des titans\"), $\"Titans {killed}/3\", false);"],
+    ["            if (_bossAlive) progress = $\"Boss {Mathf.Min(_bossCount, _rushBossTotal)}/{_rushBossTotal} en cours\";", "            if (_bossAlive) progress = Loc.F(\"Boss {0}/{1} en cours\", Mathf.Min(_bossCount, _rushBossTotal), _rushBossTotal);"],
+    ["                progress = $\"Boss {killed}/{_rushBossTotal} · prochain {Mathf.CeilToInt(remaining)} s\";", "                progress = Loc.F(\"Boss {0}/{1} · prochain {2} s\", killed, _rushBossTotal, Mathf.CeilToInt(remaining));"],
+    ["            GameUI.Instance.UpdateChallengeDisplay(\"Ruée de boss\", progress, false);", "            GameUI.Instance.UpdateChallengeDisplay(Loc.T(\"Ruée de boss\"), progress, false);"],
+    ["                ? $\"Boucle {loop} · boss en cours\"\n                : $\"Boucle {loop} · boss dans {Mathf.FloorToInt(remaining / 60f):0}:{Mathf.FloorToInt(remaining % 60f):00}\";\n            GameUI.Instance.UpdateChallengeDisplay(\"Sans fin\", progress, false);", "                ? Loc.F(\"Boucle {0} · boss en cours\", loop)\n                : Loc.F(\"Boucle {0} · boss dans {1:0}:{2:00}\", loop, Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f));\n            GameUI.Instance.UpdateChallengeDisplay(Loc.T(\"Sans fin\"), progress, false);"]
+  ]
+}

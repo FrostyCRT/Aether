@@ -111,6 +111,8 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
     // ---- affichage --------------------------------------------------------------------------------------------
     public void Refresh()
     {
+        // Titre réécrit à chaque rafraîchissement (et pas seulement à l'Awake) : suit les changements de langue.
+        if (_name != null) _name.text = ReputationStyle.StatName(_nodeId);
         MetaProgressionManager meta = MetaProgressionManager.Instance;
         if (meta == null || meta.Data == null) return;
 
@@ -129,18 +131,18 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
         }
         if (_level != null)
         {
-            _level.text = _maxed ? "NIVEAU MAXIMUM" : "NIVEAU " + level + " / " + max;
+            _level.text = _maxed ? Loc.T("NIVEAU MAXIMUM") : Loc.F("NIVEAU {0} / {1}", level, max);
             _level.color = _maxed ? ReputationStyle.Gold : ReputationStyle.Muted;
         }
 
         if (_next != null)
         {
-            if (_maxed) _next.text = "<color=#" + ReputationStyle.Hex(ReputationStyle.Gold) + ">PALIER MAXIMUM ATTEINT</color>";
+            if (_maxed) _next.text = "<color=#" + ReputationStyle.Hex(ReputationStyle.Gold) + ">" + Loc.T("PALIER MAXIMUM ATTEINT") + "</color>";
             else
             {
                 float nextValue = meta.GetReputationValueAt(_nodeId, level + 1);
                 string gain = ReputationStyle.FormatBonus(_nodeId, nextValue);
-                _next.text = "PROCHAIN NIVEAU   <color=#" + ReputationStyle.Hex(_accent) + ">" + gain + "</color>";
+                _next.text = Loc.T("PROCHAIN NIVEAU") + "   <color=#" + ReputationStyle.Hex(_accent) + ">" + gain + "</color>";
             }
         }
 
@@ -169,7 +171,7 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
             if (_buyImage != null) _buyImage.color = _affordable ? Color.white : new Color(0.62f, 0.56f, 0.54f, _maxed ? 0.7f : 1f);
             if (_buyLabel != null)
             {
-                _buyLabel.text = _maxed ? "MAX" : (_affordable ? "AMÉLIORER" : "ÉCLATS INSUFFISANTS");
+                _buyLabel.text = _maxed ? "MAX" : (_affordable ? Loc.T("AMÉLIORER") : Loc.T("ÉCLATS INSUFFISANTS"));
                 _buyLabel.rectTransform.offsetMax = new Vector2(_maxed ? -16f : -150f, 0f);
                 _buyLabel.color = _affordable ? ReputationStyle.ButtonText : (_maxed ? new Color32(0x6B, 0x55, 0x1E, 0xFF) : new Color32(0x8A, 0x2E, 0x24, 0xFF));
             }

@@ -123,6 +123,7 @@ public class HudKeyLegend : MonoBehaviour
         // nom de l'action, à droite de la pastille (positionné dans Refresh, selon la largeur de la pastille)
         var labelText = NewText("Label", rowRt, 29f, LabelColor, TextAlignmentOptions.MidlineLeft, 0.32f);
         labelText.text = label;
+        LocalizedText.Attach(labelText);   // traduit + suit les changements de langue
         labelText.characterSpacing = 2f;
         var lrt = labelText.rectTransform;
         lrt.anchorMin = lrt.anchorMax = new Vector2(0f, 0.5f);
@@ -237,6 +238,7 @@ public class HudKeyLegend : MonoBehaviour
     private void OnSettingChanged(string key)
     {
         if (key == GameSettings.ShowKeyLegend) ApplyVisibility();
+        if (key == GameSettings.Language) Refresh();   // libellés plus longs/courts : repositionnés
     }
 
     private void OnBindingChanged(GameAction a) => Refresh();

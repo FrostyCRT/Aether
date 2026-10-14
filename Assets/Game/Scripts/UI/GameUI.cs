@@ -320,6 +320,7 @@ public class GameUI : MonoBehaviour
         GameSettings.Changed += OnUserSettingChanged;
         SettingsPage.InGameClosed += OnSettingsClosed;
         InputBindings.Changed += OnBindingChanged;
+        Loc.Changed += OnLanguageChanged;
     }
 
     private void OnDestroy()
@@ -327,6 +328,7 @@ public class GameUI : MonoBehaviour
         GameSettings.Changed -= OnUserSettingChanged;
         SettingsPage.InGameClosed -= OnSettingsClosed;
         InputBindings.Changed -= OnBindingChanged;
+        Loc.Changed -= OnLanguageChanged;
     }
 
     private void Start()
@@ -471,7 +473,7 @@ public class GameUI : MonoBehaviour
 
         if (failed)
         {
-            _challengeText.text = $"<s>{challengeName}</s> — Échoué";
+            _challengeText.text = $"<s>{challengeName}</s> — " + Loc.T("Échoué");
             _challengeText.color = new Color(0.55f, 0.55f, 0.55f);
         }
         else
@@ -500,8 +502,8 @@ public class GameUI : MonoBehaviour
                 string rewardText = ChallengeManager.Instance != null
                     ? ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent())
                     : "";
-                introTitle = $"{challengeName} : Niv. <color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>";
-                introDesc = string.IsNullOrEmpty(rewardText) ? def.description : $"{def.description}\nRécompense : {rewardText}";
+                introTitle = Loc.F("{0} : Niv. {1}", challengeName, $"<color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>");
+                introDesc = string.IsNullOrEmpty(rewardText) ? def.Description : def.Description + "\n" + Loc.F("Récompense : {0}", rewardText);
             }
 
             StartCoroutine(PlayChallengeIntroRoutine(introTitle, introDesc, GetChallengeIconSprite()));
@@ -531,9 +533,9 @@ public class GameUI : MonoBehaviour
     {
         switch (difficulty)
         {
-            case ChallengeDifficulty.Easy: return "FACILE";
-            case ChallengeDifficulty.Medium: return "MOYEN";
-            case ChallengeDifficulty.Hard: return "DIFFICILE";
+            case ChallengeDifficulty.Easy: return Loc.T("FACILE");
+            case ChallengeDifficulty.Medium: return Loc.T("MOYEN");
+            case ChallengeDifficulty.Hard: return Loc.T("DIFFICILE");
             default: return "";
         }
     }
@@ -847,7 +849,7 @@ public class GameUI : MonoBehaviour
                 // utilisateur : plus parlant dans le vocabulaire jeu video).
                 // Voir ChallengeManager.FormatRewardMultiplier, partage avec
                 // PauseMenuUI.PullChallengeInfo().
-                challengeText.text = $"Défi réussi ! {ChallengeManager.FormatRewardMultiplier(rewardPercent)}";
+                challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardMultiplier(rewardPercent));
             }
 
             yield return StartCoroutine(CountUpNumber(goldText, baseGold, totalGold, _bonusCountUpDuration));
@@ -923,10 +925,10 @@ public class GameUI : MonoBehaviour
                 // uniquement : un temps qui s'affiche pareil que le record compte comme égalé, pas "presque".
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(data.bestTime), newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !", nearRecordMessage = "À deux doigts de ton record de survie..." },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record d'éliminations : {killCount} !", nearRecordMessage = "Si proche de ton record d'éliminations..." },
-                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = $"Nouveau record de niveau : {levelReached} !", nearRecordMessage = "Un cheveu de ton meilleur niveau..." },
-                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = $"Nouveau record d'Or en une partie : {goldThisRun} !", nearRecordMessage = "Tout près de ton record d'Or..." },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(data.bestTime), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie...") },
+                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount), nearRecordMessage = Loc.T("Si proche de ton record d'éliminations...") },
+                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached), nearRecordMessage = Loc.T("Un cheveu de ton meilleur niveau...") },
+                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun), nearRecordMessage = Loc.T("Tout près de ton record d'Or...") },
                 };
 
                 foreach (RecordCheck check in checks)
@@ -1324,7 +1326,7 @@ public class GameUI : MonoBehaviour
         toggleRoot.SetActive(isEmpty);
 
         if (isEmpty)
-            emptyText.text = pool[UnityEngine.Random.Range(0, pool.Length)];
+            emptyText.text = Loc.T(pool[UnityEngine.Random.Range(0, pool.Length)]);
     }
 
     // showNames : false pour la grille compacte des écrans de fin (jamais de nom), true pour la grande grille du
@@ -1486,7 +1488,7 @@ public class GameUI : MonoBehaviour
             refs.nameText.gameObject.SetActive(showNames);
             if (showNames)
             {
-                refs.nameText.text = upgrade.upgradeName;
+                refs.nameText.text = upgrade.Name;
                 refs.nameText.color = owned ? ParchmentInkColor : ParchmentInkColorDim;
                 ApplyReadableOutline(refs.nameText);
             }
@@ -1855,7 +1857,7 @@ public class GameUI : MonoBehaviour
 
         if (unlockedCharacter != null)
         {
-            text = $"Nouveau personnage débloqué : {unlockedCharacter} !";
+            text = Loc.F("Nouveau personnage débloqué : {0} !", unlockedCharacter);
             highlight = true;
         }
         else
@@ -1873,14 +1875,14 @@ public class GameUI : MonoBehaviour
             // avec QuietLine), pas de raison que le "cas parfait" en soit prive.
             if (preview == null || !preview.HasPreview)
             {
-                text = _gameOverMaxedOutLines[UnityEngine.Random.Range(0, _gameOverMaxedOutLines.Length)];
+                text = Loc.T(_gameOverMaxedOutLines[UnityEngine.Random.Range(0, _gameOverMaxedOutLines.Length)]);
             }
             else
             {
-                string currencyLabel = preview.IsGoldCurrency ? "Or" : "Éclats";
+                string currencyLabel = preview.IsGoldCurrency ? Loc.T("Or") : Loc.T("Éclats");
                 text = preview.AmountStillNeeded > 0
-                    ? $"Encore {preview.AmountStillNeeded} {currencyLabel} pour débloquer {preview.NodeName}"
-                    : $"De quoi débloquer {preview.NodeName} dès maintenant !";
+                    ? Loc.F("Encore {0} {1} pour débloquer {2}", preview.AmountStillNeeded, currencyLabel, Loc.T(preview.NodeName))
+                    : Loc.F("De quoi débloquer {0} dès maintenant !", Loc.T(preview.NodeName));
             }
         }
 
@@ -1967,8 +1969,8 @@ public class GameUI : MonoBehaviour
     {
         int n = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.GetModeAttemptNumber(GameModes.Current) : 1;
         return GameModes.IsClassic
-            ? $"Tentative n°{n}"
-            : $"{GameModes.ShortName(GameModes.Current)}\nTentative n°{n}";
+            ? Loc.F("Tentative n°{0}", n)
+            : GameModes.ShortName(GameModes.Current) + "\n" + Loc.F("Tentative n°{0}", n);
     }
 
     // Écrit "Tentative n°X" (précédé du nom du mode hors Classique, sur 2 lignes) dans un cadre assez large pour ne jamais
@@ -2020,19 +2022,19 @@ public class GameUI : MonoBehaviour
     private string BuildStatLine(int mins, int secs, int killCount, int level, int bossKills)
     {
         // Choc des titans : ni ennemis ni niveaux, seulement le temps et les titans abattus.
-        if (GameModes.IsTitans) return $"Survie {mins:00}:{secs:00}    ·    Titans {bossKills}/3";
+        if (GameModes.IsTitans) return Loc.F("Survie {0:00}:{1:00}    ·    Titans {2}/3", mins, secs, bossKills);
 
         string boss;
-        if (GameModes.IsEndless) boss = $"Boss {bossKills}";
-        else if (GameModes.IsTitans) boss = $"Titans {bossKills}/3";
+        if (GameModes.IsEndless) boss = Loc.F("Boss {0}", bossKills);
+        else if (GameModes.IsTitans) boss = Loc.F("Titans {0}/3", bossKills);
         else if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            boss = $"Boss {bossKills}/{total}";
+            boss = Loc.F("Boss {0}/{1}", bossKills, total);
         }
-        else boss = $"Boss {bossKills}/3";
+        else boss = Loc.F("Boss {0}/{1}", bossKills, 3);
 
-        return $"Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    {boss}";
+        return Loc.F("Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", mins, secs, killCount, level, boss);
     }
 
     // Le titre est du texte de scène (CenterCard/Crown/TitleText) : réécrit à CHAQUE affichage pour ne jamais garder
@@ -2057,17 +2059,17 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            return $"{bossKillCount} boss sur {total}. La ruée ne pardonne pas — reviens plus fort.";
+            return Loc.F("{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", bossKillCount, total);
         }
         if (GameModes.IsTitans)
         {
-            string killed = bossKillCount <= 0 ? "Aucun titan abattu"
-                : bossKillCount == 1 ? "1 titan abattu"
-                : $"{bossKillCount} titans abattus";
-            return $"{killed} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.";
+            string killed = bossKillCount <= 0 ? Loc.T("Aucun titan abattu")
+                : bossKillCount == 1 ? Loc.T("1 titan abattu")
+                : Loc.F("{0} titans abattus", bossKillCount);
+            return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.", killed);
         }
 
-        string line = _endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)];
+        string line = Loc.T(_endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)]);
         return line.Replace("{t}", FormatTime(runTime)).Replace("{b}", bossKillCount.ToString());
     }
 
@@ -2078,17 +2080,17 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            _victoryRecapText.text = $"{total} boss abattus en {FormatTime(runTime)}. La ruée est à toi.";
+            _victoryRecapText.text = Loc.F("{0} boss abattus en {1}. La ruée est à toi.", total, FormatTime(runTime));
             return;
         }
         if (GameModes.IsTitans)
         {
-            _victoryRecapText.text = $"Les 3 titans terrassés en {FormatTime(runTime)}. Rien ne t'arrête.";
+            _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête.", FormatTime(runTime));
             return;
         }
 
-        string closer = _victoryClosers[UnityEngine.Random.Range(0, _victoryClosers.Length)];
-        _victoryRecapText.text = $"{FormatTime(runTime)} au compteur, {killCount} ennemis au tapis. {closer}";
+        string closer = Loc.T(_victoryClosers[UnityEngine.Random.Range(0, _victoryClosers.Length)]);
+        _victoryRecapText.text = Loc.F("{0} au compteur, {1} ennemis au tapis. {2}", FormatTime(runTime), killCount, closer);
     }
 
     // AJOUTE - highlight d'un record BATTU cette partie (temps 1). Volontairement
@@ -2125,10 +2127,10 @@ public class GameUI : MonoBehaviour
             {
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = $"Nouveau record de survie : {FormatTime(runTime)} !" },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = $"Nouveau record d'éliminations : {killCount} !" },
-                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = $"Nouveau record de niveau : {levelReached} !" },
-                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = $"Nouveau record d'Or en une partie : {goldThisRun} !" },
+                    new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)) },
+                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount) },
+                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached) },
+                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun) },
                 };
 
                 foreach (RecordCheck check in checks)
@@ -2164,7 +2166,7 @@ public class GameUI : MonoBehaviour
         bool showQuietLine = !recordShown && !challengeCompleted;
         _victoryQuietLineText.gameObject.SetActive(showQuietLine);
         if (showQuietLine)
-            _victoryQuietLineText.text = _victoryQuietLines[UnityEngine.Random.Range(0, _victoryQuietLines.Length)];
+            _victoryQuietLineText.text = Loc.T(_victoryQuietLines[UnityEngine.Random.Range(0, _victoryQuietLines.Length)]);
     }
 
     // AJOUTE - portrait du perso victorieux (temps 2). Réutilise les illustrations
@@ -2197,7 +2199,7 @@ public class GameUI : MonoBehaviour
         if (_victoryStatsText != null)
             _victoryStatsText.text = BuildStatLine(mins, secs, killCount, level, victoryBossKills);
 
-        SetEndScreenTitle(_victoryPanel, "VICTOIRE !");
+        SetEndScreenTitle(_victoryPanel, Loc.T("VICTOIRE !"));
         PopulateVictoryRecap(runTimer, killCount);
         FitSeparatorToText(_victoryRecapText);
         bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
@@ -2287,6 +2289,8 @@ public class GameUI : MonoBehaviour
             t.enableAutoSizing = true;
             t.fontSizeMax = max;
             t.fontSizeMin = Mathf.Max(10f, max * 0.65f);
+            // Une seule ligne : sans ça TMP coupe la ligne au lieu de réduire la police (italien, espagnol...).
+            t.textWrappingMode = TextWrappingModes.NoWrap;
         }
     }
 
@@ -2415,16 +2419,33 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-10-14) - langue changée en pleine partie (Pause > Paramètres) : les compteurs du HUD ne se
+    // réécrivent qu'à chaque variation, on les réécrit donc tout de suite avec leurs dernières valeurs.
+    private int _hudGold, _hudKills, _hudLevel = 1;
+
+    private void OnLanguageChanged()
+    {
+        UpdateGold(_hudGold);
+        UpdateKillCount(_hudKills);
+        if (_levelText != null) _levelText.text = Loc.F("Niv. {0}", _hudLevel);
+        if (ChallengeManager.Instance != null && GameModes.IsClassic) ChallengeManager.Instance.RefreshDisplay();
+        if (_bossNameText != null && _bossNameFr != null) _bossNameText.text = Loc.T(_bossNameFr);
+    }
+
+    private string _bossNameFr;
+
     public void UpdateGold(int amount)
     {
+        _hudGold = amount;
         if (_goldText != null)
-            _goldText.text = $"Or : {amount}";
+            _goldText.text = Loc.F("Or : {0}", amount);
     }
 
     public void UpdateKillCount(int kills)
     {
+        _hudKills = kills;
         if (_killCountText != null)
-            _killCountText.text = $"Éliminations : {kills}";
+            _killCountText.text = Loc.F("Éliminations : {0}", kills);
     }
 
     public void UpdateXPBar(float currentXP, float xpToNextLevel, int level)
@@ -2435,8 +2456,9 @@ public class GameUI : MonoBehaviour
             _xpBarPunchTimer = 0f; // relance le petit "punch" a chaque gain - voir LateUpdate
         }
 
+        _hudLevel = level;
         if (_levelText != null)
-            _levelText.text = $"Niv. {level}";
+            _levelText.text = Loc.F("Niv. {0}", level);
     }
 
     // AJOUTÉ (2026-10-04) - voir le commentaire sur _xpBarTargetValue. Lissage exponentiel (jamais de
@@ -2501,7 +2523,8 @@ public class GameUI : MonoBehaviour
         if (_bossNameText != null)
         {
             _bossNameText.gameObject.SetActive(true);
-            _bossNameText.text = bossName;
+            _bossNameFr = bossName;
+            _bossNameText.text = Loc.T(bossName);
         }
         if (_bossHPSlider != null) _bossHPSlider.value = 1f;
         if (_bossIcon != null) _bossIcon.SetActive(true);
@@ -2568,7 +2591,7 @@ public class GameUI : MonoBehaviour
             _statsText.text = BuildStatLine(mins, secs, killCount, level, bossKillCount);
 
         // Sans fin : on ne "perd" pas, la partie se termine. Classique et Ruée gardent DÉFAITE.
-        SetEndScreenTitle(_gameOverPanel, GameModes.IsEndless ? "FIN DE PARTIE" : "DÉFAITE");
+        SetEndScreenTitle(_gameOverPanel, GameModes.IsEndless ? Loc.T("FIN DE PARTIE") : Loc.T("DÉFAITE"));
 
         PopulateGameOverPortrait();
         int gameOverTileCount = PopulateBuildGrid(_gameOverBuildGridContent);
@@ -2615,7 +2638,7 @@ public class GameUI : MonoBehaviour
 
             if (_pauseStatsText != null)
             {
-                _pauseStatsText.text = $"Temps : {mins:00}:{secs:00}\nEnnemis tués : {kills}\nGold : {gold}";
+                _pauseStatsText.text = Loc.F("Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", mins, secs, kills, gold);
             }
 
             if (_pauseUpgradesText != null && LevelUpManager.Instance != null)

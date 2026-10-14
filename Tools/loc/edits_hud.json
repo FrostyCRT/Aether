@@ -1,0 +1,9 @@
+{
+  "Assets/Game/Scripts/UI/HudStyler.cs": [
+    ["        t.text = text;\n        t.characterSpacing = 3f;", "        t.text = text;\n        LocalizedText.Attach(t);   // légende traduite + suit les changements de langue\n        t.characterSpacing = 3f;"]
+  ],
+  "Assets/Game/Scripts/UI/HudKeyLegend.cs": [
+    ["        labelText.text = label;\n        labelText.characterSpacing = 2f;", "        labelText.text = label;\n        LocalizedText.Attach(labelText);   // traduit + suit les changements de langue\n        labelText.characterSpacing = 2f;"],
+    ["        if (key == GameSettings.ShowKeyLegend) ApplyVisibility();", "        if (key == GameSettings.ShowKeyLegend) ApplyVisibility();\n        if (key == GameSettings.Language) Refresh();   // libellés plus longs/courts : repositionnés"]
+  ]
+}

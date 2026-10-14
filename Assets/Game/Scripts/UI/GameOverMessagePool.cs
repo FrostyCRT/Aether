@@ -63,12 +63,12 @@ public static class GameOverMessagePool
     public static string GetMessage(string deathCause, float runTime)
     {
         if (deathCause == "boss")
-            return _bossMessages[Random.Range(0, _bossMessages.Length)];
+            return Loc.T(_bossMessages[Random.Range(0, _bossMessages.Length)]);
 
         List<string> pool = new List<string>(_genericMessages);
         if (runTime >= _closeToTheEndMinSeconds && runTime <= _closeToTheEndMaxSeconds)
             pool.AddRange(_closeToTheEndMessages);
 
-        return pool[Random.Range(0, pool.Count)];
+        return Loc.T(pool[Random.Range(0, pool.Count)]);
     }
 }

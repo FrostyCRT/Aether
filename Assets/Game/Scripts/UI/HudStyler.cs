@@ -303,6 +303,7 @@ public class HudStyler : MonoBehaviour
             t.fontSharedMaterial = HudBar.OutlinedMaterial(_ref.fontSharedMaterial, 0.23f, new Color32(10, 6, 3, 255));
         }
         t.text = text;
+        LocalizedText.Attach(t);   // légende traduite + suit les changements de langue
         t.characterSpacing = 3f;
         t.alignment = TextAlignmentOptions.Center;
         t.textWrappingMode = TextWrappingModes.NoWrap;

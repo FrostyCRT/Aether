@@ -30,7 +30,27 @@ public static class InputBindings
     // ---- défauts (= comportement d'origine du jeu, plus quelques boutons de manette) ----------------------
     // Manette : numéros "Xbox" (0 = A, 1 = B, 2 = X, 3 = Y, 7 = Menu). Unity legacy numérote autrement sur
     // PlayStation : le joueur peut les reprendre dans la page Commandes (les boutons y sont détectés à l'appui).
-    private static readonly Dictionary<GameAction, KeyCode[]> Defaults = new Dictionary<GameAction, KeyCode[]>
+    //
+    // MODIFIÉ (2026-10-14, demande utilisateur) : la disposition par défaut suit la langue de Windows - Windows en
+    // français -> AZERTY (ZQSD, orbites A/E), sinon QWERTY (WASD, orbites Q/E). Seuls le déplacement et les orbites
+    // changent (exactement le périmètre des préréglages). Un joueur qui a déjà personnalisé ses touches les garde.
+    public static bool SystemIsAzerty => Application.systemLanguage == SystemLanguage.French;
+
+    private static Dictionary<GameAction, KeyCode[]> BuildDefaults()
+    {
+        var d = new Dictionary<GameAction, KeyCode[]>(AzertyDefaults);
+        if (!SystemIsAzerty)
+            foreach (GameAction a in PresetActionsStatic) d[a] = PresetKeys(Preset.Qwerty, a);
+        return d;
+    }
+
+    private static readonly GameAction[] PresetActionsStatic =
+    {
+        GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight,
+        GameAction.OrbitShrink, GameAction.OrbitGrow,
+    };
+
+    private static readonly Dictionary<GameAction, KeyCode[]> AzertyDefaults = new Dictionary<GameAction, KeyCode[]>
     {
         { GameAction.MoveUp,       new[] { KeyCode.Z,          KeyCode.UpArrow } },
         { GameAction.MoveDown,     new[] { KeyCode.S,          KeyCode.DownArrow } },
@@ -46,6 +66,9 @@ public static class InputBindings
         { GameAction.OrbitGrow,    new[] { KeyCode.E,          KeyCode.None } },
         { GameAction.Pause,        new[] { KeyCode.Escape,     KeyCode.JoystickButton7 } },
     };
+
+    // Déclaré APRÈS AzertyDefaults / PresetActionsStatic : les initialiseurs statiques s'exécutent dans l'ordre du fichier.
+    private static readonly Dictionary<GameAction, KeyCode[]> Defaults = BuildDefaults();
 
     // ---- préréglages de déplacement ------------------------------------------------------------------
     // Un préréglage fixe le déplacement ET les deux touches d'orbite (sinon "A" gauche du QWERTY entrerait en
@@ -81,7 +104,7 @@ public static class InputBindings
                 }
                 break;
         }
-        return Defaults[a];   // AZERTY = défauts d'origine
+        return AzertyDefaults[a];   // AZERTY = défauts d'origine du jeu
     }
 
     private static readonly GameAction[] PresetActions =

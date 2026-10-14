@@ -1,0 +1,23 @@
+{
+  "Assets/Game/Scripts/Challenge/ChallengeDatabase.cs": [
+    ["    public string description;\n    public ChallengeDifficulty difficulty;\n}", "    public string description;\n    public ChallengeDifficulty difficulty;\n\n    // AJOUTÉ (2026-10-14) - textes à AFFICHER (langue courante, voir Loc). displayName/description restent la\n    // donnée française d'origine (clés de traduction).\n    public string Name => Loc.T(displayName);\n    public string Description => Loc.T(description);\n}"]
+  ],
+  "Assets/Game/Scripts/Challenge/ChallengeManager.cs": [
+    ["            : multiplier.ToString(\"0.0\").Replace('.', ',');\n        return $\"Or x{multiplierStr}\";", "            : multiplier.ToString(\"0.0\", System.Globalization.CultureInfo.InvariantCulture).Replace(\".\", Loc.IsEnglish ? \".\" : \",\");\n        return Loc.F(\"Or x{0}\", multiplierStr);"],
+    ["        GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.displayName, GetProgressText(), IsFailed);", "        GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.Name, GetProgressText(), IsFailed);"],
+    ["        if (IsFailed) return \"Échoué\";", "        if (IsFailed) return Loc.T(\"Échoué\");"],
+    ["            case \"level10\": return $\"Niv. {Mathf.Min(level, 10)}/10\";", "            case \"level10\": return Loc.F(\"Niv. {0}/{1}\", Mathf.Min(level, 10), 10);"],
+    ["            case \"level20in10min\": return $\"Niv. {Mathf.Min(level, 20)}/20\";", "            case \"level20in10min\": return Loc.F(\"Niv. {0}/{1}\", Mathf.Min(level, 20), 20);"],
+    ["            case \"bossUnder30s\": return \"En cours\";\n            case \"gold3000\": return $\"{Mathf.Min(gold, 3000)}/3000 Or\";\n            case \"level30\": return $\"Niv. {Mathf.Min(level, 30)}/30\";", "            case \"bossUnder30s\": return Loc.T(\"En cours\");\n            case \"gold3000\": return Loc.F(\"{0}/3000 Or\", Mathf.Min(gold, 3000));\n            case \"level30\": return Loc.F(\"Niv. {0}/{1}\", Mathf.Min(level, 30), 30);"]
+  ],
+  "Assets/Game/Scripts/UI/PauseMenuUI.cs": [
+    ["            _challengeInfoText.text = GameModes.CountsForProgression ? \"\" : \"Pas de défi dans ce mode.\";", "            _challengeInfoText.text = GameModes.CountsForProgression ? \"\" : Loc.T(\"Pas de défi dans ce mode.\");"],
+    ["                ? $\"Défi déjà réussi cette heure !\\nNouveau défi dans {minutes} min.\"\n                : \"Défi déjà réussi cette heure !\\nNouveau défi à ta prochaine partie !\";", "                ? Loc.T(\"Défi déjà réussi cette heure !\") + \"\\n\" + Loc.F(\"Nouveau défi dans {0} min.\", minutes)\n                : Loc.T(\"Défi déjà réussi cette heure !\") + \"\\n\" + Loc.T(\"Nouveau défi à ta prochaine partie !\");"],
+    ["            $\"{challenge.displayName} : Niv. <color=#{difficultyColorHex}>{difficultyLabel}</color>\\n\" +\n            $\"{challenge.description}\\n\" +\n            $\"Récompense : {rewardText}\";", "            Loc.F(\"{0} : Niv. {1}\", challenge.Name, $\"<color=#{difficultyColorHex}>{difficultyLabel}</color>\") + \"\\n\" +\n            challenge.Description + \"\\n\" +\n            Loc.F(\"Récompense : {0}\", rewardText);"],
+    ["            statusLabel = \"Échoué\";", "            statusLabel = Loc.T(\"Échoué\");"],
+    ["            statusLabel = \"Réussi\";", "            statusLabel = Loc.T(\"Réussi\");"],
+    ["            statusLabel = \"En cours\";", "            statusLabel = Loc.T(\"En cours\");"],
+    ["        _challengeStatusText.text = $\"Statut\\n<color=#{colorHex}>{statusLabel}</color>\";", "        _challengeStatusText.text = Loc.T(\"Statut\") + $\"\\n<color=#{colorHex}>{statusLabel}</color>\";"],
+    ["            case ChallengeDifficulty.Easy: return \"FACILE\";\n            case ChallengeDifficulty.Medium: return \"MOYEN\";\n            case ChallengeDifficulty.Hard: return \"DIFFICILE\";", "            case ChallengeDifficulty.Easy: return Loc.T(\"FACILE\");\n            case ChallengeDifficulty.Medium: return Loc.T(\"MOYEN\");\n            case ChallengeDifficulty.Hard: return Loc.T(\"DIFFICILE\");"]
+  ]
+}

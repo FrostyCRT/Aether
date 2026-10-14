@@ -195,8 +195,8 @@ public class ChallengeManager : MonoBehaviour
         float multiplier = 1f + rewardPercent;
         string multiplierStr = Mathf.Approximately(multiplier, Mathf.Round(multiplier))
             ? Mathf.RoundToInt(multiplier).ToString()
-            : multiplier.ToString("0.0").Replace('.', ',');
-        return $"Or x{multiplierStr}";
+            : multiplier.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture).Replace(".", Loc.IsEnglish ? "." : ",");   // virgule décimale partout sauf en anglais
+        return Loc.F("Or x{0}", multiplierStr);
     }
 
     // =====================
@@ -365,13 +365,13 @@ public class ChallengeManager : MonoBehaviour
             return;
         }
 
-        GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.displayName, GetProgressText(), IsFailed);
+        GameUI.Instance.UpdateChallengeDisplay(CurrentChallenge.Name, GetProgressText(), IsFailed);
     }
 
     private string GetProgressText()
     {
         if (CurrentChallenge == null) return "";
-        if (IsFailed) return "Échoué";
+        if (IsFailed) return Loc.T("Échoué");
 
         int kills = GameManager.Instance != null ? GameManager.Instance.KillCount : 0;
         int bossKills = GameManager.Instance != null ? GameManager.Instance.BossKillCount : 0;
@@ -381,17 +381,17 @@ public class ChallengeManager : MonoBehaviour
         switch (CurrentChallenge.id)
         {
             case "kill150": return $"{Mathf.Min(kills, 150)}/150";
-            case "level10": return $"Niv. {Mathf.Min(level, 10)}/10";
+            case "level10": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 10), 10);
             case "boss1": return $"{Mathf.Min(bossKills, 1)}/1";
             case "dash20": return $"{Mathf.Min(_dashUsedCount, 20)}/20";
-            case "hp30never": return $"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2";
+            case "hp30never": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
             case "boss2": return $"{Mathf.Min(bossKills, 2)}/2";
-            case "level20in10min": return $"Niv. {Mathf.Min(level, 20)}/20";
-            case "noUltimate": return $"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2";
-            case "noDamage": return $"Boss {Mathf.Min(_bossesDefeatedCount, 1)}/1";
-            case "bossUnder30s": return "En cours";
-            case "gold3000": return $"{Mathf.Min(gold, 3000)}/3000 Or";
-            case "level30": return $"Niv. {Mathf.Min(level, 30)}/30";
+            case "level20in10min": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 20), 20);
+            case "noUltimate": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
+            case "noDamage": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
+            case "bossUnder30s": return Loc.T("En cours");
+            case "gold3000": return Loc.F("{0}/3000 Or", Mathf.Min(gold, 3000));
+            case "level30": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 30), 30);
             default: return "";
         }
     }

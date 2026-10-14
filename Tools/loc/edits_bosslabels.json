@@ -1,0 +1,16 @@
+{
+  "Assets/Game/Scripts/Challenge/ChallengeManager.cs": [
+    ["            case \"hp30never\": return $\"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2\";", "            case \"hp30never\": return Loc.F(\"Boss {0}/{1}\", Mathf.Min(_bossesDefeatedCount, 2), 2);"],
+    ["            case \"noUltimate\": return $\"Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2\";", "            case \"noUltimate\": return Loc.F(\"Boss {0}/{1}\", Mathf.Min(_bossesDefeatedCount, 2), 2);"],
+    ["            case \"noDamage\": return $\"Boss {Mathf.Min(_bossesDefeatedCount, 1)}/1\";", "            case \"noDamage\": return Loc.F(\"Boss {0}/{1}\", Mathf.Min(_bossesDefeatedCount, 1), 1);"]
+  ],
+  "Assets/Game/Scripts/Systems/WaveManager.cs": [
+    ["$\"Titans {killed}/3\"", "Loc.F(\"Titans {0}/3\", killed)"],
+    ["progress = $\"Boss {killed}/{_rushBossTotal}\";", "progress = Loc.F(\"Boss {0}/{1}\", killed, _rushBossTotal);"]
+  ],
+  "Assets/Game/Scripts/UI/GameUI.cs": [
+    ["        if (GameModes.IsEndless) boss = $\"Boss {bossKills}\";\n        else if (GameModes.IsTitans) boss = $\"Titans {bossKills}/3\";", "        if (GameModes.IsEndless) boss = Loc.F(\"Boss {0}\", bossKills);\n        else if (GameModes.IsTitans) boss = Loc.F(\"Titans {0}/3\", bossKills);"],
+    ["            boss = $\"Boss {bossKills}/{total}\";", "            boss = Loc.F(\"Boss {0}/{1}\", bossKills, total);"],
+    ["        else boss = $\"Boss {bossKills}/3\";", "        else boss = Loc.F(\"Boss {0}/{1}\", bossKills, 3);"]
+  ]
+}

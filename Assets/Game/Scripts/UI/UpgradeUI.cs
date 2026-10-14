@@ -278,7 +278,7 @@ public class UpgradeUI : MonoBehaviour
                 // MODIFIE (2026-10-11, retour utilisateur : "augmente la taille des caractères des noms pour les
                 // fusions") - 2e ligne (le nom spécifique) agrandie de 65% à 85% de la taille de base ("FUSION"
                 // reste à 100%, toujours la ligne la plus visible).
-                _cards[i].nameText.text = isFusionCard ? $"FUSION\n<size=85%>{upgrades[i].upgradeName}</size>" : upgrades[i].upgradeName;
+                _cards[i].nameText.text = isFusionCard ? Loc.T("FUSION") + $"\n<size=85%>{upgrades[i].Name}</size>" : upgrades[i].Name;
                 _cards[i].descriptionText.text = upgrades[i].GetDynamicDescription();
 
                 // CORRIGE (2026-10-11, retour utilisateur avec capture : "le grand vide en bas", "même écart entre

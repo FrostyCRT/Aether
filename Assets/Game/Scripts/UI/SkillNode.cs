@@ -132,7 +132,7 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             Branch = data.branch;
             _accent = SkillTreeStyle.Accent(data.branch);
-            if (_nameLabel != null) _nameLabel.text = data.displayName;
+            if (_nameLabel != null) _nameLabel.text = Loc.T(data.displayName);
         }
     }
 
@@ -153,11 +153,28 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     private void OnEnable()
     {
+        ApplyName();
         _appearTime = Time.unscaledTime;
         _hovered = false;
         _hover = 0f;
         _plateT = 0f;
         RefreshVisual();
+    }
+
+    // AJOUTÉ (2026-10-14) - nom réécrit à chaque affichage (langue changée entre-temps dans les Paramètres), cartouche
+    // réajusté à sa nouvelle longueur.
+    private void ApplyName()
+    {
+        SkillTreeData.NodeData data = SkillTreeData.Get(_nodeId);
+        if (data == null || _nameLabel == null) return;
+        string name = Loc.T(data.displayName);
+        if (_nameLabel.text == name) return;
+        _nameLabel.text = name;
+        if (_plate != null)
+        {
+            float w = _nameLabel.GetPreferredValues(name).x + 24f;
+            _plate.sizeDelta = new Vector2(Mathf.Max(_isUnique ? 72f : 80f, w), _plate.sizeDelta.y);
+        }
     }
 
     private void HandleClick()

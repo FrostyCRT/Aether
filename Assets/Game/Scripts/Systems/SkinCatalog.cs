@@ -85,6 +85,19 @@ public class SkinCatalog : ScriptableObject
         }
     }
 
+    // AJOUTÉ (2026-10-14) - description à AFFICHER (langue courante). Les tenues d'origine ont une description générée
+    // à partir du nom du personnage : elle est reconstruite dans la bonne langue plutôt que traduite telle quelle.
+    public static string DisplayDescription(SkinEntry skin)
+    {
+        if (skin == null || string.IsNullOrEmpty(skin.description)) return "";
+        if (skin.isDefault && skin.characterIndex >= 0 && skin.characterIndex < CharacterNames.Length)
+        {
+            string n = CharacterNames[skin.characterIndex];
+            return Loc.F("La tenue avec laquelle {0} part au combat.", n[0] + n.Substring(1).ToLowerInvariant());
+        }
+        return Loc.T(skin.description);
+    }
+
     public SkinEntry Get(string id)
     {
         if (string.IsNullOrEmpty(id)) return null;

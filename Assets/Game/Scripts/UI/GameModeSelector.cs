@@ -45,7 +45,12 @@ public class GameModeSelector : MonoBehaviour
     {
         GameModes.EnsureCurrentIsAvailable(CurrentData());
         Refresh(animate: false);
+        Loc.Changed += OnLanguageChanged;
     }
+
+    private void OnDisable() => Loc.Changed -= OnLanguageChanged;
+
+    private void OnLanguageChanged() => Refresh(animate: false);
 
     private static SaveData CurrentData()
     {
@@ -104,23 +109,23 @@ public class GameModeSelector : MonoBehaviour
         {
             case GameMode.Endless:
                 _recordText.text = data.bestEndlessTime > 0f
-                    ? $"Meilleur : {Clock(data.bestEndlessTime)}  ·  {data.bestEndlessBossKills} boss"
-                    : "Aucune partie sans fin jouée";
+                    ? Loc.F("Meilleur : {0}  ·  {1} boss", Clock(data.bestEndlessTime), data.bestEndlessBossKills)
+                    : Loc.T("Aucune partie sans fin jouée");
                 break;
             case GameMode.BossRush:
                 _recordText.text = data.rushRuns > 0
-                    ? $"Meilleur : {data.rushBestBossKills}/{GameModes.RushBossCount(data)} boss  ·  {data.rushWins} {GameModes.Plural(data.rushWins, "victoire", "victoires")}"
-                    : "Aucune ruée jouée";
+                    ? Loc.F("Meilleur : {0}/{1} boss  ·  {2} {3}", data.rushBestBossKills, GameModes.RushBossCount(data), data.rushWins, GameModes.Plural(data.rushWins, "victoire", "victoires"))
+                    : Loc.T("Aucune ruée jouée");
                 break;
             case GameMode.Titans:
                 _recordText.text = data.titansRuns > 0
                     ? (data.titansBestTime > 0f
-                        ? $"Meilleur temps : {Clock(data.titansBestTime)}  ·  {data.titansWins} {GameModes.Plural(data.titansWins, "victoire", "victoires")}"
-                        : $"Meilleur : {data.titansBestBossKills}/3 titans  ·  aucune victoire")
-                    : "Aucune partie jouée";
+                        ? Loc.F("Meilleur temps : {0}  ·  {1} {2}", Clock(data.titansBestTime), data.titansWins, GameModes.Plural(data.titansWins, "victoire", "victoires"))
+                        : Loc.F("Meilleur : {0}/3 titans  ·  aucune victoire", data.titansBestBossKills))
+                    : Loc.T("Aucune partie jouée");
                 break;
             default:
-                _recordText.text = data.bestTime > 0f ? $"Meilleur temps : {Clock(data.bestTime)}" : "";
+                _recordText.text = data.bestTime > 0f ? Loc.F("Meilleur temps : {0}", Clock(data.bestTime)) : "";
                 break;
         }
     }

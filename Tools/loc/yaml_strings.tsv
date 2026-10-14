@@ -1,0 +1,180 @@
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	CONSERVER CES PARAM\xC8TRES D'AFFICHAGE ?
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Libell\xE9
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	R\xE9tablir
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Valeur
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	AZERTY
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	AZERTY
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Quitter le jeu
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	R\xE9initialiser cette page
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	AZERTY
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	SECTION
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	ASSIGNER UNE TOUCHE \xC0
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	OUI
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Confirmer
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Description
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	D\xC9FAUT
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	TITRE
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	TAB
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	AFFICHAGE
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Note
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Valeur
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Tout r\xE9initialiser
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Conserver
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	Annuler
+Game/Prefabs/UI/SettingsPanel.prefab	m_text	ACTION
+Game/Prefabs/UI/UpgradeGridSlot.prefab	m_text	Boule de feu
+Game/Prefabs/UI/UpgradeSlot.prefab	m_text	Boule de feu
+Game/Scenes/Game.unity	m_text	Non
+Game/Scenes/Game.unity	m_text	VICTOIRE !
+Game/Scenes/Game.unity	m_text	Param\xE8tres
+Game/Scenes/Game.unity	m_text	Ton arsenal
+Game/Scenes/Game.unity	m_text	Survie 00:30   \xB7   Kills 8   \xB7   Niveau 8   \xB7   Boss 3/3
+Game/Scenes/Game.unity	m_text	Reprendre
+Game/Scenes/Game.unity	m_text	Sanglier de Mana
+Game/Scenes/Game.unity	m_text	PAUSE
+Game/Scenes/Game.unity	m_text	Retour au menu
+Game/Scenes/Game.unity	m_text	Ce que tu emportes
+Game/Scenes/Game.unity	m_text	Rejouer
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	D\xE9fi \xAB Sans Cristal \xBB r\xE9ussi  —  +25 % d'Or
+Game/Scenes/Game.unity	m_text	FUSION DISPONIBLE !
+Game/Scenes/Game.unity	m_text	Ce que cette partie t'a rapport\xE9
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	Stats r\xE9ussi
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	Voulez-vous vraiment abandonner ?
+Game/Scenes/Game.unity	m_text	Pause
+Game/Scenes/Game.unity	m_text	Tentative n\xB01
+Game/Scenes/Game.unity	m_text	D\xC9FAITE
+Game/Scenes/Game.unity	m_text	L'arsenal que tu avais
+Game/Scenes/Game.unity	m_text	Oui
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	NIVEAU SUP\xC9RIEUR !
+Game/Scenes/Game.unity	m_text	New Text
+Game/Scenes/Game.unity	m_text	Rejouer
+Game/Scenes/Game.unity	m_text	Niveau 1
+Game/Scenes/Game.unity	m_text	Retour au menu
+Game/Scenes/Game.unity	m_text	Rien d'exceptionnel \xE0 signaler, \xE0 part la victoire elle-m\xEAme.
+Game/Scenes/Game.unity	m_text	+XX%
+Game/Scenes/Game.unity	m_text	Record battu  —  Niveau 34  (ancien : 31)
+Game/Scenes/Game.unity	m_text	Abandonner
+Game/Scenes/MainMenu.unity	m_text	Focus
+Game/Scenes/MainMenu.unity	m_text	Nom
+Game/Scenes/MainMenu.unity	m_text	MEILLEUR TEMPS
+Game/Scenes/MainMenu.unity	m_text	PALIERS   A / B / C
+Game/Scenes/MainMenu.unity	m_text	PROCHAIN NIVEAU
+Game/Scenes/MainMenu.unity	m_text	CO\xDBT
+Game/Scenes/MainMenu.unity	m_text	KAEL
+Game/Scenes/MainMenu.unity	m_text	PROCHAIN NIVEAU
+Game/Scenes/MainMenu.unity	m_text	D\xC9BLOCAGE
+Game/Scenes/MainMenu.unity	m_text	NIVEAU 0 / 5
+Game/Scenes/MainMenu.unity	m_text	VOIR L'ARBRE
+Game/Scenes/MainMenu.unity	m_text	Renforce tes h\xE9ros pour de bon, et change leur apparence.
+Game/Scenes/MainMenu.unity	m_text	D\xC9G\xC2TS
+Game/Scenes/MainMenu.unity	m_text	Am\xE9lior\xE9s avec des \xC9clats
+Game/Scenes/MainMenu.unity	m_text	R\xE9putation
+Game/Scenes/MainMenu.unity	m_text	R\xE9initialiser\n
+Game/Scenes/MainMenu.unity	text	{fileID: 1507982719}
+Game/Scenes/MainMenu.unity	text	{fileID: 821194155}
+Game/Scenes/MainMenu.unity	text	{fileID: 656678911}
+Game/Scenes/MainMenu.unity	m_text	PARTIES
+Game/Scenes/MainMenu.unity	m_text	REQUIS
+Game/Scenes/MainMenu.unity	m_text	TAG
+Game/Scenes/MainMenu.unity	m_text	AETHER
+Game/Scenes/MainMenu.unity	m_text	S\xE9lectionner
+Game/Scenes/MainMenu.unity	m_text	AM\xC9LIORER
+Game/Scenes/MainMenu.unity	m_text	POSS\xC9D\xC9
+Game/Scenes/MainMenu.unity	m_text	R\xC9G\xC9N\xC9RATION
+Game/Scenes/MainMenu.unity	m_text	Achet\xE9s avec de l'or
+Game/Scenes/MainMenu.unity	m_text	GUERRIER
+Game/Scenes/MainMenu.unity	m_text	BONUS PERMANENTS
+Game/Scenes/MainMenu.unity	m_text	SKINS
+Game/Scenes/MainMenu.unity	m_text	TON OR
+Game/Scenes/MainMenu.unity	m_text	Param\xE8tres
+Game/Scenes/MainMenu.unity	m_text	Comp\xE9tences
+Game/Scenes/MainMenu.unity	m_text	Achet\xE9s avec des \xC9clats
+Game/Scenes/MainMenu.unity	m_text	Accueil
+Game/Scenes/MainMenu.unity	m_text	TAG
+Game/Scenes/MainMenu.unity	m_text	Pr\xE9requis
+Game/Scenes/MainMenu.unity	m_text	ARBRE DE COMP\xC9TENCES
+Game/Scenes/MainMenu.unity	m_text	reste 0
+Game/Scenes/MainMenu.unity	m_text	Personnages
+Game/Scenes/MainMenu.unity	m_text	NIVEAU 0 / 5
+Game/Scenes/MainMenu.unity	m_text	NIV 1
+Game/Scenes/MainMenu.unity	m_text	SKINS CLASSIQUES
+Game/Scenes/MainMenu.unity	m_text	Effet
+Game/Scenes/MainMenu.unity	m_text	TAG
+Game/Scenes/MainMenu.unity	m_text	PROCHAIN NIVEAU
+Game/Scenes/MainMenu.unity	label	{fileID: 1816838251}
+Game/Scenes/MainMenu.unity	label	{fileID: 1101914896}
+Game/Scenes/MainMenu.unity	text	{fileID: 2000474025}
+Game/Scenes/MainMenu.unity	text	{fileID: 937126148}
+Game/Scenes/MainMenu.unity	m_text	MODE DE JEU
+Game/Scenes/MainMenu.unity	m_text	PARCOURS
+Game/Scenes/MainMenu.unity	label	{fileID: 1602779329}
+Game/Scenes/MainMenu.unity	label	{fileID: 916919457}
+Game/Scenes/MainMenu.unity	label	{fileID: 471192753}
+Game/Scenes/MainMenu.unity	m_text	ACHETER
+Game/Scenes/MainMenu.unity	m_text	AM\xC9LIORER
+Game/Scenes/MainMenu.unity	m_text	S\xE9lectionner
+Game/Scenes/MainMenu.unity	m_text	Description
+Game/Scenes/MainMenu.unity	m_text	SKIN
+Game/Scenes/MainMenu.unity	m_text	TAG
+Game/Scenes/MainMenu.unity	m_text	Effet
+Game/Scenes/MainMenu.unity	m_text	Description
+Game/Scenes/MainMenu.unity	m_text	DEBUG \xB7 R\xC9INITIALISER
+Game/Scenes/MainMenu.unity	m_text	AM\xC9LIORER
+Game/Scenes/MainMenu.unity	m_text	NIV 1
+Game/Scenes/MainMenu.unity	m_text	NIVEAU 0 / 5
+Game/Scenes/MainMenu.unity	m_text	TAG
+Game/Scenes/MainMenu.unity	m_text	DEBUG \xB7 R\xC9INITIALISER
+Game/Scenes/MainMenu.unity	m_text	R\xC9PUTATION
+Game/Scenes/MainMenu.unity	m_text	VITESSE
+Game/Scenes/MainMenu.unity	m_text	CLASSIQUE  \xB7  OR
+Game/Scenes/MainMenu.unity	m_text	ARME EXCLUSIVE
+Game/Scenes/MainMenu.unity	m_text	VICTOIRES
+Game/Scenes/MainMenu.unity	m_text	BIENT\xD4T
+Game/Scenes/MainMenu.unity	m_text	PALIERS
+Game/Scenes/MainMenu.unity	m_text	Pr\xE9requis
+Game/Scenes/MainMenu.unity	label	{fileID: 2091422214}
+Game/Scenes/MainMenu.unity	label	{fileID: 181202646}
+Game/Scenes/MainMenu.unity	label	{fileID: 2055637149}
+Game/Scenes/MainMenu.unity	m_text	SKINS PRESTIGE
+Game/Scenes/MainMenu.unity	m_text	LYRA
+Game/Scenes/MainMenu.unity	m_text	Fireball
+Game/Scenes/MainMenu.unity	m_text	ACHETER
+Game/Scenes/MainMenu.unity	m_text	TENUE D'ORIGINE
+Game/Scenes/MainMenu.unity	m_text	Jouer
+Game/Scenes/MainMenu.unity	m_text	AETHER
+Game/Scenes/MainMenu.unity	m_text	NIV 1
+Game/Scenes/MainMenu.unity	m_text	Effet
+Game/Scenes/MainMenu.unity	m_text	CLASSIQUE
+Game/ScriptableObjects/Upgrades/SO_Fusion_CursedSwamp.asset	upgradeName	Mar\xE9cage Maudit
+Game/ScriptableObjects/Upgrades/SO_Fusion_CursedSwamp.asset	description	FUSION — Boue + Foudre : tes zones deviennent un mar\xE9cage \xE9lectrifi\xE9 qui \xE9lectrocute tout ce qui s'y attarde.
+Game/ScriptableObjects/Upgrades/SO_Fusion_ManaVortex.asset	upgradeName	Vortex de Mana
+Game/ScriptableObjects/Upgrades/SO_Fusion_ManaVortex.asset	description	FUSION — Aura + Orbitaux : un tourbillon d'\xE9clats de mana, bien plus large et bien plus puissant, tourne d\xE9sormais autour de toi.
+Game/ScriptableObjects/Upgrades/SO_Fusion_RicochetBlades.asset	upgradeName	Lames Ricochet
+Game/ScriptableObjects/Upgrades/SO_Fusion_RicochetBlades.asset	description	FUSION — Couteaux + Orbe rebondissant : ta salve perfore ET ricoche d\xE9sormais d'ennemi en ennemi.
+Game/ScriptableObjects/Upgrades/SO_Fusion_ScorchedEarth.asset	upgradeName	Terre Calcin\xE9e
+Game/ScriptableObjects/Upgrades/SO_Fusion_ScorchedEarth.asset	description	FUSION — Boule de feu + Boue : des zones de cendres br\xFBlantes bien plus grandes et bien plus d\xE9vastatrices apparaissent en cercle autour de toi.
+Game/ScriptableObjects/Upgrades/SO_Fusion_TwinOrbs.asset	upgradeName	Orbes Jumeaux
+Game/ScriptableObjects/Upgrades/SO_Fusion_TwinOrbs.asset	description	FUSION — Double tir + Orbe rebondissant : ton tir de base se d\xE9double en deux sph\xE8res qui ricochent sans fin.
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Aura.asset	upgradeName	Aura
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Aura.asset	description	Zone Aura
+Game/ScriptableObjects/Upgrades/SO_Upgrade_BouncingOrb.asset	upgradeName	Orbe Rebondissant
+Game/ScriptableObjects/Upgrades/SO_Upgrade_BouncingOrb.asset	description	Lance des orbes qui rebondissent sans arr\xEAt dans l'ar\xE8ne et blessent les ennemis touch\xE9s.
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Damage.asset	upgradeName	D\xE9gats +
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Damage.asset	description	+20% aux d\xE9gats
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Fireball.asset	upgradeName	Boule de Feu
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Fireball.asset	description	Lance une boule de feu
+Game/ScriptableObjects/Upgrades/SO_Upgrade_FireRate.asset	upgradeName	Cadence+
+Game/ScriptableObjects/Upgrades/SO_Upgrade_FireRate.asset	description	+20% \xE0 la cadence de tir
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Heal.asset	upgradeName	Soin
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Heal.asset	description	Restaure 50% des HP maximum
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Knives.asset	upgradeName	Couteaux
+Game/ScriptableObjects/Upgrades/SO_Upgrade_Knives.asset	description	Envoie des salves de couteaux
+Game/ScriptableObjects/Upgrades/SO_Upgrade_MudPuddle.asset	upgradeName	Boue
+Game/ScriptableObjects/Upgrades/SO_Upgrade_MudPuddle.asset	description	Fait appara\xEEtre des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent.
+Readme.asset	title	URP Empty Template
+Readme.asset	text	This template includes the settings and assets you need to start creating with the Universal Render Pipeline.

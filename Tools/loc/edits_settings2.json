@@ -1,0 +1,13 @@
+{
+  "Assets/Game/Scripts/Settings/SettingsPage.cs": [
+    ["        Loc.Changed += RebuildForLanguage;", "        Loc.Changed += RequestRebuild;"],
+    ["        Loc.Changed -= RebuildForLanguage;", "        Loc.Changed -= RequestRebuild;"],
+    ["    private GameLanguage _builtLanguage;\n", "    private GameLanguage _builtLanguage;\n    private bool _rebuildPending;\n\n    // Reportée à la fin de l'image : le changement vient souvent d'un clic sur une ligne de CETTE page (qu'on ne\n    // détruit pas pendant son propre rappel).\n    private void RequestRebuild() => _rebuildPending = true;\n"],
+    ["    private void LateUpdate()\n    {", "    private void LateUpdate()\n    {\n        if (_rebuildPending) { _rebuildPending = false; RebuildForLanguage(); }"]
+  ],
+  "Assets/Game/Scripts/Settings/SettingsRow.cs": [
+    ["_page.Toast(\"Disposition « \" + InputBindings.PresetNames[preset] + \" » appliquée.\");", "_page.Toast(Loc.F(\"Disposition « {0} » appliquée.\", Loc.T(InputBindings.PresetNames[preset])));"],
+    ["                _toggleText.text = on ? \"OUI\" : \"NON\";", "                _toggleText.text = on ? Loc.T(\"OUI\") : Loc.T(\"NON\");"],
+    ["                    _presetTexts[p].text = InputBindings.PresetNames[p];", "                    _presetTexts[p].text = Loc.T(InputBindings.PresetNames[p]);"]
+  ]
+}

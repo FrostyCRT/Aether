@@ -115,37 +115,36 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Orbital:
                 return nextLevel == 1
-                    ? "Débloque 2 orbitaux tournants qui frappent au contact."
-                    : "+1 orbital supplémentaire.";
+                    ? Loc.T("Débloque 2 orbitaux tournants qui frappent au contact.")
+                    : Loc.T("+1 orbital supplémentaire.");
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
-                    ? "Débloque la foudre en chaîne" +
-                    "."
-                    : "+1 rebond de foudre supplémentaire.";
+                    ? Loc.T("Débloque la foudre en chaîne.")
+                    : Loc.T("+1 rebond de foudre supplémentaire.");
 
             case UpgradeType.MudPuddle:
                 return nextLevel == 1
-                    ? "Débloque 3 flaques de boue ralentissante autour de toi."
-                    : "+1 flaque de boue supplémentaire.";
+                    ? Loc.T("Débloque 3 flaques de boue ralentissante autour de toi.")
+                    : Loc.T("+1 flaque de boue supplémentaire.");
 
             case UpgradeType.BouncingOrb:
                 return FormatBouncingOrbDescription(nextLevel);
 
             case UpgradeType.Damage:
-                return $"+{PercentOf(value)}% dégâts sur toutes tes armes actives.";
+                return Loc.F("+{0}% dégâts sur toutes tes armes actives.", PercentOf(value));
 
             case UpgradeType.FireRate:
-                return $"+{PercentOf(value)}% vitesse de tir sur toutes tes armes actives.";
+                return Loc.F("+{0}% vitesse de tir sur toutes tes armes actives.", PercentOf(value));
 
             case UpgradeType.Heal:
-                return $"Restaure {PercentOf(value)}% de tes PV max.";
+                return Loc.F("Restaure {0}% de tes PV max.", PercentOf(value));
 
             case UpgradeType.DoubleShot:
-                return "Débloque un second tir simultané.";
+                return Loc.T("Débloque un second tir simultané.");
 
             default:
-                return description;
+                return Description;
         }
     }
 
@@ -165,16 +164,16 @@ public class UpgradeData : ScriptableObject
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
-            return "Débloque Boule de feu : équipe l'arme exclusive d'Aether.";
+            return Loc.T("Débloque Boule de feu : équipe l'arme exclusive d'Aether.");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return $"+{v:0.#} de rayon d'explosion.";
-            case 2: return $"+{PercentOf(v)}% dégâts.";
-            case 3: return "Débloque la Brûlure : les ennemis touchés brûlent sur la durée.";
-            default: return description;
+            case 1: return Loc.F("+{0} de rayon d'explosion.", v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture));
+            case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
+            case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée.");
+            default: return Description;
         }
     }
 
@@ -182,16 +181,16 @@ public class UpgradeData : ScriptableObject
     private string FormatAuraDescription(int level)
     {
         if (level == 1)
-            return "Débloque l'Aura : équipe l'arme exclusive de Kael.";
+            return Loc.T("Débloque l'Aura : équipe l'arme exclusive de Kael.");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return $"+{PercentOf(v)}% dégâts.";
-            case 2: return $"+{PercentOf(v)}% rayon.";
-            case 3: return $"+{PercentOf(v)}% ralentissement.";
-            default: return description;
+            case 1: return Loc.F("+{0}% dégâts.", PercentOf(v));
+            case 2: return Loc.F("+{0}% rayon.", PercentOf(v));
+            case 3: return Loc.F("+{0}% ralentissement.", PercentOf(v));
+            default: return Description;
         }
     }
 
@@ -208,16 +207,16 @@ public class UpgradeData : ScriptableObject
     private string FormatKnivesDescription(int level)
     {
         if (level == 1)
-            return "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.";
+            return Loc.T("Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return "Débloque un couteau supplémentaire dans la salve.";
-            case 2: return $"+{PercentOf(v)}% dégâts.";
-            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? $"+{pierce} ennemis perforés en plus." : $"+{pierce} ennemi perforé en plus."; }
-            default: return description;
+            case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve.");
+            case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
+            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? Loc.F("+{0} ennemis perforés en plus.", pierce) : Loc.F("+{0} ennemi perforé en plus.", pierce); }
+            default: return Description;
         }
     }
 
@@ -234,20 +233,25 @@ public class UpgradeData : ScriptableObject
     private string FormatBouncingOrbDescription(int level)
     {
         if (level == 1)
-            return "Débloque un orbe rebondissant qui traverse les ennemis.";
+            return Loc.T("Débloque un orbe rebondissant qui traverse les ennemis.");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return $"+{PercentOf(v)}% dégâts.";
-            case 2: return $"+{PercentOf(v)}% vitesse.";
-            case 3: return "+1 orbe rebondissant supplémentaire.";
-            default: return description;
+            case 1: return Loc.F("+{0}% dégâts.", PercentOf(v));
+            case 2: return Loc.F("+{0}% vitesse.", PercentOf(v));
+            case 3: return Loc.T("+1 orbe rebondissant supplémentaire.");
+            default: return Description;
         }
     }
 
     private int PercentOf(float ratio) => Mathf.RoundToInt(ratio * 100f);
+
+    // AJOUTÉ (2026-10-14) - textes à AFFICHER dans la langue courante (voir Loc). upgradeName / description restent les
+    // valeurs françaises de l'asset (clés de traduction).
+    public string Name => Loc.T(upgradeName);
+    public string Description => Loc.T(description);
 
     // AJOUTE - verifie que le personnage actuellement joue correspond bien au
     // personnage proprietaire de cette upgrade exclusive.

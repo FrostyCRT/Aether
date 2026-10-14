@@ -55,7 +55,7 @@ public static class SettingsSchema
     private static string[] FpsCapNames()
     {
         string[] n = new string[GameSettings.FpsCaps.Length];
-        for (int i = 0; i < n.Length; i++) n[i] = GameSettings.FpsCaps[i] <= 0 ? "Illimitée" : GameSettings.FpsCaps[i] + " FPS";
+        for (int i = 0; i < n.Length; i++) n[i] = GameSettings.FpsCaps[i] <= 0 ? Loc.T("Illimitée") : GameSettings.FpsCaps[i] + " FPS";
         return n;
     }
 
@@ -211,8 +211,40 @@ public static class SettingsSchema
         controls.rows.Add(Slider("Zone morte du stick", "Ignore les petits mouvements du stick. À augmenter si le personnage bouge sans action.", GameSettings.PadDeadZone, 0.05f, 0.50f));
         cats.Add(controls);
 
+        // ---------------------------------------------------------------- LANGUE (AJOUTÉ 2026-10-14)
+        // Titre bilingue : un joueur qui ne lit pas la langue affichée doit quand même trouver cet onglet.
+        CategoryDef lang = new CategoryDef { id = "language", title = "LANGUE / LANGUAGE", subtitle = "Langue de tous les textes du jeu" };
+        lang.rows.Add(new RowDef
+        {
+            kind = RowKind.Choice, label = "Langue du jeu", key = GameSettings.Language, options = LanguageNames,
+            description = "Tous les textes du jeu changent immédiatement, menus et parties compris."
+        });
+        cats.Add(lang);
+
+        // Tous les textes ci-dessus sont écrits en français : traduits ici d'un seul coup dans la langue courante (Loc).
+        // Les libellés des touches viennent déjà traduits de GameInput.ActionLabel / ActionHint.
+        foreach (CategoryDef c in cats)
+        {
+            c.title = Loc.T(c.title);
+            c.subtitle = Loc.T(c.subtitle);
+            foreach (RowDef r in c.rows)
+            {
+                if (r.kind != RowKind.Keybind)
+                {
+                    r.label = Loc.T(r.label);
+                    r.description = Loc.T(r.description);
+                }
+                r.disabledHint = Loc.T(r.disabledHint);
+                if (r.options != null && r.options != LanguageNames)
+                    r.options = Array.ConvertAll(r.options, o => Loc.Has(o) ? Loc.T(o) : o);   // "60 FPS" reste tel quel
+            }
+        }
         return cats;
     }
+
+    // Noms des langues toujours écrits dans leur propre langue (jamais traduits).
+    // Dans l'ordre de l'enum GameLanguage ; chaque langue est écrite dans sa propre langue (jamais traduite).
+    public static readonly string[] LanguageNames = { "Français", "English", "Deutsch", "Español", "Português (Brasil)", "Italiano", "Polski" };
 
     // Remet à zéro tout ce qu'une catégorie contient (réglages ET touches).
     public static void ResetCategory(CategoryDef cat)

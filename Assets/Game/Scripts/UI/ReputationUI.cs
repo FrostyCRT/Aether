@@ -287,32 +287,32 @@ public class ReputationUI : MonoBehaviour
             ReputationStyle.FitPortrait(_preview.portraitImage, pm != null ? pm.rect.width * 0.92f : 380f);
         }
         if (_preview.lockGroup != null) _preview.lockGroup.SetActive(locked);
-        if (_preview.lockText != null) _preview.lockText.text = SkinCatalog.CharacterNames[_char] + " EST VERROUILLÉ\n<size=70%><color=#" + ReputationStyle.Hex(ReputationStyle.Muted) + ">Débloque-le dans l'onglet Personnages\npour accéder à ses skins.</color></size>";
+        if (_preview.lockText != null) _preview.lockText.text = Loc.F("{0} EST VERROUILLÉ", SkinCatalog.CharacterNames[_char]) + "\n<size=70%><color=#" + ReputationStyle.Hex(ReputationStyle.Muted) + ">" + Loc.T("Débloque-le dans l'onglet Personnages\npour accéder à ses skins.") + "</color></size>";
 
         if (_preview.tierChip != null) _preview.tierChip.color = new Color(tierColor.r, tierColor.g, tierColor.b, 0.2f);
         if (_preview.tierText != null)
         {
-            _preview.tierText.text = skin.tier == SkinTier.Prestige ? "PRESTIGE  ·  ÉCLATS" : "CLASSIQUE  ·  OR";
+            _preview.tierText.text = skin.tier == SkinTier.Prestige ? Loc.T("PRESTIGE  ·  ÉCLATS") : Loc.T("CLASSIQUE  ·  OR");
             _preview.tierText.color = tierColor;
         }
-        if (_preview.nameText != null) _preview.nameText.text = skin.displayName.ToUpperInvariant();
-        if (_preview.descText != null) _preview.descText.text = string.IsNullOrEmpty(skin.description) ? "" : skin.description;
+        if (_preview.nameText != null) _preview.nameText.text = Loc.T(skin.displayName).ToUpperInvariant();
+        if (_preview.descText != null) _preview.descText.text = SkinCatalog.DisplayDescription(skin);
 
         // action
         string label; bool interactable; bool showPrice = false; Color tint = Color.white; Color labelColor = ReputationStyle.ButtonText; bool glow = false;
-        if (locked) { label = "PERSONNAGE VERROUILLÉ"; interactable = false; tint = new Color(0.6f, 0.55f, 0.55f, 0.85f); labelColor = new Color32(0x8A, 0x2E, 0x24, 0xFF); }
-        else if (owned && equipped) { label = "ÉQUIPÉ"; interactable = false; tint = new Color(0.85f, 0.8f, 0.6f, 0.95f); labelColor = new Color32(0x6B, 0x55, 0x1E, 0xFF); }
-        else if (owned) { label = "ÉQUIPER"; interactable = true; glow = true; }
+        if (locked) { label = Loc.T("PERSONNAGE VERROUILLÉ"); interactable = false; tint = new Color(0.6f, 0.55f, 0.55f, 0.85f); labelColor = new Color32(0x8A, 0x2E, 0x24, 0xFF); }
+        else if (owned && equipped) { label = Loc.T("ÉQUIPÉ"); interactable = false; tint = new Color(0.85f, 0.8f, 0.6f, 0.95f); labelColor = new Color32(0x6B, 0x55, 0x1E, 0xFF); }
+        else if (owned) { label = Loc.T("ÉQUIPER"); interactable = true; glow = true; }
         else if (!CanAfford(meta, skin))
         {
-            label = skin.tier == SkinTier.Prestige ? "ÉCLATS INSUFFISANTS" : "OR INSUFFISANT";
+            label = skin.tier == SkinTier.Prestige ? Loc.T("ÉCLATS INSUFFISANTS") : Loc.T("OR INSUFFISANT");
             interactable = false; tint = new Color(0.62f, 0.56f, 0.54f, 1f); labelColor = new Color32(0x8A, 0x2E, 0x24, 0xFF);
             showPrice = false;
         }
         else
         {
             bool confirm = _confirmSkinId == skin.id;
-            label = confirm ? "CONFIRMER L'ACHAT ?" : "ACHETER";
+            label = confirm ? Loc.T("CONFIRMER L'ACHAT ?") : Loc.T("ACHETER");
             interactable = true; showPrice = !confirm; glow = true;
         }
 
@@ -384,7 +384,7 @@ public class ReputationUI : MonoBehaviour
 
         if (!meta.IsCharacterUnlocked(skin.characterIndex))
         {
-            Toast(SkinCatalog.CharacterNames[skin.characterIndex] + " est verrouillé.");
+            Toast(Loc.F("{0} est verrouillé.", SkinCatalog.CharacterNames[skin.characterIndex]));
             return;
         }
 
@@ -392,7 +392,7 @@ public class ReputationUI : MonoBehaviour
         {
             if (meta.EquipSkin(skin.id))
             {
-                Toast(skin.displayName + " équipé pour " + SkinCatalog.CharacterNames[skin.characterIndex] + ".");
+                Toast(Loc.F("{0} équipé pour {1}.", Loc.T(skin.displayName), SkinCatalog.CharacterNames[skin.characterIndex]));
                 RebuildRows();
                 RefreshPreview();
                 PunchPreview();
@@ -414,18 +414,18 @@ public class ReputationUI : MonoBehaviour
         {
             case MetaProgressionManager.SkinBuyResult.Ok:
                 meta.EquipSkin(skin.id);           // un skin acheté est équipé tout de suite
-                Toast("Nouveau skin : " + skin.displayName + " !");
+                Toast(Loc.F("Nouveau skin : {0} !", Loc.T(skin.displayName)));
                 RebuildRows();
                 RefreshPreview();
                 PunchPreview();
                 PunchPill(skin.tier == SkinTier.Prestige ? _eclatsPill : _goldPill);
                 break;
             case MetaProgressionManager.SkinBuyResult.NotEnoughCurrency:
-                Toast(skin.tier == SkinTier.Prestige ? "Il te manque des Éclats." : "Il te manque de l'or.");
+                Toast(skin.tier == SkinTier.Prestige ? Loc.T("Il te manque des Éclats.") : Loc.T("Il te manque de l'or."));
                 RefreshPreview();
                 break;
             case MetaProgressionManager.SkinBuyResult.CharacterLocked:
-                Toast(SkinCatalog.CharacterNames[skin.characterIndex] + " est verrouillé.");
+                Toast(Loc.F("{0} est verrouillé.", SkinCatalog.CharacterNames[skin.characterIndex]));
                 RefreshPreview();
                 break;
             default:

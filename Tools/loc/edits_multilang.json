@@ -1,0 +1,14 @@
+{
+  "Assets/Game/Scripts/Systems/GameModes.cs": [
+    ["        // Textes français en entrée, traduits ici (l'anglais met aussi le pluriel à 0 : \"0 wins\").\n        bool many = count > 1 || (count == 0 && Loc.IsEnglish);\n        return Loc.T(many ? plural : singular);", "        // Textes français en entrée, accordés et traduits selon la règle de la langue (voir Loc.PluralWord).\n        return Loc.PluralWord(count, singular, plural);"]
+  ],
+  "Assets/Game/Scripts/UI/ReputationStyle.cs": [
+    ["(Loc.IsEnglish ? \" HP/s\" : \" PV/s\")", "\" \" + Loc.T(\"PV/s\")"]
+  ],
+  "Assets/Game/Scripts/Challenge/ChallengeManager.cs": [
+    [".Replace(\".\", Loc.IsEnglish ? \".\" : \",\")", ".Replace(\".\", Loc.IsEnglish ? \".\" : \",\")   // virgule décimale partout sauf en anglais"]
+  ],
+  "Assets/Game/Scripts/Settings/SettingsSchema.cs": [
+    ["    public static readonly string[] LanguageNames = { \"Français\", \"English\" };", "    // Dans l'ordre de l'enum GameLanguage ; chaque langue est écrite dans sa propre langue (jamais traduite).\n    public static readonly string[] LanguageNames = { \"Français\", \"English\", \"Deutsch\", \"Español\", \"Português (Brasil)\", \"Italiano\", \"Polski\" };"]
+  ]
+}

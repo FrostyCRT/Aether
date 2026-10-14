@@ -285,13 +285,13 @@ public class PauseMenuUI : MonoBehaviour
         // texte retourné à la ligne sur presque chaque caractère la toute première fois. Activer le GameObject
         // D'ABORD, puis changer le texte et forcer la reconstruction du maillage, règle ça définitivement.
         _descriptionTooltip.gameObject.SetActive(true);
-        _descriptionText.text = upgrade.description;
+        _descriptionText.text = upgrade.Description;
         _descriptionText.ForceMeshUpdate();
         GameUI.ApplyReadableOutline(_descriptionText);
 
         // Taille du panneau = taille du texte (+ marge intérieure) - plus de format fixe, un texte court donne un
         // petit panneau, un texte long s'enroule à TooltipMaxTextWidth puis grandit en hauteur.
-        Vector2 preferred = _descriptionText.GetPreferredValues(upgrade.description, TooltipMaxTextWidth, 0f);
+        Vector2 preferred = _descriptionText.GetPreferredValues(upgrade.Description, TooltipMaxTextWidth, 0f);
         _descriptionTooltip.sizeDelta = new Vector2(Mathf.Min(preferred.x, TooltipMaxTextWidth) + TooltipPadding.x, preferred.y + TooltipPadding.y);
 
         RectTransform parentRt = _descriptionTooltip.parent as RectTransform;
@@ -446,7 +446,7 @@ public class PauseMenuUI : MonoBehaviour
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
         {
             // Les défis n'existent qu'en Classique (voir ChallengeManager.Start).
-            _challengeInfoText.text = GameModes.CountsForProgression ? "" : "Pas de défi dans ce mode.";
+            _challengeInfoText.text = GameModes.CountsForProgression ? "" : Loc.T("Pas de défi dans ce mode.");
             return;
         }
 
@@ -467,8 +467,8 @@ public class PauseMenuUI : MonoBehaviour
             // chargement de la scene Jeu, jamais un compte a rebours fige et
             // trompeur ("moins d'une minute" pendant potentiellement des heures).
             _challengeInfoText.text = minutes > 0
-                ? $"Défi déjà réussi cette heure !\nNouveau défi dans {minutes} min."
-                : "Défi déjà réussi cette heure !\nNouveau défi à ta prochaine partie !";
+                ? Loc.T("Défi déjà réussi cette heure !") + "\n" + Loc.F("Nouveau défi dans {0} min.", minutes)
+                : Loc.T("Défi déjà réussi cette heure !") + "\n" + Loc.T("Nouveau défi à ta prochaine partie !");
             return;
         }
 
@@ -482,9 +482,9 @@ public class PauseMenuUI : MonoBehaviour
 
         _challengeInfoText.color = _challengeInfoTextColor;
         _challengeInfoText.text =
-            $"{challenge.displayName} : Niv. <color=#{difficultyColorHex}>{difficultyLabel}</color>\n" +
-            $"{challenge.description}\n" +
-            $"Récompense : {rewardText}";
+            Loc.F("{0} : Niv. {1}", challenge.Name, $"<color=#{difficultyColorHex}>{difficultyLabel}</color>") + "\n" +
+            challenge.Description + "\n" +
+            Loc.F("Récompense : {0}", rewardText);
         // Position et taille de ChallengeInfoText restent figees dans
         // l'Inspector - seuls le separateur et le statut s'ajustent, voir
         // PositionSeparatorAndStatus().
@@ -523,22 +523,22 @@ public class PauseMenuUI : MonoBehaviour
         Color statusColor;
         if (ChallengeManager.Instance.IsFailed)
         {
-            statusLabel = "Échoué";
+            statusLabel = Loc.T("Échoué");
             statusColor = _challengeStatusFailedColor;
         }
         else if (ChallengeManager.Instance.IsCurrentlySucceeding())
         {
-            statusLabel = "Réussi";
+            statusLabel = Loc.T("Réussi");
             statusColor = _challengeStatusSuccessColor;
         }
         else
         {
-            statusLabel = "En cours";
+            statusLabel = Loc.T("En cours");
             statusColor = _challengeStatusNormalColor;
         }
 
         string colorHex = ColorUtility.ToHtmlStringRGB(statusColor);
-        _challengeStatusText.text = $"Statut\n<color=#{colorHex}>{statusLabel}</color>";
+        _challengeStatusText.text = Loc.T("Statut") + $"\n<color=#{colorHex}>{statusLabel}</color>";
     }
 
     // AJOUTE (2026-09-15) - decale le separateur vertical ET la colonne Statut
@@ -604,9 +604,9 @@ public class PauseMenuUI : MonoBehaviour
     {
         switch (difficulty)
         {
-            case ChallengeDifficulty.Easy: return "FACILE";
-            case ChallengeDifficulty.Medium: return "MOYEN";
-            case ChallengeDifficulty.Hard: return "DIFFICILE";
+            case ChallengeDifficulty.Easy: return Loc.T("FACILE");
+            case ChallengeDifficulty.Medium: return Loc.T("MOYEN");
+            case ChallengeDifficulty.Hard: return Loc.T("DIFFICILE");
             default: return "";
         }
     }

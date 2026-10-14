@@ -123,7 +123,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             {
                 int preset = p;
                 _presetButtons[p].onClick.RemoveAllListeners();
-                _presetButtons[p].onClick.AddListener(() => { InputBindings.ApplyPreset((InputBindings.Preset)preset); _page.Toast("Disposition « " + InputBindings.PresetNames[preset] + " » appliquée."); });
+                _presetButtons[p].onClick.AddListener(() => { InputBindings.ApplyPreset((InputBindings.Preset)preset); _page.Toast(Loc.F("Disposition « {0} » appliquée.", Loc.T(InputBindings.PresetNames[preset]))); });
             }
         }
 
@@ -171,7 +171,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case RowKind.Toggle:
             {
                 bool on = GameSettings.GetBool(Def.key);
-                _toggleText.text = on ? "OUI" : "NON";
+                _toggleText.text = on ? Loc.T("OUI") : Loc.T("NON");
                 _toggleText.color = on ? Color.white : SettingsStyle.Muted;
                 _toggleText.alignment = on ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;   // à l'opposé du bouton
                 _toggleTrack.color = on ? SettingsStyle.Accent : SettingsStyle.Track;
@@ -205,7 +205,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 for (int p = 0; p < _presetTexts.Length; p++)
                 {
                     bool sel = p == match;
-                    _presetTexts[p].text = InputBindings.PresetNames[p];
+                    _presetTexts[p].text = Loc.T(InputBindings.PresetNames[p]);
                     _presetTexts[p].color = sel ? Color.white : SettingsStyle.Body;
                     _presetBorders[p].color = sel ? SettingsStyle.Accent : SettingsStyle.AccentSoft;
                 }

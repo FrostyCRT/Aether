@@ -115,7 +115,19 @@ public class SkillTreeUI : MonoBehaviour
         if (_debugResetButton != null) _debugResetButton.SetActive(Debug.isDebugBuild);
 
         RefreshAllNodes();
+        Loc.Changed += OnLanguageChanged;
     }
+
+    // AJOUTÉ (2026-10-14) - changement de langue : la fiche ouverte est refermée (elle serait dans l'ancienne langue) et
+    // les textes de l'onglet (consigne, légendes) sont réécrits.
+    private void OnLanguageChanged()
+    {
+        if (this == null) { Loc.Changed -= OnLanguageChanged; return; }
+        if (_isPanelOpen) ClosePanel();
+        RefreshAllNodes();
+    }
+
+    private void OnDestroy() => Loc.Changed -= OnLanguageChanged;
 
     // Enregistrement automatique des nœuds (cache)
     public void RegisterNode(SkillNode node)
@@ -329,8 +341,8 @@ public class SkillTreeUI : MonoBehaviour
             string gold = SkillTreeStyle.Hex(SkillTreeStyle.Gold);
             string muted = SkillTreeStyle.Hex(SkillTreeStyle.Body);
             _hintText.text = buyable > 0
-                ? $"<color=#{gold}>{buyable}</color> compétence{(buyable > 1 ? "s" : "")} achetable{(buyable > 1 ? "s" : "")}  ·  repère le halo doré"
-                : $"<color=#{muted}>Clique sur un médaillon pour voir ses niveaux et ses prérequis</color>";
+                ? Loc.F(buyable > 1 ? "{0} compétences achetables  ·  repère le halo doré" : "{0} compétence achetable  ·  repère le halo doré", $"<color=#{gold}>{buyable}</color>")
+                : $"<color=#{muted}>" + Loc.T("Clique sur un médaillon pour voir ses niveaux et ses prérequis") + "</color>";
 
             // la pastille sombre derrière le texte épouse sa longueur
             RectTransform pill = _hintText.transform.parent as RectTransform;
@@ -348,7 +360,7 @@ public class SkillTreeUI : MonoBehaviour
                 Color accent = SkillTreeStyle.Accent(c.branch);
                 bool isActive = c.branch == active;
                 string progress = $"{SkillTreeStyle.BranchProgress(c.branch)} / {SkillTreeStyle.BranchMax(c.branch)}";
-                string label = isActive ? "PERSONNAGE ACTIF" : "COMPÉTENCES";
+                string label = isActive ? Loc.T("PERSONNAGE ACTIF") : Loc.T("COMPÉTENCES");
                 string labelColor = SkillTreeStyle.Hex(isActive ? accent : SkillTreeStyle.Muted);
                 string text = $"<color=#{labelColor}>{label}</color>   <color=#FFFFFF>{progress}</color>";
                 c.text.text = text;

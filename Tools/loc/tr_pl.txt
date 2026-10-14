@@ -1,0 +1,619 @@
+# Polonais (Polski) - "ty", registre de jeu polonais naturel. Numéros = skeleton.txt.
+# IMPORTANT : en polonais, le passé et les adjectifs s'accordent au genre du joueur (byłeś / byłaś) : formulations
+# NEUTRES uniquement (présent, impératif, tournures impersonnelles, "X: {0}" pour les nombres).
+# Glossaire : Or=Złoto, Éclats=Odłamki, Ultime=Supermoc, Dash=Zryw, Clone spectral=Widmowy klon, Orbitaux=Satelity,
+# partie=rozgrywka, boss=boss (pl. bossowie / bossów), PV=PŻ (punkty życia), Réputation=Reputacja, skin=skórka.
+# Typo : guillemets „…”.
+
+## Paramètres : touches
+1| Lewy Shift
+2| Prawy Shift
+3| Lewy Ctrl
+4| Prawy Ctrl
+5| Lewy Alt
+6| Prawy Alt
+7| Lewy Cmd
+8| Prawy Cmd
+9| Spacja
+10| Enter
+11| Enter (num.)
+12| Esc
+13| Backspace
+14| Delete
+15| Insert
+16| Tab
+17| Caps Lock
+18| Home
+19| End
+20| Page Up
+21| Page Down
+22| Strzałka w górę
+23| Strzałka w dół
+24| Strzałka w lewo
+25| Strzałka w prawo
+26| Przecinek
+27| Kropka
+28| Średnik
+29| Dwukropek
+30| Ukośnik
+31| Ukośnik wsteczny
+32| Minus
+33| Znak równości
+34| Apostrof
+35| Cudzysłów
+36| Grawis
+37| Lewy nawias kw.
+38| Prawy nawias kw.
+39| Num +
+40| Num −
+41| Num ×
+42| Num ÷
+43| Num .
+44| LPM
+45| PPM
+46| ŚPM
+47| Num {0}
+48| Mysz {0}
+49| Pad {0}
+50| Pad
+51| Shift
+52| Spacja
+53| Ruch w górę
+54| Ruch w dół
+55| Ruch w lewo
+56| Ruch w prawo
+57| Supermoc
+58| Widmowy klon
+59| Karta 1
+60| Karta 2
+61| Karta 3
+62| Orbita: bliżej
+63| Orbita: dalej
+64| Pauza
+65| Zryw: błyskawiczny doskok, chwilowa nietykalność, pochłania pociski.
+66| Uwalnia supermoc, gdy kryształ jest naładowany.
+67| Przyzywa widmowego klona. Wymaga odpowiedniej umiejętności.
+68| Wybiera 1. kartę po zdobyciu poziomu.
+69| Wybiera 2. kartę po zdobyciu poziomu.
+70| Wybiera 3. kartę po zdobyciu poziomu.
+71| Zmniejsza promień orbity satelitów.
+72| Zwiększa promień orbity satelitów.
+73| Otwiera / zamyka menu pauzy.
+
+## Paramètres : page
+74| Wydajność
+75| Zrównoważona
+76| Wysoka
+77| Pełny ekran (wyłączny)
+78| Okno bez ramki
+79| Okno
+80| Wyłączone
+81| Włączone
+82| Bez limitu
+83| EKRAN
+84| Okno, rozdzielczość i płynność obrazu
+85| Tryb wyświetlania
+86| Pełny ekran, okno bez ramki lub zwykłe okno.
+87| Rozdzielczość
+88| Rozdzielczość obrazu na pełnym ekranie i w oknie.
+89| Tryb bez ramki zawsze używa rozdzielczości pulpitu.
+90| Synchronizacja pionowa
+91| Zapobiega rozrywaniu obrazu. Ogranicza płynność do częstotliwości odświeżania monitora.
+92| Limit klatek na sekundę
+93| Ogranicza liczbę wyświetlanych klatek na sekundę.
+94| Nie działa, gdy synchronizacja pionowa jest włączona.
+95| Jasność
+96| Rozjaśnia lub przyciemnia cały obraz, łącznie z menu.
+97| Licznik FPS
+98| Pokazuje liczbę klatek na sekundę w lewym górnym rogu.
+99| GRAFIKA
+100| Jakość obrazu i efekty wizualne
+101| Jakość grafiki
+102| Ogólne ustawienie renderowania: oświetlenie, cienie i ostrość.
+103| Cienie
+104| Cienie rzucane przez postacie i wrogów.
+105| Efekty otoczenia w menu
+106| Animowany kurz i poświata w menu.
+107| DŹWIĘK
+108| Głośność i zachowanie dźwięku
+109| Głośność ogólna
+110| Ustawia głośność całej gry.
+111| Muzyka
+112| Głośność muzyki w menu i podczas rozgrywki.
+113| Efekty dźwiękowe
+114| Głośność efektów: ciosy, czary, interfejs.
+115| Wycisz w tle
+116| Wycisza cały dźwięk, gdy okno gry nie jest aktywne.
+117| ROZGRYWKA
+118| Celowanie, pauza i wskaźniki walki
+119| Celowanie
+120| Automatyczne: strzały lecą w najbliższego wroga. Mysz: celujesz samodzielnie.
+121| Myszą
+122| Automatyczne
+123| Automatyczna pauza
+124| Wstrzymuje rozgrywkę, gdy okno gry traci fokus.
+125| Liczby obrażeń
+126| Zadane obrażenia
+127| Pokazuje obrażenia, które zadajesz wrogom.
+128| Otrzymane obrażenia
+129| Pokazuje obrażenia, które otrzymujesz.
+130| Rozmiar liczb
+131| Rozmiar liczb pojawiających się nad celami.
+132| INTERFEJS
+133| Co widać podczas rozgrywki
+134| Rozmiar interfejsu
+135| Rozmiar interfejsu w grze: paski, wskaźniki i teksty.
+136| Krycie interfejsu
+137| Przezroczystość interfejsu w grze.
+138| Wyświetlane elementy
+139| Stoper
+140| Czas, który upłynął od początku rozgrywki.
+141| Złoto z rozgrywki
+142| Złoto zebrane w tej rozgrywce.
+143| Pokonani wrogowie
+144| Liczba zabitych wrogów.
+145| Legenda klawiszy
+146| Przypomnienie klawiszy (zryw, supermoc, klon, orbita, pauza) po lewej stronie ekranu.
+147| STEROWANIE
+148| Klawiatura, mysz i pad
+149| Kliknij klawisz, aby go zmienić.   Esc: anuluj   •   Backspace: wyczyść.
+150| Układ klawiatury
+151| Ustawia klawisze ruchu i orbity. Pozostałe klawisze się nie zmieniają.
+152| Ruch
+153| Walka
+154| Nowy poziom
+155| Bronie
+156| System
+157| Martwa strefa gałki
+158| Ignoruje drobne ruchy gałki. Zwiększ, jeśli postać porusza się sama.
+159| JĘZYK / LANGUAGE
+160| Język wszystkich tekstów w grze
+161| Język gry
+162| Wszystkie teksty zmieniają się od razu, w menu i podczas rozgrywki.
+
+## Paramètres : fenêtres et messages
+163| ROZGRYWKA WSTRZYMANA
+164| Wróć
+165| Powrót do poprzednich ustawień ekranu za {0} s
+166| Ustawienia ekranu zachowane.
+167| Przywrócono poprzednie ustawienia ekranu.
+168| Naciśnij klawisz albo przycisk myszy lub pada
+169| Esc: anuluj     Backspace: wyczyść
+170| Niemożliwe: akcja „{0}” musi mieć co najmniej jeden klawisz.
+171| „{0}” to jedyny klawisz akcji „{1}”: najpierw go zwolnij.
+172| Klawisz „{0}” był przypisany do akcji „{1}”: akcje zamieniają się klawiszami („{2}”).
+173| Klawisz „{0}” był przypisany do akcji „{1}”: przypisanie usunięto.
+174| „{0}”: {1}
+175| ZRESETOWAĆ „{0}”?
+176| Ustawienia na tej stronie wrócą do wartości domyślnych.
+177| Resetuj
+178| Zresetowano stronę „{0}”.
+179| ZRESETOWAĆ WSZYSTKO?
+180| Wszystkie ustawienia i klawisze wrócą do wartości domyślnych.
+181| Resetuj wszystko
+182| Wszystkie ustawienia zostały zresetowane.
+183| WYJŚĆ Z GRY?
+184| Gra zostanie zamknięta. Twoje ustawienia są zapisane.
+185| Wyjdź
+186| Zastosowano układ „{0}”.
+187| TAK
+188| NIE
+189| AZERTY (ZQSD)
+190| QWERTY (WASD)
+191| Tylko strzałki
+
+## HUD, pause, écrans de fin
+192| Niezaliczone
+193| {0}: {1}
+194| Nagroda: {0}
+195| ŁATWE
+196| ŚREDNIE
+197| TRUDNE
+198| Wyzwanie zaliczone! {0}
+199| Nowy rekord przetrwania: {0}!
+200| Niewiele zabrakło do rekordu przetrwania...
+201| Nowy rekord zabójstw: {0}!
+202| Tak blisko rekordu zabójstw...
+203| Nowy rekord poziomu: {0}!
+204| O włos od najlepszego poziomu...
+205| Nowy rekord złota w jednej rozgrywce: {0}!
+206| Rekord złota był tuż-tuż...
+207| Nowa postać odblokowana: {0}!
+208| Ta gałąź dostała od ciebie wszystko. Dosłownie.
+209| Nie ma tu już nic do odblokowania — zmień postać, aby iść dalej.
+210| Ta gałąź nie ma już przed tobą tajemnic.
+211| Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego.
+212| złota
+213| odłamków
+214| Jeszcze {0} {1}, aby odblokować: {2}
+215| Możesz już odblokować: {0}!
+216| Podejście nr {0}
+217| Przetrwanie {0:00}:{1:00}    ·    Tytani {2}/3
+218| Przetrwanie {0:00}:{1:00}    ·    Zabójstwa {2}    ·    Poziom {3}    ·    {4}
+219| Pokonani bossowie: {0} z {1}. Maraton nie wybacza — następnym razem pójdzie lepiej.
+220| Żaden tytan nie poległ
+221| Pokonany tytan: 1 z 3
+222| Pokonani tytani: {0} z 3
+223| {0}. Cała trójka naraz nie wybacza — następnym razem pójdzie lepiej.
+224| {t} przetrwania, pokonani bossowie: {b}. Stać cię na więcej.
+225| Udało ci się wytrwać {t} wobec coraz groźniejszych bossów.
+226| Bossowie pokonani przed upadkiem: {b}. Kolejny rekord jest w zasięgu ręki.
+227| Pokonani bossowie: {0} w {1}. Maraton należy do ciebie.
+228| Wszyscy trzej tytani powaleni w {0}. Nic cię nie zatrzyma.
+229| Skażone Źródło nie wytrzymało tempa.
+230| Już się nie podniesie.
+231| Tu kończy się skażenie.
+232| {0} na liczniku, {1} wrogów na ziemi. {2}
+233| Dziś bez rekordu, ale zwycięstwo jest jak najbardziej prawdziwe.
+234| Nic szczególnego do zgłoszenia, poza samym zwycięstwem.
+235| Tym razem bez wyczynów — po prostu kolejne zwycięstwo.
+236| Zwycięstwo bez ani jednej umiejętności. Szacun.
+237| Ani jednej zebranej umiejętności. Styl liczy się podwójnie.
+238| Ani jednej zdobyczy po drodze, a jednak tu jesteś.
+239| Zabrakło czasu, by zebrać choćby jedną umiejętność.
+240| Tym razem bez zebranych umiejętności.
+241| ZWYCIĘSTWO!
+242| KONIEC GRY
+243| PORAŻKA
+244| Czas: {0:00}:{1:00}\nZabici wrogowie: {2}\nZłoto: {3}
+245| Złoto: {0}
+246| Zabójstwa: {0}
+247| Poz. {0}
+
+## Défis
+248| Łowca
+249| Zabij 150 wrogów
+250| Przypływ mocy
+251| Osiągnij 10. poziom
+252| Pierwsza krew
+253| Pokonaj 1 bossa
+254| Zawsze w ruchu
+255| Użyj zrywu 20 razy
+256| Zimna krew
+257| Utrzymaj ponad 30% zdrowia do bossa 2
+258| Podwójne łowy
+259| Pokonaj 2 bossów w jednej rozgrywce
+260| Szybki awans
+261| 20. poziom przed 10. minutą
+262| Bez kryształu
+263| Bez supermocy do bossa 2
+264| Bez skazy
+265| Bez obrażeń do bossa 1
+266| Błyskawica
+267| Pokonaj bossa w mniej niż 30 s
+268| Fortuna
+269| Zbierz co najmniej 3000 złota
+270| Absolutna potęga
+271| 30. poziom w jednej rozgrywce
+272| Złoto x{0}
+273| Poz. {0}/{1}
+274| W toku
+275| {0}/3000 złota
+276| W tym trybie nie ma wyzwania.
+277| Wyzwanie w tej godzinie już zaliczone!
+278| Nowe wyzwanie za {0} min.
+279| Nowe wyzwanie w następnej rozgrywce!
+280| Zaliczone
+281| Status
+
+## Arbre de compétences
+282| Skupienie
+283| Każda sekunda bez otrzymania obrażeń zwiększa twoje obrażenia (+8% / s). Premia zeruje się przy każdym otrzymanym ciosie.
+284| +8% / s, maks. +15%
+285| +8% / s, maks. +30%
+286| +8% / s, maks. +50%
+287| Szybkostrzelność
+288| Zwiększa szybkostrzelność wszystkich twoich broni.
+289| Fragmentacja
+290| Pociski mają 15% szans na wybuch przy trafieniu.
+291| Obrażenia kryształu
+292| Zwiększa obrażenia supermocy i Novy.
+293| Potęga
+294| Po użyciu supermocy twoje obrażenia są podwojone przez 5 sekund.
+295| Witalność
+296| Zwiększa twoje maksymalne punkty życia.
+297| Odnowa
+298| Każdy pocisk pochłonięty zrywem przywraca PŻ.
+299| +20 PŻ za pochłonięcie
+300| +50 PŻ za pochłonięcie
+301| +80 PŻ za pochłonięcie
+302| Drugi oddech
+303| Raz na rozgrywkę przeżywasz śmiertelny cios z 1 PŻ.
+304| Pancerz
+305| Zmniejsza obrażenia otrzymywane od wszystkich wrogów.
+306| Tarcza many
+307| Automatycznie pochłania 1 wrogi pocisk co 8 sekund.
+308| Impuls Novy
+309| Jeśli Nova wywołana pochłonięciem zabije choć jednego wroga, czas odnowienia zrywu natychmiast się zeruje.
+310| Ulepszony zryw
+311| Skraca czas odnowienia zrywu.
+312| Mistrzostwo kryształu
+313| Zmniejsza liczbę ładunków potrzebnych do supermocy.
+314| Szeroka Nova
+315| Zwiększa promień Kryształowej Novy.
+316| Widmowy zryw
+317| Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 2 sekundy przyciąga pobliskich wrogów.
+318| UNIKALNY TALENT
+319| POZIOM {0} / {1}
+320| odblokowanie
+321| poziom 1
+322| POZ. {0}
+323| ZDOBYTY
+324| MAKS. POZIOM
+325| Ten talent jest aktywny.
+326| Ta umiejętność jest na maksymalnym poziomie.
+327| NIEDOSTĘPNE
+328| Wybierz postać {0} w zakładce Postacie, aby kupić.
+329| ZABLOKOWANA
+330| Najpierw odblokuj wymagania powyżej.
+331| ZA MAŁO ZŁOTA
+332| Brakuje ci {0} złota.
+333| KUP
+334| zostanie {0}
+335| Do kupienia: {0}  ·  szukaj złotej poświaty
+336| Do kupienia: {0}  ·  szukaj złotej poświaty
+337| Kliknij medalion, aby zobaczyć jego poziomy i wymagania
+338| AKTYWNA POSTAĆ
+339| UMIEJĘTNOŚCI
+
+## Méta-progression
+340| Nowy rekord w trybie Nieskończonym: {0}!
+341| Nowy rekord pokonanych bossów w trybie Nieskończonym: {0}!
+342| Nowy rekord Maratonu bossów — pokonani bossowie: {0}!
+343| Nowy rekord Starcia tytanów: {0}!
+344| Nowy rekord — pokonani tytani: {0}!
+345| Nowy rekord — pokonany tytan: {0}!
+346| Reputacja: Obrażenia
+347| Reputacja: Szybkość
+348| Reputacja: Regeneracja
+
+## Améliorations
+349| Przeklęte bagno
+350| FUZJA — Błoto + Łańcuch błyskawic: twoje strefy zmieniają się w naelektryzowane bagno, które poraża wszystko, co w nim zostaje.
+351| Wir many
+352| FUZJA — Aura + Satelity: wokół ciebie krąży teraz wir odłamków many, znacznie szerszy i znacznie potężniejszy.
+353| Ostrza rykoszetu
+354| FUZJA — Noże + Sprężysta kula: twoja salwa przebija teraz wrogów I odbija się od jednego do drugiego.
+355| Spalona ziemia
+356| FUZJA — Kula ognia + Błoto: wokół ciebie pojawiają się w kręgu strefy rozżarzonego popiołu, znacznie większe i dużo groźniejsze.
+357| Gromowe kule
+358| FUZJA — Satelity + Łańcuch błyskawic: twoje krążące odłamki przy każdym trafieniu wyzwalają łańcuch błyskawic.
+359| Bliźniacze kule
+360| FUZJA — Podwójny strzał + Sprężysta kula: twój podstawowy strzał dzieli się na dwie kule, które odbijają się bez końca.
+361| Aura
+362| Strefa aury
+363| Sprężysta kula
+364| Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga.
+365| Obrażenia +
+366| +20% obrażeń
+367| Podwójny strzał
+368| Wystrzeliwuje serię 2 pocisków
+369| Kula ognia
+370| Ciska kulą ognia
+371| Szybkostrzelność+
+372| +20% szybkostrzelności
+373| Leczenie
+374| Przywraca 50% maksymalnych PŻ
+375| Noże
+376| Rzuca salwy noży
+377| Łańcuch błyskawic
+378| Wyładowanie elektryczne przeskakujące między pobliskimi wrogami
+379| Błoto
+380| Tworzy kałuże błota, które spowalniają i ranią stojących w nich wrogów.
+381| Satelity
+382| Odblokowuje pociski orbitalne
+383| Odblokowuje 2 krążące satelity, które ranią przy kontakcie.
+384| +1 dodatkowy satelita.
+385| Odblokowuje łańcuch błyskawic.
+386| +1 dodatkowy przeskok błyskawicy.
+387| Odblokowuje 3 spowalniające kałuże błota wokół ciebie.
+388| +1 dodatkowa kałuża błota.
+389| +{0}% do obrażeń wszystkich aktywnych broni.
+390| +{0}% do szybkostrzelności wszystkich aktywnych broni.
+391| Przywraca {0}% twoich maksymalnych PŻ.
+392| Odblokowuje drugi, jednoczesny strzał.
+393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera.
+394| +{0} do promienia wybuchu.
+395| +{0}% obrażeń.
+396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę.
+397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela.
+398| +{0}% promienia.
+399| +{0}% spowolnienia.
+400| Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry.
+401| Dodaje jeden nóż do salwy.
+402| Przebija o {0} wrogów więcej.
+403| Przebija o {0} wroga więcej.
+404| Odblokowuje sprężystą kulę, która przenika przez wrogów.
+405| +{0}% szybkości.
+406| +1 dodatkowa sprężysta kula.
+
+## Personnages
+407| DYSTANS
+408| OBSZAR
+409| PODPALENIE
+410| WRĘCZ
+411| AURA
+412| SPOWOLNIENIE
+413| PRZEBICIE
+414| SALWA
+415| Kula ognia
+416| Kula ognia, która wybucha przy trafieniu i rani wszystkich pobliskich wrogów.
+417| Promień / Obrażenia / Podpalenie
+418| WOJOWNIK
+419| Rosnąca siła ataku
+420| Aura many
+421| Stałe pole wokół ciebie, które rani wrogów przy kontakcie.
+422| Obrażenia / Promień / Spowolnienie
+423| STRAŻNIK
+424| Przetrwanie i wytrzymałość
+425| Salwa noży
+426| Rzuca salwę noży, które przebijają wrogów.
+427| Dodatkowy nóż / Obrażenia / Przebicie
+428| WIDMO
+429| Mobilność i zryw
+430| Dotrzyj do bossa 2 w jednej rozgrywce, aby odblokować Kaela.
+431| Ukończ rozgrywkę (pokonaj bossa 3), aby odblokować Lyrę.
+432| Odblokuj — {0} odłamków
+433| Wybrano
+434| Wybierz
+435| POZIOMY
+436| DRZEWKO UKOŃCZONE
+437| ZOBACZ DRZEWKO
+
+## HUD
+438| KLON
+439| ZRYW
+440| SUPERMOC
+441| TARCZA
+442| SKUPIENIE
+443| Zryw
+444| Klon
+445| Orbita
+
+## Réputation et skins
+446| {0} — POSTAĆ ZABLOKOWANA
+447| Odblokuj tę postać w zakładce Postacie,\naby zobaczyć jej skórki.
+448| PRESTIŻ  ·  ODŁAMKI
+449| KLASYCZNA  ·  ZŁOTO
+450| Oryginalny strój
+451| Strój, w którym {0} rusza do walki.
+452| POSTAĆ ZABLOKOWANA
+453| W UŻYCIU
+454| ZAŁÓŻ
+455| ZA MAŁO ODŁAMKÓW
+456| POTWIERDZIĆ ZAKUP?
+457| Postać zablokowana: {0}.
+458| Założono: {0} ({1}).
+459| Nowa skórka: {0}!
+460| Brakuje ci odłamków.
+461| Brakuje ci złota.
+462| WKRÓTCE
+463| POSIADANA
+464| MAKSYMALNY POZIOM
+465| OSIĄGNIĘTO MAKSYMALNY PRÓG
+466| NASTĘPNY POZIOM
+467| ULEPSZ
+468| SZYBKOŚĆ
+469| REGENERACJA
+470| OBRAŻENIA
+471| PŻ/s
+
+## Modes de jeu
+472| NIESKOŃCZONY
+473| MARATON BOSSÓW
+474| STARCIE TYTANÓW
+475| KLASYCZNY
+476| Wygraj rozgrywkę w trybie Klasycznym, aby odblokować ten tryb.
+477| Pokonaj co najmniej bossa 1 w trybie Klasycznym, aby odblokować ten tryb.
+478| Bossowie wracają raz za razem, coraz silniejsi. Wytrwaj jak najdłużej.
+479| boss 1
+480| bossowie 1 i 2
+481| wszyscy 3 bossowie
+482| Jeden boss na minutę: {0}, każdy 3 razy i za każdym razem silniejszy. Bossów: {1}, czas: {1} min.
+483| Wszystkie ulepszenia na maksa, żadnych wrogów... ale wszyscy 3 bossowie naraz. Przetrwaj i pokonaj ich wszystkich.
+484| Pokonaj wszystkich 3 bossów w 15 minut, aby wygrać rozgrywkę.
+485| wygrana
+486| wygranych
+487| Rekord: {0}  ·  bossowie: {1}
+488| Jeszcze nie grano w trybie Nieskończonym
+489| Rekord: {0}/{1} bossów  ·  {2} {3}
+490| Jeszcze nie grano w Maratonie bossów
+491| Najlepszy czas: {0}  ·  {1} {2}
+492| Rekord: {0}/3 tytanów  ·  brak wygranych
+493| Jeszcze nie grano
+494| Najlepszy czas: {0}
+495| Starcie tytanów
+496| Boss {0}/{1} w toku
+497| Boss {0}/{1} · następny za {2} s
+498| Maraton bossów
+499| Cykl {0} · boss w toku
+500| Cykl {0} · boss za {1:0}:{2:00}
+501| Nieskończony
+502| Trzej Tytani
+503| Boss {0}/{1}
+504| Bossowie: {0}
+505| Tytani {0}/3
+
+## Boss
+506| Smok Many
+507| Prastary Jeleń
+508| Prastary Jeleń
+509| Skażone Źródło
+
+## Messages de Game Over
+510| Następnym razem się uda.
+511| Kolejna porażka w drodze do zwycięstwa.
+512| Wracaj do walki. Tak się robi postępy.
+513| Wstawaj, to jeszcze nie koniec.
+514| Masz wszystko, czego trzeba, na następną rozgrywkę.
+515| Już wiesz, co poszło nie tak. Popraw to.
+516| Niewiele brakowało.
+517| Było blisko. Jeszcze raz!
+518| Tym razem nie dał ci żadnej szansy.
+519| Twardy przeciwnik. Trzeba będzie wrócić w lepszej formie.
+520| Boss wygrał tę bitwę. Ale nie wojnę.
+
+## Libellés fixes des scènes / prefabs
+521| Graj
+522| Start
+523| Postacie
+524| Umiejętności
+525| Reputacja
+526| Ustawienia
+527| TRYB GRY
+528| NAJLEPSZY CZAS
+529| ROZGRYWKI
+530| WYGRANE
+531| UNIKALNA BROŃ
+532| HISTORIA
+533| POZIOMY   A / B / C
+534| STAŁE PREMIE
+535| SKÓRKI
+536| SKÓRKA
+537| KLASYCZNE SKÓRKI
+538| SKÓRKI PRESTIŻOWE
+539| ORYGINALNY STRÓJ
+540| TWOJE ZŁOTO
+541| REPUTACJA
+542| DRZEWKO UMIEJĘTNOŚCI
+543| Wzmocnij swoich bohaterów na stałe i zmień ich wygląd.
+544| Kupowane za złoto
+545| Kupowane za odłamki
+546| Ulepszane za odłamki
+547| KOSZT
+548| ODBLOKOWANIE
+549| WYMAGANIA
+550| Wymagania
+551| Efekt
+552| Resetuj\n
+553| DEBUG · RESETUJ
+554| PAUZA
+555| Wznów
+556| Poddaj się
+557| Czy na pewno chcesz się poddać?
+558| Tak
+559| Nie
+560| Zagraj ponownie
+561| Wróć do menu
+562| Twój arsenał
+563| Twój ostatni arsenał
+564| Co zabierasz ze sobą
+565| Co dała ci ta rozgrywka
+566| NOWY POZIOM!
+567| FUZJA DOSTĘPNA!
+568| ZACHOWAĆ TE USTAWIENIA EKRANU?
+569| Zachowaj
+570| Anuluj
+571| Potwierdź
+572| Przywróć
+573| DOMYŚLNE
+574| Wyjdź z gry
+575| Resetuj tę stronę
+576| PRZYPISZ KLAWISZ DO AKCJI
+577| Naciśnij dowolny klawisz, aby rozpocząć
+
+## Ajouts (fin de table)
+578| FUZJA
+
+## Formes propres au polonais (3e forme du pluriel : 2-4, sauf 12-14)
++ victoires#few| wygrane

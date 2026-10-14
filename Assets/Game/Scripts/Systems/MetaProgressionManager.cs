@@ -99,9 +99,9 @@ public class MetaProgressionManager : MonoBehaviour
                 // Mode sans fin : records à part, les records du classique (15 min) ne sont pas touchés.
                 bool hadRecord = Data.bestEndlessTime > 0f;
                 if (hadRecord && runTime > Data.bestEndlessTime)
-                    LastRunRecordMessage = $"Nouveau record sans fin : {FormatClock(runTime)} !";
+                    LastRunRecordMessage = Loc.F("Nouveau record sans fin : {0} !", FormatClock(runTime));
                 else if (hadRecord && bossKills > Data.bestEndlessBossKills)
-                    LastRunRecordMessage = $"Nouveau record sans fin : {bossKills} boss vaincus !";
+                    LastRunRecordMessage = Loc.F("Nouveau record sans fin : {0} boss vaincus !", bossKills);
                 if (runTime > Data.bestEndlessTime) Data.bestEndlessTime = runTime;
                 if (kills > Data.bestEndlessKills) Data.bestEndlessKills = kills;
                 if (bossKills > Data.bestEndlessBossKills) Data.bestEndlessBossKills = bossKills;
@@ -111,7 +111,7 @@ public class MetaProgressionManager : MonoBehaviour
             case GameMode.BossRush:
             {
                 if (Data.rushBestBossKills > 0 && bossKills > Data.rushBestBossKills)
-                    LastRunRecordMessage = $"Nouveau record de ruée : {bossKills} boss vaincus !";
+                    LastRunRecordMessage = Loc.F("Nouveau record de ruée : {0} boss vaincus !", bossKills);
                 if (bossKills > Data.rushBestBossKills) Data.rushBestBossKills = bossKills;
                 Data.rushRuns++;
                 if (victory) Data.rushWins++;
@@ -122,11 +122,11 @@ public class MetaProgressionManager : MonoBehaviour
                 bool hadWin = Data.titansBestTime > 0f;
                 if (victory && (!hadWin || runTime < Data.titansBestTime))
                 {
-                    if (hadWin) LastRunRecordMessage = $"Nouveau record du Choc des titans : {FormatClock(runTime)} !";
+                    if (hadWin) LastRunRecordMessage = Loc.F("Nouveau record du Choc des titans : {0} !", FormatClock(runTime));
                     Data.titansBestTime = runTime;
                 }
                 else if (!victory && Data.titansBestBossKills > 0 && bossKills > Data.titansBestBossKills)
-                    LastRunRecordMessage = bossKills > 1 ? $"Nouveau record : {bossKills} titans abattus !" : $"Nouveau record : {bossKills} titan abattu !";
+                    LastRunRecordMessage = bossKills > 1 ? Loc.F("Nouveau record : {0} titans abattus !", bossKills) : Loc.F("Nouveau record : {0} titan abattu !", bossKills);
                 if (bossKills > Data.titansBestBossKills) Data.titansBestBossKills = bossKills;
                 Data.titansRuns++;
                 if (victory) Data.titansWins++;

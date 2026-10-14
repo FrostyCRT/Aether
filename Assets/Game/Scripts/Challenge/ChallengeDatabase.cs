@@ -13,6 +13,11 @@ public class ChallengeDefinition
     public string displayName;
     public string description;
     public ChallengeDifficulty difficulty;
+
+    // AJOUTÉ (2026-10-14) - textes à AFFICHER (langue courante, voir Loc). displayName/description restent la
+    // donnée française d'origine (clés de traduction).
+    public string Name => Loc.T(displayName);
+    public string Description => Loc.T(description);
 }
 
 public static class ChallengeDatabase

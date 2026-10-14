@@ -123,7 +123,9 @@ public class SettingsPage : MonoBehaviour
     private void OnEnable()
     {
         if (_cats == null) { _cats = SettingsSchema.Build(); BuildTabs(); }
+        else if (_builtLanguage != Loc.Current) RebuildForLanguage();
         GameSettings.Changed += OnAnySettingChanged;
+        Loc.Changed += RequestRebuild;
         InputBindings.Changed += OnBindingChanged;
 
         if (_inGame) InGameOpen = true;
@@ -136,6 +138,7 @@ public class SettingsPage : MonoBehaviour
     {
         GameSettings.Changed -= OnAnySettingChanged;
         InputBindings.Changed -= OnBindingChanged;
+        Loc.Changed -= RequestRebuild;
         // fenêtre d'affichage encore ouverte quand on quitte la page : on garde ce que le joueur voit (pas de retour surprise)
         _hasSnapshot = false;
         CancelCapture();
@@ -165,7 +168,8 @@ public class SettingsPage : MonoBehaviour
         {
             TextMeshProUGUI badge = Instantiate(_subtitle, _subtitle.transform.parent);
             badge.name = "InGameBadge";
-            badge.text = "PARTIE EN PAUSE";
+            badge.text = Loc.T("PARTIE EN PAUSE");
+            _inGameBadge = badge;
             badge.fontSize = 28;
             badge.color = SettingsStyle.Gold;
             badge.characterSpacing = 10f;
@@ -179,7 +183,8 @@ public class SettingsPage : MonoBehaviour
     {
         if (_quitButton == null) return;
         TextMeshProUGUI label = _quitButton.GetComponentInChildren<TextMeshProUGUI>(true);
-        if (label != null) { label.text = "Retour"; label.color = SettingsStyle.Body; }
+        if (label != null) { label.text = Loc.T("Retour"); label.color = SettingsStyle.Body; }
+        _backLabel = label;
         Transform border = _quitButton.transform.Find("Border");
         if (border != null) border.GetComponent<Image>().color = SettingsStyle.AccentSoft;
         Image fill = _quitButton.targetGraphic as Image;
@@ -187,6 +192,27 @@ public class SettingsPage : MonoBehaviour
     }
 
     private void OnAnySettingChanged(string key) => RefreshRows();
+
+    // AJOUTÉ (2026-10-14) - changement de langue en direct : toute la page (onglets, titres, lignes) est reconstruite
+    // dans la nouvelle langue, sur la même catégorie.
+    private TextMeshProUGUI _inGameBadge, _backLabel;
+    private GameLanguage _builtLanguage;
+    private bool _rebuildPending;
+
+    // Reportée à la fin de l'image : le changement vient souvent d'un clic sur une ligne de CETTE page (qu'on ne
+    // détruit pas pendant son propre rappel).
+    private void RequestRebuild() => _rebuildPending = true;
+
+    private void RebuildForLanguage()
+    {
+        foreach (Button b in _tabs) if (b != null) Destroy(b.gameObject);
+        _tabs.Clear();
+        _cats = SettingsSchema.Build();
+        BuildTabs();
+        if (_inGameBadge != null) _inGameBadge.text = Loc.T("PARTIE EN PAUSE");
+        if (_backLabel != null) _backLabel.text = Loc.T("Retour");
+        if (isActiveAndEnabled) ShowCategory(Mathf.Clamp(_index, 0, _cats.Count - 1), 0, true);
+    }
     private void OnBindingChanged(GameAction a) => RefreshRows();
 
     private void RefreshRows()
@@ -197,6 +223,7 @@ public class SettingsPage : MonoBehaviour
     // ---- carrousel -----------------------------------------------------------------------------------------
     private void BuildTabs()
     {
+        _builtLanguage = Loc.Current;
         if (_tabTemplate == null || _tabsRoot == null) return;
         _tabTemplate.gameObject.SetActive(false);
         for (int i = 0; i < _cats.Count; i++)
@@ -333,6 +360,7 @@ public class SettingsPage : MonoBehaviour
     // ---- boucle --------------------------------------------------------------------------------------------
     private void LateUpdate()
     {
+        if (_rebuildPending) { _rebuildPending = false; RebuildForLanguage(); }
         UpdateScrollbarVisibility();
     }
 
@@ -362,7 +390,7 @@ public class SettingsPage : MonoBehaviour
         if (_revertOpen)
         {
             _revertTimer -= Time.unscaledDeltaTime;
-            _revertText.text = "Retour automatique à l'ancien affichage dans " + Mathf.CeilToInt(Mathf.Max(0f, _revertTimer)) + " s";
+            _revertText.text = Loc.F("Retour automatique à l'ancien affichage dans {0} s", Mathf.CeilToInt(Mathf.Max(0f, _revertTimer)));
             if (_revertTimer <= 0f) UndoDisplay();
             return;
         }
@@ -412,7 +440,7 @@ public class SettingsPage : MonoBehaviour
         _hasSnapshot = false;
         _revertOpen = false;
         _revertRoot.SetActive(false);
-        Toast("Affichage conservé.");
+        Toast(Loc.T("Affichage conservé."));
     }
 
     private void UndoDisplay()
@@ -424,7 +452,7 @@ public class SettingsPage : MonoBehaviour
             GameSettings.SetInt(GameSettings.DisplayMode, _snapMode);
             GameSettings.SetString(GameSettings.Resolution, _snapResolution);
             _hasSnapshot = false;
-            Toast("Ancien affichage rétabli.");
+            Toast(Loc.T("Ancien affichage rétabli."));
         }
         RefreshRows();
     }
@@ -439,7 +467,7 @@ public class SettingsPage : MonoBehaviour
         _capFrame = Time.frameCount;
 
         _captureTitle.text = GameInput.ActionLabel(action).ToUpperInvariant();
-        _captureHint.text = "Appuie sur une touche, un bouton de souris ou de manette\n<color=#9C93AE>Échap : annuler     Retour arrière : effacer</color>";
+        _captureHint.text = Loc.T("Appuie sur une touche, un bouton de souris ou de manette") + "\n<color=#9C93AE>" + Loc.T("Échap : annuler     Retour arrière : effacer") + "</color>";
         _captureRoot.SetActive(true);
         if (row != null) row.SetCaptureVisual(slot, true);
     }
@@ -471,22 +499,22 @@ public class SettingsPage : MonoBehaviour
 
         if (c == GameInput.Capture.Clear && !r.applied)
         {
-            Toast("Impossible : « " + GameInput.ActionLabel(action) + " » doit garder au moins une touche.");
+            Toast(Loc.F("Impossible : « {0} » doit garder au moins une touche.", GameInput.ActionLabel(action)));
         }
         else if (r.blocked)
         {
-            Toast("« " + GameInput.KeyLabel(key) + " » est la seule touche de « " + GameInput.ActionLabel(r.displaced) + " » : libère-la d'abord.");
+            Toast(Loc.F("« {0} » est la seule touche de « {1} » : libère-la d'abord.", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
         }
         else if (r.hasDisplaced)
         {
             if (previous != KeyCode.None)
-                Toast("« " + GameInput.KeyLabel(key) + " » était utilisée par « " + GameInput.ActionLabel(r.displaced) + " » : elles échangent leurs touches (« " + GameInput.KeyLabel(previous) + " »).");
+                Toast(Loc.F("« {0} » était utilisée par « {1} » : elles échangent leurs touches (« {2} »).", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced), GameInput.KeyLabel(previous)));
             else
-                Toast("« " + GameInput.KeyLabel(key) + " » était utilisée par « " + GameInput.ActionLabel(r.displaced) + " » : elle lui est retirée.");
+                Toast(Loc.F("« {0} » était utilisée par « {1} » : elle lui est retirée.", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
         }
         else if (r.applied && c == GameInput.Capture.Key)
         {
-            Toast("« " + GameInput.ActionLabel(action) + " » : " + GameInput.KeyLabel(key));
+            Toast(Loc.F("« {0} » : {1}", GameInput.ActionLabel(action), GameInput.KeyLabel(key)));
         }
         RefreshRows();
     }
@@ -495,28 +523,28 @@ public class SettingsPage : MonoBehaviour
     private void AskResetPage()
     {
         CategoryDef cat = _cats[_index];
-        Confirm("RÉINITIALISER « " + cat.title + " » ?", "Les réglages de cette page reprennent leur valeur d'origine.", "Réinitialiser", () =>
+        Confirm(Loc.F("RÉINITIALISER « {0} » ?", cat.title), Loc.T("Les réglages de cette page reprennent leur valeur d'origine."), Loc.T("Réinitialiser"), () =>
         {
             SettingsSchema.ResetCategory(cat);
             RefreshRows();
-            Toast("Page « " + cat.title + " » réinitialisée.");
+            Toast(Loc.F("Page « {0} » réinitialisée.", cat.title));
         });
     }
 
     private void AskResetAll()
     {
-        Confirm("TOUT RÉINITIALISER ?", "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "Tout réinitialiser", () =>
+        Confirm(Loc.T("TOUT RÉINITIALISER ?"), Loc.T("Tous les réglages et toutes les touches reprennent leur valeur d'origine."), Loc.T("Tout réinitialiser"), () =>
         {
             GameSettings.ResetAll();
             ShowCategory(_index, 0, true);
-            Toast("Tous les paramètres ont été réinitialisés.");
+            Toast(Loc.T("Tous les paramètres ont été réinitialisés."));
         });
     }
 
     private void AskQuit()
     {
         if (_inGame) { gameObject.SetActive(false); return; }
-        Confirm("QUITTER LE JEU ?", "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "Quitter", () =>
+        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("La partie en cours de préparation sera fermée. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
         {
             GameSettings.Flush();
             InputBindings.Flush();

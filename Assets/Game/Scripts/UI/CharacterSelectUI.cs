@@ -371,13 +371,13 @@ public class CharacterSelectUI : MonoBehaviour
                 characterIndex    = _currentIndex,
                 accent            = data.infoAccent,
                 displayName       = data.displayName,
-                tags              = data.tags,
-                weaponName        = data.weaponName,
-                weaponDescription = data.weaponDescription,
-                weaponUpgrades    = data.weaponUpgrades,
+                tags              = data.tags != null ? System.Array.ConvertAll(data.tags, Loc.T) : null,
+                weaponName        = Loc.T(data.weaponName),
+                weaponDescription = Loc.T(data.weaponDescription),
+                weaponUpgrades    = Loc.T(data.weaponUpgrades),
                 branch            = data.branch,
-                branchName        = data.branchName,
-                branchFocus       = data.branchFocus
+                branchName        = Loc.T(data.branchName),
+                branchFocus       = Loc.T(data.branchFocus)
             });
         }
 
@@ -550,8 +550,8 @@ public class CharacterSelectUI : MonoBehaviour
     {
         switch (index)
         {
-            case 1: return "Atteins le Boss 2 dans une partie pour débloquer Kael.";
-            case 2: return "Termine une partie (bats le Boss 3) pour débloquer Lyra.";
+            case 1: return Loc.T("Atteins le Boss 2 dans une partie pour débloquer Kael.");
+            case 2: return Loc.T("Termine une partie (bats le Boss 3) pour débloquer Lyra.");
             default: return "";
         }
     }
@@ -619,7 +619,7 @@ public class CharacterSelectUI : MonoBehaviour
 
                 if (_unlockWithEclatsButtonText != null)
                 {
-                    _unlockWithEclatsButtonText.text = $"Débloquer — {cost} Éclats";
+                    _unlockWithEclatsButtonText.text = Loc.F("Débloquer — {0} Éclats", cost);
                     _unlockWithEclatsButtonText.color = canAfford
                         ? Color.white
                         : new Color(0.8f, 0.3f, 0.3f);
@@ -641,7 +641,7 @@ public class CharacterSelectUI : MonoBehaviour
         // Un bouton grisé qui dit toujours "Sélectionner" se lit comme désactivé sans raison :
         // le perso déjà choisi l'annonce explicitement.
         if (_selectButtonText != null)
-            _selectButtonText.text = isSelected ? "Sélectionné" : "Sélectionner";
+            _selectButtonText.text = isSelected ? Loc.T("Sélectionné") : Loc.T("Sélectionner");
 
         if (_selectButtonText != null)
             _selectButtonText.color = isSelected

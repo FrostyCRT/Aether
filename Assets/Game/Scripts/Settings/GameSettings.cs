@@ -48,6 +48,8 @@ public static class GameSettings
     public const string ShowKeyLegend = "settings_show_keylegend";   // légende des touches à gauche du HUD
     // Manette
     public const string PadDeadZone = "settings_pad_deadzone";
+    // Langue (AJOUTÉ 2026-10-14) : 0 français, 1 anglais - défaut = langue de Windows (voir Loc)
+    public const string Language = "settings_language";
 
     // Limites d'images par seconde proposées (0 = illimité).
     public static readonly int[] FpsCaps = { 0, 30, 60, 90, 120, 144, 165, 240 };
@@ -94,6 +96,8 @@ public static class GameSettings
         { ShowKeyLegend,    B(true) },
 
         { PadDeadZone,      F(0.20f, 0.05f, 0.50f) },
+
+        { Language,         I((int)Loc.SystemDefault, 0, Loc.LanguageCount - 1) },
     };
 
     private static Def F(float d, float min, float max) => new Def { kind = Kind.Float, number = d, min = min, max = max };
@@ -231,7 +235,9 @@ public static class GameSettings
 
     public static void ResetAll()
     {
-        foreach (string k in new List<string>(Defs.Keys)) Reset(k);
+        // La langue n'est pas remise à zéro par "Tout réinitialiser" : le joueur ne doit pas voir le jeu changer de
+        // langue sous ses yeux (elle se remet à zéro depuis sa propre page).
+        foreach (string k in new List<string>(Defs.Keys)) if (k != Language) Reset(k);
         InputBindings.ResetAll();
     }
 

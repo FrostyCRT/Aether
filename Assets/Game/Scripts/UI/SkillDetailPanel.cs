@@ -147,11 +147,11 @@ public class SkillDetailPanel : MonoBehaviour
                     if (s != null && s.nodeId == nodeId) k = s.scale;
             _icon.rectTransform.localScale = new Vector3(k, k, 1f);
         }
-        _name.text = data.displayName;
+        _name.text = Loc.T(data.displayName);
         SetChip(_chipOwner, owner, accent);
-        SetChip(_chipKind, unique ? "TALENT UNIQUE" : $"NIVEAU {level} / {max}", maxed ? SkillTreeStyle.Gold : accent);
+        SetChip(_chipKind, unique ? Loc.T("TALENT UNIQUE") : Loc.F("NIVEAU {0} / {1}", level, max), maxed ? SkillTreeStyle.Gold : accent);
 
-        _description.text = data.description;
+        _description.text = Loc.T(data.description);
 
         // --- paliers ---
         _levelsGroup.SetActive(!unique);
@@ -165,7 +165,7 @@ public class SkillDetailPanel : MonoBehaviour
                 bool owned = lvl <= level;
                 bool next = lvl == level + 1;
                 int price = next && cost > 0 ? cost : costs[i];
-                FillLevelRow(_levels[i], lvl, effects[i], price, owned, next, accent);
+                FillLevelRow(_levels[i], lvl, Loc.T(effects[i]), price, owned, next, accent);
             }
         }
 
@@ -182,8 +182,8 @@ public class SkillDetailPanel : MonoBehaviour
 
             SkillTreeData.NodeData p = SkillTreeData.Get(pre[i]);
             bool met = SkillTreeStyle.CurrentLevel(pre[i]) >= 1;
-            string what = p == null ? pre[i] : p.displayName;
-            string detail = p != null && p.isUnique ? "débloqué" : "niveau 1";
+            string what = p == null ? pre[i] : Loc.T(p.displayName);
+            string detail = p != null && p.isUnique ? Loc.T("débloqué") : Loc.T("niveau 1");
             row.text.text = $"{what}  <size=80%><color=#{SkillTreeStyle.Hex(SkillTreeStyle.Muted)}>{detail}</color></size>";
             row.text.color = met ? SkillTreeStyle.Body : SkillTreeStyle.Warn;
             row.pipRing.color = met ? accent : SkillTreeStyle.Warn;
@@ -210,7 +210,7 @@ public class SkillDetailPanel : MonoBehaviour
     {
         Color dim = new Color(SkillTreeStyle.Muted.r, SkillTreeStyle.Muted.g, SkillTreeStyle.Muted.b, 0.75f);
 
-        row.tag.text = $"NIV {level}";
+        row.tag.text = Loc.F("NIV {0}", level);
         row.effect.text = effect;
 
         if (owned)
@@ -221,7 +221,7 @@ public class SkillDetailPanel : MonoBehaviour
             row.pipFill.color = accent;
             row.tag.color = accent;
             row.effect.color = Color.white;
-            row.right.text = "ACQUIS";
+            row.right.text = Loc.T("ACQUIS");
             row.right.color = accent;
             row.coin.gameObject.SetActive(false);
         }
@@ -261,30 +261,30 @@ public class SkillDetailPanel : MonoBehaviour
 
         if (maxed)
         {
-            label = data.isUnique ? "ACQUIS" : "NIVEAU MAX";
-            status = data.isUnique ? "Ce talent est actif." : "Cette compétence est au maximum.";
+            label = data.isUnique ? Loc.T("ACQUIS") : Loc.T("NIVEAU MAX");
+            status = data.isUnique ? Loc.T("Ce talent est actif.") : Loc.T("Cette compétence est au maximum.");
             statusColor = SkillTreeStyle.Gold;
         }
         else if (!activeBranch)
         {
-            label = "INDISPONIBLE";
-            status = $"Sélectionne {owner} dans l'onglet Personnages pour acheter.";
+            label = Loc.T("INDISPONIBLE");
+            status = Loc.F("Sélectionne {0} dans l'onglet Personnages pour acheter.", owner);
         }
         else if (!unlockable)
         {
-            label = "VERROUILLÉ";
-            status = "Débloque d'abord les prérequis ci-dessus.";
+            label = Loc.T("VERROUILLÉ");
+            status = Loc.T("Débloque d'abord les prérequis ci-dessus.");
             statusColor = SkillTreeStyle.Warn;
         }
         else if (gold < cost)
         {
-            label = "OR INSUFFISANT";
-            status = $"Il te manque {cost - gold} or.";
+            label = Loc.T("OR INSUFFISANT");
+            status = Loc.F("Il te manque {0} or.", cost - gold);
             statusColor = SkillTreeStyle.Warn;
         }
         else
         {
-            label = "ACHETER";
+            label = Loc.T("ACHETER");
             canBuy = true;
         }
 
@@ -302,7 +302,7 @@ public class SkillDetailPanel : MonoBehaviour
             _costValue.color = gold >= cost ? SkillTreeStyle.Gold : SkillTreeStyle.Warn;
         }
         _goldValue.text = gold.ToString();
-        if (hasCost && canBuy) _afterValue.text = $"reste {gold - cost}";
+        if (hasCost && canBuy) _afterValue.text = Loc.F("reste {0}", gold - cost);
 
         _statusText.gameObject.SetActive(!string.IsNullOrEmpty(status));
         _statusText.text = status;

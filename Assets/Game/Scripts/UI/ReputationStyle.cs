@@ -30,9 +30,9 @@ public static class ReputationStyle
     {
         switch (nodeId)
         {
-            case "reputationSpeed": return "VITESSE";
-            case "reputationRegen": return "RÉGÉNÉRATION";
-            default: return "DÉGÂTS";
+            case "reputationSpeed": return Loc.T("VITESSE");
+            case "reputationRegen": return Loc.T("RÉGÉNÉRATION");
+            default: return Loc.T("DÉGÂTS");
         }
     }
 
@@ -52,7 +52,7 @@ public static class ReputationStyle
     // "+42 %" (Dégâts, Vitesse : fraction) ou "+70 PV/s" (Régénération).
     public static string FormatBonus(string nodeId, float value)
     {
-        if (nodeId == "reputationRegen") return "+" + value.ToString("0.#") + " PV/s";
+        if (nodeId == "reputationRegen") return "+" + value.ToString("0.#") + " " + Loc.T("PV/s");
         return "+" + Mathf.RoundToInt(value * 100f) + "%";
     }
 

@@ -1,0 +1,37 @@
+{
+  "Assets/Game/Scripts/UI/ReputationUI.cs": [
+    ["        if (_preview.lockText != null) _preview.lockText.text = SkinCatalog.CharacterNames[_char] + \" EST VERROUILLÉ\\n<size=70%><color=#\" + ReputationStyle.Hex(ReputationStyle.Muted) + \">Débloque-le dans l'onglet Personnages\\npour accéder à ses skins.</color></size>\";", "        if (_preview.lockText != null) _preview.lockText.text = Loc.F(\"{0} EST VERROUILLÉ\", SkinCatalog.CharacterNames[_char]) + \"\\n<size=70%><color=#\" + ReputationStyle.Hex(ReputationStyle.Muted) + \">\" + Loc.T(\"Débloque-le dans l'onglet Personnages\\npour accéder à ses skins.\") + \"</color></size>\";"],
+    ["            _preview.tierText.text = skin.tier == SkinTier.Prestige ? \"PRESTIGE  ·  ÉCLATS\" : \"CLASSIQUE  ·  OR\";", "            _preview.tierText.text = skin.tier == SkinTier.Prestige ? Loc.T(\"PRESTIGE  ·  ÉCLATS\") : Loc.T(\"CLASSIQUE  ·  OR\");"],
+    ["        if (_preview.nameText != null) _preview.nameText.text = skin.displayName.ToUpperInvariant();\n        if (_preview.descText != null) _preview.descText.text = string.IsNullOrEmpty(skin.description) ? \"\" : skin.description;", "        if (_preview.nameText != null) _preview.nameText.text = Loc.T(skin.displayName).ToUpperInvariant();\n        if (_preview.descText != null) _preview.descText.text = SkinCatalog.DisplayDescription(skin);"],
+    ["        if (locked) { label = \"PERSONNAGE VERROUILLÉ\";", "        if (locked) { label = Loc.T(\"PERSONNAGE VERROUILLÉ\");"],
+    ["        else if (owned && equipped) { label = \"ÉQUIPÉ\";", "        else if (owned && equipped) { label = Loc.T(\"ÉQUIPÉ\");"],
+    ["        else if (owned) { label = \"ÉQUIPER\";", "        else if (owned) { label = Loc.T(\"ÉQUIPER\");"],
+    ["            label = skin.tier == SkinTier.Prestige ? \"ÉCLATS INSUFFISANTS\" : \"OR INSUFFISANT\";", "            label = skin.tier == SkinTier.Prestige ? Loc.T(\"ÉCLATS INSUFFISANTS\") : Loc.T(\"OR INSUFFISANT\");"],
+    ["            label = confirm ? \"CONFIRMER L'ACHAT ?\" : \"ACHETER\";", "            label = confirm ? Loc.T(\"CONFIRMER L'ACHAT ?\") : Loc.T(\"ACHETER\");"],
+    ["        if (!meta.IsCharacterUnlocked(skin.characterIndex))\n        {\n            Toast(SkinCatalog.CharacterNames[skin.characterIndex] + \" est verrouillé.\");", "        if (!meta.IsCharacterUnlocked(skin.characterIndex))\n        {\n            Toast(Loc.F(\"{0} est verrouillé.\", SkinCatalog.CharacterNames[skin.characterIndex]));"],
+    ["                Toast(skin.displayName + \" équipé pour \" + SkinCatalog.CharacterNames[skin.characterIndex] + \".\");", "                Toast(Loc.F(\"{0} équipé pour {1}.\", Loc.T(skin.displayName), SkinCatalog.CharacterNames[skin.characterIndex]));"],
+    ["                Toast(\"Nouveau skin : \" + skin.displayName + \" !\");", "                Toast(Loc.F(\"Nouveau skin : {0} !\", Loc.T(skin.displayName)));"],
+    ["                Toast(skin.tier == SkinTier.Prestige ? \"Il te manque des Éclats.\" : \"Il te manque de l'or.\");", "                Toast(skin.tier == SkinTier.Prestige ? Loc.T(\"Il te manque des Éclats.\") : Loc.T(\"Il te manque de l'or.\"));"],
+    ["            case MetaProgressionManager.SkinBuyResult.CharacterLocked:\n                Toast(SkinCatalog.CharacterNames[skin.characterIndex] + \" est verrouillé.\");", "            case MetaProgressionManager.SkinBuyResult.CharacterLocked:\n                Toast(Loc.F(\"{0} est verrouillé.\", SkinCatalog.CharacterNames[skin.characterIndex]));"]
+  ],
+  "Assets/Game/Scripts/Systems/SkinCatalog.cs": [
+    ["    public SkinEntry Get(string id)\n    {", "    // AJOUTÉ (2026-10-14) - description à AFFICHER (langue courante). Les tenues d'origine ont une description générée\n    // à partir du nom du personnage : elle est reconstruite dans la bonne langue plutôt que traduite telle quelle.\n    public static string DisplayDescription(SkinEntry skin)\n    {\n        if (skin == null || string.IsNullOrEmpty(skin.description)) return \"\";\n        if (skin.isDefault && skin.characterIndex >= 0 && skin.characterIndex < CharacterNames.Length)\n        {\n            string n = CharacterNames[skin.characterIndex];\n            return Loc.F(\"La tenue avec laquelle {0} part au combat.\", n[0] + n.Substring(1).ToLowerInvariant());\n        }\n        return Loc.T(skin.description);\n    }\n\n    public SkinEntry Get(string id)\n    {"]
+  ],
+  "Assets/Game/Scripts/UI/SkinCardUI.cs": [
+    ["_name.text = skin.displayName.ToUpperInvariant();", "_name.text = Loc.T(skin.displayName).ToUpperInvariant();"],
+    ["        if (_placeholderText != null) _placeholderText.text = \"BIENTÔT\";", "        if (_placeholderText != null) _placeholderText.text = Loc.T(\"BIENTÔT\");"],
+    ["            _chipText.text = \"VERROUILLÉ\";", "            _chipText.text = Loc.T(\"VERROUILLÉ\");"],
+    ["            _chipText.text = \"ÉQUIPÉ\";", "            _chipText.text = Loc.T(\"ÉQUIPÉ\");"],
+    ["            _chipText.text = \"POSSÉDÉ\";", "            _chipText.text = Loc.T(\"POSSÉDÉ\");"]
+  ],
+  "Assets/Game/Scripts/UI/ReputationStatCardUI.cs": [
+    ["            _level.text = _maxed ? \"NIVEAU MAXIMUM\" : \"NIVEAU \" + level + \" / \" + max;", "            _level.text = _maxed ? Loc.T(\"NIVEAU MAXIMUM\") : Loc.F(\"NIVEAU {0} / {1}\", level, max);"],
+    ["            if (_maxed) _next.text = \"<color=#\" + ReputationStyle.Hex(ReputationStyle.Gold) + \">PALIER MAXIMUM ATTEINT</color>\";", "            if (_maxed) _next.text = \"<color=#\" + ReputationStyle.Hex(ReputationStyle.Gold) + \">\" + Loc.T(\"PALIER MAXIMUM ATTEINT\") + \"</color>\";"],
+    ["                _next.text = \"PROCHAIN NIVEAU   <color=#\" + ReputationStyle.Hex(_accent) + \">\" + gain + \"</color>\";", "                _next.text = Loc.T(\"PROCHAIN NIVEAU\") + \"   <color=#\" + ReputationStyle.Hex(_accent) + \">\" + gain + \"</color>\";"],
+    ["                _buyLabel.text = _maxed ? \"MAX\" : (_affordable ? \"AMÉLIORER\" : \"ÉCLATS INSUFFISANTS\");", "                _buyLabel.text = _maxed ? \"MAX\" : (_affordable ? Loc.T(\"AMÉLIORER\") : Loc.T(\"ÉCLATS INSUFFISANTS\"));"]
+  ],
+  "Assets/Game/Scripts/UI/ReputationStyle.cs": [
+    ["            case \"reputationSpeed\": return \"VITESSE\";\n            case \"reputationRegen\": return \"RÉGÉNÉRATION\";\n            default: return \"DÉGÂTS\";", "            case \"reputationSpeed\": return Loc.T(\"VITESSE\");\n            case \"reputationRegen\": return Loc.T(\"RÉGÉNÉRATION\");\n            default: return Loc.T(\"DÉGÂTS\");"],
+    ["        if (nodeId == \"reputationRegen\") return \"+\" + value.ToString(\"0.#\") + \" PV/s\";", "        if (nodeId == \"reputationRegen\") return \"+\" + value.ToString(\"0.#\") + (Loc.IsEnglish ? \" HP/s\" : \" PV/s\");"]
+  ]
+}

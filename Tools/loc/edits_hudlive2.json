@@ -1,0 +1,6 @@
+{
+  "Assets/Game/Scripts/UI/GameUI.cs": [
+    ["            _bossNameText.text = Loc.T(bossName);", "            _bossNameFr = bossName;\n            _bossNameText.text = Loc.T(bossName);"],
+    ["        if (ChallengeManager.Instance != null && GameModes.IsClassic) ChallengeManager.Instance.RefreshDisplay();\n    }", "        if (ChallengeManager.Instance != null && GameModes.IsClassic) ChallengeManager.Instance.RefreshDisplay();\n        if (_bossNameText != null && _bossNameFr != null) _bossNameText.text = Loc.T(_bossNameFr);\n    }\n\n    private string _bossNameFr;"]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "Assets/Game/Scripts/UI/CharacterSelectUI.cs": [
+    ["                tags              = data.tags,\n                weaponName        = data.weaponName,\n                weaponDescription = data.weaponDescription,\n                weaponUpgrades    = data.weaponUpgrades,\n                branch            = data.branch,\n                branchName        = data.branchName,\n                branchFocus       = data.branchFocus", "                tags              = data.tags != null ? System.Array.ConvertAll(data.tags, Loc.T) : null,\n                weaponName        = Loc.T(data.weaponName),\n                weaponDescription = Loc.T(data.weaponDescription),\n                weaponUpgrades    = Loc.T(data.weaponUpgrades),\n                branch            = data.branch,\n                branchName        = Loc.T(data.branchName),\n                branchFocus       = Loc.T(data.branchFocus)"],
+    ["            case 1: return \"Atteins le Boss 2 dans une partie pour débloquer Kael.\";\n            case 2: return \"Termine une partie (bats le Boss 3) pour débloquer Lyra.\";", "            case 1: return Loc.T(\"Atteins le Boss 2 dans une partie pour débloquer Kael.\");\n            case 2: return Loc.T(\"Termine une partie (bats le Boss 3) pour débloquer Lyra.\");"],
+    ["                    _unlockWithEclatsButtonText.text = $\"Débloquer — {cost} Éclats\";", "                    _unlockWithEclatsButtonText.text = Loc.F(\"Débloquer — {0} Éclats\", cost);"],
+    ["isSelected ? \"Sélectionné\" : \"Sélectionner\";", "isSelected ? Loc.T(\"Sélectionné\") : Loc.T(\"Sélectionner\");"]
+  ],
+  "Assets/Game/Scripts/UI/CharacterInfoPanel.cs": [
+    ["            _weaponUpgrades.text = $\"<color=#{ColorUtility.ToHtmlStringRGB(Muted)}>PALIERS</color>   {info.weaponUpgrades}\";", "            _weaponUpgrades.text = $\"<color=#{ColorUtility.ToHtmlStringRGB(Muted)}>{Loc.T(\"PALIERS\")}</color>   {info.weaponUpgrades}\";"],
+    ["        _treeHint.text = complete ? \"ARBRE COMPLET\" : \"VOIR L'ARBRE\";", "        _treeHint.text = complete ? Loc.T(\"ARBRE COMPLET\") : Loc.T(\"VOIR L'ARBRE\");"]
+  ]
+}

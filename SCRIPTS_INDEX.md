@@ -112,13 +112,24 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 |---|---|
 | `GameInput.cs` | Classe statique : point de lecture UNIQUE des commandes du joueur (`Held`/`Down`/`Move`) à travers `InputBindings`, clavier + manette. |
 | `GameSettings.cs` | Classe statique : table de toutes les clés de réglages (audio, affichage, graphismes, jeu, interface) avec valeurs par défaut, événement `Changed`, écriture PlayerPrefs différée. |
-| `InputBindings.cs` | Classe statique : configuration des touches (2 emplacements par action), défauts AZERTY, préréglages, détection de conflits (échange automatique). |
+| `InputBindings.cs` | Classe statique : configuration des touches (2 emplacements par action), défauts AZERTY (QWERTY/ZQSD→WASD si Windows n'est pas en français), préréglages, détection de conflits (échange automatique). |
 | `SettingsAmbientFX.cs` | Ambiance procédurale du fond de la page Paramètres (lueurs de bougies/cristaux, poussière), respecte le réglage "Effets d'ambiance des menus". |
 | `SettingsApplier.cs` | Singleton persistant auto-créé au boot : applique EN DIRECT tous les réglages (`GameSettings`) dans toutes les scènes — audio, affichage, résolution, V-Sync, FPS, qualité, ombres, pause au perte de focus. |
 | `SettingsDropdown.cs` | Liste déroulante générique utilisée par les lignes "Choix" de la page Paramètres (défilement à la molette au-delà de 8 valeurs). |
 | `SettingsPage.cs` | Contrôleur de la page Paramètres : carrousel de catégories, construction des lignes depuis `SettingsSchema`, gère les fenêtres de confirmation (affichage, touche, reset). |
 | `SettingsRow.cs` | Une ligne de la page Paramètres (curseur/interrupteur/choix/touche/préréglages) : un seul composant, n'active que les éléments de son type. |
 | `SettingsSchema.cs` | Classe statique : définition des catégories et lignes de la page Paramètres (données pures, lues par `SettingsPage`). Contient aussi `SettingsStyle` (palette de couleurs de la page). |
+
+## Localization (`Assets/Game/Scripts/Localization`)
+
+| Script | Rôle |
+|---|---|
+| `Loc.cs` | Classe statique : langue courante (français, anglais, allemand, espagnol, portugais du Brésil, italien, polonais ; réglage `GameSettings.Language`, défaut = langue de Windows, anglais si elle n'est pas gérée). Le TEXTE FRANÇAIS EST LA CLÉ : `Loc.T("Reprendre")`, `Loc.F("Niveau {0}", n)`, `Loc.Plural`. Pluriels selon la règle de chaque langue (dont la 3ᵉ forme polonaise). Événement `Loc.Changed` pour le changement en direct. Clé absente → repli anglais puis français + avertissement console `[Loc] Traduction manquante (langue)` (une fois). |
+| `LocTableEN.cs` | La table français → anglais : RÉFÉRENCE de la liste des clés (toute nouvelle clé s'ajoute ici d'abord, en fin de table). |
+| `LocTableDE.cs` / `LocTableES.cs` / `LocTablePT.cs` / `LocTableIT.cs` / `LocTablePL.cs` | Tables allemande, espagnole, portugaise (Brésil), italienne, polonaise. GÉNÉRÉES par `Tools/loc/langs.js build xx` depuis `Tools/loc/tr_xx.txt` (une ligne « numéro\| traduction » par entrée de `skeleton.txt`) : corriger dans le .txt puis régénérer. |
+| `LocalizedText.cs` | Composant posé sur un texte FIXE : se retraduit au changement de langue sans écraser un texte réécrit par le code. Posé automatiquement au chargement de chaque scène sur tout texte dont le contenu est une clé de la table (`LocalizeTree`, les scènes ne sont pas modifiées) ; `LocalizedText.Attach(tmp)` pour les libellés fixes construits par code. |
+
+Outils de vérification (Node, dossier `Tools/loc/`) : `check_keys.js` (tout littéral passé à `Loc.T/F/Plural` existe dans la table), `check_data.js` (textes stockés en données : compétences, défis, personnages, skins...), `scene_texts.js` (textes TMP des scènes/prefabs absents de la table ; ceux qui restent sont des textes de remplissage réécrits par le code), `apply.js` (remplacements exacts en lot depuis un JSON), `langs.js` (`skeleton` : liste numérotée des clés ; `build xx` : génère la table d'une langue ; `check` : contrôle toutes les tables — clés manquantes, trous {0}, balises, retours à la ligne), `fix.py` (corrige des lignes d'un tr_xx.txt).
 
 ## UI (`Assets/Game/Scripts/UI`)
 

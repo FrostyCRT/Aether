@@ -1,0 +1,9 @@
+{
+  "Assets/Game/Scripts/UI/GameUI.cs": [
+    ["        InputBindings.Changed += OnBindingChanged;\n    }", "        InputBindings.Changed += OnBindingChanged;\n        Loc.Changed += OnLanguageChanged;\n    }"],
+    ["        InputBindings.Changed -= OnBindingChanged;\n    }", "        InputBindings.Changed -= OnBindingChanged;\n        Loc.Changed -= OnLanguageChanged;\n    }"],
+    ["    public void UpdateGold(int amount)\n    {\n        if (_goldText != null)", "    // AJOUTÉ (2026-10-14) - langue changée en pleine partie (Pause > Paramètres) : les compteurs du HUD ne se\n    // réécrivent qu'à chaque variation, on les réécrit donc tout de suite avec leurs dernières valeurs.\n    private int _hudGold, _hudKills, _hudLevel = 1;\n\n    private void OnLanguageChanged()\n    {\n        UpdateGold(_hudGold);\n        UpdateKillCount(_hudKills);\n        if (_levelText != null) _levelText.text = Loc.F(\"Niv. {0}\", _hudLevel);\n        if (ChallengeManager.Instance != null && GameModes.IsClassic) ChallengeManager.Instance.RefreshDisplay();\n    }\n\n    public void UpdateGold(int amount)\n    {\n        _hudGold = amount;\n        if (_goldText != null)"],
+    ["    public void UpdateKillCount(int kills)\n    {\n", "    public void UpdateKillCount(int kills)\n    {\n        _hudKills = kills;\n"],
+    ["        if (_levelText != null)\n            _levelText.text = Loc.F(\"Niv. {0}\", level);", "        _hudLevel = level;\n        if (_levelText != null)\n            _levelText.text = Loc.F(\"Niv. {0}\", level);"]
+  ]
+}

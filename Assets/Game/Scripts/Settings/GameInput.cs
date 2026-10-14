@@ -97,68 +97,68 @@ public static class GameInput
         return Capture.None;
     }
 
-    // ---- libellés (français) ---------------------------------------------------------------------------------
+    // ---- libellés (français, traduits par Loc) ---------------------------------------------------------------------------------
     public static string KeyLabel(KeyCode k)
     {
         switch (k)
         {
             case KeyCode.None: return "—";
-            case KeyCode.LeftShift: return "Maj gauche";
-            case KeyCode.RightShift: return "Maj droite";
-            case KeyCode.LeftControl: return "Ctrl gauche";
-            case KeyCode.RightControl: return "Ctrl droite";
-            case KeyCode.LeftAlt: return "Alt gauche";
-            case KeyCode.RightAlt: return "Alt droite";
-            case KeyCode.LeftCommand: return "Cmd gauche";
-            case KeyCode.RightCommand: return "Cmd droite";
-            case KeyCode.Space: return "Espace";
-            case KeyCode.Return: return "Entrée";
-            case KeyCode.KeypadEnter: return "Entrée (pavé)";
-            case KeyCode.Escape: return "Échap";
-            case KeyCode.Backspace: return "Retour arrière";
-            case KeyCode.Delete: return "Suppr";
-            case KeyCode.Insert: return "Inser";
-            case KeyCode.Tab: return "Tab";
-            case KeyCode.CapsLock: return "Verr. maj";
-            case KeyCode.Home: return "Début";
-            case KeyCode.End: return "Fin";
-            case KeyCode.PageUp: return "Page haut";
-            case KeyCode.PageDown: return "Page bas";
-            case KeyCode.UpArrow: return "Flèche haut";
-            case KeyCode.DownArrow: return "Flèche bas";
-            case KeyCode.LeftArrow: return "Flèche gauche";
-            case KeyCode.RightArrow: return "Flèche droite";
-            case KeyCode.Comma: return "Virgule";
-            case KeyCode.Period: return "Point";
-            case KeyCode.Semicolon: return "Point-virgule";
-            case KeyCode.Colon: return "Deux-points";
-            case KeyCode.Slash: return "Barre oblique";
-            case KeyCode.Backslash: return "Barre inverse";
-            case KeyCode.Minus: return "Moins";
-            case KeyCode.Equals: return "Égal";
-            case KeyCode.Quote: return "Apostrophe";
-            case KeyCode.DoubleQuote: return "Guillemet";
-            case KeyCode.BackQuote: return "Accent grave";
-            case KeyCode.LeftBracket: return "Crochet gauche";
-            case KeyCode.RightBracket: return "Crochet droit";
-            case KeyCode.KeypadPlus: return "Pavé +";
-            case KeyCode.KeypadMinus: return "Pavé −";
-            case KeyCode.KeypadMultiply: return "Pavé ×";
-            case KeyCode.KeypadDivide: return "Pavé ÷";
-            case KeyCode.KeypadPeriod: return "Pavé .";
-            case KeyCode.Mouse0: return "Clic gauche";
-            case KeyCode.Mouse1: return "Clic droit";
-            case KeyCode.Mouse2: return "Clic molette";
+            case KeyCode.LeftShift: return Loc.T("Maj gauche");
+            case KeyCode.RightShift: return Loc.T("Maj droite");
+            case KeyCode.LeftControl: return Loc.T("Ctrl gauche");
+            case KeyCode.RightControl: return Loc.T("Ctrl droite");
+            case KeyCode.LeftAlt: return Loc.T("Alt gauche");
+            case KeyCode.RightAlt: return Loc.T("Alt droite");
+            case KeyCode.LeftCommand: return Loc.T("Cmd gauche");
+            case KeyCode.RightCommand: return Loc.T("Cmd droite");
+            case KeyCode.Space: return Loc.T("Espace");
+            case KeyCode.Return: return Loc.T("Entrée");
+            case KeyCode.KeypadEnter: return Loc.T("Entrée (pavé)");
+            case KeyCode.Escape: return Loc.T("Échap");
+            case KeyCode.Backspace: return Loc.T("Retour arrière");
+            case KeyCode.Delete: return Loc.T("Suppr");
+            case KeyCode.Insert: return Loc.T("Inser");
+            case KeyCode.Tab: return Loc.T("Tab");
+            case KeyCode.CapsLock: return Loc.T("Verr. maj");
+            case KeyCode.Home: return Loc.T("Début");
+            case KeyCode.End: return Loc.T("Fin");
+            case KeyCode.PageUp: return Loc.T("Page haut");
+            case KeyCode.PageDown: return Loc.T("Page bas");
+            case KeyCode.UpArrow: return Loc.T("Flèche haut");
+            case KeyCode.DownArrow: return Loc.T("Flèche bas");
+            case KeyCode.LeftArrow: return Loc.T("Flèche gauche");
+            case KeyCode.RightArrow: return Loc.T("Flèche droite");
+            case KeyCode.Comma: return Loc.T("Virgule");
+            case KeyCode.Period: return Loc.T("Point");
+            case KeyCode.Semicolon: return Loc.T("Point-virgule");
+            case KeyCode.Colon: return Loc.T("Deux-points");
+            case KeyCode.Slash: return Loc.T("Barre oblique");
+            case KeyCode.Backslash: return Loc.T("Barre inverse");
+            case KeyCode.Minus: return Loc.T("Moins");
+            case KeyCode.Equals: return Loc.T("Égal");
+            case KeyCode.Quote: return Loc.T("Apostrophe");
+            case KeyCode.DoubleQuote: return Loc.T("Guillemet");
+            case KeyCode.BackQuote: return Loc.T("Accent grave");
+            case KeyCode.LeftBracket: return Loc.T("Crochet gauche");
+            case KeyCode.RightBracket: return Loc.T("Crochet droit");
+            case KeyCode.KeypadPlus: return Loc.T("Pavé +");
+            case KeyCode.KeypadMinus: return Loc.T("Pavé −");
+            case KeyCode.KeypadMultiply: return Loc.T("Pavé ×");
+            case KeyCode.KeypadDivide: return Loc.T("Pavé ÷");
+            case KeyCode.KeypadPeriod: return Loc.T("Pavé .");
+            case KeyCode.Mouse0: return Loc.T("Clic gauche");
+            case KeyCode.Mouse1: return Loc.T("Clic droit");
+            case KeyCode.Mouse2: return Loc.T("Clic molette");
         }
 
         int v = (int)k;
         if (k >= KeyCode.Alpha0 && k <= KeyCode.Alpha9) return ((char)('0' + (v - (int)KeyCode.Alpha0))).ToString();
-        if (k >= KeyCode.Keypad0 && k <= KeyCode.Keypad9) return "Pavé " + (v - (int)KeyCode.Keypad0);
-        if (k >= KeyCode.Mouse3 && k <= KeyCode.Mouse6) return "Souris " + (v - (int)KeyCode.Mouse0 + 1);
-        if (k >= KeyCode.JoystickButton0 && k <= KeyCode.JoystickButton19) return "Manette " + (v - (int)KeyCode.JoystickButton0);
+        if (k >= KeyCode.Keypad0 && k <= KeyCode.Keypad9) return Loc.F("Pavé {0}", v - (int)KeyCode.Keypad0);
+        if (k >= KeyCode.Mouse3 && k <= KeyCode.Mouse6) return Loc.F("Souris {0}", v - (int)KeyCode.Mouse0 + 1);
+        if (k >= KeyCode.JoystickButton0 && k <= KeyCode.JoystickButton19) return Loc.F("Manette {0}", v - (int)KeyCode.JoystickButton0);
 
         string name = k.ToString();
-        if (name.StartsWith("Joystick")) return "Manette";   // boutons d'une manette précise (Joystick2Button3...) : libellé court
+        if (name.StartsWith("Joystick")) return Loc.T("Manette");   // boutons d'une manette précise (Joystick2Button3...) : libellé court
         return name.Length == 1 ? name.ToUpperInvariant() : name;
     }
 
@@ -170,13 +170,13 @@ public static class GameInput
         switch (k)
         {
             case KeyCode.None: return "";
-            case KeyCode.LeftShift: case KeyCode.RightShift: return "Maj";
+            case KeyCode.LeftShift: case KeyCode.RightShift: return Loc.T("Maj");
             case KeyCode.LeftControl: case KeyCode.RightControl: return "Ctrl";
             case KeyCode.LeftAlt: case KeyCode.RightAlt: return "Alt";
             case KeyCode.LeftCommand: case KeyCode.RightCommand: return "Cmd";
-            case KeyCode.Space: return "Esp";
+            case KeyCode.Space: return Loc.T("Esp");
             case KeyCode.Return: case KeyCode.KeypadEnter: return "↵";
-            case KeyCode.Escape: return "Échap";
+            case KeyCode.Escape: return Loc.T("Échap");
             case KeyCode.Backspace: return "⌫";
             case KeyCode.Tab: return "Tab";
             case KeyCode.UpArrow: return "↑";
@@ -207,19 +207,19 @@ public static class GameInput
     {
         switch (a)
         {
-            case GameAction.MoveUp: return "Avancer";
-            case GameAction.MoveDown: return "Reculer";
-            case GameAction.MoveLeft: return "Aller à gauche";
-            case GameAction.MoveRight: return "Aller à droite";
-            case GameAction.Dash: return "Dash";
-            case GameAction.Ultimate: return "Ultime";
-            case GameAction.PhantomClone: return "Clone spectral";
-            case GameAction.Card1: return "Carte n°1";
-            case GameAction.Card2: return "Carte n°2";
-            case GameAction.Card3: return "Carte n°3";
-            case GameAction.OrbitShrink: return "Orbites : rapprocher";
-            case GameAction.OrbitGrow: return "Orbites : éloigner";
-            case GameAction.Pause: return "Pause";
+            case GameAction.MoveUp: return Loc.T("Avancer");
+            case GameAction.MoveDown: return Loc.T("Reculer");
+            case GameAction.MoveLeft: return Loc.T("Aller à gauche");
+            case GameAction.MoveRight: return Loc.T("Aller à droite");
+            case GameAction.Dash: return Loc.T("Dash");
+            case GameAction.Ultimate: return Loc.T("Ultime");
+            case GameAction.PhantomClone: return Loc.T("Clone spectral");
+            case GameAction.Card1: return Loc.T("Carte n°1");
+            case GameAction.Card2: return Loc.T("Carte n°2");
+            case GameAction.Card3: return Loc.T("Carte n°3");
+            case GameAction.OrbitShrink: return Loc.T("Orbites : rapprocher");
+            case GameAction.OrbitGrow: return Loc.T("Orbites : éloigner");
+            case GameAction.Pause: return Loc.T("Pause");
         }
         return a.ToString();
     }
@@ -228,15 +228,15 @@ public static class GameInput
     {
         switch (a)
         {
-            case GameAction.Dash: return "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles.";
-            case GameAction.Ultimate: return "Déclenche l'ultime quand le cristal est chargé.";
-            case GameAction.PhantomClone: return "Invoque le clone spectral. Nécessite la compétence correspondante.";
-            case GameAction.Card1: return "Choisit la 1re carte à la montée de niveau.";
-            case GameAction.Card2: return "Choisit la 2e carte à la montée de niveau.";
-            case GameAction.Card3: return "Choisit la 3e carte à la montée de niveau.";
-            case GameAction.OrbitShrink: return "Réduit le rayon des orbes de l'arme orbitale.";
-            case GameAction.OrbitGrow: return "Augmente le rayon des orbes de l'arme orbitale.";
-            case GameAction.Pause: return "Ouvre / ferme le menu pause.";
+            case GameAction.Dash: return Loc.T("Dash : déplacement rapide, invincible un court instant, absorbe les projectiles.");
+            case GameAction.Ultimate: return Loc.T("Déclenche l'ultime quand le cristal est chargé.");
+            case GameAction.PhantomClone: return Loc.T("Invoque le clone spectral. Nécessite la compétence correspondante.");
+            case GameAction.Card1: return Loc.T("Choisit la 1re carte à la montée de niveau.");
+            case GameAction.Card2: return Loc.T("Choisit la 2e carte à la montée de niveau.");
+            case GameAction.Card3: return Loc.T("Choisit la 3e carte à la montée de niveau.");
+            case GameAction.OrbitShrink: return Loc.T("Réduit le rayon des orbes de l'arme orbitale.");
+            case GameAction.OrbitGrow: return Loc.T("Augmente le rayon des orbes de l'arme orbitale.");
+            case GameAction.Pause: return Loc.T("Ouvre / ferme le menu pause.");
         }
         return "";
     }

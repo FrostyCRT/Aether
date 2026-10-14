@@ -1,0 +1,909 @@
+Animation/EnemyAnimatorController.cs	28	IsAttacking
+Animation/PlayerAnimatorController.cs	20	IsWalking
+Animation/PlayerAnimatorController.cs	38	Idle
+Animation/VATAnimatedRenderer.cs	28	Attack
+Challenge/ChallengeDatabase.cs	22	Chasseur
+Challenge/ChallengeDatabase.cs	22	Tuer 150 ennemis
+Challenge/ChallengeDatabase.cs	23	Montée en Puissance
+Challenge/ChallengeDatabase.cs	23	Atteindre le niveau 10
+Challenge/ChallengeDatabase.cs	24	Premier Sang
+Challenge/ChallengeDatabase.cs	24	Vaincre 1 boss
+Challenge/ChallengeDatabase.cs	25	Toujours en Mouvement
+Challenge/ChallengeDatabase.cs	25	Utiliser le Dash 20 fois
+Challenge/ChallengeDatabase.cs	33	Sang-Froid
+Challenge/ChallengeDatabase.cs	33	Garder 30% de vie jusqu'au boss 2
+Challenge/ChallengeDatabase.cs	34	Double Chasse
+Challenge/ChallengeDatabase.cs	34	Vaincre 2 boss dans la même partie
+Challenge/ChallengeDatabase.cs	35	Ascension Rapide
+Challenge/ChallengeDatabase.cs	35	Niveau 20 avant la 10e minute
+Challenge/ChallengeDatabase.cs	36	noUltimate
+Challenge/ChallengeDatabase.cs	36	Sans Cristal
+Challenge/ChallengeDatabase.cs	36	Sans Ultime jusqu'au boss 2
+Challenge/ChallengeDatabase.cs	38	noDamage
+Challenge/ChallengeDatabase.cs	38	Sans-Faute
+Challenge/ChallengeDatabase.cs	38	Aucun dégât jusqu'au boss 1
+Challenge/ChallengeDatabase.cs	39	bossUnder30s
+Challenge/ChallengeDatabase.cs	39	Éclair
+Challenge/ChallengeDatabase.cs	39	Vaincre un boss en moins de 30s
+Challenge/ChallengeDatabase.cs	40	Fortune
+Challenge/ChallengeDatabase.cs	40	Avec au moins 3000 Or ramassé
+Challenge/ChallengeDatabase.cs	41	Puissance Absolue
+Challenge/ChallengeDatabase.cs	41	Niveau 30 dans la même partie
+Challenge/ChallengeManager.cs	199	$Or x{multiplierStr}
+Challenge/ChallengeManager.cs	279	noUltimate
+Challenge/ChallengeManager.cs	280	noDamage
+Challenge/ChallengeManager.cs	297	noUltimate
+Challenge/ChallengeManager.cs	300	noDamage
+Challenge/ChallengeManager.cs	341	bossUnder30s
+Challenge/ChallengeManager.cs	345	noUltimate
+Challenge/ChallengeManager.cs	346	noDamage
+Challenge/ChallengeManager.cs	374	Échoué
+Challenge/ChallengeManager.cs	383	${Mathf.Min(kills, 150)}/150
+Challenge/ChallengeManager.cs	384	$Niv. {Mathf.Min(level, 10)}/10
+Challenge/ChallengeManager.cs	385	${Mathf.Min(bossKills, 1)}/1
+Challenge/ChallengeManager.cs	386	${Mathf.Min(_dashUsedCount, 20)}/20
+Challenge/ChallengeManager.cs	387	$Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2
+Challenge/ChallengeManager.cs	388	${Mathf.Min(bossKills, 2)}/2
+Challenge/ChallengeManager.cs	389	$Niv. {Mathf.Min(level, 20)}/20
+Challenge/ChallengeManager.cs	390	noUltimate
+Challenge/ChallengeManager.cs	390	$Boss {Mathf.Min(_bossesDefeatedCount, 2)}/2
+Challenge/ChallengeManager.cs	391	noDamage
+Challenge/ChallengeManager.cs	391	$Boss {Mathf.Min(_bossesDefeatedCount, 1)}/1
+Challenge/ChallengeManager.cs	392	bossUnder30s
+Challenge/ChallengeManager.cs	392	En cours
+Challenge/ChallengeManager.cs	393	${Mathf.Min(gold, 3000)}/3000 Or
+Challenge/ChallengeManager.cs	394	$Niv. {Mathf.Min(level, 30)}/30
+Challenge/ChallengeManager.cs	416	noUltimate
+Challenge/ChallengeManager.cs	417	noDamage
+Challenge/ChallengeManager.cs	421	bossUnder30s
+Data/UpgradeData.cs	118	Débloque 2 orbitaux tournants qui frappent au contact.
+Data/UpgradeData.cs	119	+1 orbital supplémentaire.
+Data/UpgradeData.cs	123	Débloque la foudre en chaîne
+Data/UpgradeData.cs	125	+1 rebond de foudre supplémentaire.
+Data/UpgradeData.cs	129	Débloque 3 flaques de boue ralentissante autour de toi.
+Data/UpgradeData.cs	130	+1 flaque de boue supplémentaire.
+Data/UpgradeData.cs	136	$+{PercentOf(value)}% dégâts sur toutes tes armes actives.
+Data/UpgradeData.cs	139	$+{PercentOf(value)}% vitesse de tir sur toutes tes armes actives.
+Data/UpgradeData.cs	142	$Restaure {PercentOf(value)}% de tes PV max.
+Data/UpgradeData.cs	145	Débloque un second tir simultané.
+Data/UpgradeData.cs	168	Débloque Boule de feu : équipe l'arme exclusive d'Aether.
+Data/UpgradeData.cs	174	$+{v:0.#} de rayon d'explosion.
+Data/UpgradeData.cs	175	$+{PercentOf(v)}% dégâts.
+Data/UpgradeData.cs	176	Débloque la Brûlure : les ennemis touchés brûlent sur la durée.
+Data/UpgradeData.cs	185	Débloque l'Aura : équipe l'arme exclusive de Kael.
+Data/UpgradeData.cs	191	$+{PercentOf(v)}% dégâts.
+Data/UpgradeData.cs	192	$+{PercentOf(v)}% rayon.
+Data/UpgradeData.cs	193	$+{PercentOf(v)}% ralentissement.
+Data/UpgradeData.cs	211	Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.
+Data/UpgradeData.cs	217	Débloque un couteau supplémentaire dans la salve.
+Data/UpgradeData.cs	218	$+{PercentOf(v)}% dégâts.
+Data/UpgradeData.cs	219	$+{pierce} ennemis perforés en plus.
+Data/UpgradeData.cs	219	$+{pierce} ennemi perforé en plus.
+Data/UpgradeData.cs	237	Débloque un orbe rebondissant qui traverse les ennemis.
+Data/UpgradeData.cs	243	$+{PercentOf(v)}% dégâts.
+Data/UpgradeData.cs	244	$+{PercentOf(v)}% vitesse.
+Data/UpgradeData.cs	245	+1 orbe rebondissant supplémentaire.
+Data/UpgradeData.cs	670	ScorchedEarth
+Data/UpgradeData.cs	696	ManaVortex
+Data/UpgradeData.cs	720	RicochetBlades
+Data/UpgradeData.cs	737	ThunderingOrbs
+Data/UpgradeData.cs	761	CursedSwamp
+Data/UpgradeData.cs	784	TwinOrbs
+Enemies/BossBase.cs	40	BOSS
+Enemies/BossBase.cs	87	IsCharging
+Enemies/BossBase.cs	88	IsWindingUp
+Enemies/BossBase.cs	89	IsCruising
+Enemies/BossBase.cs	90	IsRecovering
+Enemies/BossBase.cs	279	EnemyProjectile
+Enemies/BossBase.cs	455	emissiveFactor
+Enemies/BossBase.cs	459	baseColorFactor
+Enemies/BossCorruptedSource.cs	149	La Source Corrompue
+Enemies/BossCorruptedSource.cs	273	IsCoiling
+Enemies/BossCorruptedSource.cs	277	IsCoiling
+Enemies/BossCorruptedSource.cs	289	EnemyProjectile
+Enemies/BossCorruptedSource.cs	311	IsCoiling
+Enemies/BossCorruptedSource.cs	336	IsCoiling
+Enemies/BossCorruptedSource.cs	385	IsCoiling
+Enemies/BossCorruptedSource.cs	406	IsCoiling
+Enemies/BossCorruptedSource.cs	511	IsCoiling
+Enemies/BossCorruptedSource.cs	532	IsCoiling
+Enemies/BossDeer.cs	58	Le Cerf Ancestral
+Enemies/BossDeer.cs	263	EnemyProjectile
+Enemies/BossDeer.cs	274	EnemyProjectile
+Enemies/BossDeer.cs	312	IsJumping
+Enemies/BossDeer.cs	313	IsBiting
+Enemies/BossDeer.cs	314	IsMoving
+Enemies/BossDeer.cs	336	IsJumping
+Enemies/BossDeer.cs	337	IsBiting
+Enemies/BossDeer.cs	338	IsMoving
+Enemies/BossDeer.cs	339	IsPhase2
+Enemies/EnemyBase.cs	25	Enemy
+Enemies/EnemyBulb.cs	87	EnemyProjectile
+Enemies/EnemyCorruptedWeaver.cs	39	IsJumping
+Enemies/EnemyCorruptedWeaver.cs	86	IsJumping
+Enemies/EnemyCorruptedWeaver.cs	127	IsJumping
+Enemies/EnemyProjectile.cs	113	EnemyProjectile
+Enemies/EnemyShooter.cs	150	EnemyProjectile
+Enemies/EnemySpawner.cs	115	Enemy
+Enemies/EnemySpawner.cs	139	EnemyBulb
+Music & VFX/BossFX.cs	74	BossArrivalFX
+Music & VFX/BossFX.cs	84	BossDeathFX
+Music & VFX/BossFX.cs	96	Pillar
+Music & VFX/BossFX.cs	98	Flash
+Music & VFX/BossFX.cs	105	Spark
+Music & VFX/CameraShakeFX.cs	46	CameraShakeFX
+Music & VFX/ChargeLaneFX.cs	19	ChargeLaneFX
+Music & VFX/ChargeLaneFX.cs	31	Base
+Music & VFX/ChargeLaneFX.cs	32	Fill
+Music & VFX/ChargeLaneFX.cs	33	EdgeL
+Music & VFX/ChargeLaneFX.cs	34	EdgeR
+Music & VFX/ChargeLaneFX.cs	35	EndRing
+Music & VFX/ChargeLaneFX.cs	39	Chevron
+Music & VFX/EnemyDeathFX.cs	30	EnemyDeathFX
+Music & VFX/EnemyDeathFX.cs	41	Flash
+Music & VFX/EnemyDeathFX.cs	49	Spark
+Music & VFX/ExpandingRingVFX.cs	49	ExpandingRingVFX
+Music & VFX/GroundTelegraphFX.cs	45	GroundTelegraphFX
+Music & VFX/GroundTelegraphFX.cs	62	Fill
+Music & VFX/GroundTelegraphFX.cs	63	Ticks
+Music & VFX/GroundTelegraphFX.cs	64	Ring
+Music & VFX/GroundTelegraphFX.cs	65	Converge
+Music & VFX/GroundTelegraphFX.cs	66	Flash
+Music & VFX/ImpactSparkVFX.cs	27	ImpactSparkVFX
+Music & VFX/ImpactSparkVFX.cs	67	Spark
+Music & VFX/XPGemCollectFX.cs	30	XPGemCollectFX
+Music & VFX/XPGemCollectFX.cs	41	Flash
+Music & VFX/XPGemCollectFX.cs	51	Spark
+Player/ManaShield.cs	190	ManaShieldBubble
+Player/ManaShield.cs	213	RenderType
+Player/ManaShield.cs	213	Transparent
+Player/ManaShield.cs	214	_SURFACE_TYPE_TRANSPARENT
+Player/ManaShield.cs	215	_ALPHATEST_ON
+Player/ManaShield.cs	216	_ALPHABLEND_ON
+Player/ManaShield.cs	217	_ALPHAPREMULTIPLY_ON
+Player/ManaShield.cs	231	DepthOnly
+Player/PlayerController.cs	312	RenderType
+Player/PlayerController.cs	312	Transparent
+Player/PlayerController.cs	313	_SURFACE_TYPE_TRANSPARENT
+Player/PlayerController.cs	314	_ALPHATEST_ON
+Player/PlayerController.cs	315	_ALPHABLEND_ON
+Player/PlayerController.cs	316	_ALPHAPREMULTIPLY_ON
+Player/PlayerController.cs	324	DepthOnly
+Player/PlayerController.cs	442	DashGhost
+Player/PlayerController.cs	579	PhantomCloneSnapshot
+Settings/GameInput.cs	62	PadMoveX
+Settings/GameInput.cs	62	PadMoveY
+Settings/GameInput.cs	106	Maj gauche
+Settings/GameInput.cs	107	Maj droite
+Settings/GameInput.cs	108	Ctrl gauche
+Settings/GameInput.cs	109	Ctrl droite
+Settings/GameInput.cs	110	Alt gauche
+Settings/GameInput.cs	111	Alt droite
+Settings/GameInput.cs	112	Cmd gauche
+Settings/GameInput.cs	113	Cmd droite
+Settings/GameInput.cs	114	Espace
+Settings/GameInput.cs	115	Entrée
+Settings/GameInput.cs	116	Entrée (pavé)
+Settings/GameInput.cs	117	Échap
+Settings/GameInput.cs	118	Retour arrière
+Settings/GameInput.cs	119	Suppr
+Settings/GameInput.cs	120	Inser
+Settings/GameInput.cs	121	Tab
+Settings/GameInput.cs	122	Verr. maj
+Settings/GameInput.cs	123	Début
+Settings/GameInput.cs	124	Fin
+Settings/GameInput.cs	125	Page haut
+Settings/GameInput.cs	126	Page bas
+Settings/GameInput.cs	127	Flèche haut
+Settings/GameInput.cs	128	Flèche bas
+Settings/GameInput.cs	129	Flèche gauche
+Settings/GameInput.cs	130	Flèche droite
+Settings/GameInput.cs	131	Virgule
+Settings/GameInput.cs	132	Point
+Settings/GameInput.cs	133	Point-virgule
+Settings/GameInput.cs	134	Deux-points
+Settings/GameInput.cs	135	Barre oblique
+Settings/GameInput.cs	136	Barre inverse
+Settings/GameInput.cs	137	Moins
+Settings/GameInput.cs	138	Égal
+Settings/GameInput.cs	139	Apostrophe
+Settings/GameInput.cs	140	Guillemet
+Settings/GameInput.cs	141	Accent grave
+Settings/GameInput.cs	142	Crochet gauche
+Settings/GameInput.cs	143	Crochet droit
+Settings/GameInput.cs	144	Pavé +
+Settings/GameInput.cs	145	Pavé −
+Settings/GameInput.cs	146	Pavé ×
+Settings/GameInput.cs	147	Pavé ÷
+Settings/GameInput.cs	148	Pavé .
+Settings/GameInput.cs	149	Clic gauche
+Settings/GameInput.cs	150	Clic droit
+Settings/GameInput.cs	151	Clic molette
+Settings/GameInput.cs	156	Pavé 
+Settings/GameInput.cs	157	Souris 
+Settings/GameInput.cs	158	Manette 
+Settings/GameInput.cs	161	Joystick
+Settings/GameInput.cs	161	Manette
+Settings/GameInput.cs	173	Maj
+Settings/GameInput.cs	174	Ctrl
+Settings/GameInput.cs	175	Alt
+Settings/GameInput.cs	176	Cmd
+Settings/GameInput.cs	177	Esp
+Settings/GameInput.cs	179	Échap
+Settings/GameInput.cs	181	Tab
+Settings/GameInput.cs	210	Avancer
+Settings/GameInput.cs	211	Reculer
+Settings/GameInput.cs	212	Aller à gauche
+Settings/GameInput.cs	213	Aller à droite
+Settings/GameInput.cs	214	Dash
+Settings/GameInput.cs	215	Ultime
+Settings/GameInput.cs	216	Clone spectral
+Settings/GameInput.cs	217	Carte n°1
+Settings/GameInput.cs	218	Carte n°2
+Settings/GameInput.cs	219	Carte n°3
+Settings/GameInput.cs	220	Orbites : rapprocher
+Settings/GameInput.cs	221	Orbites : éloigner
+Settings/GameInput.cs	222	Pause
+Settings/GameInput.cs	231	Dash : déplacement rapide, invincible un court instant, absorbe les projectiles.
+Settings/GameInput.cs	232	Déclenche l'ultime quand le cristal est chargé.
+Settings/GameInput.cs	233	Invoque le clone spectral. Nécessite la compétence correspondante.
+Settings/GameInput.cs	234	Choisit la 1re carte à la montée de niveau.
+Settings/GameInput.cs	235	Choisit la 2e carte à la montée de niveau.
+Settings/GameInput.cs	236	Choisit la 3e carte à la montée de niveau.
+Settings/GameInput.cs	237	Réduit le rayon des orbes de l'arme orbitale.
+Settings/GameInput.cs	238	Augmente le rayon des orbes de l'arme orbitale.
+Settings/GameInput.cs	239	Ouvre / ferme le menu pause.
+Settings/InputBindings.cs	55	AZERTY (ZQSD)
+Settings/InputBindings.cs	55	QWERTY (WASD)
+Settings/InputBindings.cs	55	Flèches seules
+Settings/SettingsAmbientFX.cs	95	Light
+Settings/SettingsAmbientFX.cs	104	Dust
+Settings/SettingsApplier.cs	31	[SettingsApplier]
+Settings/SettingsApplier.cs	70	UnityEditor.GameView
+Settings/SettingsApplier.cs	71	vSyncEnabled
+Settings/SettingsApplier.cs	82	UnityEditor.GameView
+Settings/SettingsApplier.cs	83	vSyncEnabled
+Settings/SettingsApplier.cs	217	MusicVolume
+Settings/SettingsApplier.cs	218	SFXVolume
+Settings/SettingsApplier.cs	324	[ScreenOverlay]
+Settings/SettingsApplier.cs	334	Dim
+Settings/SettingsApplier.cs	335	Bright
+Settings/SettingsApplier.cs	337	Fps
+Settings/SettingsApplier.cs	402	 FPS  (
+Settings/SettingsApplier.cs	402	 ms)
+Settings/SettingsDropdown.cs	54	Item_
+Settings/SettingsPage.cs	167	InGameBadge
+Settings/SettingsPage.cs	168	PARTIE EN PAUSE
+Settings/SettingsPage.cs	182	Retour
+Settings/SettingsPage.cs	207	Tab_
+Settings/SettingsPage.cs	365	Retour automatique à l'ancien affichage dans 
+Settings/SettingsPage.cs	415	Affichage conservé.
+Settings/SettingsPage.cs	427	Ancien affichage rétabli.
+Settings/SettingsPage.cs	442	Appuie sur une touche, un bouton de souris ou de manette\n<color=#9C93AE>Échap : annuler     Retour arrière : effacer</color>
+Settings/SettingsPage.cs	474	Impossible : « 
+Settings/SettingsPage.cs	474	 » doit garder au moins une touche.
+Settings/SettingsPage.cs	478	 » est la seule touche de « 
+Settings/SettingsPage.cs	478	 » : libère-la d'abord.
+Settings/SettingsPage.cs	483	 » était utilisée par « 
+Settings/SettingsPage.cs	483	 » : elles échangent leurs touches (« 
+Settings/SettingsPage.cs	485	 » était utilisée par « 
+Settings/SettingsPage.cs	485	 » : elle lui est retirée.
+Settings/SettingsPage.cs	498	RÉINITIALISER « 
+Settings/SettingsPage.cs	498	Les réglages de cette page reprennent leur valeur d'origine.
+Settings/SettingsPage.cs	498	Réinitialiser
+Settings/SettingsPage.cs	502	Page « 
+Settings/SettingsPage.cs	502	 » réinitialisée.
+Settings/SettingsPage.cs	508	TOUT RÉINITIALISER ?
+Settings/SettingsPage.cs	508	Tous les réglages et toutes les touches reprennent leur valeur d'origine.
+Settings/SettingsPage.cs	508	Tout réinitialiser
+Settings/SettingsPage.cs	512	Tous les paramètres ont été réinitialisés.
+Settings/SettingsPage.cs	519	QUITTER LE JEU ?
+Settings/SettingsPage.cs	519	La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.
+Settings/SettingsPage.cs	519	Quitter
+Settings/SettingsRow.cs	126	Disposition « 
+Settings/SettingsRow.cs	126	 » appliquée.
+Settings/SettingsRow.cs	174	OUI
+Settings/SettingsRow.cs	174	NON
+Settings/SettingsSchema.cs	51	Performance
+Settings/SettingsSchema.cs	51	Équilibré
+Settings/SettingsSchema.cs	51	Élevé
+Settings/SettingsSchema.cs	52	Plein écran exclusif
+Settings/SettingsSchema.cs	52	Fenêtré sans bordure
+Settings/SettingsSchema.cs	52	Fenêtré
+Settings/SettingsSchema.cs	53	Désactivés
+Settings/SettingsSchema.cs	53	Activés
+Settings/SettingsSchema.cs	58	Illimitée
+Settings/SettingsSchema.cs	58	 FPS
+Settings/SettingsSchema.cs	111	AFFICHAGE
+Settings/SettingsSchema.cs	111	Fenêtre, résolution et fluidité de l'image
+Settings/SettingsSchema.cs	114	Mode d'affichage
+Settings/SettingsSchema.cs	115	Plein écran, fenêtre sans bordure ou fenêtre classique.
+Settings/SettingsSchema.cs	120	Résolution
+Settings/SettingsSchema.cs	121	Définition de l'image en plein écran et en mode fenêtré.
+Settings/SettingsSchema.cs	124	Le mode sans bordure utilise toujours la résolution du bureau.
+Settings/SettingsSchema.cs	127	Synchronisation verticale
+Settings/SettingsSchema.cs	127	Évite les déchirures de l'image. Limite la fluidité à la fréquence de l'écran.
+Settings/SettingsSchema.cs	130	Limite d'images par seconde
+Settings/SettingsSchema.cs	131	Plafonne le nombre d'images affichées par seconde.
+Settings/SettingsSchema.cs	133	Sans effet tant que la synchronisation verticale est activée.
+Settings/SettingsSchema.cs	135	Luminosité
+Settings/SettingsSchema.cs	135	Éclaircit ou assombrit toute l'image, menus compris.
+Settings/SettingsSchema.cs	136	Afficher les images par seconde
+Settings/SettingsSchema.cs	136	Affiche le nombre d'images par seconde en haut à gauche.
+Settings/SettingsSchema.cs	140	GRAPHISMES
+Settings/SettingsSchema.cs	140	Qualité de l'image et effets visuels
+Settings/SettingsSchema.cs	141	Qualité graphique
+Settings/SettingsSchema.cs	141	Préréglage global du rendu : éclairage, ombres et netteté.
+Settings/SettingsSchema.cs	142	Ombres
+Settings/SettingsSchema.cs	142	Ombres projetées par les personnages et les ennemis.
+Settings/SettingsSchema.cs	145	Effets d'ambiance des menus
+Settings/SettingsSchema.cs	146	Poussières et halos lumineux animés dans les menus.
+Settings/SettingsSchema.cs	153	AUDIO
+Settings/SettingsSchema.cs	153	Volumes et comportement du son
+Settings/SettingsSchema.cs	154	Volume général
+Settings/SettingsSchema.cs	154	Règle le volume de tout le jeu.
+Settings/SettingsSchema.cs	155	Musique
+Settings/SettingsSchema.cs	155	Volume de la musique des menus et des parties.
+Settings/SettingsSchema.cs	156	Effets sonores
+Settings/SettingsSchema.cs	156	Volume des bruitages : coups, sorts, interface.
+Settings/SettingsSchema.cs	157	Couper le son en arrière-plan
+Settings/SettingsSchema.cs	157	Coupe tout le son quand la fenêtre du jeu n'est pas active.
+Settings/SettingsSchema.cs	161	JEU
+Settings/SettingsSchema.cs	161	Visée, pause et retours de combat
+Settings/SettingsSchema.cs	164	Visée
+Settings/SettingsSchema.cs	165	Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle.
+Settings/SettingsSchema.cs	166	À la souris
+Settings/SettingsSchema.cs	166	Automatique
+Settings/SettingsSchema.cs	170	Pause automatique
+Settings/SettingsSchema.cs	170	Met la partie en pause quand la fenêtre du jeu perd le focus.
+Settings/SettingsSchema.cs	171	Nombres de dégâts
+Settings/SettingsSchema.cs	172	Dégâts infligés
+Settings/SettingsSchema.cs	172	Affiche les dégâts infligés aux ennemis.
+Settings/SettingsSchema.cs	173	Dégâts subis
+Settings/SettingsSchema.cs	173	Affiche les dégâts que reçoit le joueur.
+Settings/SettingsSchema.cs	174	Taille des nombres
+Settings/SettingsSchema.cs	174	Taille des chiffres qui apparaissent au-dessus des cibles.
+Settings/SettingsSchema.cs	178	INTERFACE
+Settings/SettingsSchema.cs	178	Ce qui s'affiche pendant la partie
+Settings/SettingsSchema.cs	179	Taille de l'interface
+Settings/SettingsSchema.cs	179	Taille de l'affichage en partie : barres, jauges et textes.
+Settings/SettingsSchema.cs	180	Opacité de l'interface
+Settings/SettingsSchema.cs	180	Transparence de l'affichage en partie.
+Settings/SettingsSchema.cs	181	Éléments affichés
+Settings/SettingsSchema.cs	182	Chronomètre
+Settings/SettingsSchema.cs	182	Le temps écoulé depuis le début de la partie.
+Settings/SettingsSchema.cs	183	Or de la partie
+Settings/SettingsSchema.cs	183	L'or ramassé pendant cette partie.
+Settings/SettingsSchema.cs	184	Ennemis vaincus
+Settings/SettingsSchema.cs	184	Le nombre d'ennemis éliminés.
+Settings/SettingsSchema.cs	185	Légende des touches
+Settings/SettingsSchema.cs	185	Rappel des touches (dash, ultime, clone, orbites, pause) affiché à gauche de l'écran.
+Settings/SettingsSchema.cs	189	COMMANDES
+Settings/SettingsSchema.cs	189	Clavier, souris et manette
+Settings/SettingsSchema.cs	190	Cliquez sur une touche pour la modifier.   Échap : annuler   •   Retour arrière : effacer.
+Settings/SettingsSchema.cs	191	Disposition du clavier
+Settings/SettingsSchema.cs	191	Règle le déplacement et les orbites. Les autres touches ne changent pas.
+Settings/SettingsSchema.cs	192	Déplacement
+Settings/SettingsSchema.cs	197	Combat
+Settings/SettingsSchema.cs	201	Montée de niveau
+Settings/SettingsSchema.cs	205	Armes
+Settings/SettingsSchema.cs	208	Système
+Settings/SettingsSchema.cs	210	Manette
+Settings/SettingsSchema.cs	211	Zone morte du stick
+Settings/SettingsSchema.cs	211	Ignore les petits mouvements du stick. À augmenter si le personnage bouge sans action.
+Systems/DamageNumberSpawner.cs	134	DamageNumber
+Systems/DebugCheats.cs	211	XPGem
+Systems/GameManager.cs	315	MainMenu
+Systems/GameManager.cs	351	EnemyProjectile
+Systems/GameManager.cs	352	Projectile
+Systems/GameManager.cs	385	Game
+Systems/GameManager.cs	391	MainMenu
+Systems/GameManager.cs	409	EnemyProjectile
+Systems/GameManager.cs	410	Projectile
+Systems/GameModes.cs	70	SANS FIN
+Systems/GameModes.cs	71	RUÉE DE BOSS
+Systems/GameModes.cs	72	CHOC DES TITANS
+Systems/GameModes.cs	73	CLASSIQUE
+Systems/GameModes.cs	98	Remporte une partie en mode Classique pour débloquer ce mode.
+Systems/GameModes.cs	99	Bats au moins le Boss 1 en mode Classique pour débloquer ce mode.
+Systems/GameModes.cs	110	Les boss reviennent en boucle, de plus en plus forts. Tiens le plus longtemps possible.
+Systems/GameModes.cs	121	le Boss 1
+Systems/GameModes.cs	121	les Boss 1 et 2
+Systems/GameModes.cs	121	les 3 boss
+Systems/GameModes.cs	122	$Un boss par minute : {which}, chacun 3 fois et de plus en plus fort. {bosses} boss, {bosses} min.
+Systems/GameModes.cs	131	Toutes les améliorations au maximum, aucun ennemi... mais les 3 boss en même temps. Survis et abats-les tous.
+Systems/GameModes.cs	138	Bats les 3 boss en 15 minutes pour remporter la partie.
+Systems/LevelUpManager.cs	299	$\u2022 {kvp.Key} x{kvp.Value}
+Systems/LevelUpManager.cs	300	$\u2022 {kvp.Key}
+Systems/LevelUpManager.cs	319	$\u2022 {kvp.Key} x{kvp.Value}
+Systems/LevelUpManager.cs	319	$\u2022 {kvp.Key}
+Systems/MetaProgressionManager.cs	102	$Nouveau record sans fin : {FormatClock(runTime)} !
+Systems/MetaProgressionManager.cs	104	$Nouveau record sans fin : {bossKills} boss vaincus !
+Systems/MetaProgressionManager.cs	114	$Nouveau record de ruée : {bossKills} boss vaincus !
+Systems/MetaProgressionManager.cs	125	$Nouveau record du Choc des titans : {FormatClock(runTime)} !
+Systems/MetaProgressionManager.cs	129	$Nouveau record : {bossKills} titans abattus !
+Systems/MetaProgressionManager.cs	129	$Nouveau record : {bossKills} titan abattu !
+Systems/MetaProgressionManager.cs	323	Kael
+Systems/MetaProgressionManager.cs	324	Lyra
+Systems/MetaProgressionManager.cs	325	Aether
+Systems/MetaProgressionManager.cs	578	reputationDamage
+Systems/MetaProgressionManager.cs	579	reputationSpeed
+Systems/MetaProgressionManager.cs	580	reputationRegen
+Systems/MetaProgressionManager.cs	589	reputationDamage
+Systems/MetaProgressionManager.cs	595	reputationSpeed
+Systems/MetaProgressionManager.cs	601	reputationRegen
+Systems/MetaProgressionManager.cs	673	reputationDamage
+Systems/MetaProgressionManager.cs	673	reputationSpeed
+Systems/MetaProgressionManager.cs	673	reputationRegen
+Systems/MetaProgressionManager.cs	707	crystalDamage
+Systems/MetaProgressionManager.cs	713	secondWind
+Systems/MetaProgressionManager.cs	714	manaShield
+Systems/MetaProgressionManager.cs	715	impulsionNova
+Systems/MetaProgressionManager.cs	717	novaRadius
+Systems/MetaProgressionManager.cs	718	crystalMastery
+Systems/MetaProgressionManager.cs	719	phantomDash
+Systems/MetaProgressionManager.cs	720	reputationDamage
+Systems/MetaProgressionManager.cs	721	reputationSpeed
+Systems/MetaProgressionManager.cs	722	reputationRegen
+Systems/MetaProgressionManager.cs	749	crystalDamage
+Systems/MetaProgressionManager.cs	755	secondWind
+Systems/MetaProgressionManager.cs	756	manaShield
+Systems/MetaProgressionManager.cs	757	impulsionNova
+Systems/MetaProgressionManager.cs	759	novaRadius
+Systems/MetaProgressionManager.cs	760	crystalMastery
+Systems/MetaProgressionManager.cs	761	phantomDash
+Systems/MetaProgressionManager.cs	762	reputationDamage
+Systems/MetaProgressionManager.cs	763	reputationSpeed
+Systems/MetaProgressionManager.cs	764	reputationRegen
+Systems/MetaProgressionManager.cs	775	crystalDamage
+Systems/MetaProgressionManager.cs	781	secondWind
+Systems/MetaProgressionManager.cs	782	manaShield
+Systems/MetaProgressionManager.cs	783	impulsionNova
+Systems/MetaProgressionManager.cs	785	novaRadius
+Systems/MetaProgressionManager.cs	786	crystalMastery
+Systems/MetaProgressionManager.cs	787	phantomDash
+Systems/MetaProgressionManager.cs	788	reputationDamage
+Systems/MetaProgressionManager.cs	789	reputationSpeed
+Systems/MetaProgressionManager.cs	790	reputationRegen
+Systems/MetaProgressionManager.cs	802	crystalDamage
+Systems/MetaProgressionManager.cs	807	novaRadius
+Systems/MetaProgressionManager.cs	808	reputationDamage
+Systems/MetaProgressionManager.cs	809	reputationSpeed
+Systems/MetaProgressionManager.cs	810	reputationRegen
+Systems/MetaProgressionManager.cs	823	secondWind
+Systems/MetaProgressionManager.cs	824	manaShield
+Systems/MetaProgressionManager.cs	825	impulsionNova
+Systems/MetaProgressionManager.cs	826	crystalMastery
+Systems/MetaProgressionManager.cs	827	phantomDash
+Systems/MetaProgressionManager.cs	920	reputationDamage
+Systems/MetaProgressionManager.cs	920	reputationSpeed
+Systems/MetaProgressionManager.cs	920	reputationRegen
+Systems/MetaProgressionManager.cs	921	Réputation : Dégâts
+Systems/MetaProgressionManager.cs	921	Réputation : Vitesse
+Systems/MetaProgressionManager.cs	921	Réputation : Régénération
+Systems/ObjectPool.cs	124	EnemyProjectile
+Systems/ObjectPool.cs	135	Projectile
+Systems/SkinCatalog.cs	41	AETHER
+Systems/SkinCatalog.cs	41	KAEL
+Systems/SkinCatalog.cs	41	LYRA
+Systems/SkinCatalog.cs	82	Tenue d'origine
+Systems/SkinCatalog.cs	83	La tenue avec laquelle 
+Systems/SkinCatalog.cs	83	 part au combat.
+Systems/WaveManager.cs	122	Les 3 Titans
+Systems/WaveManager.cs	157	Choc des titans
+Systems/WaveManager.cs	157	$Titans {killed}/3
+Systems/WaveManager.cs	163	$Boss {Mathf.Min(_bossCount, _rushBossTotal)}/{_rushBossTotal} en cours
+Systems/WaveManager.cs	164	$Boss {killed}/{_rushBossTotal}
+Systems/WaveManager.cs	168	$Boss {killed}/{_rushBossTotal} · prochain {Mathf.CeilToInt(remaining)} s
+Systems/WaveManager.cs	170	Ruée de boss
+Systems/WaveManager.cs	177	$Boucle {loop} · boss en cours
+Systems/WaveManager.cs	178	$Boucle {loop} · boss dans {Mathf.FloorToInt(remaining / 60f):0}:{Mathf.FloorToInt(remaining % 60f):00}
+Systems/WaveManager.cs	179	Sans fin
+Systems/WaveManager.cs	359	Enemy
+Systems/WaveManager.cs	373	Enemy
+Systems/XPGem.cs	89	Textures/XPGem/Tex_XPGem_Small
+Systems/XPGem.cs	90	Textures/XPGem/Tex_XPGem_Medium
+Systems/XPGem.cs	91	Textures/XPGem/Tex_XPGem_Large
+Systems/XPGem.cs	117	XPGemQuadMesh
+Systems/XPGem.cs	151	XPGem
+Systems/XPGemSpawner.cs	58	XPGem
+Systems/XPGemSpawner.cs	159	XPGem
+UI/CharacterAmbientFX.cs	301	$Mist{i + 1}
+UI/CharacterAmbientFX.cs	342	$Bokeh{i + 1}
+UI/CharacterAmbientFX.cs	355	$Mote{i + 1}
+UI/CharacterAmbientFX.cs	367	$Glint{i + 1}
+UI/CharacterInfoPanel.cs	107	crystalDamage
+UI/CharacterInfoPanel.cs	108	secondWind
+UI/CharacterInfoPanel.cs	108	manaShield
+UI/CharacterInfoPanel.cs	109	impulsionNova
+UI/CharacterInfoPanel.cs	109	novaRadius
+UI/CharacterInfoPanel.cs	109	crystalMastery
+UI/CharacterInfoPanel.cs	109	phantomDash
+UI/CharacterInfoPanel.cs	241	$<color=#{ColorUtility.ToHtmlStringRGB(Muted)}>PALIERS</color>   {info.weaponUpgrades}
+UI/CharacterInfoPanel.cs	301	${doneLevels}<size=62%><color=#{mutedHex}> / {totalLevels}</color></size>
+UI/CharacterInfoPanel.cs	307	ARBRE COMPLET
+UI/CharacterInfoPanel.cs	307	VOIR L'ARBRE
+UI/CharacterInfoPanel.cs	324	${Mathf.FloorToInt(best / 60f):00}:{Mathf.FloorToInt(best % 60f):00}
+UI/CharacterNameLight.cs	129	Halo
+UI/CharacterNameLight.cs	137	Highlights
+UI/CharacterNameLight.cs	142	Sparkle
+UI/CharacterSelectUI.cs	223	AETHER
+UI/CharacterSelectUI.cs	224	DISTANCE
+UI/CharacterSelectUI.cs	224	ZONE
+UI/CharacterSelectUI.cs	224	BRÛLURE
+UI/CharacterSelectUI.cs	225	Boule de feu
+UI/CharacterSelectUI.cs	226	Boule de feu qui explose à l'impact et touche tous les ennemis à proximité.
+UI/CharacterSelectUI.cs	227	Rayon / Dégâts / Brûlure
+UI/CharacterSelectUI.cs	229	GUERRIER
+UI/CharacterSelectUI.cs	230	Montée en puissance offensive
+UI/CharacterSelectUI.cs	244	KAEL
+UI/CharacterSelectUI.cs	245	MÊLÉE
+UI/CharacterSelectUI.cs	245	AURA
+UI/CharacterSelectUI.cs	245	RALENTISSEMENT
+UI/CharacterSelectUI.cs	246	Aura de mana
+UI/CharacterSelectUI.cs	247	Champ permanent autour de toi qui blesse les ennemis au contact.
+UI/CharacterSelectUI.cs	248	Dégâts / Rayon / Ralentissement
+UI/CharacterSelectUI.cs	250	GARDIEN
+UI/CharacterSelectUI.cs	251	Survie et résilience
+UI/CharacterSelectUI.cs	265	LYRA
+UI/CharacterSelectUI.cs	266	DISTANCE
+UI/CharacterSelectUI.cs	266	PERFORANT
+UI/CharacterSelectUI.cs	266	SALVE
+UI/CharacterSelectUI.cs	267	Salve de couteaux
+UI/CharacterSelectUI.cs	268	Lance une salve de couteaux qui transpercent les ennemis.
+UI/CharacterSelectUI.cs	269	Couteau en plus / Dégâts / Perforation
+UI/CharacterSelectUI.cs	271	FANTÔME
+UI/CharacterSelectUI.cs	272	Mobilité et dash
+UI/CharacterSelectUI.cs	553	Atteins le Boss 2 dans une partie pour débloquer Kael.
+UI/CharacterSelectUI.cs	554	Termine une partie (bats le Boss 3) pour débloquer Lyra.
+UI/CharacterSelectUI.cs	622	$Débloquer — {cost} Éclats
+UI/CharacterSelectUI.cs	644	Sélectionné
+UI/CharacterSelectUI.cs	644	Sélectionner
+UI/CustomCursor.cs	26	[CustomCursor]
+UI/CustomCursor.cs	62	Canvas
+UI/CustomCursor.cs	72	CursorImage
+UI/DamageNumber.cs	81	${Mathf.CeilToInt(_totalDamage)}!
+UI/DamageNumber.cs	81	${Mathf.CeilToInt(_totalDamage)}
+UI/DamageNumber.cs	129	DamageNumber
+UI/GameModeSelector.cs	107	$Meilleur : {Clock(data.bestEndlessTime)}  ·  {data.bestEndlessBossKills} boss
+UI/GameModeSelector.cs	108	Aucune partie sans fin jouée
+UI/GameModeSelector.cs	112	$Meilleur : {data.rushBestBossKills}/{GameModes.RushBossCount(data)} boss  ·  {data.rushWins} {GameModes.Plural(data.rushWins, 
+UI/GameModeSelector.cs	113	Aucune ruée jouée
+UI/GameModeSelector.cs	118	$Meilleur temps : {Clock(data.titansBestTime)}  ·  {data.titansWins} {GameModes.Plural(data.titansWins, 
+UI/GameModeSelector.cs	119	$Meilleur : {data.titansBestBossKills}/3 titans  ·  aucune victoire
+UI/GameModeSelector.cs	120	Aucune partie jouée
+UI/GameModeSelector.cs	123	$Meilleur temps : {Clock(data.bestTime)}
+UI/GameOverMessagePool.cs	30	La prochaine sera la bonne.
+UI/GameOverMessagePool.cs	31	Une défaite de plus vers la victoire.
+UI/GameOverMessagePool.cs	32	Retour au combat. C'est comme ça qu'on progresse.
+UI/GameOverMessagePool.cs	33	Relève-toi, c'est pas fini.
+UI/GameOverMessagePool.cs	34	Tu as le niveau pour la suivante.
+UI/GameOverMessagePool.cs	35	Tu sais déjà ce qui a coincé. Corrige-le.
+UI/GameOverMessagePool.cs	45	Ça ne s'est pas joué à grand-chose.
+UI/GameOverMessagePool.cs	46	Tu étais proche. Refais-en une.
+UI/GameOverMessagePool.cs	58	Il ne t'a laissé aucune ouverture cette fois.
+UI/GameOverMessagePool.cs	59	Un adversaire coriace. Il faudra revenir plus fort.
+UI/GameOverMessagePool.cs	60	Le boss a gagné cette bataille. Il n'a pas gagné la guerre.
+UI/GameUI.cs	448	<color=#
+UI/GameUI.cs	448	>ULT x2</color>
+UI/GameUI.cs	449	<color=#
+UI/GameUI.cs	449	>ULT x1</color>
+UI/GameUI.cs	474	$<s>{challengeName}</s> — Échoué
+UI/GameUI.cs	479	${challengeName} — {progressText}
+UI/GameUI.cs	503	${challengeName} : Niv. <color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>
+UI/GameUI.cs	504	${def.description}\nRécompense : {rewardText}
+UI/GameUI.cs	534	FACILE
+UI/GameUI.cs	535	MOYEN
+UI/GameUI.cs	536	DIFFICILE
+UI/GameUI.cs	580	ChallengeIntro
+UI/GameUI.cs	592	Card
+UI/GameUI.cs	606	Backdrop
+UI/GameUI.cs	616	Icon
+UI/GameUI.cs	628	Title
+UI/GameUI.cs	649	Desc
+UI/GameUI.cs	850	$Défi réussi ! {ChallengeManager.FormatRewardMultiplier(rewardPercent)}
+UI/GameUI.cs	864	${mins:00}:{secs:00}
+UI/GameUI.cs	926	$Nouveau record de survie : {FormatTime(runTime)} !
+UI/GameUI.cs	926	À deux doigts de ton record de survie...
+UI/GameUI.cs	927	$Nouveau record d'éliminations : {killCount} !
+UI/GameUI.cs	927	Si proche de ton record d'éliminations...
+UI/GameUI.cs	928	$Nouveau record de niveau : {levelReached} !
+UI/GameUI.cs	928	Un cheveu de ton meilleur niveau...
+UI/GameUI.cs	929	$Nouveau record d'Or en une partie : {goldThisRun} !
+UI/GameUI.cs	929	Tout près de ton record d'Or...
+UI/GameUI.cs	1572	Dot
+UI/GameUI.cs	1582	Dot
+UI/GameUI.cs	1813	Tu as tout donné à cette branche. Littéralement.
+UI/GameUI.cs	1814	Plus rien à débloquer ici — change de personnage pour la suite.
+UI/GameUI.cs	1815	Cette branche n'a plus de secret pour toi.
+UI/GameUI.cs	1816	Arbre et Réputation à fond. Change de perso si tu veux du neuf.
+UI/GameUI.cs	1858	$Nouveau personnage débloqué : {unlockedCharacter} !
+UI/GameUI.cs	1880	Or
+UI/GameUI.cs	1880	Éclats
+UI/GameUI.cs	1882	$Encore {preview.AmountStillNeeded} {currencyLabel} pour débloquer {preview.NodeName}
+UI/GameUI.cs	1883	$De quoi débloquer {preview.NodeName} dès maintenant !
+UI/GameUI.cs	1924	La Source Corrompue n'a pas tenu la distance.
+UI/GameUI.cs	1925	Elle ne se relèvera pas.
+UI/GameUI.cs	1926	La corruption s'éteint ici.
+UI/GameUI.cs	1934	Une victoire sans la moindre compétence. Chapeau.
+UI/GameUI.cs	1935	Aucune compétence récupérée. Le style, ça compte double.
+UI/GameUI.cs	1936	Rien pris en cours de route, et pourtant tu es là.
+UI/GameUI.cs	1944	Pas eu le temps de récupérer la moindre compétence.
+UI/GameUI.cs	1945	Aucune compétence récupérée cette fois.
+UI/GameUI.cs	1957	Pas de record aujourd'hui, mais la victoire est bien réelle.
+UI/GameUI.cs	1958	Rien d'exceptionnel à signaler, à part la victoire elle-même.
+UI/GameUI.cs	1959	Aucun exploit cette fois — juste une victoire de plus.
+UI/GameUI.cs	1970	$Tentative n°{n}
+UI/GameUI.cs	1971	${GameModes.ShortName(GameModes.Current)}\nTentative n°{n}
+UI/GameUI.cs	2023	$Survie {mins:00}:{secs:00}    ·    Titans {bossKills}/3
+UI/GameUI.cs	2026	$Boss {bossKills}
+UI/GameUI.cs	2027	$Titans {bossKills}/3
+UI/GameUI.cs	2031	$Boss {bossKills}/{total}
+UI/GameUI.cs	2033	$Boss {bossKills}/3
+UI/GameUI.cs	2035	$Survie {mins:00}:{secs:00}    ·    Éliminations {killCount}    ·    Niveau {level}    ·    {boss}
+UI/GameUI.cs	2050	{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps.
+UI/GameUI.cs	2051	Tu as tenu {t} face à des boss de plus en plus féroces.
+UI/GameUI.cs	2052	{b} boss vaincus avant la chute. Le prochain record est à portée.
+UI/GameUI.cs	2060	${bossKillCount} boss sur {total}. La ruée ne pardonne pas — reviens plus fort.
+UI/GameUI.cs	2064	Aucun titan abattu
+UI/GameUI.cs	2065	1 titan abattu
+UI/GameUI.cs	2066	${bossKillCount} titans abattus
+UI/GameUI.cs	2067	${killed} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.
+UI/GameUI.cs	2081	${total} boss abattus en {FormatTime(runTime)}. La ruée est à toi.
+UI/GameUI.cs	2086	$Les 3 titans terrassés en {FormatTime(runTime)}. Rien ne t'arrête.
+UI/GameUI.cs	2091	${FormatTime(runTime)} au compteur, {killCount} ennemis au tapis. {closer}
+UI/GameUI.cs	2128	$Nouveau record de survie : {FormatTime(runTime)} !
+UI/GameUI.cs	2129	$Nouveau record d'éliminations : {killCount} !
+UI/GameUI.cs	2130	$Nouveau record de niveau : {levelReached} !
+UI/GameUI.cs	2131	$Nouveau record d'Or en une partie : {goldThisRun} !
+UI/GameUI.cs	2200	VICTOIRE !
+UI/GameUI.cs	2351	${pct}%
+UI/GameUI.cs	2421	$Or : {amount}
+UI/GameUI.cs	2427	$Éliminations : {kills}
+UI/GameUI.cs	2439	$Niv. {level}
+UI/GameUI.cs	2475	${Mathf.CeilToInt(Mathf.Max(0, currentHP))} / {Mathf.CeilToInt(maxHP)}
+UI/GameUI.cs	2495	${mins:00}:{secs:00}
+UI/GameUI.cs	2571	FIN DE PARTIE
+UI/GameUI.cs	2571	DÉFAITE
+UI/GameUI.cs	2618	$Temps : {mins:00}:{secs:00}\nEnnemis tués : {kills}\nGold : {gold}
+UI/HudBar.cs	68	 (HUD contour)
+UI/HudBar.cs	160	HudBarVisual
+UI/HudBar.cs	182	Frame
+UI/HudBar.cs	183	Track
+UI/HudBar.cs	186	FillArea
+UI/HudBar.cs	189	Trail
+UI/HudBar.cs	196	Fill
+UI/HudBar.cs	199	Sheen
+UI/HudBar.cs	226	Medallion
+UI/HudBar.cs	237	Ring
+UI/HudBar.cs	240	Icon
+UI/HudKeyLegend.cs	38	KeyLegend
+UI/HudKeyLegend.cs	52	Content
+UI/HudKeyLegend.cs	66	Dash
+UI/HudKeyLegend.cs	67	Ultime
+UI/HudKeyLegend.cs	69	Clone
+UI/HudKeyLegend.cs	71	Orbites
+UI/HudKeyLegend.cs	72	Pause
+UI/HudKeyLegend.cs	80	Row_
+UI/HudKeyLegend.cs	88	Key
+UI/HudKeyLegend.cs	103	Frame
+UI/HudKeyLegend.cs	116	KeyText
+UI/HudKeyLegend.cs	124	Label
+UI/HudStyler.cs	169	StatsGroup/TimerText
+UI/HudStyler.cs	248	Rim
+UI/HudStyler.cs	260	CLONE
+UI/HudStyler.cs	263	ActionCluster/DashCooldownBar
+UI/HudStyler.cs	264	DASH
+UI/HudStyler.cs	267	ULTIME
+UI/HudStyler.cs	278	BOUCLIER
+UI/HudStyler.cs	282	CONCENTRATION
+UI/HudStyler.cs	288	Caption
+UI/HudStyler.cs	320	Health/HPBar
+UI/HudStyler.cs	339	Health/HPText
+UI/HudStyler.cs	355	XpGroup/XPBar
+UI/HudStyler.cs	358	ActionCluster/DashCooldownBar
+UI/HudStyler.cs	374	BossGroup/BossHPBar
+UI/HudStyler.cs	389	BossGroup/BossIcon
+UI/HudStyler.cs	403	BossGroup/BossNameText
+UI/HudStyler.cs	432	BossGroup/MiniBossHPBar
+UI/HudStyler.cs	487	StatsGroup/GoldText
+UI/HudStyler.cs	550	XpGroup/XPBar
+UI/HudStyler.cs	598	StatsGroup/GoldText
+UI/HudStyler.cs	598	GoldIcon
+UI/HudStyler.cs	599	StatsGroup/KillCountText
+UI/HudStyler.cs	599	KillCountIcon
+UI/MainMenuManager.cs	124	Game
+UI/MenuLeavesFX.cs	60	Leaf
+UI/MenuLeavesFX.cs	61	Speck
+UI/MenuLeavesFX.cs	250	Bird
+UI/MenuLeavesFX.cs	254	WingR
+UI/MenuLeavesFX.cs	255	WingL
+UI/MenuTabBarFX.cs	72	BarShadow
+UI/MenuTabBarFX.cs	83	BarTrimBottom
+UI/MenuTabBarFX.cs	84	BarTrimTop
+UI/MenuTabBarFX.cs	92	BarStud
+UI/MenuTabBarFX.cs	107	Bar
+UI/MenuTabBarFX.cs	207	TabIndicatorGlow
+UI/MenuTabBarFX.cs	214	TabIndicatorLine
+UI/PauseMenuUI.cs	419	${minutes:00}:{seconds:00}
+UI/PauseMenuUI.cs	449	Pas de défi dans ce mode.
+UI/PauseMenuUI.cs	470	$Défi déjà réussi cette heure !\nNouveau défi dans {minutes} min.
+UI/PauseMenuUI.cs	471	Défi déjà réussi cette heure !\nNouveau défi à ta prochaine partie !
+UI/PauseMenuUI.cs	485	${challenge.displayName} : Niv. <color=#{difficultyColorHex}>{difficultyLabel}</color>\n
+UI/PauseMenuUI.cs	486	${challenge.description}\n
+UI/PauseMenuUI.cs	487	$Récompense : {rewardText}
+UI/PauseMenuUI.cs	526	Échoué
+UI/PauseMenuUI.cs	531	Réussi
+UI/PauseMenuUI.cs	536	En cours
+UI/PauseMenuUI.cs	541	$Statut\n<color=#{colorHex}>{statusLabel}</color>
+UI/PauseMenuUI.cs	607	FACILE
+UI/PauseMenuUI.cs	608	MOYEN
+UI/PauseMenuUI.cs	609	DIFFICILE
+UI/ReputationHallFX.cs	95	Glow
+UI/ReputationHallFX.cs	104	Ember
+UI/ReputationStatCardUI.cs	132	NIVEAU MAXIMUM
+UI/ReputationStatCardUI.cs	132	NIVEAU 
+UI/ReputationStatCardUI.cs	138	<color=#
+UI/ReputationStatCardUI.cs	138	>PALIER MAXIMUM ATTEINT</color>
+UI/ReputationStatCardUI.cs	143	PROCHAIN NIVEAU   <color=#
+UI/ReputationStatCardUI.cs	143	</color>
+UI/ReputationStatCardUI.cs	172	MAX
+UI/ReputationStatCardUI.cs	172	AMÉLIORER
+UI/ReputationStatCardUI.cs	172	ÉCLATS INSUFFISANTS
+UI/ReputationStyle.cs	23	reputationSpeed
+UI/ReputationStyle.cs	24	reputationRegen
+UI/ReputationStyle.cs	33	reputationSpeed
+UI/ReputationStyle.cs	33	VITESSE
+UI/ReputationStyle.cs	34	reputationRegen
+UI/ReputationStyle.cs	34	RÉGÉNÉRATION
+UI/ReputationStyle.cs	35	DÉGÂTS
+UI/ReputationStyle.cs	55	reputationRegen
+UI/ReputationStyle.cs	55	 PV/s
+UI/ReputationUI.cs	290	 EST VERROUILLÉ\n<size=70%><color=#
+UI/ReputationUI.cs	290	>Débloque-le dans l'onglet Personnages\npour accéder à ses skins.</color></size>
+UI/ReputationUI.cs	295	PRESTIGE  ·  ÉCLATS
+UI/ReputationUI.cs	295	CLASSIQUE  ·  OR
+UI/ReputationUI.cs	303	PERSONNAGE VERROUILLÉ
+UI/ReputationUI.cs	304	ÉQUIPÉ
+UI/ReputationUI.cs	305	ÉQUIPER
+UI/ReputationUI.cs	308	ÉCLATS INSUFFISANTS
+UI/ReputationUI.cs	308	OR INSUFFISANT
+UI/ReputationUI.cs	315	CONFIRMER L'ACHAT ?
+UI/ReputationUI.cs	315	ACHETER
+UI/ReputationUI.cs	387	 est verrouillé.
+UI/ReputationUI.cs	395	 équipé pour 
+UI/ReputationUI.cs	417	Nouveau skin : 
+UI/ReputationUI.cs	424	Il te manque des Éclats.
+UI/ReputationUI.cs	424	Il te manque de l'or.
+UI/ReputationUI.cs	428	 est verrouillé.
+UI/SkillDetailPanel.cs	152	TALENT UNIQUE
+UI/SkillDetailPanel.cs	152	$NIVEAU {level} / {max}
+UI/SkillDetailPanel.cs	186	débloqué
+UI/SkillDetailPanel.cs	186	niveau 1
+UI/SkillDetailPanel.cs	187	${what}  <size=80%><color=#{SkillTreeStyle.Hex(SkillTreeStyle.Muted)}>{detail}</color></size>
+UI/SkillDetailPanel.cs	224	ACQUIS
+UI/SkillDetailPanel.cs	264	ACQUIS
+UI/SkillDetailPanel.cs	264	NIVEAU MAX
+UI/SkillDetailPanel.cs	265	Ce talent est actif.
+UI/SkillDetailPanel.cs	265	Cette compétence est au maximum.
+UI/SkillDetailPanel.cs	270	INDISPONIBLE
+UI/SkillDetailPanel.cs	271	$Sélectionne {owner} dans l'onglet Personnages pour acheter.
+UI/SkillDetailPanel.cs	275	VERROUILLÉ
+UI/SkillDetailPanel.cs	276	Débloque d'abord les prérequis ci-dessus.
+UI/SkillDetailPanel.cs	281	OR INSUFFISANT
+UI/SkillDetailPanel.cs	282	$Il te manque {cost - gold} or.
+UI/SkillDetailPanel.cs	287	ACHETER
+UI/SkillDetailPanel.cs	305	$reste {gold - cost}
+UI/SkillTreeData.cs	70	Concentration
+UI/SkillTreeData.cs	71	Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu.
+UI/SkillTreeData.cs	73	+8% / sec, plafond +15%
+UI/SkillTreeData.cs	74	+8% / sec, plafond +30%
+UI/SkillTreeData.cs	75	+8% / sec, plafond +50%
+UI/SkillTreeData.cs	85	Cadence
+UI/SkillTreeData.cs	86	Augmente la vitesse de tir de toutes tes armes.
+UI/SkillTreeData.cs	100	Fragmentation
+UI/SkillTreeData.cs	101	Les projectiles ont 15% de chance d'exploser à l'impact.
+UI/SkillTreeData.cs	108	crystalDamage
+UI/SkillTreeData.cs	110	Dégâts Cristal
+UI/SkillTreeData.cs	111	Augmente les dégâts de l'ultime et de la Nova.
+UI/SkillTreeData.cs	125	Surpuissance
+UI/SkillTreeData.cs	126	Après l'ultime, tes dégâts sont doublés pendant 5 secondes.
+UI/SkillTreeData.cs	129	crystalDamage
+UI/SkillTreeData.cs	137	Vitalité
+UI/SkillTreeData.cs	138	Augmente tes points de vie maximum.
+UI/SkillTreeData.cs	153	Récupération
+UI/SkillTreeData.cs	154	Chaque projectile absorbé par le dash restaure des PV.
+UI/SkillTreeData.cs	156	+20 PV par absorption
+UI/SkillTreeData.cs	157	+50 PV par absorption
+UI/SkillTreeData.cs	158	+80 PV par absorption
+UI/SkillTreeData.cs	166	secondWind
+UI/SkillTreeData.cs	168	Second Souffle
+UI/SkillTreeData.cs	169	Une fois par partie, survit à un coup fatal avec 1 PV.
+UI/SkillTreeData.cs	178	Armure
+UI/SkillTreeData.cs	179	Réduit les dégâts reçus de tous les ennemis.
+UI/SkillTreeData.cs	191	manaShield
+UI/SkillTreeData.cs	193	Bouclier de Mana
+UI/SkillTreeData.cs	194	Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.
+UI/SkillTreeData.cs	197	secondWind
+UI/SkillTreeData.cs	204	impulsionNova
+UI/SkillTreeData.cs	206	Impulsion Nova
+UI/SkillTreeData.cs	207	Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.
+UI/SkillTreeData.cs	216	Dash Amélioré
+UI/SkillTreeData.cs	217	Réduit le temps de recharge du dash.
+UI/SkillTreeData.cs	229	crystalMastery
+UI/SkillTreeData.cs	231	Maîtrise du Cristal
+UI/SkillTreeData.cs	232	Réduit le nombre de charges nécessaires pour l'ultime.
+UI/SkillTreeData.cs	235	impulsionNova
+UI/SkillTreeData.cs	239	novaRadius
+UI/SkillTreeData.cs	241	Nova Étendue
+UI/SkillTreeData.cs	242	Augmente le rayon de la Nova de Cristal.
+UI/SkillTreeData.cs	254	phantomDash
+UI/SkillTreeData.cs	256	Dash Fantôme
+UI/SkillTreeData.cs	261	Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.
+UI/SkillTreeData.cs	264	crystalMastery
+UI/SkillTreeData.cs	264	novaRadius
+UI/SkillTreeLinks.cs	90	$Link_{from.NodeId}_{to.NodeId}_glow
+UI/SkillTreeLinks.cs	91	$Link_{from.NodeId}_{to.NodeId}_bed
+UI/SkillTreeLinks.cs	92	$Link_{from.NodeId}_{to.NodeId}_core
+UI/SkillTreeLinks.cs	95	$Link_{from.NodeId}_{to.NodeId}_spark
+UI/SkillTreeStyle.cs	34	KAEL
+UI/SkillTreeStyle.cs	35	LYRA
+UI/SkillTreeStyle.cs	36	AETHER
+UI/SkillTreeUI.cs	332	$<color=#{gold}>{buyable}</color> compétence{(buyable > 1 ? 
+UI/SkillTreeUI.cs	332	)} achetable{(buyable > 1 ? 
+UI/SkillTreeUI.cs	332	)}  ·  repère le halo doré
+UI/SkillTreeUI.cs	333	$<color=#{muted}>Clique sur un médaillon pour voir ses niveaux et ses prérequis</color>
+UI/SkillTreeUI.cs	350	${SkillTreeStyle.BranchProgress(c.branch)} / {SkillTreeStyle.BranchMax(c.branch)}
+UI/SkillTreeUI.cs	351	PERSONNAGE ACTIF
+UI/SkillTreeUI.cs	351	COMPÉTENCES
+UI/SkillTreeUI.cs	353	$<color=#{labelColor}>{label}</color>   <color=#FFFFFF>{progress}</color>
+UI/SkinCardUI.cs	63	BIENTÔT
+UI/SkinCardUI.cs	100	VERROUILLÉ
+UI/SkinCardUI.cs	105	ÉQUIPÉ
+UI/SkinCardUI.cs	110	POSSÉDÉ
+UI/SummonPortalFX.cs	60	SummonPortalFX
+UI/SummonPortalFX.cs	79	Glow
+UI/SummonPortalFX.cs	80	OuterRune
+UI/SummonPortalFX.cs	81	InnerRing
+UI/SummonPortalFX.cs	82	ConvergeRing
+UI/SummonPortalFX.cs	83	Flash
+UI/SummonPortalFX.cs	84	Pillar
+UI/SummonPortalFX.cs	94	Mote
+UI/TreeAmbientFX.cs	282	Halo
+UI/TreeAmbientFX.cs	305	Ray
+UI/TreeAmbientFX.cs	322	GroundMist
+UI/TreeAmbientFX.cs	363	Firefly
+UI/TreeAmbientFX.cs	380	Leaf
+UI/TreeAmbientFX.cs	399	CrystalGlow
+UI/TreeAmbientFX.cs	406	CrystalGlint
+UI/TreeAmbientFX.cs	424	Spark
+UI/UpgradeUI.cs	281	$FUSION\n<size=85%>{upgrades[i].upgradeName}</size>
+UI/UpgradeUI.cs	473	$x{rawLevelForStack}
+WaitingScreen/AmbientDustUI.cs	57	DustMote
+WaitingScreen/LoadingScreenController.cs	17	MainMenu
+Weapons/BouncingOrbProjectile.cs	39	(Clone)
+Weapons/LightningBoltVFX.cs	46	LightningBoltVFX
+Weapons/MudPuddleZone.cs	51	(Clone)
+Weapons/ProjectileBasic.cs	53	(Clone)
+Weapons/WeaponAura.cs	92	AuraRingVisual
+Weapons/WeaponAura.cs	109	AuraFillVisual
+Weapons/WeaponBase.cs	154	Projectile
+Weapons/WeaponBouncingOrb.cs	65	BouncingOrbProjectile
+Weapons/WeaponBouncingOrb.cs	85	BouncingOrbProjectile
+Weapons/WeaponFireball.cs	89	ProjectileFireball
+Weapons/WeaponFusionCursedSwamp.cs	144	MudPuddleZone
+Weapons/WeaponFusionManaVortex.cs	74	ManaVortexRing
+Weapons/WeaponFusionManaVortex.cs	96	OrbitalProjectile
+Weapons/WeaponFusionManaVortex.cs	193	OrbitalProjectile
+Weapons/WeaponFusionRicochetBlades.cs	101	ProjectileShuriken
+Weapons/WeaponFusionScorchedEarth.cs	76	MudPuddleZone
+Weapons/WeaponFusionThunderingOrbs.cs	67	OrbitalProjectile
+Weapons/WeaponFusionThunderingOrbs.cs	160	OrbitalProjectile
+Weapons/WeaponFusionTwinOrbs.cs	116	BouncingOrbProjectile
+Weapons/WeaponFusionTwinOrbs.cs	132	TwinOrbsBond
+Weapons/WeaponFusionTwinOrbs.cs	155	BouncingOrbProjectile
+Weapons/WeaponMudPuddle.cs	95	MudPuddleZone
+Weapons/WeaponOrbital.cs	43	OrbitalProjectile
+Weapons/WeaponOrbital.cs	89	OrbitalProjectile
+Weapons/WeaponOrbital.cs	97	OrbitalProjectile
+Weapons/WeaponShurikenBarrage.cs	127	ProjectileShuriken

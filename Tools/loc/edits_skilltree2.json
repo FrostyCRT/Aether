@@ -1,0 +1,9 @@
+{
+  "Assets/Game/Scripts/UI/SkillNode.cs": [
+    ["    private void OnEnable()\n    {\n        _appearTime = Time.unscaledTime;", "    private void OnEnable()\n    {\n        ApplyName();\n        _appearTime = Time.unscaledTime;"],
+    ["    private void HandleClick()\n    {", "    // AJOUTÉ (2026-10-14) - nom réécrit à chaque affichage (langue changée entre-temps dans les Paramètres), cartouche\n    // réajusté à sa nouvelle longueur.\n    private void ApplyName()\n    {\n        SkillTreeData.NodeData data = SkillTreeData.Get(_nodeId);\n        if (data == null || _nameLabel == null) return;\n        string name = Loc.T(data.displayName);\n        if (_nameLabel.text == name) return;\n        _nameLabel.text = name;\n        if (_plate != null)\n        {\n            float w = _nameLabel.GetPreferredValues(name).x + 24f;\n            _plate.sizeDelta = new Vector2(Mathf.Max(_isUnique ? 72f : 80f, w), _plate.sizeDelta.y);\n        }\n    }\n\n    private void HandleClick()\n    {"]
+  ],
+  "Assets/Game/Scripts/UI/SkillTreeUI.cs": [
+    ["        if (_debugResetButton != null) _debugResetButton.SetActive(Debug.isDebugBuild);\n\n        RefreshAllNodes();\n    }", "        if (_debugResetButton != null) _debugResetButton.SetActive(Debug.isDebugBuild);\n\n        RefreshAllNodes();\n        Loc.Changed += OnLanguageChanged;\n    }\n\n    // AJOUTÉ (2026-10-14) - changement de langue : la fiche ouverte est refermée (elle serait dans l'ancienne langue) et\n    // les textes de l'onglet (consigne, légendes) sont réécrits.\n    private void OnLanguageChanged()\n    {\n        if (this == null) { Loc.Changed -= OnLanguageChanged; return; }\n        if (_isPanelOpen) ClosePanel();\n        RefreshAllNodes();\n    }\n\n    private void OnDestroy() => Loc.Changed -= OnLanguageChanged;"]
+  ]
+}

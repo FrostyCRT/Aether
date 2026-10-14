@@ -238,7 +238,7 @@ public class CharacterInfoPanel : MonoBehaviour
         if (_weaponName != null) _weaponName.text = info.weaponName;
         if (_weaponDescription != null) _weaponDescription.text = info.weaponDescription;
         if (_weaponUpgrades != null)
-            _weaponUpgrades.text = $"<color=#{ColorUtility.ToHtmlStringRGB(Muted)}>PALIERS</color>   {info.weaponUpgrades}";
+            _weaponUpgrades.text = $"<color=#{ColorUtility.ToHtmlStringRGB(Muted)}>{Loc.T("PALIERS")}</color>   {info.weaponUpgrades}";
     }
 
     private void ApplyTree(Info info)
@@ -304,7 +304,7 @@ public class CharacterInfoPanel : MonoBehaviour
         if (_treeHint != null)
         {
             bool complete = totalLevels > 0 && doneLevels >= totalLevels;
-            _treeHint.text = complete ? "ARBRE COMPLET" : "VOIR L'ARBRE";
+            _treeHint.text = complete ? Loc.T("ARBRE COMPLET") : Loc.T("VOIR L'ARBRE");
             _treeHint.color = complete ? info.accent : Muted;
         }
     }

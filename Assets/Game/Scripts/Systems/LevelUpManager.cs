@@ -296,8 +296,8 @@ public class LevelUpManager : MonoBehaviour
         System.Text.StringBuilder summary = new System.Text.StringBuilder();
         foreach (var kvp in counts)
         {
-            if (kvp.Value > 1) summary.AppendLine($"\u2022 {kvp.Key} x{kvp.Value}");
-            else summary.AppendLine($"\u2022 {kvp.Key}");
+            if (kvp.Value > 1) summary.AppendLine($"\u2022 {Loc.T(kvp.Key)} x{kvp.Value}");
+            else summary.AppendLine($"\u2022 {Loc.T(kvp.Key)}");
         }
         return summary.ToString().TrimEnd();
 
@@ -316,7 +316,7 @@ public class LevelUpManager : MonoBehaviour
         List<string> lines = new List<string>();
         foreach (var kvp in counts)
         {
-            lines.Add(kvp.Value > 1 ? $"\u2022 {kvp.Key} x{kvp.Value}" : $"\u2022 {kvp.Key}");
+            lines.Add(kvp.Value > 1 ? $"\u2022 {Loc.T(kvp.Key)} x{kvp.Value}" : $"\u2022 {Loc.T(kvp.Key)}");
         }
 
         return lines;
