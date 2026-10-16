@@ -377,8 +377,8 @@
 362	Zone Aura	Aura zone
 363	Orbe Rebondissant	Bouncing Orb
 364	Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.	Launches orbs that bounce endlessly around the arena, hurting every enemy they hit.
-365	Dégats +	Damage +
-366	+20% aux dégats	+20% damage
+365	Dégâts +	Damage +
+366	+20% aux dégâts	+20% damage
 367	Double Tir	Double Shot
 368	Tire 2 projectiles en rafale	Fires 2 projectiles in a burst
 369	Boule de Feu	Fireball
@@ -607,3 +607,4 @@
 
 ## Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
 578	FUSION	FUSION
+579	Éclat	Shard

@@ -224,7 +224,7 @@
 211| Albero e Reputazione al massimo. Cambia personaggio se vuoi qualcosa di nuovo.
 212| monete d'oro
 213| frammenti
-214| Ti mancano ancora {0} {1} per sbloccare {2}
+214| Ancora {0} {1} per sbloccare {2}
 215| Puoi già sbloccare {0}!
 216| Tentativo n. {0}
 217| Sopravvivenza {0:00}:{1:00}    ·    Titani {2}/3
@@ -613,3 +613,4 @@
 
 ## Ajouts (fin de table)
 578| FUSIONE
+579| frammento

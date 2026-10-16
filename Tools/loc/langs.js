@@ -20,7 +20,92 @@ const LANGS = {
   pt: { cls: "LocTablePT", name: "PORTUGAISE - Brésil (Português do Brasil)" },
   it: { cls: "LocTableIT", name: "ITALIENNE (Italiano)" },
   pl: { cls: "LocTablePL", name: "POLONAISE (Polski)" },
+  ru: { cls: "LocTableRU", name: "RUSSE (Русский)" },
+  zh: { cls: "LocTableZH", name: "CHINOISE - simplifié (简体中文)" },
+  ja: { cls: "LocTableJA", name: "JAPONAISE (日本語)" },
+  ko: { cls: "LocTableKO", name: "CORÉENNE (한국어)" },
 };
+
+// Contrôles propres à une écriture (en plus des trous / balises / lignes communs à toutes les langues).
+const CJK = /[　-〿぀-ヿ㐀-鿿＀-￯]/;   // ponctuation CJK, kana, idéogrammes, pleine chasse
+const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힯]/;
+
+// Coréen : la ponctuation occidentale (. , : ! ? ( ) + — ‘ ’) existe dans Bangers, qui la dessinerait penchée et à sa
+// taille à côté du hangeul droit de Noto Sans KR (« : » qui ressemble à « ; », « + » minuscule...). Le coréen s'écrit
+// pourtant avec cette ponctuation-là (pas de pleine chasse). Donc tr_ko.txt garde la ponctuation normale, et la table
+// générée la remplace par des caractères que Bangers N'A PAS ; Tools/build_language_fonts.py fait pointer ces caractères,
+// dans la police coréenne réduite, vers le dessin normal (étroit) du signe d'origine. Résultat : ponctuation coréenne
+// dessinée par la police coréenne, à la bonne taille. Ponctuation collée à du latin ou à un nombre ("Esc:", "x1.5",
+// "+8%", "15:00") : inchangée (dessinée par Bangers comme le reste du mot).
+// Même liste dans build_language_fonts.py (KO_PUNCT) : les modifier ensemble.
+const KO_PUNCT = { ".": "．", ",": "，", ":": "：", "!": "！", "?": "？", "(": "（", ")": "）", "+": "＋", "—": "―", "‘": "", "’": "" };
+const KO_OPENING = "(‘";
+function koPunctuation(v) {
+  if (!HANGUL.test(v) && !v.includes("{")) return v;         // ni coréen ni texte inséré (ex. "AZERTY (ZQSD)")
+  const out = [...v];
+  let inTag = false, inHole = false;
+  const opened = [];                                          // décisions des "(" ouvertes : ")" suit la sienne
+  const neighbour = (i, step) => {                            // caractère voisin significatif (espaces sautés)
+    for (let j = i + step; j >= 0 && j < out.length; j += step) {
+      if (out[j] === " ") continue;
+      return out[j] === "{" || out[j] === "}" ? "0" : out[j];   // un trou {0} compte comme un nombre ("{0:00}:{1:00}")
+    }
+    return "";
+  };
+  for (let i = 0; i < out.length; i++) {
+    const c = out[i];
+    if (c === "<") inTag = true;
+    if (inTag) { if (c === ">") inTag = false; continue; }
+    if (c === "{") inHole = true;
+    if (inHole) { if (c === "}") inHole = false; continue; }
+    if (!(c in KO_PUNCT)) continue;
+    let korean;
+    if (c === "‘" || c === "’") korean = true;                // guillemets : toujours autour d'un texte coréen
+    else if (c === ")") korean = opened.length ? opened.pop() : !/[A-Za-z0-9%]/.test(neighbour(i, -1));
+    else if (c === "+" && /[0-9{]/.test(out[i + 1] || "")) korean = false;             // "+8%", "+{0}" : un nombre
+    else if (c === "." && /[0-9]/.test(out[i - 1] || "") && /[0-9]/.test(out[i + 1] || "")) korean = false;   // "1.5"
+    else korean = !/[A-Za-z0-9%]/.test(KO_OPENING.includes(c) ? neighbour(i, +1) : neighbour(i, -1));   // collée à du latin / un nombre : Bangers
+    if (c === "(") opened.push(korean);
+    if (korean) out[i] = KO_PUNCT[c];
+  }
+  return out.join("");
+}
+function scriptChecks(lang, v) {
+  const out = [];
+  const plain = v.replace(/<[^>]+>/g, " ").replace(/\{[^{}]*\}/g, " ");
+  if (lang === "ru") {
+    // mot mêlant lettres latines et cyrilliques (ex. "o" latin tapé dans un mot russe : invisible à l'œil, mal rendu)
+    for (const w of plain.split(/[^A-Za-zЀ-ӿ]+/))
+      if (/[A-Za-z]/.test(w) && /[Ѐ-ӿ]/.test(w)) out.push(`MÉLANGE latin/cyrillique dans "${w}"`);
+    if (/"/.test(plain)) out.push("guillemets droits (le russe utilise « »)");
+  }
+  if (lang === "ko") {
+    // particule variable (을/를, 이/가, 은/는, 와/과, 으로/로) collée à un trou {0} : sa forme dépend du mot inséré
+    for (const m of v.matchAll(/\}['’]?(을|를|이|가|은|는|와|과|으로|로)(?![가-힯])/g))
+      out.push(`particule variable "${m[1]}" juste après un trou {…} (dépend de la dernière lettre du mot inséré)`);
+    // caractères chinois / japonais égarés dans une table coréenne
+    if (/[぀-ヿ㐀-鿿]/.test(plain)) out.push("caractère chinois ou japonais dans le coréen");
+    // ponctuation que Bangers dessinerait à côté du hangeul (table éditée à la main au lieu de "build ko" ?)
+    if (koPunctuation(v) !== v) out.push('ponctuation dessinée par Bangers à côté du coréen (relancer "langs.js build ko")');
+  }
+  if (lang === "ja" && HANGUL.test(plain)) out.push("caractère coréen dans le japonais");
+  if (lang === "zh" || lang === "ja") {
+    // ponctuation occidentale collée à un caractère chinois (attendu : pleine chasse ，。：！？（）)
+    for (let i = 0; i < plain.length; i++) {
+      if (!/[,.:;!?()]/.test(plain[i]) || plain.slice(i - 2, i + 1) === "Lv.") continue;   // "Lv.12" : abréviation voulue
+      if (CJK.test(plain[i - 1] || "") || CJK.test(plain[i + 1] || ""))
+        out.push(`ponctuation occidentale "${plain[i]}" à côté du chinois (position ${i})`);
+    }
+    // signes que Bangers possède : il les dessinerait à la place de la police chinoise (tiret court, points en bas)
+    for (const ch of ["—", "…", "“", "”", "..."]) if (plain.includes(ch)) out.push(`"${ch}" dessiné par Bangers (utiliser ，「」⋯⋯ ou des parenthèses)`);
+    // (les trous {0} comptent comme des chiffres : "范围 +{0}" est un nombre, pas un « + » entre deux mots)
+    const withNumbers = v.replace(/<[^>]+>/g, " ").replace(/\{[^{}]*\}/g, "0");
+    if (new RegExp(CJK.source + " ?\\+ ?" + CJK.source).test(withNumbers)) out.push('"+" entre deux mots (utiliser ＋)');
+    // "+" collé à un mot sans nombre derrière (ex. titre de carte "伤害+") : petit et penché en Bangers
+    if (new RegExp(CJK.source + " ?\\+(?![ ]?[0-9])").test(withNumbers)) out.push('"+" après un mot (utiliser ＋)');
+  }
+  return out;
+}
 
 // Entrées de la table anglaise, dans l'ordre, avec les titres de sections (lignes de commentaire "// ====" ou "// ----").
 function readEN() {
@@ -71,7 +156,7 @@ if (cmd === "skeleton") {
     if (!m) throw new Error(`tr_${lang}.txt:${i + 1} : ligne illisible : ${line}`);
     const id = +m[1];
     if (tr.has(id)) throw new Error(`tr_${lang}.txt:${i + 1} : id ${id} en double`);
-    tr.set(id, unesc(m[2]));
+    tr.set(id, lang === "ko" ? koPunctuation(unesc(m[2])) : unesc(m[2]));
   });
   const items = readEN(), missing = [];
   const body = [];
@@ -119,6 +204,7 @@ public static class ${L.cls}
       if (tags(v) !== tags(it.fr)) out.push(`BALISES    #${it.id} "${show(v)}"`);
       if (lines(v) !== lines(it.fr)) out.push(`LIGNES     #${it.id} "${show(v)}"`);
       if (v.trim() === "") out.push(`VIDE       #${it.id}`);
+      for (const w of scriptChecks(lang, v)) out.push(`ÉCRITURE   #${it.id} ${w} : "${show(v)}"`);
     }
     for (const k of t.keys()) if (!en.some((i) => i.fr === k) && !k.endsWith("#few")) out.push(`EN TROP    "${show(k)}"`);
     problems += out.length;
@@ -126,5 +212,5 @@ public static class ${L.cls}
   }
   process.exit(problems ? 1 : 0);
 } else {
-  console.log("usage : node Tools/loc/langs.js skeleton | build <de|es|pt|it|pl> | check");
+  console.log("usage : node Tools/loc/langs.js skeleton | build <" + Object.keys(LANGS).join("|") + "> | check");
 }

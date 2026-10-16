@@ -170,7 +170,7 @@ public class UpgradeData : ScriptableObject
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0} de rayon d'explosion.", v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture));
+            case 1: return Loc.F("+{0} de rayon d'explosion.", Loc.Num(v, "0.#"));
             case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
             case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée.");
             default: return Description;

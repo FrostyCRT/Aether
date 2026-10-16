@@ -96,7 +96,7 @@ public static class LocTableIT
         { "Tout près de ton record d'Or...", "Il record d'oro era a portata di mano..." }, { "Nouveau personnage débloqué : {0} !", "Nuovo personaggio sbloccato: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Hai dato tutto a questo ramo. Letteralmente." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Qui non resta più niente da sbloccare: cambia personaggio per andare avanti." },
         { "Cette branche n'a plus de secret pour toi.", "Questo ramo non ha più segreti per te." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Albero e Reputazione al massimo. Cambia personaggio se vuoi qualcosa di nuovo." },
-        { "Or", "monete d'oro" }, { "Éclats", "frammenti" }, { "Encore {0} {1} pour débloquer {2}", "Ti mancano ancora {0} {1} per sbloccare {2}" },
+        { "Or", "monete d'oro" }, { "Éclats", "frammenti" }, { "Encore {0} {1} pour débloquer {2}", "Ancora {0} {1} per sbloccare {2}" },
         { "De quoi débloquer {0} dès maintenant !", "Puoi già sbloccare {0}!" }, { "Tentative n°{0}", "Tentativo n. {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Sopravvivenza {0:00}:{1:00}    ·    Titani {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Sopravvivenza {0:00}:{1:00}    ·    Uccisioni {2}    ·    Livello {3}    ·    {4}" },
         { "{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", "Boss sconfitti: {0} su {1}. La maratona non perdona: torna più forte." },
@@ -176,7 +176,7 @@ public static class LocTableIT
         { "Orbes Foudroyants", "Sfere folgoranti" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSIONE — Orbitali + Fulmine a catena: i tuoi frammenti in orbita ora scatenano un fulmine a catena a ogni contatto." },
         { "Orbes Jumeaux", "Sfere gemelle" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSIONE — Colpo doppio + Sfera rimbalzante: il tuo colpo base si sdoppia in due sfere che rimbalzano senza fine." },
         { "Aura", "Aura" }, { "Zone Aura", "Zona aura" }, { "Orbe Rebondissant", "Sfera rimbalzante" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lancia sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono." },
-        { "Dégats +", "Danni +" }, { "+20% aux dégats", "+20% ai danni" }, { "Double Tir", "Colpo doppio" }, { "Tire 2 projectiles en rafale", "Spara 2 proiettili a raffica" },
+        { "Dégâts +", "Danni +" }, { "+20% aux dégâts", "+20% ai danni" }, { "Double Tir", "Colpo doppio" }, { "Tire 2 projectiles en rafale", "Spara 2 proiettili a raffica" },
         { "Boule de Feu", "Palla di fuoco" }, { "Lance une boule de feu", "Lancia una palla di fuoco" }, { "Cadence+", "Cadenza+" },
         { "+20% à la cadence de tir", "+20% alla cadenza di tiro" }, { "Soin", "Cura" }, { "Restaure 50% des HP maximum", "Ripristina il 50% dei PS massimi" },
         { "Couteaux", "Coltelli" }, { "Envoie des salves de couteaux", "Lancia raffiche di coltelli" }, { "Chaîne de Foudre", "Fulmine a catena" },
@@ -276,6 +276,6 @@ public static class LocTableIT
         { "ASSIGNER UNE TOUCHE À", "ASSEGNA UN TASTO A" }, { "Appuyez sur une touche pour commencer", "Premi un tasto per iniziare" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSIONE" },
+        { "FUSION", "FUSIONE" }, { "Éclat", "frammento" },
     };
 }

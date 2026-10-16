@@ -23,7 +23,7 @@ const targets = {
   "Enemies/BossCorruptedSource.cs": /_bossName =/,
   "Systems/WaveManager.cs": /ShowBossHP/,
 };
-const skip = new Set(["display", "graphics", "audio", "gameplay", "interface", "controls", "language", "Français", "English", "Deutsch", "Español", "Português (Brasil)", "Italiano", "Polski"]);
+const skip = new Set(["display", "graphics", "audio", "gameplay", "interface", "controls", "language", "Français", "English", "Deutsch", "Español", "Português (Brasil)", "Italiano", "Polski", "Русский", "简体中文", "日本語", "한국어"]);
 let missing = 0;
 for (const [rel, filter] of Object.entries(targets)) {
   const lines = fs.readFileSync(path.join(root, rel), "utf8").split(/\r?\n/);

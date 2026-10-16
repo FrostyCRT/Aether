@@ -410,14 +410,14 @@
 390| +{0} % Feuerrate für alle deine aktiven Waffen.
 391| Stellt {0} % deiner maximalen LP wieder her.
 392| Schaltet einen zweiten, gleichzeitigen Schuss frei.
-393| Schaltet den Feuerball frei: rüstet Aethers exklusive Waffe aus.
+393| Schaltet den Feuerball frei: Aethers exklusive Waffe.
 394| +{0} Explosionsradius.
 395| +{0} % Schaden.
 396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach.
-397| Schaltet die Aura frei: rüstet Kaels exklusive Waffe aus.
+397| Schaltet die Aura frei: Kaels exklusive Waffe.
 398| +{0} % Radius.
 399| +{0} % Verlangsamung.
-400| Schaltet die Messersalve frei: rüstet Lyras exklusive Waffe aus.
+400| Schaltet die Messersalve frei: Lyras exklusive Waffe.
 401| Ein zusätzliches Messer in der Salve.
 402| Durchbohrt {0} weitere Gegner.
 403| Durchbohrt {0} weiteren Gegner.
@@ -612,3 +612,4 @@
 
 ## Ajouts (fin de table)
 578| FUSION
+579| Splitter

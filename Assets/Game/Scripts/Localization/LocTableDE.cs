@@ -176,7 +176,7 @@ public static class LocTableDE
         { "Orbes Foudroyants", "Blitzkugeln" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSION – Trabanten + Kettenblitz: Deine kreisenden Splitter entfesseln jetzt bei jedem Treffer einen Kettenblitz." },
         { "Orbes Jumeaux", "Zwillingskugeln" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSION – Doppelschuss + Prallkugel: Dein Grundschuss teilt sich in zwei Kugeln, die endlos abprallen." },
         { "Aura", "Aura" }, { "Zone Aura", "Aura-Zone" }, { "Orbe Rebondissant", "Prallkugel" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen." },
-        { "Dégats +", "Schaden +" }, { "+20% aux dégats", "+20 % Schaden" }, { "Double Tir", "Doppelschuss" }, { "Tire 2 projectiles en rafale", "Feuert 2 Projektile kurz hintereinander" },
+        { "Dégâts +", "Schaden +" }, { "+20% aux dégâts", "+20 % Schaden" }, { "Double Tir", "Doppelschuss" }, { "Tire 2 projectiles en rafale", "Feuert 2 Projektile kurz hintereinander" },
         { "Boule de Feu", "Feuerball" }, { "Lance une boule de feu", "Schleudert einen Feuerball" }, { "Cadence+", "Feuerrate+" },
         { "+20% à la cadence de tir", "+20 % Feuerrate" }, { "Soin", "Heilung" }, { "Restaure 50% des HP maximum", "Stellt 50 % deiner maximalen LP wieder her" },
         { "Couteaux", "Messer" }, { "Envoie des salves de couteaux", "Wirft Messersalven" }, { "Chaîne de Foudre", "Kettenblitz" },
@@ -187,10 +187,10 @@ public static class LocTableDE
         { "+1 rebond de foudre supplémentaire.", "+1 zusätzlicher Blitzsprung." }, { "Débloque 3 flaques de boue ralentissante autour de toi.", "Schaltet 3 verlangsamende Schlammpfützen um dich herum frei." },
         { "+1 flaque de boue supplémentaire.", "+1 zusätzliche Schlammpfütze." }, { "+{0}% dégâts sur toutes tes armes actives.", "+{0} % Schaden für alle deine aktiven Waffen." },
         { "+{0}% vitesse de tir sur toutes tes armes actives.", "+{0} % Feuerrate für alle deine aktiven Waffen." }, { "Restaure {0}% de tes PV max.", "Stellt {0} % deiner maximalen LP wieder her." },
-        { "Débloque un second tir simultané.", "Schaltet einen zweiten, gleichzeitigen Schuss frei." }, { "Débloque Boule de feu : équipe l'arme exclusive d'Aether.", "Schaltet den Feuerball frei: rüstet Aethers exklusive Waffe aus." },
+        { "Débloque un second tir simultané.", "Schaltet einen zweiten, gleichzeitigen Schuss frei." }, { "Débloque Boule de feu : équipe l'arme exclusive d'Aether.", "Schaltet den Feuerball frei: Aethers exklusive Waffe." },
         { "+{0} de rayon d'explosion.", "+{0} Explosionsradius." }, { "+{0}% dégâts.", "+{0} % Schaden." }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée.", "Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach." },
-        { "Débloque l'Aura : équipe l'arme exclusive de Kael.", "Schaltet die Aura frei: rüstet Kaels exklusive Waffe aus." },
-        { "+{0}% rayon.", "+{0} % Radius." }, { "+{0}% ralentissement.", "+{0} % Verlangsamung." }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.", "Schaltet die Messersalve frei: rüstet Lyras exklusive Waffe aus." },
+        { "Débloque l'Aura : équipe l'arme exclusive de Kael.", "Schaltet die Aura frei: Kaels exklusive Waffe." }, { "+{0}% rayon.", "+{0} % Radius." },
+        { "+{0}% ralentissement.", "+{0} % Verlangsamung." }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.", "Schaltet die Messersalve frei: Lyras exklusive Waffe." },
         { "Débloque un couteau supplémentaire dans la salve.", "Ein zusätzliches Messer in der Salve." }, { "+{0} ennemis perforés en plus.", "Durchbohrt {0} weitere Gegner." },
         { "+{0} ennemi perforé en plus.", "Durchbohrt {0} weiteren Gegner." }, { "Débloque un orbe rebondissant qui traverse les ennemis.", "Schaltet eine Prallkugel frei, die Gegner durchdringt." },
         { "+{0}% vitesse.", "+{0} % Tempo." }, { "+1 orbe rebondissant supplémentaire.", "+1 zusätzliche Prallkugel." },
@@ -272,6 +272,6 @@ public static class LocTableDE
         { "ASSIGNER UNE TOUCHE À", "TASTE ZUWEISEN FÜR" }, { "Appuyez sur une touche pour commencer", "Drücke eine beliebige Taste" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSION" },
+        { "FUSION", "FUSION" }, { "Éclat", "Splitter" },
     };
 }

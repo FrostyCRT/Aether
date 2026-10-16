@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // AJOUTÉ (2026-10-14) - langue du jeu (Paramètres > Langue). Le français est la langue d'écriture du jeu ; traductions :
-// anglais, allemand, espagnol, portugais (Brésil), italien, polonais (une table par langue : LocTableEN, LocTableDE...).
+// anglais, allemand, espagnol, portugais (Brésil), italien, polonais, russe, chinois simplifié, japonais, coréen (une table par langue :
+// LocTableEN, LocTableDE...).
 //
 // Principe : le TEXTE FRANÇAIS EST LA CLÉ. Le code continue d'écrire ses textes en français, simplement enveloppés :
 //   label.text = Loc.T("Reprendre");                         // texte fixe
@@ -12,18 +13,22 @@ using UnityEngine;
 // table de la langue. Une clé absente : repli sur l'anglais (puis le français) ET signalement une seule fois dans la
 // console (Éditeur / build de dev), pour ne jamais laisser passer un oubli silencieusement.
 // La table ANGLAISE est la référence de la liste des clés : toute nouvelle clé s'y ajoute d'abord, puis dans les autres
-// (contrôle : node Tools/loc/check_langs.js).
+// (contrôle : node Tools/loc/langs.js check).
 //
 // Textes posés à la main dans les scènes / prefabs : composant LocalizedText (même table, même règle).
 // Changement de langue EN DIRECT : événement Loc.Changed (les pages et le HUD se rafraîchissent d'eux-mêmes).
+// Polices : russe, chinois, japonais et coréen ne sont pas dans Bangers. Cyrillique ajouté à la police Bangers elle-même
+// (Tools/patch_bangers_cyrillic.py) ; chinois, japonais, coréen en polices de repli (Noto Sans SC / JP / KR,
+// Aether > Rebuild Language Fonts), celle de la langue courante passant en tête (LanguageFonts).
 // MODIFIÉ (2026-10-14) - les valeurs de l'enum sont enregistrées dans les réglages : ne jamais les renuméroter.
-public enum GameLanguage { French = 0, English = 1, German = 2, Spanish = 3, PortugueseBR = 4, Italian = 5, Polish = 6 }
+// MODIFIÉ (2026-10-15) - ajout du russe (7), du chinois simplifié (8), du japonais (9) et du coréen (10).
+public enum GameLanguage { French = 0, English = 1, German = 2, Spanish = 3, PortugueseBR = 4, Italian = 5, Polish = 6, Russian = 7, ChineseSimplified = 8, Japanese = 9, Korean = 10 }
 
 public static class Loc
 {
     public static event Action Changed;
 
-    public const int LanguageCount = 7;
+    public const int LanguageCount = 11;
 
     private static bool _init;
     private static GameLanguage _lang;
@@ -46,6 +51,13 @@ public static class Loc
                 case SystemLanguage.Portuguese: return GameLanguage.PortugueseBR;
                 case SystemLanguage.Italian: return GameLanguage.Italian;
                 case SystemLanguage.Polish: return GameLanguage.Polish;
+                case SystemLanguage.Russian: return GameLanguage.Russian;
+                // chinois traditionnel (Taïwan, Hong Kong) : le simplifié reste bien plus lisible pour eux que l'anglais
+                case SystemLanguage.Chinese:
+                case SystemLanguage.ChineseSimplified:
+                case SystemLanguage.ChineseTraditional: return GameLanguage.ChineseSimplified;
+                case SystemLanguage.Japanese: return GameLanguage.Japanese;
+                case SystemLanguage.Korean: return GameLanguage.Korean;
                 default: return GameLanguage.English;
             }
         }
@@ -85,6 +97,10 @@ public static class Loc
             case GameLanguage.PortugueseBR: return LocTablePT.Table;
             case GameLanguage.Italian: return LocTableIT.Table;
             case GameLanguage.Polish: return LocTablePL.Table;
+            case GameLanguage.Russian: return LocTableRU.Table;
+            case GameLanguage.ChineseSimplified: return LocTableZH.Table;
+            case GameLanguage.Japanese: return LocTableJA.Table;
+            case GameLanguage.Korean: return LocTableKO.Table;
             default: return null;
         }
     }
@@ -110,25 +126,47 @@ public static class Loc
     /// <summary>Mot seul accordé au nombre ("victoire" / "victoires"), déjà traduit.</summary>
     public static string PluralWord(int n, string frOne, string frMany) => T(PluralKey(n, frOne, frMany));
 
-    // Règle de pluriel de la langue courante. Le polonais a une 3e forme (2-4, sauf 12-14 : "2 wygrane" mais
-    // "5 wygranych") : clé française du pluriel suivie de "#few", présente seulement dans la table polonaise.
+    // Règle de pluriel de la langue courante. Polonais et russe ont une 3e forme (2-4, sauf 12-14 : "2 wygrane" mais
+    // "5 wygranych", "2 победы" mais "5 побед") : clé française du pluriel suivie de "#few", présente seulement dans
+    // la table de ces langues (absente : forme du pluriel). Le russe prend le singulier pour 1, 21, 31... (sauf 11)
+    // ("21 победа"). Chinois, japonais et coréen n'accordent pas : toujours la forme du pluriel.
     private static string PluralKey(int n, string frOne, string frMany)
     {
+        int d = Math.Abs(n) % 10, h = Math.Abs(n) % 100;
+        bool few = d >= 2 && d <= 4 && (h < 12 || h > 14);
         switch (Current)
         {
             case GameLanguage.French:
                 return n > 1 ? frMany : frOne;
             case GameLanguage.Polish:
-            {
                 if (n == 1) return frOne;
-                int d = Math.Abs(n) % 10, h = Math.Abs(n) % 100;
-                bool few = d >= 2 && d <= 4 && (h < 12 || h > 14);
                 return few && LocTablePL.Table.ContainsKey(frMany + "#few") ? frMany + "#few" : frMany;
-            }
+            case GameLanguage.Russian:
+                if (d == 1 && h != 11) return frOne;
+                return few && LocTableRU.Table.ContainsKey(frMany + "#few") ? frMany + "#few" : frMany;
+            case GameLanguage.ChineseSimplified:
+            case GameLanguage.Japanese:
+            case GameLanguage.Korean:
+                return frMany;
             default:
                 return n == 1 ? frOne : frMany;
         }
     }
+
+    /// <summary>Séparateur décimal de la langue courante : point en anglais, chinois, japonais et coréen, virgule ailleurs.</summary>
+    public static string DecimalSeparator
+    {
+        get
+        {
+            GameLanguage l = Current;
+            return l == GameLanguage.English || l == GameLanguage.ChineseSimplified || l == GameLanguage.Japanese || l == GameLanguage.Korean ? "." : ",";
+        }
+    }
+
+    /// <summary>Nombre à virgule écrit selon la langue (format .NET, ex. "0.#") : "1,5" en français, "1.5" en anglais.
+    /// Ne dépend pas de la langue de Windows.</summary>
+    public static string Num(float value, string format)
+        => value.ToString(format, System.Globalization.CultureInfo.InvariantCulture).Replace(".", DecimalSeparator);
 
     /// <summary>Vrai si `text` est la traduction de `fr` dans l'une des langues (sert à LocalizedText).</summary>
     public static bool IsTranslationOf(string fr, string text)

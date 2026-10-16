@@ -244,7 +244,7 @@ public static class SettingsSchema
 
     // Noms des langues toujours écrits dans leur propre langue (jamais traduits).
     // Dans l'ordre de l'enum GameLanguage ; chaque langue est écrite dans sa propre langue (jamais traduite).
-    public static readonly string[] LanguageNames = { "Français", "English", "Deutsch", "Español", "Português (Brasil)", "Italiano", "Polski" };
+    public static readonly string[] LanguageNames = { "Français", "English", "Deutsch", "Español", "Português (Brasil)", "Italiano", "Polski", "Русский", "简体中文", "日本語", "한국어" };
 
     // Remet à zéro tout ce qu'une catégorie contient (réglages ET touches).
     public static void ResetCategory(CategoryDef cat)

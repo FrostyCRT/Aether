@@ -96,7 +96,7 @@ public static class LocTableES
         { "Tout près de ton record d'Or...", "Muy cerca de tu récord de oro..." }, { "Nouveau personnage débloqué : {0} !", "¡Nuevo personaje desbloqueado: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Lo has dado todo en esta rama. Literalmente." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Aquí ya no queda nada por desbloquear: cambia de personaje para seguir." },
         { "Cette branche n'a plus de secret pour toi.", "Esta rama ya no tiene secretos para ti." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Árbol y Reputación al máximo. Cambia de personaje si quieres algo nuevo." },
-        { "Or", "de oro" }, { "Éclats", "fragmentos" }, { "Encore {0} {1} pour débloquer {2}", "Te faltan {0} {1} para desbloquear {2}" },
+        { "Or", "de oro" }, { "Éclats", "fragmentos" }, { "Encore {0} {1} pour débloquer {2}", "Necesitas {0} {1} más para desbloquear {2}" },
         { "De quoi débloquer {0} dès maintenant !", "¡Ya puedes desbloquear {0}!" }, { "Tentative n°{0}", "Intento n.º {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Supervivencia {0:00}:{1:00}    ·    Titanes {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Supervivencia {0:00}:{1:00}    ·    Bajas {2}    ·    Nivel {3}    ·    {4}" },
         { "{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", "Jefes derrotados: {0} de {1}. El maratón no perdona: vuelve más fuerte." },
@@ -174,7 +174,7 @@ public static class LocTableES
         { "Orbes Foudroyants", "Orbes fulminantes" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSIÓN — Orbitales + Rayo en cadena: tus fragmentos en órbita desatan ahora un rayo en cadena con cada impacto." },
         { "Orbes Jumeaux", "Orbes gemelos" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSIÓN — Disparo doble + Orbe rebotador: tu disparo básico se divide en dos esferas que rebotan sin fin." },
         { "Aura", "Aura" }, { "Zone Aura", "Zona de aura" }, { "Orbe Rebondissant", "Orbe rebotador" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lanza orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan." },
-        { "Dégats +", "Daño +" }, { "+20% aux dégats", "+20% de daño" }, { "Double Tir", "Disparo doble" }, { "Tire 2 projectiles en rafale", "Dispara 2 proyectiles en ráfaga" },
+        { "Dégâts +", "Daño +" }, { "+20% aux dégâts", "+20% de daño" }, { "Double Tir", "Disparo doble" }, { "Tire 2 projectiles en rafale", "Dispara 2 proyectiles en ráfaga" },
         { "Boule de Feu", "Bola de fuego" }, { "Lance une boule de feu", "Lanza una bola de fuego" }, { "Cadence+", "Cadencia+" },
         { "+20% à la cadence de tir", "+20% de cadencia de disparo" }, { "Soin", "Curación" }, { "Restaure 50% des HP maximum", "Restaura el 50% de la vida máxima" },
         { "Couteaux", "Cuchillos" }, { "Envoie des salves de couteaux", "Lanza ráfagas de cuchillos" }, { "Chaîne de Foudre", "Rayo en cadena" },
@@ -269,10 +269,10 @@ public static class LocTableES
         { "L'arsenal que tu avais", "El arsenal que tenías" }, { "Ce que tu emportes", "Lo que te llevas" }, { "Ce que cette partie t'a rapporté", "Lo que te ha dado esta partida" },
         { "NIVEAU SUPÉRIEUR !", "¡SUBES DE NIVEL!" }, { "FUSION DISPONIBLE !", "¡FUSIÓN DISPONIBLE!" }, { "CONSERVER CES PARAMÈTRES D'AFFICHAGE ?", "¿CONSERVAR ESTA CONFIGURACIÓN DE PANTALLA?" },
         { "Conserver", "Conservar" }, { "Annuler", "Cancelar" }, { "Confirmer", "Confirmar" }, { "Rétablir", "Restablecer" },
-        { "DÉFAUT", "PREDETERMINADO" }, { "Quitter le jeu", "Salir del juego" }, { "Réinitialiser cette page", "Restablecer esta página" },
+        { "DÉFAUT", "POR DEFECTO" }, { "Quitter le jeu", "Salir del juego" }, { "Réinitialiser cette page", "Restablecer esta página" },
         { "ASSIGNER UNE TOUCHE À", "ASIGNAR UNA TECLA A" }, { "Appuyez sur une touche pour commencer", "Pulsa cualquier tecla para empezar" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSIÓN" },
+        { "FUSION", "FUSIÓN" }, { "Éclat", "fragmento" },
     };
 }

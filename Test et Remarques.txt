@@ -1,0 +1,16 @@
+C:\Users\jules\My project\Aether Storm Survivor
+npx @anthropic-ai/claude-code
+ 
+
+restyliser la barre de chargement dans le loading screen, mettre des éléments comme les caractères du texte du titre, pour retrouver un peu la DA
+
+Revoir chaque fusions pour les valider en jeu.
+
+revoir toutes les descriptions et les noms des upgrades pour les valider pour la version finale.
+
+faire un curseur moins détaillé.
+
+
+défis, faire des phrases plus descriptives pour celles qui en ont besoin, remplir le background en beige plein.
+
+Enlever les dots pour le heal

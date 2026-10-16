@@ -96,7 +96,7 @@ public static class LocTablePT
         { "Tout près de ton record d'Or...", "Bem perto do seu recorde de ouro..." }, { "Nouveau personnage débloqué : {0} !", "Novo personagem desbloqueado: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Você deu tudo por este ramo. Literalmente." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Não sobrou nada para desbloquear aqui — troque de personagem para continuar." },
         { "Cette branche n'a plus de secret pour toi.", "Este ramo não tem mais segredos para você." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Árvore e Reputação no máximo. Troque de personagem se quiser novidade." },
-        { "Or", "de ouro" }, { "Éclats", "fragmentos" }, { "Encore {0} {1} pour débloquer {2}", "Faltam {0} {1} para desbloquear {2}" },
+        { "Or", "de ouro" }, { "Éclats", "fragmentos" }, { "Encore {0} {1} pour débloquer {2}", "Mais {0} {1} para desbloquear {2}" },
         { "De quoi débloquer {0} dès maintenant !", "Você já pode desbloquear {0}!" }, { "Tentative n°{0}", "Tentativa nº {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Sobrevivência {0:00}:{1:00}    ·    Titãs {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Sobrevivência {0:00}:{1:00}    ·    Abates {2}    ·    Nível {3}    ·    {4}" },
         { "{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", "Chefes derrotados: {0} de {1}. A maratona não perdoa — volte mais forte." },
@@ -174,7 +174,7 @@ public static class LocTablePT
         { "Orbes Foudroyants", "Orbes Fulminantes" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSÃO — Orbitais + Raio em Cadeia: seus fragmentos em órbita agora soltam raios em cadeia a cada contato." },
         { "Orbes Jumeaux", "Orbes Gêmeos" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSÃO — Tiro Duplo + Orbe Quicante: seu tiro básico se divide em duas esferas que quicam sem parar." },
         { "Aura", "Aura" }, { "Zone Aura", "Zona de Aura" }, { "Orbe Rebondissant", "Orbe Quicante" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lança orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos." },
-        { "Dégats +", "Dano +" }, { "+20% aux dégats", "+20% de dano" }, { "Double Tir", "Tiro Duplo" }, { "Tire 2 projectiles en rafale", "Dispara 2 projéteis em rajada" },
+        { "Dégâts +", "Dano +" }, { "+20% aux dégâts", "+20% de dano" }, { "Double Tir", "Tiro Duplo" }, { "Tire 2 projectiles en rafale", "Dispara 2 projéteis em rajada" },
         { "Boule de Feu", "Bola de Fogo" }, { "Lance une boule de feu", "Lança uma bola de fogo" }, { "Cadence+", "Cadência+" },
         { "+20% à la cadence de tir", "+20% de cadência de tiro" }, { "Soin", "Cura" }, { "Restaure 50% des HP maximum", "Restaura 50% da vida máxima" },
         { "Couteaux", "Facas" }, { "Envoie des salves de couteaux", "Lança rajadas de facas" }, { "Chaîne de Foudre", "Raio em Cadeia" },
@@ -272,6 +272,6 @@ public static class LocTablePT
         { "ASSIGNER UNE TOUCHE À", "ATRIBUIR UMA TECLA A" }, { "Appuyez sur une touche pour commencer", "Pressione qualquer tecla para começar" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSÃO" },
+        { "FUSION", "FUSÃO" }, { "Éclat", "fragmento" },
     };
 }

@@ -223,7 +223,7 @@
 211| Árvore e Reputação no máximo. Troque de personagem se quiser novidade.
 212| de ouro
 213| fragmentos
-214| Faltam {0} {1} para desbloquear {2}
+214| Mais {0} {1} para desbloquear {2}
 215| Você já pode desbloquear {0}!
 216| Tentativa nº {0}
 217| Sobrevivência {0:00}:{1:00}    ·    Titãs {2}/3
@@ -612,3 +612,4 @@
 
 ## Ajouts (fin de table)
 578| FUSÃO
+579| fragmento

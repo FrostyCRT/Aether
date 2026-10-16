@@ -220,7 +220,7 @@ public static class LocTableEN
         { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSION — Double Shot + Bouncing Orb: your basic shot splits into two spheres that bounce forever." },
         { "Aura", "Aura" }, { "Zone Aura", "Aura zone" },
         { "Orbe Rebondissant", "Bouncing Orb" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Launches orbs that bounce endlessly around the arena, hurting every enemy they hit." },
-        { "Dégats +", "Damage +" }, { "+20% aux dégats", "+20% damage" },
+        { "Dégâts +", "Damage +" }, { "+20% aux dégâts", "+20% damage" },
         { "Double Tir", "Double Shot" }, { "Tire 2 projectiles en rafale", "Fires 2 projectiles in a burst" },
         { "Boule de Feu", "Fireball" }, { "Lance une boule de feu", "Throws a fireball" },
         { "Cadence+", "Fire Rate+" }, { "+20% à la cadence de tir", "+20% fire rate" },
@@ -346,6 +346,7 @@ public static class LocTableEN
 
         // ---- Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "FUSION" },
+        { "Éclat", "Shard" },   // singulier de "Éclats" dans "Encore {0} {1} pour débloquer {2}" (GameUI, Loc.PluralWord)
 
         // ==== SECTIONS SUIVANTES ====
     };

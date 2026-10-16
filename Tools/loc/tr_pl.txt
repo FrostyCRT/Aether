@@ -225,7 +225,7 @@
 211| Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego.
 212| złota
 213| odłamków
-214| Jeszcze {0} {1}, aby odblokować: {2}
+214| Brakuje {0} {1}, aby odblokować: {2}
 215| Możesz już odblokować: {0}!
 216| Podejście nr {0}
 217| Przetrwanie {0:00}:{1:00}    ·    Tytani {2}/3
@@ -614,6 +614,7 @@
 
 ## Ajouts (fin de table)
 578| FUZJA
+579| odłamka
 
 ## Formes propres au polonais (3e forme du pluriel : 2-4, sauf 12-14)
 + victoires#few| wygrane

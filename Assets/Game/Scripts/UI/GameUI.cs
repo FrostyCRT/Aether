@@ -1879,7 +1879,8 @@ public class GameUI : MonoBehaviour
             }
             else
             {
-                string currencyLabel = preview.IsGoldCurrency ? Loc.T("Or") : Loc.T("Éclats");
+                // MODIFIÉ (2026-10-15) - "Éclats" accordé au nombre ("Encore 1 Éclat", russe "21 осколка")
+                string currencyLabel = preview.IsGoldCurrency ? Loc.T("Or") : Loc.PluralWord(preview.AmountStillNeeded, "Éclat", "Éclats");
                 text = preview.AmountStillNeeded > 0
                     ? Loc.F("Encore {0} {1} pour débloquer {2}", preview.AmountStillNeeded, currencyLabel, Loc.T(preview.NodeName))
                     : Loc.F("De quoi débloquer {0} dès maintenant !", Loc.T(preview.NodeName));

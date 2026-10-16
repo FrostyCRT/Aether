@@ -224,7 +224,7 @@
 211| Árbol y Reputación al máximo. Cambia de personaje si quieres algo nuevo.
 212| de oro
 213| fragmentos
-214| Te faltan {0} {1} para desbloquear {2}
+214| Necesitas {0} {1} más para desbloquear {2}
 215| ¡Ya puedes desbloquear {0}!
 216| Intento n.º {0}
 217| Supervivencia {0:00}:{1:00}    ·    Titanes {2}/3
@@ -605,7 +605,7 @@
 570| Cancelar
 571| Confirmar
 572| Restablecer
-573| PREDETERMINADO
+573| POR DEFECTO
 574| Salir del juego
 575| Restablecer esta página
 576| ASIGNAR UNA TECLA A
@@ -613,3 +613,4 @@
 
 ## Ajouts (fin de table)
 578| FUSIÓN
+579| fragmento

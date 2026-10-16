@@ -95,7 +95,7 @@ public static class LocTablePL
         { "Tout près de ton record d'Or...", "Rekord złota był tuż-tuż..." }, { "Nouveau personnage débloqué : {0} !", "Nowa postać odblokowana: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Ta gałąź dostała od ciebie wszystko. Dosłownie." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Nie ma tu już nic do odblokowania — zmień postać, aby iść dalej." },
         { "Cette branche n'a plus de secret pour toi.", "Ta gałąź nie ma już przed tobą tajemnic." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego." },
-        { "Or", "złota" }, { "Éclats", "odłamków" }, { "Encore {0} {1} pour débloquer {2}", "Jeszcze {0} {1}, aby odblokować: {2}" },
+        { "Or", "złota" }, { "Éclats", "odłamków" }, { "Encore {0} {1} pour débloquer {2}", "Brakuje {0} {1}, aby odblokować: {2}" },
         { "De quoi débloquer {0} dès maintenant !", "Możesz już odblokować: {0}!" }, { "Tentative n°{0}", "Podejście nr {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Przetrwanie {0:00}:{1:00}    ·    Tytani {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Przetrwanie {0:00}:{1:00}    ·    Zabójstwa {2}    ·    Poziom {3}    ·    {4}" },
         { "{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", "Pokonani bossowie: {0} z {1}. Maraton nie wybacza — następnym razem pójdzie lepiej." },
@@ -174,7 +174,7 @@ public static class LocTablePL
         { "Orbes Foudroyants", "Gromowe kule" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUZJA — Satelity + Łańcuch błyskawic: twoje krążące odłamki przy każdym trafieniu wyzwalają łańcuch błyskawic." },
         { "Orbes Jumeaux", "Bliźniacze kule" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUZJA — Podwójny strzał + Sprężysta kula: twój podstawowy strzał dzieli się na dwie kule, które odbijają się bez końca." },
         { "Aura", "Aura" }, { "Zone Aura", "Strefa aury" }, { "Orbe Rebondissant", "Sprężysta kula" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga." },
-        { "Dégats +", "Obrażenia +" }, { "+20% aux dégats", "+20% obrażeń" }, { "Double Tir", "Podwójny strzał" }, { "Tire 2 projectiles en rafale", "Wystrzeliwuje serię 2 pocisków" },
+        { "Dégâts +", "Obrażenia +" }, { "+20% aux dégâts", "+20% obrażeń" }, { "Double Tir", "Podwójny strzał" }, { "Tire 2 projectiles en rafale", "Wystrzeliwuje serię 2 pocisków" },
         { "Boule de Feu", "Kula ognia" }, { "Lance une boule de feu", "Ciska kulą ognia" }, { "Cadence+", "Szybkostrzelność+" },
         { "+20% à la cadence de tir", "+20% szybkostrzelności" }, { "Soin", "Leczenie" }, { "Restaure 50% des HP maximum", "Przywraca 50% maksymalnych PŻ" },
         { "Couteaux", "Noże" }, { "Envoie des salves de couteaux", "Rzuca salwy noży" }, { "Chaîne de Foudre", "Łańcuch błyskawic" },
@@ -271,7 +271,7 @@ public static class LocTablePL
         { "ASSIGNER UNE TOUCHE À", "PRZYPISZ KLAWISZ DO AKCJI" }, { "Appuyez sur une touche pour commencer", "Naciśnij dowolny klawisz, aby rozpocząć" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUZJA" },
+        { "FUSION", "FUZJA" }, { "Éclat", "odłamka" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

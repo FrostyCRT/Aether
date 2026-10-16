@@ -195,7 +195,7 @@ public class ChallengeManager : MonoBehaviour
         float multiplier = 1f + rewardPercent;
         string multiplierStr = Mathf.Approximately(multiplier, Mathf.Round(multiplier))
             ? Mathf.RoundToInt(multiplier).ToString()
-            : multiplier.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture).Replace(".", Loc.IsEnglish ? "." : ",");   // virgule décimale partout sauf en anglais
+            : Loc.Num(multiplier, "0.0");   // séparateur décimal de la langue du jeu (Loc.Num)
         return Loc.F("Or x{0}", multiplierStr);
     }
 
