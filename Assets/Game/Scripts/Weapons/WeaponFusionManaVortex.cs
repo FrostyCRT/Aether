@@ -47,6 +47,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
     private float _currentAngle = 0f;
 
     private LineRenderer _ringRenderer;
+    [SerializeField] private float _ringGroundY = 0.05f;
     private const int RingSegments = 48;
     [SerializeField] private Color _ringColor = new Color(0.55f, 0.55f, 1f, 0.55f);
 
@@ -73,6 +74,10 @@ public class WeaponFusionManaVortex : MonoBehaviour
     {
         GameObject ringGO = new GameObject("ManaVortexRing");
         ringGO.transform.SetParent(transform, false);
+        // CORRIGE (2026-10-16, audit) - même bug "hauteur Y" que l'Aura (corrigé là-bas le 2026-10-06) : le pivot du
+        // joueur est à hauteur de torse (~1,5) et la hauteur des points était en plus multipliée par le rayon
+        // (0.05 x 8 = 0.4) - l'anneau flottait vers ~1,9. Même calcul que WeaponAura : décalage local jusqu'au sol.
+        ringGO.transform.localPosition = new Vector3(0f, _ringGroundY - transform.position.y, 0f);
         _ringRenderer = ringGO.AddComponent<LineRenderer>();
         _ringRenderer.useWorldSpace = false;
         _ringRenderer.loop = true;
@@ -84,7 +89,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
         for (int i = 0; i < RingSegments; i++)
         {
             float angle = (i / (float)RingSegments) * Mathf.PI * 2f;
-            _ringRenderer.SetPosition(i, new Vector3(Mathf.Cos(angle), 0.05f, Mathf.Sin(angle)) * _radius);
+            _ringRenderer.SetPosition(i, new Vector3(Mathf.Cos(angle) * _radius, 0f, Mathf.Sin(angle) * _radius));
         }
     }
 
@@ -144,8 +149,8 @@ public class WeaponFusionManaVortex : MonoBehaviour
     private void ApplyFieldTick()
     {
         _inRangeThisTick.Clear();
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _overlapBuffer);
-        float tickDamage = _fieldDamagePerSecond * _tickRate;
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _overlapBuffer, EnemyLayers.Mask);
+        float tickDamage = _fieldDamagePerSecond * _tickRate * PlayerBuffs.OutgoingDamageMultiplier; // + Concentration / Surpuissance (2026-10-16, audit)
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = _overlapBuffer[i];

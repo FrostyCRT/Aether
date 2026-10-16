@@ -3,7 +3,10 @@ public class XPSystem : MonoBehaviour
 {
     public static XPSystem Instance { get; private set; }
     [Header("Stats")]
-    [SerializeField] private float _baseXP = 50f;
+    // MODIFIÉ (2026-10-16, audit version finale) - 50 -> 55 (valeur de la scène Game aussi) : le reste d'XP < 10 n'est
+    // plus perdu à chaque mort (XPGemSpawner._xpCarry, ~+6 % d'XP sur une partie) et les phases de spawn complètes
+    // (jusqu'à 160 ennemis) donnent plus de kills - courbe allégée de 10 %, à affiner en playtest.
+    [SerializeField] private float _baseXP = 55f;
     public int CurrentLevel { get; private set; } = 1;
     public float CurrentXP { get; private set; } = 0f;
     // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{1.5} \rfloor$

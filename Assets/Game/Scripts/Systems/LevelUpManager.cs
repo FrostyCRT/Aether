@@ -5,6 +5,12 @@ public class LevelUpManager : MonoBehaviour
 {
     public static LevelUpManager Instance { get; private set; }
 
+    // AJOUTÉ (2026-10-16, audit version finale) - somme des bonus "Dégâts+" / "Cadence+" pris pendant CETTE partie
+    // (ex. 3 picks de +20 % = 0.6). Sert à appliquer ces bonus de façon ADDITIVE et identique sur toutes les armes
+    // (et à rattraper les armes obtenues plus tard) - voir UpgradeData.Apply / ApplyPastGlobalBonuses.
+    public float DamageBonusTotal { get; set; }
+    public float FireRateBonusTotal { get; set; }
+
     [Header("References")]
     [SerializeField] private UpgradeData[] _allUpgrades;
     [SerializeField] private GameObject _levelUpPanel;

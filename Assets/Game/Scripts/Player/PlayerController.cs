@@ -567,6 +567,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator SpawnPhantomClone()
     {
         GameObject clone;
+        Mesh bakedCloneMesh = null; // libéré avec le clone (voir fin de coroutine)
 
         if (_modelTransform != null)
         {
@@ -589,6 +590,7 @@ public class PlayerController : MonoBehaviour
 
                 Mesh bakedMesh = new Mesh();
                 sourceSkinned.BakeMesh(bakedMesh);
+                bakedCloneMesh = bakedMesh;
 
                 if (_animatorController != null) _animatorController.SetWalking(wasMoving);
 
@@ -664,6 +666,9 @@ public class PlayerController : MonoBehaviour
         if (_healthSystem != null) _healthSystem.RemoveExternalInvincibility();
 
         Destroy(clone);
+        // CORRIGE (2026-10-16, audit) - le maillage figé (BakeMesh) n'est pas détruit avec le GameObject : il fuyait
+        // à chaque clone (~110 maillages par partie de 15 min).
+        if (bakedCloneMesh != null) Destroy(bakedCloneMesh);
     }
 
     private IEnumerator PhantomEscapeSpeedBoost()

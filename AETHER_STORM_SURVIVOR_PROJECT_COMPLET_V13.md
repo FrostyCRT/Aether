@@ -1,213 +1,159 @@
-# AETHER STORM SURVIVOR — Documentation projet (V13)
+# AETHER STORM SURVIVOR — Documentation projet (V14)
 
-> **Note (2026-09-30)** : ce document est un instantané de conception haut niveau, pas mis à jour à chaque session. Pour l'état le plus récent et le détail des décisions/bugs corrigés session par session, voir `NOTES.md` (source de vérité à jour). Pour savoir quel script fait quoi, voir `SCRIPTS_INDEX.md`. Le projet tourne désormais sous **Unity 6** (voir NOTES.md, commit "Unity6"), pas 2021.3.45f2 comme indiqué juste en dessous - certains points de cette doc (ex. section 10 "Tâches en attente") sont périmés : le système de fusion et le Bulbe cracheur sont maintenant implémentés (voir NOTES.md et `SCRIPTS_INDEX.md`, dossier `Weapons/` et `Enemies/EnemyBulb.cs`).
+> **Mise à jour : 2026-10-16.** Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire. Le nom du fichier garde « V13 » pour ne pas casser les liens des autres documents.
+> - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
+> - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
+> - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
+> - Tout ce qui reste à modéliser en 3D (skins, projectiles, décor...) et les sons manquants : **`A_MODELISER_3D.md`**.
 
-Jeu horde-survivor développé en solo sous Unity 2021.3.45f2. Nom du jeu **confirmé définitif** : Aether Storm Survivor (l'idée de changement de nom évoquée en V12 est abandonnée).
+Jeu horde-survivor 3D vue de dessus, développé en solo sous **Unity 6 (6000.0.83f1)**, pipeline URP. Nom définitif : **Aether Storm Survivor**.
 
-Objectif affiché : viser une qualité capable de rivaliser avec les vrais survivor-like du marché (Vampire Survivors, Brotato, Halls of Torment), en restant original sans s'éloigner du genre. Steam Next Fest visé pour février 2027, seuil critique 2000 wishlists.
+Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato, Halls of Torment) en restant original. Steam Next Fest visé pour février 2027 (seuil critique : 2000 wishlists). Accès Steamworks complet obtenu le 2026-09-17 (intégration du SDK pas encore commencée).
+
+---
+
+## 0. État d'avancement en un coup d'œil
+
+| Domaine | État |
+|---|---|
+| Boucle de jeu (run de 15 min, 3 boss, level-up, fusions) | ✅ Complète |
+| 3 personnages jouables + déblocages | ✅ Complet |
+| 4 modes de jeu | ✅ Codés (Classique validé ; Sans fin / Ruée de boss / Choc des titans pas encore validés par l'utilisateur) |
+| Méta-progression (arbres de compétences, Réputation, défis horaires) | ✅ Complète |
+| Boutique de skins | 🟡 Système et interface prêts, **aucun skin produit** (21 à modéliser) |
+| Menus, HUD, paramètres complets (affichage, graphismes, audio, jeu, interface, commandes, langue) | ✅ Complets |
+| Localisation : 11 langues (FR, EN, DE, ES, PT-BR, IT, PL, RU, ZH, JA, KO) | ✅ Terminée |
+| Écran de chargement, transitions, écrans Victoire/Défaite | ✅ Terminés |
+| Modèles 3D | 🟡 Personnages, ennemis et boss faits ; projectiles, zones au sol, Bulbe, décor de l'arène encore en primitives (voir `A_MODELISER_3D.md`) |
+| **Sons (SFX)** | 🔴 **Aucun bruitage en jeu** (seules les musiques existent) |
+| Trailer Steam + version verticale | ✅ Validés (2026-10-14, projet Remotion `../Aether Storm Trailer`) |
+| Audit « version finale » | 🟡 Étapes 1 (bugs) et 2 (équilibrage) faites le 2026-10-16 ; étapes 3 (sortie) et 4 (pro) à faire |
+| Intégration Steam (SDK, succès, Cloud) | ⏳ Pas commencée |
+| Manette / accessibilité | 🟡 Manette partielle (Input Manager legacy), pas d'option secousses/flashs |
 
 ---
 
 ## 1. Personnages jouables
 
-3 personnages, chacun avec sa branche exclusive dans l'arbre de compétences méta (`SkillTreeData.CharacterBranch`) :
+| Personnage | Branche de l'arbre | Couleur | Arme exclusive | Déblocage |
+|---|---|---|---|---|
+| Aether | Guerrier | ambre/feu | Boule de feu | Dès le départ |
+| Kael | Gardien | vert/nature | Aura de mana | Atteindre le Boss 2 dans une partie, ou 500 Éclats |
+| Lyra | Fantôme | bleu-violet/spectral | Salve de couteaux | Battre le Boss 3, ou 1200 Éclats |
 
-| Personnage | Branche skill tree | Couleur/thème | Arme exclusive |
-|---|---|---|---|
-| Aether | Guerrier | orange/feu | Fireball |
-| Kael | Gardien | vert/nature | Aura |
-| Lyra | Fantôme | cyan-violet/spectral | Knives (Salve de Couteaux) |
+- Attaque de base commune (`WeaponBase`, projectile d'eau) équipée au départ.
+- Les armes exclusives ne sont **pas** équipées au départ : elles se débloquent par une carte de level-up garantie tôt dans la partie, filtrée par personnage.
+- Clone spectral (Lyra uniquement, nœud « Dash Fantôme ») : touche dédiée, attire les ennemis 2 s, invincibilité, boost de fuite, recharge 8 s.
 
-- Attaque de base commune à tous (`WeaponBase`, projectile d'eau), équipée au spawn.
-- Les armes exclusives ne sont **plus** équipées au spawn (trop fort de démarrer avec 2 armes actives) — elles passent en upgrade à déblocage séparé (`RequiresUnlockPick`), garanties de sortir parmi les 3 choix du premier level-up où elles sont proposables, une fois par run.
-- Filtrage strict par personnage dans `UpgradeData.IsAvailable()` via `IsForCharacter()`.
-- Chaque branche du skill tree n'est accessible qu'à son personnage (filtrage fait en dehors des fichiers vus par l'assistant, confirmé par l'utilisateur).
-
-### Capstones de branche (arbre de compétences méta, payé en Or)
-- **Guerrier (Aether)** : Concentration → Fragmentation / Dégâts Cristal → Surpuissance
-- **Gardien (Kael)** : Vitalité / Récupération → Second Souffle / Armure → Bouclier de Mana
-- **Fantôme (Lyra)** : Impulsion Nova → Maîtrise du Cristal / Nova Étendue → **Dash Fantôme** (débloque le Clone, coût 1200, exclusif Lyra)
-
-Le nœud `phantomDash` débloque le **Clone spectral** (voir HUD/gameplay ci-dessous). Description du nœud reformulée pour ne plus mentionner de touche précise (remappable dans de futurs paramètres).
+### Arbre de compétences (payé en Or, une branche par personnage)
+- **Guerrier (Aether)** : Concentration, Cadence → Fragmentation, Dégâts Cristal → Surpuissance (dégâts ×2 pendant 5 s après l'Ultime, sur toutes les armes depuis le 2026-10-16).
+- **Gardien (Kael)** : Vitalité, Récupération → Second Souffle, Armure → Bouclier de Mana.
+- **Fantôme (Lyra)** : Impulsion Nova, Dash Amélioré → Maîtrise du Cristal, Nova Étendue → Dash Fantôme (Clone).
+- Coûts par palier : 100 / 300 / 700 ; nœuds uniques 500 à 1200.
 
 ---
 
-## 2. Armes et gameplay
+## 2. Armes, améliorations et fusions
 
-- **Fireball** (Aether) : explosion à l'impact garantie 100%, rayon 2.25 de base (+1.0 palier 1), palier 2 = dégâts, palier 3 = Brûlure (DOT + tint visuel pulsé orange).
-- **Knives / Salve de Couteaux** (Lyra) : éventail de couteaux simultanés (base 2, +1 palier 1), un couteau toujours au centre garanti, palier 2 = dégâts, palier 3 = perforation.
-- **Aura** (Kael) : anneau procédural (rayon 3.5 → 4.2), ralentissement palier 3 porté à 50%.
-- **Double Tir** : recentré sur `WeaponBase` uniquement (bug de ciblage sur Fireball/Knives corrigé).
-- 11 `UpgradeType` au total, pastilles de palier à 3 couleurs (vide gris-brun `#594C40`@150 / rempli cyan `#2DD4CF` / max doré `#FFC94D`) — palette réutilisée partout dans le jeu (HUD, upgrades, Réputation).
-- Repères éco : ennemi standard 30 PV, costaud 70 PV, boss ~2000 PV, scaling ennemis jusqu'à x5 en fin de run. Rescale x10 global des dégâts/PV effectué et vérifié (Inspector) sur tous les prefabs.
-
-### Dash / Absorption / Nova / Ultime
-- Dash (Shift) : invincibilité courte, ouvre une fenêtre d'absorption de projectile.
-- Absorption → déclenche la Nova (dégâts + ralentissement zone) et charge la barre de Cristal.
-- Cristal plein → 1 charge d'Ultime stockée (max 2, `CrystalSystem`). Déclenchement à la touche F.
-- Ultime scaling temporel x1 → x4 sur 15 min (évite qu'il devienne inutile en fin de run face aux PV scalés).
-- Ultime "empowered" (x2 charges) : formule basée sur `_ultDamage * 5 * scale` (corrigé, ancien 100 fixe déconnecté).
-
-### Clone spectral (Lyra, exclusif)
-- Débloqué via le nœud `phantomDash` (arbre méta), pas via les cartes de level-up en run.
-- Touche dédiée (C par défaut, jamais nommée dans les textes du jeu — remappable à terme).
-- Laisse un clone qui attire les ennemis proches 2s, invincibilité temporaire, boost de vitesse d'échappée.
-- Cooldown 8s, indépendant du Dash.
-
-### Boss
-- Charge télégraphée (zone rouge au sol qui grandit pendant le windup, `BossBase`), rayon = zone de dégât réelle.
-- Ralentis par Boue/Aura comme les ennemis normaux (bug corrigé — ne recevaient que les dégâts avant).
-- Musique dédiée par boss (`_bossMusicClip` sur `BossBase`), bascule via `MusicStarter.SwitchTo()` avec délai 0.5s + fondu + loop garanti, retour à la musique normale à la mort du boss.
+- **Armes** : tir de base, Boule de feu (Aether), Aura (Kael), Couteaux (Lyra), Orbitaux, Chaîne de foudre, Boue, Orbe rebondissant, Double tir.
+- **Améliorations universelles** : Dégâts+ et Cadence+ (+20 % par prise, 5 prises), Soin. Depuis le 2026-10-16, elles sont **additives et identiques sur toutes les armes** (5 × 20 % = ×2) et s'appliquent aussi aux armes obtenues plus tard.
+- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Orbes Jumeaux (Double tir + Orbe). Proposées en Classique et Sans fin uniquement.
+- **Dash / Absorption / Nova / Ultime** : le Dash (invincible) absorbe un projectile → Nova (dégâts + ralentissement) + charge de Cristal. Cristal plein = 1 Ultime stocké (max 2, la 2e charge donne un Ultime renforcé). Dégâts de l'Ultime ×1 → ×4 sur 15 min.
+- Bonus de dégâts dynamiques centralisés dans `PlayerBuffs.OutgoingDamageMultiplier` (Concentration × Surpuissance), lu par toutes les armes.
 
 ---
 
-## 3. Progression méta
+## 3. Ennemis, boss et difficulté
 
-### Deux monnaies séparées
-- **Or** (`Data.totalGold`) : finance les 3 arbres de compétences par personnage.
-- **Éclats** (`Data.totalEclats`) : finance uniquement les 3 stats de Réputation (Dégâts/Vitesse/Régénération, 5 paliers, coûts 100/300/700/1500/3000). Gagnés en fin de run selon la performance (niveau × 15 + boss × 60 + bonus victoire 200), indépendamment de l'or ramassé.
-
-### Page Réputation (menu principal, 5ème onglet)
-- 3 cartes horizontales (icône + pastilles + bouton d'achat direct, pas de popup).
-- Onglets personnage colorés (préparés pour un futur système de skins, pas encore construit).
-- Script `ReputationUI.cs`. Titres de cartes confirmés : **Dégâts / Vitesse / Régénération**.
-
----
-
-## 4. Système de défis (nouveau, complet)
-
-Un défi différent tiré **toutes les heures réelles** (UTC, `SaveData.currentChallengeHourBucket`), pas à chaque run — empêche de relancer une run courte pour retomber sur un défi plus facile. Le bonus n'est accordable **qu'une fois par heure**, même en retentant plusieurs runs.
-
-- **12 défis** répartis en 3 paliers (`ChallengeDatabase.cs`) : 4 Faciles, 4 Moyens, 4 Difficiles.
-- Tirage pondéré par palier (50/35/15 par défaut), anti-répétition sur les 3 derniers défis joués (`SaveData.recentChallengeIds`).
-- Défi 8 initialement "ne jamais dasher" → remplacé par **"ne jamais utiliser l'Ultime"** (le Dash déclenche l'absorption qui alimente Nova ET Ultime, donc l'interdire aurait bloqué 3 systèmes à la fois sans que ce soit clair pour le joueur).
-- Suivi en temps réel dans le HUD (icône **Parchemin**, sous le Chrono), détail complet dans le menu Pause (nom, palier, description, récompense chiffrée, statut).
-- Récompense : **pourcentage de l'or ramassé pendant la run**, scalable par palier (Facile +10%, Moyen +25%, Difficile +50%) — choix de l'assistant, validé.
-- Fichiers : `ChallengeDatabase.cs`, `ChallengeManager.cs` (vit dans la scène `Game`, sibling de `GameManager`).
+- **Ennemis** : Loup, Gobelin à sarbacane (tireur mobile), Golem (costaud), Corbeau, Tisseuse corrompue (araignée qui saute), Bulbe cracheur (tireur fixe, **encore un cube placeholder**). Animation par texture (VAT) pour tenir la foule.
+- **Apparition** (`EnemySpawner`, seule référence depuis le 2026-10-16) : 6 phases, plafond d'ennemis simultanés 20 → 45 → 75 → 120 → 105 → **160** (dès 12 min), cadence 2 s → 0,6 s. Mode Sans fin après 15 min : jusqu'à 200 ennemis, cadence 0,3 s. Paliers de composition (types d'ennemis + PV ×1 à ×5) toutes les 2-4 minutes. Réglable dans l'Inspector de l'objet EnemySpawner (scène Game). **À tester en jeu** : la fin de partie est nettement plus dense qu'avant.
+- **Boss** (un toutes les 5 min, le chrono s'arrête pendant le combat) :
+  1. **Dragon de Mana** : 20 000 PV, charge télégraphiée, tir radial.
+  2. **Cerf Ancestral** : 90 000 PV (enfin appliqués depuis le 2026-10-16), saut, spirale de projectiles, rage sous 30 %.
+  3. **Source Corrompue** (serpent ancré à une faille) : 180 000 PV, Pulse de cristaux, Frappe, Onde de corruption, Invocation de mini-boss, Implosion.
+- Les boss 1 et 2 soignent le joueur de 50 % à leur mort. Les 3 boss utilisent pour l'instant **la même musique**.
+- **XP** : gemmes 10/20/50, reste reporté sur la mort suivante (aucune XP perdue), courbe `55 × niveau^1,5` (allégée le 2026-10-16). Rayon d'attraction débloqué au niveau 3.
 
 ---
 
-## 5. HUD (état final, validé)
+## 4. Modes de jeu
 
-Structure sous `Canvas > HUD` :
-- Vie (haut-gauche), Chrono (haut-centre), Or/Kills (haut-droite).
-- Rappel du défi en cours sous le Chrono.
-- **ActionCluster** (bas-centre, Horizontal Layout Group + Content Size Fitter, hauteur fixée à 32px pour éviter un bug de saut vertical) : Dash (barre) + Clone (cercle radial, Lyra uniquement) — se recentre automatiquement à 2 ou 3 éléments.
-- **UltimateGroup** (indépendant, à droite d'ActionCluster) : pastilles de charge + texte "Ult x1/x2", séparé exprès pour que sa largeur variable ne fasse jamais bouger Dash/Clone.
-- XP + Niveau (bas-centre, sous ActionCluster).
+| Mode | Règle | Déblocage |
+|---|---|---|
+| Classique | 3 boss en 15 min, victoire au Boss 3 | Dès le départ |
+| Sans fin | Les boss reviennent en boucle, de plus en plus forts | Dès le départ |
+| Ruée de boss | Les boss s'enchaînent | Avoir battu 1 boss en Classique |
+| Choc des titans | Les 3 boss en même temps, build complet offert | Avoir gagné le Classique |
 
-### Icône du Clone
-Cercle violet, lettre **"C"** en police Bangers blanche (pas une icône illustrée — jugée trop détaillée à petite taille lors d'un essai précédent). Raison du choix : rappelle la touche d'activation (le joueur ne la connaît pas forcément) et coïncide avec "Clone".
-
-### Palette Ultime (dots + texte, unifiée)
-Empty `#594C40`@150 / Filled (x1) `#2DD4CF` / Max (x2) `#FFC94D` — `SetCrystalReady` prend un `int readyStacks` (pas un bool) pour que dots et texte affichent toujours exactement la même teinte au même palier.
-
-### Contour (Outline)
-Sur les icônes de cristal (`UnityEngine.UI.Outline`, 2 instances superposées pour un contour complet) et sur le texte TMP (via un matériau SDF dupliqué, propriété Outline du shader) — résout un problème de lisibilité du cyan sur fond d'herbe clair.
+Seul le Classique compte pour la progression (défis, déblocages). Les 3 autres modes ne sont pas encore validés par l'utilisateur et sont volontairement absents du trailer.
 
 ---
 
-## 6. Écran de chargement (terminé)
+## 5. Progression méta
 
-- Scène dédiée `LoadingScreen`, chargée en premier dans les Build Settings, charge `MainMenu` en tâche de fond (`SceneManager.LoadSceneAsync`, `allowSceneActivation = false`) avec durée minimale garantie (3.5s) pour ne jamais flasher trop vite.
-- Fond : illustration de bataille (3 persos vs meute de loups) conservée et étendue (outpainting via MetaIA) pour créer des zones calmes en haut (logo) et en bas (barre de chargement), texte "Appuyer sur une touche pour jouer" **en bas à droite** (choix volontaire).
-- Logo séparé en calques : fond+cristal illustré d'un côté, texte du logo détouré de l'autre — évite que la lueur procédurale du cristal ne déborde sur les lettres.
-- Effets vivants : Ken Burns très lent (zoom/pan bornés en sécurité, jamais sous l'échelle "pleine image"), particules ambiantes concentrées dans les bandes calmes haut/bas (pas au milieu, trop chargé visuellement), lueur procédurale pulsée sur le cristal.
-- Barre de chargement stylée (fond brun foncé, remplissage cyan `#2DD4CF`, liseré doré, reflet animé qui balaye en boucle).
-- Texte "Appuyer sur une touche" : scintillement doux (alpha min ~0.08 pour un contraste fort).
-- Musique d'ambiance courte en boucle (via `MusicStarter`, toutes les musiques du jeu sont prêtes : menu, en jeu, boss, chargement).
-- Fondu noir à la sortie (`SceneTransitionFader`, réutilisable pour toute future transition de scène).
+- **Or** : finance les arbres de compétences et les skins Classique.
+- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés en fin de partie selon la performance.
+- **Réputation** (onglet du menu) : 3 bonus permanents, Dégâts (jusqu'à +42 %), Vitesse (jusqu'à +25 %), Régénération (jusqu'à 70), 5 paliers chacun.
+- **Skins** (même onglet) : par personnage, une rangée Classique (Or) et une rangée Prestige (Éclats) de 4 emplacements. Seule la tenue d'origine existe ; les emplacements vides affichent « BIENTÔT ». Ajouter un skin = une ligne dans `Resources/SkinCatalog.asset` (aucun code), mais il faut le modèle 3D, le prefab et le portrait (**21 skins prévus**, voir `A_MODELISER_3D.md`).
 
 ---
 
-## 7. Écrans de fin de run (Victory / Game Over) — ✅ TERMINÉ (2026-09-12)
+## 6. Défis horaires
 
-Refonte complète des deux écrans (avant : placeholders de tout début de développement, notamment le Game Over qui n'avait ni cadre ni richesse). Même univers visuel élégant (parchemin/doré, cadre + boutons repris du menu Pause) pour les deux écrans, différenciés par la teinte — doré éclatant pour la Victoire, rouille/ash + fond plus sombre pour le Game Over — pas par deux esthétiques différentes. **Le Game Over a la même richesse de contenu que la Victoire** (record de la partie, build obtenue) — décision prise après analyse du genre (Vampire Survivors/Brotato/Halls of Torment traitent mort et victoire de façon quasi symétrique), avec en plus deux ajouts propres au Game Over (numéro de tentative, aperçu du prochain palier de progression) qu'aucun des trois n'a.
-
-**Titre du Game Over tranché : "DÉFAITE"** (cohérent avec "VICTOIRE !", même registre).
-
-### Structure finale (2 colonnes / 3 temps, identique dans l'esprit pour les 2 panels)
-```
-[Victory/GameOver]Panel
-├── DimBackground (plus sombre côté Game Over)
-├── CenterCard (parchemin, teinté grisé/désaturé côté Game Over)
-│   ├── Crown
-│   │   ├── (GameOver only) AttemptText   — "Tentative n°X"
-│   │   ├── TitleText                    — "VICTOIRE !" / "DÉFAITE"
-│   │   ├── RecapText / Message          — Victory: phrase de clôture ; GameOver: message contextuel dynamique (record/humour noir)
-│   │   └── Separator1
-│   ├── Body
-│   │   ├── LeftCol ("Ce que tu emportes" / "Ce qu'il te reste")
-│   │   │   ├── KeepSectionTitle
-│   │   │   ├── KeepSection (2 cartes Or/Éclats côte à côte, icône+nombre centrés, comptage animé)
-│   │   │   ├── ChallengeChipBg (défi réussi, inactif par défaut)
-│   │   │   ├── StatStrip (Survie/Kills/Niveau/Boss X sur 3)
-│   │   │   └── Victory: RecordHighlight + QuietLine (repli si ni record ni défi) — GameOver: GameOverNextUnlockText (déblocage perso > aperçu palier > repli "tout maxé")
-│   │   └── RightCol ("Ton arsenal" / "L'arsenal que tu avais")
-│   │       ├── BuildTitleText
-│   │       └── ArsenalRow : PortraitImage (perso sélectionné, désaturé côté Game Over) + BuildGridContent (grille d'icônes teintées par branche, `UpgradeGridSlot`)
-│   └── ButtonsRow : RetryButton (verrouillé jusqu'à la fin du reveal) + MainMenuButton
-```
-
-### Fonctionnalités communes aux deux écrans
-- **Comptage animé satisfaisant** de l'Or et des Éclats (ease-out cubique), centrage icône+nombre qui s'adapte au nombre de chiffres.
-- **Séquence défi réussi** : l'Or compte d'abord jusqu'au montant de base, puis 2 secondes après, si le défi est réussi, le message "Défi réussi ! x0.XX" apparaît (couleur dorée) et l'Or reprend son compte jusqu'au montant final.
-- **Raccourci clavier de relance instantanée** (Entrée/Espace) + bouton Rejouer, tous deux **verrouillés jusqu'à la fin complète de la séquence de reveal** (système événementiel `GameUI.OnEndScreenRevealComplete`) — évite de sauter par-dessus le défi/record en spammant Entrée.
-- **4 records** suivis (temps, kills, niveau, or en une partie) — Victory les met en avant seulement s'ils sont battus CETTE partie (highlight ciblé, pas de bloc de records à vie qui "dégonflerait le moment") ; Game Over les intègre à son message contextuel (record battu/presque battu en priorité, sinon humour noir selon la cause de mort).
-
-### Spécifique au Game Over
-- **Message contextuel** (`GameOverMessagePool.cs`) : ton familier, direct, sec, sans ponctuation excessive.
-- **Numéro de tentative** ("Tentative n°X", `Data.totalRuns`).
-- **Aperçu du prochain palier** (`MetaProgressionManager.GetNextUnlockPreview()`, comparaison par ratio du coût plutôt que par écart absolu depuis 2026-09-12 — corrige un biais qui favorisait toujours les nœuds en Éclats, plus rares) : "Encore X Or/Éclats pour débloquer [Nœud]" ou repli "tout maxé" si la branche + Réputation sont entièrement complétées.
-- **Annonce de déblocage de personnage** : si un perso vient d'être débloqué pendant la run qui s'achève (ex. Kael au Boss 2), l'annonce prend le pas sur l'aperçu de palier.
-- **Boss X/3 dynamique** dans le StatStrip (`GameManager.BossKillCount`, transmis à `ShowGameOver`) — contrairement à la Victoire qui peut se permettre un "3/3" fixe (elle ne se déclenche qu'à ce moment précis).
-
-### Volontairement repoussé
-- SFX sur les moments forts (défi réussi, record) — l'utilisateur gère tous les effets sonores en un seul gros morceau une fois le jeu terminé.
-- Extension des causes de mort au-delà de boss/horde — nécessite `EnemyBase.cs` et le script des projectiles ennemis, jamais vus par l'assistant.
-Icônes Or/Éclats : réutiliser celles déjà existantes (HUD pour l'Or, page Réputation pour les Éclats), pas de nouvel asset.
+- Un défi tiré **par heure réelle (UTC)**, identique pour toutes les parties de l'heure ; récompense accordée une seule fois par heure. Classique uniquement.
+- 12 défis (4 Faciles, 4 Moyens, 4 Difficiles), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
+- Récompense : multiplicateur de l'or ramassé, **Or ×1,2 / ×1,5 / ×2** selon le palier.
+- Les défis « endurance » (Sang-Froid, Sans Cristal, Sans-Faute) ne sont validés qu'au jalon de boss prévu.
+- Suivi dans le HUD et détail dans le menu Pause.
 
 ---
 
-## 8. Historique des bugs majeurs résolus (V9 → V13)
+## 7. Interface
 
-- Freeze pendant dash/nova en plein level-up (désync `IsPaused`/`Time.timeScale`).
-- Balles traversant les ennemis attirés par le Clone (composante Y non neutralisée dans le calcul de direction — corrigé partout, y compris la vérification de distance de contact).
-- Mouvement joueur qui continuait après victoire (`FixedUpdate()` ne vérifiait pas `IsGameOver`).
-- Ennemis figés en animation de marche en fin de partie (`GameManager.OnGameEnded`).
-- Joueur qui disparaissait instantanément à la mort (`TriggerDeath()` jamais appelée).
-- Gobelins qui sautaient en Y (composante Y non aplatie dans la force de séparation).
-- Araignée figée après un saut (transition Jump→Locomotion manquante dans l'Animator).
-- Coûts de Réputation bloqués au palier 3 (table de coûts partagée limitée à 3 entrées).
-- Ultime "empowered" x2 utilisait un 100 fixe déconnecté de `_ultDamage`.
-- Défi "boss en moins de 30s" aurait été trivialement toujours réussi si mesuré avec `RunTimer` (qui ne progresse pas pendant qu'un boss est vivant) — utilise `Time.time` à la place.
+- **Menu principal** : onglets Jouer (avec sélecteur de mode), Personnages, Compétences, Réputation, Paramètres ; décors 2D illustrés animés (vent, feuilles, lumière), curseur gantelet personnalisé.
+- **HUD** construit en code (`HudStyler`) : barres vie/XP/boss, chrono, or, kills, défi, Dash, Clone, Ultime, Concentration, légende des touches adaptative.
+- **Level-up** : 3 cartes parchemin animées (couleur par personnage, violet pour les fusions), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3.
+- **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation.
+- **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
+- **Paramètres** : affichage, graphismes, audio, jeu, interface, commandes (2 touches par action, préréglages AZERTY/QWERTY, manette), langue.
+- **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu.
 
 ---
 
-## 9. DA & Marketing
+## 8. DA, musique et marketing
 
-- Logo final : texte ornemental doré + cristal bleu lumineux, calques séparés du fond pour l'écran de chargement.
-- Steam Direct payé, vérification d'identité Steamworks en cours.
-- Politique Steam (2026) : les 5 captures d'écran obligatoires doivent être du gameplay réel, pas de l'art conceptuel — la capsule/le logo peuvent rester illustrés.
-- Pipeline vidéo marketing : ComfyUI + Hailuo.
-- Génération musicale : Suno (vérifier les droits d'usage commercial selon le plan), retouche de boucle via des outils comme Audjust, séparation voix/instrumental via UVR ou des outils web si besoin un jour.
+- Logo : texte ornemental doré + cristal bleu. Police des chiffres et titres : Bangers retouchée (cyrillique ajouté) ; polices Noto Sans pour le chinois, le japonais et le coréen.
+- Modèles 3D générés avec Tripo3D, squelettes passés en Mixamo (`SkeletonSwapTool`).
+- Musiques : menu, chargement, en jeu, boss (Suno + retouches de boucle). **Aucun SFX** pour l'instant (chantier repoussé à la fin, désormais prioritaire, voir `A_MODELISER_3D.md` §9).
+- Trailer Steam (≈68 s) + version verticale (40 s) validés le 2026-10-14 : vrai gameplay, DA du jeu, musique CC0.
+- Politique Steam : les captures d'écran de la page doivent montrer du vrai gameplay.
 
 ---
 
-## 10. Tâches en attente (à jour)
+## 9. Ce qui reste à faire (priorisé)
 
-- ~~Système de fusion (6 fusions au total).~~ **Fait** (6 fusions implémentées, `Assets/Game/Scripts/Weapons/WeaponFusion*.cs` + `SO_Fusion_*.asset` + visuel dédié dans le menu Pause et sur Victoire/Défaite — voir NOTES.md, session 2026-09-30).
-- Système de skins (Or/Éclats) — aucune donnée/logique/asset construite.
-- Vérifier les 3 mécaniques spéciales par personnage (Concentration/Récupération/Impulsion Nova) — nœuds existants, effet en jeu à reconfirmer.
-- ~~Nouvel ennemi "bulbe cracheur de projectile" (shooter fixe, tir en éventail, cadence faible) — modélisation 3D prévue lors du mois dédié Tripo3D.~~ **Fait** (`EnemyBulb.cs`, voir NOTES.md session 2026-09-26).
-- ~~Curseur de souris personnalisé (remplace la flèche blanche système par un gantelet fantasy).~~ **Fait** (`CustomCursor.cs`, visible sur tous les panneaux/menus et masqué en pleine partie active via `GameManager.NeedsCursor`, voir NOTES.md session 2026-10-11/12).
-- Ordre d'introduction des types d'ennemis à réfléchir avant d'ajouter le bulbe cracheur (éviter le chaos visuel).
-- Paliers de difficulté par taille de map (3 maps, du champ infini à l'enceinte fermée) — idée posée, pas commencée.
-- Écran d'accueil adaptatif selon le personnage sélectionné.
-- Refonte des pages Personnage de Kael et Lyra (existent mais pas finalisées).
-- SFX complets (volontairement repoussés à la fin du développement).
-- Passe d'équilibrage/playtest après le rescale x10.
-- Options/accessibilité (volume, plein écran, remapping clavier).
-- Localisation anglaise pour Steam.
+**Avant la sortie (indispensable)**
+1. **Bruitages** de tout le jeu + une musique par boss.
+2. Étape 3 de l'audit : retirer les boutons de debug visibles en version finale (Réputation, Personnages), le code de debug et les logs, régler les Player Settings (nom de société ≠ DefaultCompany **avant** la 1re version publique, IL2CPP, version 1.0.0), sauvegarde atomique + numéro de version, Steam Cloud.
+3. Remplacer les primitives visibles : projectiles, zones au sol, Bulbe cracheur, Nova/Ultime/Bouclier, et habiller l'arène (sol + décor).
+4. Playtests d'équilibrage après les changements du 2026-10-16 (densité 160 ennemis, XP, bonus de dégâts) avec les 3 personnages.
+5. Intégration Steamworks (SDK, succès, Cloud, Steam Input).
+
+**Niveau « jeu pro »**
+- Manette complète (nouvel Input System, navigation des menus, icônes de boutons) et accessibilité (désactiver secousses et flashs).
+- 21 skins.
+- Effets visuels dédiés (télégraphes, impacts, morts par dissolution).
+- Profilage des performances (cible 60 FPS stables, Steam Deck).
+- Nettoyage du projet (prefabs en double dans `Resources/`, scripts et assets inutilisés).
+
+**Idées de contenu (non commencées)**
+- Plusieurs cartes / biomes (idée « 3 maps »).
+- Sanglier (modèle existant, pas intégré).
+- Objets à ramasser (coffres, soins, aimant), relance/bannissement de cartes au level-up.
 - Écran de crédits.
-- Extension des causes de mort au-delà de boss/horde (nécessite `EnemyBase.cs`/projectiles ennemis).
+
+---
+
+## 10. Principaux bugs corrigés récemment (2026-10-16)
+
+PV du Cerf ignorés (50 000 forcés au lieu de 90 000) · soin de mort de boss à 100 % au lieu de 50 % · Ultime utilisable en pause et relançant le temps derrière le menu · ennemis tués deux fois (or/XP doublés) · kills comptés après la mort · anneau du Vortex de Mana en l'air · frappe du boss 3 hors de la carte · fuite mémoire du clone de Lyra · compteurs d'effets bloqués après plusieurs parties · armes qui ignoraient des ennemis quand beaucoup de gemmes étaient au sol · pluie de gemmes des boss qui plantait (XP perdue) · phases de difficulté du spawner écrasées · XP perdue à chaque kill · bonus de dégâts incohérents entre armes · Aura/Vortex/Couteaux/Lames qui ignoraient la Concentration. Détail : `AUDIT_VERSION_FINALE.md` et `NOTES.md`.

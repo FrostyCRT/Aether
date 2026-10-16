@@ -395,7 +395,7 @@ public class UpgradeData : ScriptableObject
                     if (newLevel == 1)
                     {
                         if (fireball == null)
-                            playerGO.AddComponent<WeaponFireball>();
+                            ApplyPastGlobalBonuses(playerGO.AddComponent<WeaponFireball>());
                         break;
                     }
 
@@ -423,7 +423,7 @@ public class UpgradeData : ScriptableObject
                     if (newLevel == 1)
                     {
                         if (aura == null)
-                            playerGO.AddComponent<WeaponAura>();
+                            ApplyPastGlobalBonuses(playerGO.AddComponent<WeaponAura>());
                         break;
                     }
 
@@ -454,7 +454,7 @@ public class UpgradeData : ScriptableObject
                     if (newLevel == 1)
                     {
                         if (knives == null)
-                            playerGO.AddComponent<WeaponShurikenBarrage>();
+                            ApplyPastGlobalBonuses(playerGO.AddComponent<WeaponShurikenBarrage>());
                         break;
                     }
 
@@ -487,6 +487,7 @@ public class UpgradeData : ScriptableObject
                                 orbital.Init(prefab);
                             else
                                 Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
+                            ApplyPastGlobalBonuses(orbital);
                         }
                     }
                     else
@@ -502,7 +503,7 @@ public class UpgradeData : ScriptableObject
                     if (newLevel == 1)
                     {
                         if (chain == null)
-                            playerGO.AddComponent<WeaponLightningChain>();
+                            ApplyPastGlobalBonuses(playerGO.AddComponent<WeaponLightningChain>());
                     }
                     else
                     {
@@ -524,6 +525,7 @@ public class UpgradeData : ScriptableObject
                                 mud.Init(prefab);
                             else
                                 Debug.LogWarning("Prefab MudPuddleZone introuvable dans Resources !");
+                            ApplyPastGlobalBonuses(mud);
                         }
                     }
                     else
@@ -555,6 +557,7 @@ public class UpgradeData : ScriptableObject
                                 orb.Init(prefab);
                             else
                                 Debug.LogWarning("Prefab BouncingOrbProjectile introuvable dans Resources !");
+                            ApplyPastGlobalBonuses(orb);
                         }
                         break;
                     }
@@ -589,70 +592,87 @@ public class UpgradeData : ScriptableObject
                 if (newLevel == 1) ApplyFusionResult(playerGO);
                 break;
 
+            // MODIFIÉ (2026-10-16, audit version finale) - "Dégâts+" et "Cadence+" s'appliquent désormais de façon
+            // ADDITIVE et IDENTIQUE sur toutes les armes : bonus total = 1 + somme des picks (5 x 20 % = x2,0 partout).
+            // Avant, le tir de base et les Orbitaux étaient additifs (x2,0) mais toutes les autres armes composaient
+            // chaque pick (x1,2^5 = x2,49), et une arme obtenue APRÈS ces picks n'en recevait aucun. Les armes à
+            // formule multiplicative reçoivent maintenant le rapport (1+S+v)/(1+S) ; les armes additives (tir de base,
+            // Orbitaux) reçoivent v directement ; et toute nouvelle arme rattrape le total (ApplyPastGlobalBonuses).
             case UpgradeType.Damage:
                 {
+                    float total = LevelUpManager.Instance != null ? LevelUpManager.Instance.DamageBonusTotal : 0f;
+                    float ratio = value / (1f + total);
+
                     WeaponFireball fireball = playerGO.GetComponent<WeaponFireball>();
-                    if (fireball != null) fireball.AddDamage(value);
+                    if (fireball != null) fireball.AddDamage(ratio);
 
                     WeaponAura aura = playerGO.GetComponent<WeaponAura>();
-                    if (aura != null) aura.AddDamage(value);
+                    if (aura != null) aura.AddDamage(ratio);
 
                     WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
-                    if (knives != null) knives.AddDamage(value);
+                    if (knives != null) knives.AddDamage(ratio);
 
                     WeaponOrbital orbitalWeapon = playerGO.GetComponent<WeaponOrbital>();
-                    if (orbitalWeapon != null) orbitalWeapon.AddDamage(value);
+                    if (orbitalWeapon != null) orbitalWeapon.AddDamage(value); // additive en interne
 
                     WeaponLightningChain lightningWeapon = playerGO.GetComponent<WeaponLightningChain>();
-                    if (lightningWeapon != null) lightningWeapon.AddDamage(value);
+                    if (lightningWeapon != null) lightningWeapon.AddDamage(ratio);
 
                     WeaponMudPuddle mudWeapon = playerGO.GetComponent<WeaponMudPuddle>();
-                    if (mudWeapon != null) mudWeapon.AddDamage(value);
+                    if (mudWeapon != null) mudWeapon.AddDamage(ratio);
 
                     WeaponBouncingOrb orbWeapon = playerGO.GetComponent<WeaponBouncingOrb>();
-                    if (orbWeapon != null) orbWeapon.AddDamage(value);
+                    if (orbWeapon != null) orbWeapon.AddDamage(ratio);
 
                     // Fusions : chaque arme fusionnée doit être listée ici pour continuer de profiter de "Dégâts+"
-                    // après avoir remplacé ses armes sources (voir WeaponFusionX.AddDamage de chacune).
+                    // après avoir remplacé ses armes sources (voir WeaponFusionX.AddDamage de chacune, toutes
+                    // multiplicatives).
                     WeaponFusionScorchedEarth scorchedEarth = playerGO.GetComponent<WeaponFusionScorchedEarth>();
-                    if (scorchedEarth != null) scorchedEarth.AddDamage(value);
+                    if (scorchedEarth != null) scorchedEarth.AddDamage(ratio);
 
                     WeaponFusionManaVortex manaVortex = playerGO.GetComponent<WeaponFusionManaVortex>();
-                    if (manaVortex != null) manaVortex.AddDamage(value);
+                    if (manaVortex != null) manaVortex.AddDamage(ratio);
 
                     WeaponFusionRicochetBlades ricochetBlades = playerGO.GetComponent<WeaponFusionRicochetBlades>();
-                    if (ricochetBlades != null) ricochetBlades.AddDamage(value);
+                    if (ricochetBlades != null) ricochetBlades.AddDamage(ratio);
 
                     WeaponFusionThunderingOrbs thunderingOrbs = playerGO.GetComponent<WeaponFusionThunderingOrbs>();
-                    if (thunderingOrbs != null) thunderingOrbs.AddDamage(value);
+                    if (thunderingOrbs != null) thunderingOrbs.AddDamage(ratio);
 
                     WeaponFusionCursedSwamp cursedSwamp = playerGO.GetComponent<WeaponFusionCursedSwamp>();
-                    if (cursedSwamp != null) cursedSwamp.AddDamage(value);
+                    if (cursedSwamp != null) cursedSwamp.AddDamage(ratio);
 
                     WeaponFusionTwinOrbs twinOrbs = playerGO.GetComponent<WeaponFusionTwinOrbs>();
-                    if (twinOrbs != null) twinOrbs.AddDamage(value);
+                    if (twinOrbs != null) twinOrbs.AddDamage(ratio);
 
-                    if (weapon != null) weapon.AddDamage(value);
+                    if (weapon != null) weapon.AddDamage(value); // additive en interne
+
+                    if (LevelUpManager.Instance != null) LevelUpManager.Instance.DamageBonusTotal = total + value;
                     break;
                 }
 
             case UpgradeType.FireRate:
                 {
+                    float total = LevelUpManager.Instance != null ? LevelUpManager.Instance.FireRateBonusTotal : 0f;
+                    float ratio = value / (1f + total);
+
                     WeaponFireball fireball = playerGO.GetComponent<WeaponFireball>();
-                    if (fireball != null) fireball.AddFireRate(value);
+                    if (fireball != null) fireball.AddFireRate(ratio);
 
                     WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
-                    if (knives != null) knives.AddFireRate(value);
+                    if (knives != null) knives.AddFireRate(ratio);
 
                     // Fusions : seule Lames Ricochet a une cadence de tir propre (salve périodique) ; les autres
                     // fusions n'ont pas de notion de cadence (zones/orbes en continu).
                     WeaponFusionRicochetBlades ricochetBladesFR = playerGO.GetComponent<WeaponFusionRicochetBlades>();
-                    if (ricochetBladesFR != null) ricochetBladesFR.AddFireRate(value);
+                    if (ricochetBladesFR != null) ricochetBladesFR.AddFireRate(ratio);
 
                     WeaponLightningChain lightningWeapon = playerGO.GetComponent<WeaponLightningChain>();
-                    if (lightningWeapon != null) lightningWeapon.AddFireRate(value);
+                    if (lightningWeapon != null) lightningWeapon.AddFireRate(ratio);
 
-                    if (weapon != null) weapon.AddFireRate(value);
+                    if (weapon != null) weapon.AddFireRate(value); // additive en interne
+
+                    if (LevelUpManager.Instance != null) LevelUpManager.Instance.FireRateBonusTotal = total + value;
                     break;
                 }
 
@@ -661,6 +681,29 @@ public class UpgradeData : ScriptableObject
                 break;
 
 
+        }
+    }
+
+    // AJOUTÉ (2026-10-16, audit version finale) - une arme obtenue APRÈS des picks de "Dégâts+" / "Cadence+" reçoit
+    // d'un coup le total déjà accumulé (avant, elle n'en profitait jamais). Multiplication par (1 + total) : pour les
+    // armes multiplicatives, AddX(total) donne exactement x(1+total) ; pour les additives (Orbitaux), AddDamage(total)
+    // ajoute le total à leur somme, même résultat. Le bonus de Réputation appliqué dans leur Awake/Start est un
+    // simple facteur multiplicatif : l'ordre n'a pas d'importance.
+    private static void ApplyPastGlobalBonuses(Component weaponComponent)
+    {
+        if (weaponComponent == null || LevelUpManager.Instance == null) return;
+        float dmg = LevelUpManager.Instance.DamageBonusTotal;
+        float rate = LevelUpManager.Instance.FireRateBonusTotal;
+
+        switch (weaponComponent)
+        {
+            case WeaponFireball w: if (dmg > 0f) w.AddDamage(dmg); if (rate > 0f) w.AddFireRate(rate); break;
+            case WeaponShurikenBarrage w: if (dmg > 0f) w.AddDamage(dmg); if (rate > 0f) w.AddFireRate(rate); break;
+            case WeaponLightningChain w: if (dmg > 0f) w.AddDamage(dmg); if (rate > 0f) w.AddFireRate(rate); break;
+            case WeaponAura w: if (dmg > 0f) w.AddDamage(dmg); break;
+            case WeaponOrbital w: if (dmg > 0f) w.AddDamage(dmg); break;
+            case WeaponMudPuddle w: if (dmg > 0f) w.AddDamage(dmg); break;
+            case WeaponBouncingOrb w: if (dmg > 0f) w.AddDamage(dmg); break;
         }
     }
 
@@ -734,7 +777,14 @@ public class UpgradeData : ScriptableObject
                     if (orb != null) Object.Destroy(orb);
 
                     if (playerGO.GetComponent<WeaponFusionRicochetBlades>() == null)
-                        playerGO.AddComponent<WeaponFusionRicochetBlades>().Init(Mathf.Max(1f, inheritedDamage));
+                    {
+                        WeaponFusionRicochetBlades blades = playerGO.AddComponent<WeaponFusionRicochetBlades>();
+                        blades.Init(Mathf.Max(1f, inheritedDamage));
+                        // Dégâts déjà hérités des Couteaux (bonus inclus) ; la CADENCE de la fusion repart de sa propre
+                        // base : elle rattrape les Cadence+ déjà pris (sinon perdus en fusionnant).
+                        float pastFireRate = LevelUpManager.Instance != null ? LevelUpManager.Instance.FireRateBonusTotal : 0f;
+                        if (pastFireRate > 0f) blades.AddFireRate(pastFireRate);
+                    }
                     break;
                 }
 

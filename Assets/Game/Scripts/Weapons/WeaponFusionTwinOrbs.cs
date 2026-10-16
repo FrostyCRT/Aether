@@ -96,7 +96,7 @@ public class WeaponFusionTwinOrbs : MonoBehaviour
     private List<Vector3> FindNearestEnemyPositions(int count)
     {
         var result = new List<Vector3>();
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         var candidates = new List<(float distSqr, Vector3 pos)>();
         for (int i = 0; i < hitCount; i++)
         {

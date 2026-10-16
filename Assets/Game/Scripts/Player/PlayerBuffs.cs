@@ -35,14 +35,23 @@ public class PlayerBuffs : MonoBehaviour
 
     // Multiplicateur de dégâts sortants total (Concentration × futurs buffs).
     // 1f par défaut → aucun effet pour les personnages sans buff dynamique actif.
-    public static float OutgoingDamageMultiplier { get; private set; } = 1f;
+    // MODIFIÉ (2026-10-16, audit version finale) - produit de 2 facteurs indépendants : Concentration (ce composant)
+    // et Surpuissance (CrystalSystem, x2 pendant 5 s après l'Ultime). Avant, Surpuissance passait par
+    // WeaponBase.SetDamageMultiplier et ne doublait que le TIR DE BASE, alors que sa description dit "tes dégâts
+    // sont doublés" : toutes les armes qui lisent ce multiplicateur sont maintenant concernées.
+    public static float OutgoingDamageMultiplier => _concentrationFactor * _overpowerFactor;
+    private static float _concentrationFactor = 1f;
+    private static float _overpowerFactor = 1f;
+
+    public static void SetOverpowerActive(bool active) => _overpowerFactor = active ? 2f : 1f;
 
     // Exposé pour le HUD / debug.
     public float ConcentrationBonus => _concentrationCurrent;
 
     private void Awake()
     {
-        OutgoingDamageMultiplier = 1f;
+        _concentrationFactor = 1f;
+        _overpowerFactor = 1f;
         _concentrationCap = MetaProgressionManager.Instance != null
             ? MetaProgressionManager.Instance.GetBonusConcentrationCap()
             : 0f;
@@ -111,7 +120,7 @@ public class PlayerBuffs : MonoBehaviour
 
     private void Recompute()
     {
-        OutgoingDamageMultiplier = 1f + _concentrationCurrent;
+        _concentrationFactor = 1f + _concentrationCurrent;
     }
 
     private void PushHUD()
@@ -126,6 +135,7 @@ public class PlayerBuffs : MonoBehaviour
 
     private void OnDestroy()
     {
-        OutgoingDamageMultiplier = 1f;
+        _concentrationFactor = 1f;
+        _overpowerFactor = 1f;
     }
 }

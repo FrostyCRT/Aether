@@ -185,8 +185,8 @@ public class WeaponAura : MonoBehaviour
         // transform.position seul, pour que la zone de degats/ralentissement
         // reelle corresponde exactement a ce que montre le visuel (anneau).
         Vector3 center = transform.position + _centerOffset;
-        int hitCount = Physics.OverlapSphereNonAlloc(center, _radius, _auraOverlapBuffer);
-        float tickDamage = _damagePerSecond * _tickRate;
+        int hitCount = Physics.OverlapSphereNonAlloc(center, _radius, _auraOverlapBuffer, EnemyLayers.Mask);
+        float tickDamage = _damagePerSecond * _tickRate * PlayerBuffs.OutgoingDamageMultiplier; // + Concentration / Surpuissance (2026-10-16, audit)
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = _auraOverlapBuffer[i];

@@ -64,7 +64,9 @@ public class BossDeer : BossBase
         // 50000 -> boss 3 125000, progression croissante voulue), jamais
         // repercute ici. Le Cerf tournait donc reellement a 500 PV depuis ce
         // rescale, pas 50000 - largement sous les deux autres boss.
-        _maxHealth = 50000f;
+        // CORRIGE (2026-10-16, audit version finale) - la ligne `_maxHealth = 50000f` qui restait ici écrasait
+        // encore le prefab (relevé à 90000 le 2026-10-12) : la hausse de PV du boss 2 n'avait jamais pris effet.
+        // Les PV viennent désormais uniquement du prefab, comme pour BossCorruptedSource.
         _moveSpeed = 4f;
 
         base.Start();
@@ -234,7 +236,7 @@ public class BossDeer : BossBase
         {
             HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
             if (playerHealth != null)
-                playerHealth.TakeDamage(_jumpDamage * GameModes.EnemyDamageScale);
+                playerHealth.TakeDamage(_jumpDamage * GameModes.EnemyDamageScale, "boss"); // cause "boss" (2026-10-16, audit)
         }
 
         _contactDamageSuppressed = false;
@@ -265,7 +267,7 @@ public class BossDeer : BossBase
         {
             EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
             if (projectile != null)
-                projectile.Init(direction);
+                projectile.Init(direction, "boss");
         }
 
         if (_doubleSpiral)
@@ -276,7 +278,7 @@ public class BossDeer : BossBase
             {
                 EnemyProjectile projectile2 = projectileGO2.GetComponent<EnemyProjectile>();
                 if (projectile2 != null)
-                    projectile2.Init(direction2);
+                    projectile2.Init(direction2, "boss");
             }
         }
 

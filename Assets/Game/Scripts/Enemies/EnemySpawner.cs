@@ -80,19 +80,19 @@ public class EnemySpawner : MonoBehaviour
         CheckPhaseProgression();
     }
 
+    // MODIFIÉ (2026-10-16, audit version finale) - les phases sont désormais la SEULE source de la difficulté de spawn
+    // (WaveManager.ApplyDifficulty les écrasait chaque frame avec ses propres valeurs : max 15->60, si bien que les
+    // max 75/120/160 et les cadences de ces phases ne s'appliquaient jamais). Progression calée sur
+    // GameManager.RunTimer (le même chronomètre que les paliers d'ennemis et les boss, figé pendant les boss) plutôt
+    // qu'un compteur local ; `while` pour rattraper plusieurs phases d'un coup si besoin.
     private void CheckPhaseProgression()
     {
-        int nextPhaseIndex = _currentPhaseIndex + 1;
-        if (nextPhaseIndex < _phasesDeJeu.Count)
+        float runSeconds = GameManager.Instance != null ? GameManager.Instance.RunTimer : _gameTimer;
+        while (_currentPhaseIndex + 1 < _phasesDeJeu.Count
+               && runSeconds >= _phasesDeJeu[_currentPhaseIndex + 1].tempsDebutMinutes * 60f)
         {
-            // Conversion du temps de la phase (minutes) en secondes de jeu
-            float tempsRequisSecondes = _phasesDeJeu[nextPhaseIndex].tempsDebutMinutes * 60f;
-
-            if (_gameTimer >= tempsRequisSecondes)
-            {
-                _currentPhaseIndex = nextPhaseIndex;
-                AppliquerPhase(_phasesDeJeu[_currentPhaseIndex]);
-            }
+            _currentPhaseIndex++;
+            AppliquerPhase(_phasesDeJeu[_currentPhaseIndex]);
         }
     }
 
@@ -101,8 +101,6 @@ public class EnemySpawner : MonoBehaviour
         _maxEnemies = phase.maxEnemiesSurMap;
         _enemiesPerWave = phase.ennemisParVague;
         _spawnInterval = phase.intervalleSpawn;
-
-        Debug.Log($"📈 [SPAWNER] Nouvelle phase de jeu : {phase.nomPhase} | Limite carte : {_maxEnemies} | Par vague : {_enemiesPerWave} | Cadence : {_spawnInterval}s");
     }
 
     private void SpawnWave()
@@ -111,8 +109,9 @@ public class EnemySpawner : MonoBehaviour
 
         _recentSpawnPositions.Clear();
 
-        // Optimisation : Remplacement du FindGameObjectsWithTag par un décompte des entités actives avec le tag
-        int currentEnemies = GameObject.FindGameObjectsWithTag("Enemy").Length;
+        // MODIFIÉ (2026-10-16) - compteur de la grille spatiale (ennemis actifs) au lieu de FindGameObjectsWithTag,
+        // qui allouait un tableau à chaque vague (jusqu'à ~2 fois par seconde avec 160 ennemis).
+        int currentEnemies = EnemySpatialGrid.Count;
 
         if (currentEnemies >= _maxEnemies) return;
 

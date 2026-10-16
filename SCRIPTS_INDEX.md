@@ -3,7 +3,10 @@
 Ce fichier est un **index de repérage rapide** : pour chaque script C# du projet, une ou deux lignes qui disent ce qu'il EST (type de composant) et ce qu'il FAIT. Ce n'est pas une documentation exhaustive.
 
 - Pour l'historique détaillé session par session (pourquoi tel choix, quels bugs ont été corrigés, quelles valeurs ont été réglées à la main) : **`NOTES.md`**, la source la plus à jour.
-- Pour la vue d'ensemble du design du jeu (personnages, armes, progression méta, HUD...) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`**. Attention : ce document a pris du retard sur certains points désormais bien réels en jeu — le système de **Fusion d'armes** (`WeaponFusion*.cs`) et l'ennemi **Bulbe cracheur** (`EnemyBulb.cs`) notamment. En cas de doute entre les deux, `NOTES.md` fait foi.
+- Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`** (remis à jour le 2026-10-16, version V14). En cas de doute, `NOTES.md` fait foi.
+- Pour la liste des bugs / points à régler avant la sortie et leur avancement : **`AUDIT_VERSION_FINALE.md`**. Pour tout ce qui reste à modéliser en 3D (skins compris) et les sons manquants : **`A_MODELISER_3D.md`**.
+
+*Index vérifié le 2026-10-16 contre les fichiers réels : tous les scripts du jeu y figurent.*
 
 ## Comment naviguer
 
@@ -23,19 +26,19 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `BossCameraZoom.cs` | Singleton qui dézoome/rezoome la caméra virtuelle Cinemachine pendant un combat de boss (transition douce vers une taille cible). |
 | `BoundaryDecorationPlacer.cs` | Outil de scène (`[ContextMenu]`) qui parsème des arbres/rochers en bordure de map, avec échelle et espacement minimum aléatoires mais déterministes par catégorie. |
 | `DamageNumberSpawner.cs` | Singleton qui spawne les nombres de dégâts flottants via l'`ObjectPool`, fusionne les coups rapprochés sur une même cible et respecte les réglages Paramètres (dégâts infligés/subis affichés ou non). |
-| `DebugCheats.cs` | Raccourcis clavier F1-F7 DEBUG uniquement (inactif hors éditeur/build dev) : sauter à un boss, donner tout le build sauf fusions, forcer un level-up, invincibilité joueur/ennemis. |
+| `DebugCheats.cs` | Raccourcis clavier DEBUG uniquement (inactifs hors éditeur/build dev) : F1-F3 sauter à un boss, F4 donner tout le build sauf fusions, F5 forcer un level-up, F6/F7 invincibilité joueur/ennemis, F8/F9/F11 faire apparaître une gemme petite/moyenne/grande, F12 vider les ennemis. |
 | `GameManager.cs` | Singleton central d'une run : état Game Over/Pause, spawn du personnage sélectionné (avec son skin), chrono, compteur de kills/boss. |
 | `GameModes.cs` | Classe statique : définit les 4 modes de jeu (Classique/Sans fin/Ruée de boss/Titans), leurs règles d'échelle et si les fusions sont activées pour ce mode. |
 | `GameSceneSettingsApplier.cs` | Applique le réglage Ombres (Paramètres) à la lumière directionnelle de la scène Game au démarrage. |
-| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. |
+| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. Retient aussi le total des bonus « Dégâts+ » / « Cadence+ » pris (`DamageBonusTotal` / `FireRateBonusTotal`), pour qu'ils soient additifs et identiques sur toutes les armes. |
 | `MapBoundaryUtils.cs` | Classe statique utilitaire : borne une position à la zone de jeu carrée. |
 | `MetaProgressionManager.cs` | Singleton persistant (`DontDestroyOnLoad`) : progression méta complète — Or/Éclats, sauvegarde (`SaveSystem`), déblocage de personnages, bonus de Réputation, aperçu du prochain palier pour le Game Over. |
 | `ObjectPool.cs` | Singleton générique de pooling d'objets par tag (ennemis, projectiles, VFX...), pré-instanciés à taille fixe. |
 | `SaveSystem.cs` | Classe statique : lecture/écriture de `save.json` (+ backup automatique), avec `SuppressWrites` pour tester sans toucher à la vraie sauvegarde. |
 | `SkinCatalog.cs` | ScriptableObject : catalogue des skins de personnage (Classique=Or / Prestige=Éclats), un skin = une ligne éditable dans l'Inspector, aucun code à toucher pour en ajouter un. |
-| `WaveManager.cs` | Singleton pilotant les vagues et l'apparition des 3 boss classiques (ou la logique Sans fin/Ruée de boss/Titans selon le mode courant). |
+| `WaveManager.cs` | Singleton pilotant l'apparition des 3 boss classiques (ou la logique Sans fin/Ruée de boss/Titans selon le mode courant). La densité d'ennemis est réglée par les phases de l'`EnemySpawner` ; `WaveManager` n'y ajoute que la montée du mode Sans fin après 15 min (cadence jusqu'à 0,3 s, plafond 160 → 200). |
 | `XPGem.cs` | Gemme d'XP ramassable poolée (3 tailles), attirée vers le joueur une fois dans son rayon d'attraction. |
-| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes spawner à la mort d'un ennemi selon l'XP à distribuer, et gère le rayon d'attraction global (débloqué niveau 3). |
+| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère la gerbe de gemmes des boss et le rayon d'attraction global (débloqué niveau 3). |
 | `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau^1.5`), déclenche les montées de niveau. |
 
 ## Player (`Assets/Game/Scripts/Player`)
@@ -44,10 +47,10 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 |---|---|
 | `CharacterIdentity.cs` | Composant minimal qui tague un prefab joueur avec son `CharacterType` (Aether/Kael/Lyra). |
 | `CrystalSystem.cs` | Charges d'Ultime, absorption au Dash, Nova (dégâts + ralentissement de zone), scaling de l'Ulti dans le temps, soin de "Récupération" à l'absorption. |
-| `DashCircleUI.cs` | Remplit une image radiale HUD avec le cooldown du Dash du joueur (pulse quand prêt). |
+| `DashCircleUI.cs` | Ancienne jauge radiale du Dash. **Utilisé nulle part** (aucune scène ni prefab) : à supprimer (voir `AUDIT_VERSION_FINALE.md`). |
 | `HealthSystem.cs` | PV du joueur, invincibilité (dash + externe), régénération/armure méta, retient la cause de mort pour le message de Game Over. |
 | `ManaShield.cs` | Nœud capstone Gardien : bouclier à charges qui annule totalement un projectile ennemi et alimente le Cristal comme une absorption ; verrouillage temporaire si les charges tombent à 0. |
-| `PlayerBuffs.cs` | Multiplicateur STATIQUE de dégâts sortants du joueur (`OutgoingDamageMultiplier`), alimenté aujourd'hui par le nœud "Concentration" (Guerrier) ; conçu pour accueillir d'autres buffs dynamiques. |
+| `PlayerBuffs.cs` | Multiplicateur STATIQUE de dégâts sortants du joueur (`OutgoingDamageMultiplier` = Concentration × Surpuissance), lu par TOUTES les armes au moment des dégâts. Concentration est gérée ici ; Surpuissance est activée par `CrystalSystem` via `SetOverpowerActive`. |
 | `PlayerController.cs` | Le plus gros script Player : déplacement, rotation, Dash (avec tout son VFX : silhouettes fantômes, squash & stretch), Clone spectral de Lyra, curseur, invincibilité temporaire externe. |
 | `StartingUpgradeGranter.cs` | Composant vidé de son contenu — les armes exclusives ne s'équipent plus au spawn (passent par les cartes de level-up), laissé en place pour ne pas casser les prefabs. |
 
@@ -61,23 +64,23 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `EnemyBase.cs` | Classe de base de tous les ennemis normaux : PV, dégâts de contact, drops (XP/or), scaling de difficulté, système de Brûlure (palier 3 Fireball), flag "vole" (immunité Boue). |
 | `EnemyBulb.cs` | Ennemi tireur FIXE (hérite `EnemyBase`) : ne bouge jamais, crache un éventail de projectiles à cadence lente une fois la cible à portée. |
 | `EnemyCorruptedWeaver.cs` | Ennemi additionnel palier 8 min (hérite `EnemyBase`) : saut vers une position figée avec ralentissement à l'atterrissage. |
-| `EnemyKaiju.cs` | Ennemi costaud (hérite `EnemyBase`) : attaque frontale en cône + combo de balayage de queue à 360° si le joueur reste au contact. |
-| `EnemyProjectile.cs` | Projectile tiré par un ennemi/boss shooter : vol en ligne droite, portée max, dégâts au joueur. |
+| `EnemyProjectile.cs` | Projectile tiré par un ennemi/boss shooter : vol en ligne droite, portée max, dégâts au joueur (fenêtre anti-cumul), cause de mort « boss » ou « horde » transmise par `Init`. |
 | `EnemyShooter.cs` | Ennemi tireur mobile (hérite `EnemyBase`) : garde ses distances (fuit si trop proche, se positionne à portée préférée) et tire. |
-| `EnemySpawner.cs` | Fait apparaître les ennemis normaux par phases temporisées (cadence, nombre par vague, plafond simultané évolutifs). |
+| `EnemySpatialGrid.cs` | Classe statique : grille spatiale des ennemis actifs (séparation entre ennemis sans appel physique par ennemi) ; `Count` = nombre d'ennemis normaux actifs, lu par `EnemySpawner`. |
+| `EnemySpawner.cs` | Fait apparaître les ennemis normaux. **Seule référence de la densité** : 6 phases réglables dans l'Inspector (scène Game, liste « Phases De Jeu » : plafond, ennemis par vague, cadence), calées sur `GameManager.RunTimer`, + paliers de composition (types d'ennemis, multiplicateur de PV). |
 | `EnemyTank.cs` | Ennemi "costaud" basique — hérite entièrement de `EnemyBase` sans rien ajouter (juste des stats différentes sur son prefab). |
 
 ## Weapons (`Assets/Game/Scripts/Weapons`)
 
 | Script | Rôle |
 |---|---|
+| `EnemyLayers.cs` | Classe statique : masque de couche « Enemy » partagé par toutes les recherches d'ennemis des armes (évite que gemmes/décor remplissent les tampons de détection). |
 | `BouncingOrbProjectile.cs` | Instance poolée de l'Orbe Rebondissant : rebondit indéfiniment sur les bords de l'écran visible, traverse les ennemis sans se détruire. |
 | `LightningBoltVFX.cs` | Utilitaire statique : dessine les éclairs visibles (ricochet + flash d'impact) de la Foudre et de ses fusions, avec un pool interne de `LineRenderer` pour éviter le churn d'objets à haute fréquence. |
 | `LightningChainUtility.cs` | Algorithme statique de chaîne de foudre (saut d'ennemi en ennemi, dégâts dégressifs), extrait de `WeaponLightningChain` pour être réutilisé tel quel par les fusions qui ajoutent la foudre. |
 | `MudPuddleZone.cs` | Instance poolée d'une flaque de Boue : ralentissement + DPS léger aux ennemis (et boss) dans son rayon pendant sa durée de vie. |
 | `OrbitalProjectile.cs` | Un éclat en orbite autour du joueur (Orbitaux) : dégâts de contact avec cooldown par ennemi. |
 | `ProjectileBasic.cs` | Projectile générique de l'attaque de base et de plusieurs armes : portée, fragmentation à l'impact, perforation, Brûlure, Ricochet (fusion Lames Ricochet). |
-| `WeaponAOE.cs` | Arme à zone qui pulse à intervalle régulier (dégâts à tout ce qui est dans le rayon au moment de la pulsation). |
 | `WeaponAura.cs` | Champ de dégâts/ralentissement continu autour du joueur (anneau visuel procédural en `LineRenderer`). |
 | `WeaponBase.cs` | Attaque de base commune à tous les personnages : tir automatique vers l'ennemi le plus proche détecté, gère Double Tir et les modificateurs de dégâts/cadence des upgrades. |
 | `WeaponBouncingOrb.cs` | Orbe Rebondissant : crée/gère les instances de `BouncingOrbProjectile`. |
@@ -139,6 +142,7 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 
 | Script | Rôle |
 |---|---|
+| `AbandonConfirmReturnToPause.cs` | Posé sur la fenêtre de confirmation d'abandon : « Non » rouvre le menu Pause au lieu de laisser le jeu figé sans menu. |
 | `CharacterAmbientFX.cs` | Ambiance magique procédurale de l'onglet Personnage (brume, bokeh, poussières, éclats), teintée à la couleur du personnage actif. |
 | `CharacterInfoPanel.cs` | Remplit la fiche personnage de l'onglet Personnage (épithète, arme exclusive, progression réelle de l'arbre, parcours) — ne construit pas la hiérarchie. |
 | `CharacterLockOverlay.cs` | Habillage visuel d'un personnage verrouillé (voile, chaînes, cadenas dans un médaillon), teinté à sa couleur. |
@@ -171,6 +175,7 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `SkillTreeStyle.cs` | Classe statique : palette de couleurs de l'onglet Compétences (par branche de personnage). |
 | `SkillTreeUI.cs` | Contrôleur de l'onglet Compétences : sélection d'un nœud, ouverture de la fiche, achat, en-tête et progression par personnage. |
 | `SkinCardUI.cs` | Une carte de skin dans les rangées Classique/Prestige de l'onglet Réputation (aperçu, prix, état Possédé/Équipé/À venir). |
+| `SummonPortalFX.cs` | Effet d'invocation (construit en code) des mini-boss de la Source Corrompue : cercle runique qui grandit, halo violet, éclats. |
 | `TreeAmbientFX.cs` | Ambiance lumineuse procédurale de l'onglet Compétences (halos, rayons de soleil, lucioles, feuilles, braises). |
 | `TreeSprites.cs` | Classe statique : sprites de lumière générés en code pour l'onglet Compétences (halo, couronne, rayon). |
 | `UpgradeCardHover.cs` | Transmet les événements de survol souris d'une carte d'arme vers `PauseMenuUI` (fermeture en fondu du tooltip de description). |
@@ -184,6 +189,9 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 |---|---|
 | `EnemyAnimatorController.cs` | Petit pont vers l'Animator d'un ennemi (`IsAttacking`, gel de l'animation en fin de partie). |
 | `PlayerAnimatorController.cs` | Petit pont vers l'Animator du joueur (marche, mort, pose Idle forcée pour le bake du Clone spectral). |
+| `VATAnimatedRenderer.cs` | Animation d'ennemis par texture (VAT, gros gain de performance) : remplace Animator + SkinnedMeshRenderer, avance juste un numéro de frame par instance (lu par `VATLit.shader`), déphasage aléatoire. |
+| `VATClipSet.cs` | Plages de frames de chaque clip (« Walk », « Bite »...) dans la texture d'animation cuite d'un ennemi. |
+| `VATBoneAttachment.cs` / `VATBoneAttachmentData.cs` | Fait suivre un objet tenu (sarbacane du Gobelin...) au corps animé par VAT, via une petite courbe position/rotation précuite. |
 
 ## WaitingScreen (`Assets/Game/Scripts/WaitingScreen`)
 
@@ -201,8 +209,17 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 
 | Script | Rôle |
 |---|---|
+| `BossFX.cs` | Effets d'ARRIVÉE et de MORT des boss, construits en code (flash, ondes de choc, pilier de lumière, braises, court ralenti global qui ne se bat jamais avec la pause). |
+| `CameraShakeFX.cs` | Tremblement de caméra (« trauma ») réservé aux gros impacts (explosion de Boule de feu, arrivée/mort de boss), figé en pause. Pas encore d'option pour le désactiver (voir audit). |
+| `ChargeLaneFX.cs` | Couloir de charge d'un boss construit en code : couloir entier visible, remplissage selon le windup, chevrons qui défilent. |
+| `EndScreenIntro.cs` | Animation d'arrivée des panneaux Victoire/Défaite (fondu, carte qui monte, éléments en cascade). |
+| `EnemyDeathFX.cs` | Petit éclat (flash + 5 étincelles, ~0,3 s) à la mort d'un ennemi normal. |
+| `FXSprites.cs` | Bibliothèque partagée des effets de combat : sprites générés en code (blancs, teintés par le `SpriteRenderer`), matériau commun, courbes d'animation. |
+| `GroundTelegraphFX.cs` | Signal de danger au sol construit en code (zone à rayon fixe qui se remplit, ou onde), utilisé par toutes les attaques télégraphiées des boss. |
+| `ImpactSparkVFX.cs` | Éclat d'impact générique poolé (4 traits, 0,18 s) à la couleur de l'arme qui frappe ; compteur remis à zéro à chaque scène. |
 | `ExpandingRingVFX.cs` | Fonction statique : anneau procédural (`LineRenderer`) qui s'agrandit puis s'estompe — utilisé par la Nova, le souffle de départ du Dash, etc. |
 | `MusicStarter.cs` | Singleton : lance/change la musique avec fondus courts, attend que les volumes sauvegardés soient appliqués avant de démarrer. |
+| `XPGemCollectFX.cs` | Petit éclat (~0,22 s) au ramassage d'une gemme d'XP. |
 
 ---
 
@@ -219,4 +236,18 @@ Scripts `[MenuItem]` sous le menu **Aether >**, jamais exécutés en jeu — ils
 | `ReputationPageBuilder.cs` | **Aether > Rebuild Reputation Page** : construit l'onglet Réputation complet (bonus + boutique de skins), crée `SkinCatalog.asset` s'il n'existe pas. |
 | `SettingsPageBuilder.cs` | **Aether > Rebuild Settings Page** : construit la page Paramètres complète (carrousel de catégories, lignes). |
 | `SkeletonSwapTool.cs` | Fenêtre d'éditeur (`EditorWindow`) : remplace le squelette d'un modèle Tripo3D par un squelette Mixamo en conservant mesh/texture/poids. |
+| `VATBaker.cs` | Outil de cuisson VAT : précuit les animations d'un ennemi en textures (position + normale) + mesh statique + matériau `VATLit`. |
 | `SkillTreePageBuilder.cs` | **Aether > Rebuild Skill Tree Page** (+ variante Nodes) : construit l'onglet Compétences complet (nœuds, liaisons, fiche, ambiance). |
+
+## Outil trailer (`Assets/TrailerCapture`)
+
+Éditeur UNIQUEMENT (`#if UNITY_EDITOR`, jamais compilé dans un build) ; tout le dossier peut être supprimé sans effet sur le jeu.
+
+| Script | Rôle |
+|---|---|
+| `TrailerShotDriver.cs` | Met en scène une partie (ou le menu) et capture les plans du trailer Steam image par image (`Time.captureFramerate`, 60 i/s). |
+| `Editor/TrailerCapture.cs` | Passe la Game View en 1920×1080, lance un plan puis assemble les images en MP4 (ffmpeg de Remotion) dans `../Aether Storm Trailer/public/shots/`. |
+
+## Hors jeu (exemples Unity, à supprimer avant la sortie)
+
+`Assets/TutorialInfo/Scripts/Readme.cs` + `Editor/ReadmeEditor.cs` (page d'accueil du modèle de projet URP) et `Assets/Samples/Sequences/.../AssignDefaultMaterial.cs` (exemple du paquet Sequences) : ne font pas partie du jeu.

@@ -29,6 +29,26 @@ public static class LightningBoltVFX
     private static readonly Stack<LightningBoltRunner> _pool = new Stack<LightningBoltRunner>();
     private static int _activeCount = 0;
 
+    // CORRIGE (2026-10-16, audit) - compteur et pile STATIQUES : les éclairs encore actifs au changement de scène
+    // sont détruits sans jamais repasser par ReturnToPool, donc _activeCount ne redescendait jamais et la pile gardait
+    // des objets détruits. Partie après partie, le plafond finissait par bloquer tous les effets. Remis à zéro à chaque
+    // chargement de scène (et au lancement, pour le Play Mode sans rechargement de domaine).
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void HookSceneReset()
+    {
+        ResetState();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode) => ResetState();
+
+    private static void ResetState()
+    {
+        _activeCount = 0;
+        _pool.Clear();
+    }
+
     private static Material GetMaterial()
     {
         if (_material == null)

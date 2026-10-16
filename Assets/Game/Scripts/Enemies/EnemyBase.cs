@@ -244,6 +244,7 @@ public class EnemyBase : MonoBehaviour
         EnemySpatialGrid.Register(this);
 
         _currentHealth = _maxHealth * _healthMultiplier;
+        _isDead = false; // nouvelle vie à la sortie du pool (voir TakeDamage/Die)
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
 
@@ -483,9 +484,17 @@ public class EnemyBase : MonoBehaviour
     // interrupteur global, un seul point a verifier partout ou un ennemi normal encaisse des degats.
     public static bool DebugInvincible = false;
 
+    private bool _isDead;
+
     public void TakeDamage(float damage, Color color = default, bool fromNova = false)
     {
         if (DebugInvincible) return;
+        // CORRIGE (2026-10-16, audit) - 2 coups dans la même frame (boule de feu + aura, éclair en chaîne, Nova...)
+        // appelaient Die() 2 fois : kill, or et gemmes comptés en double, retour au pool en double. Et après la mort
+        // du joueur (ou la victoire), projectiles/zones encore actifs continuaient de tuer pendant le délai avant
+        // l'écran de fin : ces kills/cet or n'ont plus à compter (même règle que la Brûlure, voir BurnRoutine).
+        if (_isDead) return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
 
         _currentHealth -= damage;
 
@@ -605,6 +614,9 @@ public class EnemyBase : MonoBehaviour
 
     private void Die(bool fromNova = false)
     {
+        if (_isDead) return;
+        _isDead = true;
+
         // AJOUTÉ (2026-10-03) - retour visuel à la mort : jusqu'ici instantané et muet (ReturnToPool direct), alors
         // que c'est l'événement le plus fréquent de toute la partie. Couleur reprise du sprite si l'ennemi en a un
         // (CacheSpriteRenderer, déjà utilisé par la Brûlure), sinon un blanc chaud neutre.

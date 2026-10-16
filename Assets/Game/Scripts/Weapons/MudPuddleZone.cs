@@ -135,7 +135,7 @@ public class MudPuddleZone : MonoBehaviour
     {
         _inRangeThisTick.Clear();
         // MODIFIÉ (2026-10-01) - utilise le rayon COURANT (en croissance) et non le rayon final.
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _currentRadius, _overlapBuffer);
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _currentRadius, _overlapBuffer, EnemyLayers.Mask);
         // Buffs dynamiques du joueur (Concentration) relus à chaque tick. 1f si inactif.
         float tickDamage = _damagePerSecond * TickRate * PlayerBuffs.OutgoingDamageMultiplier;
 

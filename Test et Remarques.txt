@@ -11,6 +11,6 @@ revoir toutes les descriptions et les noms des upgrades pour les valider pour la
 faire un curseur moins détaillé.
 
 
-défis, faire des phrases plus descriptives pour celles qui en ont besoin, remplir le background en beige plein.
+défis au lancement, faire des phrases plus descriptives pour celles qui en ont besoin, remplir le background en beige plein.
 
 Enlever les dots pour le heal

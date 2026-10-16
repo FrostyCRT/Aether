@@ -1,6 +1,6 @@
 # Aether Storm Survivor : ce qu'il reste à modéliser en 3D (et à habiller)
 
-Audit du 2026-10-15. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
+Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
 Le principe : **tout ce que le joueur voit en partie et qui est encore une primitive Unity (cube, sphère, cylindre, capsule) avec un simple matériau de couleur** doit être remplacé par un vrai modèle, un vrai effet visuel ou une vraie texture.
 
 Légende des priorités :
@@ -86,7 +86,7 @@ Conseil : les skins **Prestige** doivent se voir **de loin, vus de dessus** (sil
 | Gobelin + sarbacane | OK | Le **projectile** est une sphère orange (voir §4) |
 | Golem | OK (VAT) | Vérifier le flash blanc des dégâts sur les VAT (voir audit) |
 | Tous | — | **Effet visuel de brûlure** absent sur les ennemis 3D : la teinte ne s'applique qu'aux `SpriteRenderer`. Il faut une petite flamme/particule attachée, ou une teinte orange qui pulse dans le shader. |
-| Tous | — | **Effet d'apparition** : les ennemis spawnent à 15 u, alors que l'écran fait environ 18 u en largeur et 21 dans les coins. On les voit donc apparaître d'un coup. Il faut une petite fumée/fissure au sol ou un portail (SummonPortalFX existe pour les mini-boss). |
+| Bulbe | — | **Effet d'apparition** : les ennemis normaux apparaissent hors champ (rayon 22 réglé dans la scène, corrigé le 2026-10-16 : ce n'était pas 15). Seul le Bulbe apparaît volontairement dans l'écran (10 u) : il lui faut une sortie de terre (voir §2.1). |
 
 ### 2.4 Nettoyage des prefabs ennemis
 Les racines des prefabs ennemis, boss et joueurs gardent un `MeshRenderer` CUBE/CAPSULE **désactivé** (reste du prototypage). Invisible, mais à supprimer (propreté, et ça évite qu'un jour quelqu'un le réactive par erreur).
@@ -137,7 +137,7 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 | Fusion **Terre Calcinée** | même prefab | Cylindres orange | Sol brûlé : braises, fissures incandescentes, petites flammes. |
 | Fusion **Marécage Maudit** | même prefab | Cylindres verts | Marécage toxique : eau verte, bulles, brume. |
 | **Aura de Kael** | LineRenderer + disque | Fonctionnel mais générique | 🟡 Cercle runique au sol qui tourne, particules vertes. |
-| **Vortex de Mana** (fusion) | LineRenderer | Anneau **à hauteur de torse** (bug Y, voir audit) | Corriger la hauteur, puis tourbillon au sol. |
+| **Vortex de Mana** (fusion) | LineRenderer | Anneau simple, ramené au sol le 2026-10-16 | Tourbillon au sol animé. |
 
 ---
 

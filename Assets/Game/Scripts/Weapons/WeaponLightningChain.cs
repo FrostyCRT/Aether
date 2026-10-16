@@ -100,7 +100,7 @@ public class WeaponLightningChain : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;
         for (int i = 0; i < count; i++)
@@ -119,7 +119,7 @@ public class WeaponLightningChain : MonoBehaviour
 
     private Transform FindNextChainTarget(Vector3 from, List<GameObject> alreadyHit)
     {
-        int count = Physics.OverlapSphereNonAlloc(from, _chainRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(from, _chainRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _chainRange * _chainRange;
         for (int i = 0; i < count; i++)

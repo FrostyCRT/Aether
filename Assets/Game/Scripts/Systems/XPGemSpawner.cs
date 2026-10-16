@@ -13,6 +13,13 @@ public class XPGemSpawner : MonoBehaviour
     // OPTIMISATION : Liste réutilisable mise en cache pour éviter le "new List" à chaque mort
     private readonly List<XPGem.GemType> _gemsCalculationCache = new List<XPGem.GemType>();
 
+    // AJOUTÉ (2026-10-16, audit version finale) - les gemmes valent 10/20/50 : le reste < 10 de chaque mort était
+    // jeté (ex. 15 XP -> une gemme de 10, 5 perdus ; jusqu'à ~12-15 % de l'XP entre 2 et 8 min selon les paliers).
+    // Ce reste est maintenant reporté sur la mort suivante : l'XP totale de la partie est exacte, sans créer de
+    // gemme supplémentaire (aucun coût en objets à l'écran). La courbe de niveaux (XPSystem._baseXP) a été
+    // relevée en conséquence.
+    private float _xpCarry = 0f;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -38,7 +45,7 @@ public class XPGemSpawner : MonoBehaviour
     {
         if (ObjectPool.Instance == null) return;
 
-        CalculateGems(xpValue); // Remplit le cache interne
+        _xpCarry = CalculateGems(xpValue + _xpCarry); // Remplit le cache interne, garde le reste pour la prochaine mort
 
         for (int i = 0; i < _gemsCalculationCache.Count; i++)
         {
@@ -69,10 +76,12 @@ public class XPGemSpawner : MonoBehaviour
     }
 
     // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire
-    private void CalculateGems(float xpValue)
+    // Renvoie l'XP non convertie en gemmes (reste < 10), à reporter.
+    private float CalculateGems(float xpValue)
     {
         _gemsCalculationCache.Clear(); // On vide le cache de la mort précédente
-        int remaining = Mathf.RoundToInt(xpValue);
+        int remaining = Mathf.FloorToInt(xpValue);
+        float fraction = xpValue - remaining;
 
         while (remaining >= 50)
         {
@@ -89,6 +98,7 @@ public class XPGemSpawner : MonoBehaviour
             _gemsCalculationCache.Add(XPGem.GemType.Small);
             remaining -= 10;
         }
+        return remaining + fraction;
     }
 
     // AJOUTÉ (2026-10-04, suite 3) - retour utilisateur sur la mort d'un boss : "y'a juste un tas de gemme qui se
@@ -111,12 +121,17 @@ public class XPGemSpawner : MonoBehaviour
     {
         ExpandingRingVFX.Spawn(position, 3.5f, new Color(1f, 0.93f, 0.6f), 0.5f);
 
-        CalculateGems(xpValue); // remplit _gemsCalculationCache normalement (règle "rendre la monnaie")
+        _xpCarry = CalculateGems(xpValue + _xpCarry); // remplit _gemsCalculationCache normalement (règle "rendre la monnaie"), reste reporté
+        // CORRIGE (2026-10-16, audit - erreur relevée en Play) - cette coroutine lit la liste sur plusieurs frames
+        // (une gemme toutes les 0,03 s) : un ennemi tué pendant la gerbe appelait SpawnGems(), qui VIDE et remplit ce
+        // même cache partagé -> mauvais types de gemmes, ou ArgumentOutOfRangeException qui interrompait la gerbe
+        // (XP du boss perdue). Copie locale propre à cette gerbe (une seule allocation par mort de boss).
+        List<XPGem.GemType> gems = new List<XPGem.GemType>(_gemsCalculationCache);
 
         // Au-delà du plafond, on fusionne tout le surplus (du début de la liste, donc les plus petites valeurs
         // d'abord) dans UNE seule grosse gemme qui porte leur XP cumulée - jamais de gemme perdue, juste moins
         // d'objets à l'écran.
-        int count = _gemsCalculationCache.Count;
+        int count = gems.Count;
         float overflowXP = 0f;
         int burstCount = count;
         int startIndex = 0;
@@ -124,7 +139,7 @@ public class XPGemSpawner : MonoBehaviour
         {
             int overflowCount = count - (MaxBurstGems - 1);
             for (int i = 0; i < overflowCount; i++)
-                overflowXP += GemTypeValue(_gemsCalculationCache[i]);
+                overflowXP += GemTypeValue(gems[i]);
             startIndex = overflowCount;
             burstCount = MaxBurstGems - 1 + 1; // les restantes + la gemme consolidée
         }
@@ -144,7 +159,7 @@ public class XPGemSpawner : MonoBehaviour
 
         for (int i = startIndex; i < count; i++)
         {
-            SpawnBurstGem(position, _gemsCalculationCache[i], null, startAngle, spawned, totalToSpawn);
+            SpawnBurstGem(position, gems[i], null, startAngle, spawned, totalToSpawn);
             spawned++;
             yield return new WaitForSeconds(0.03f);
         }

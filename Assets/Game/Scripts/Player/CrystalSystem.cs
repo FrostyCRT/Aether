@@ -77,6 +77,9 @@ public class CrystalSystem : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
+        // CORRIGE (2026-10-16, audit) - la touche d'Ultime était lue même en pause / pendant le choix de cartes /
+        // l'annonce du défi : l'Ultime partait derrière le menu et son hitstop relançait le temps (voir HitstopRoutine).
+        if (GameManager.Instance.IsPaused) return;
 
         if (_storedUlts >= 1 && GameInput.Down(GameAction.Ultimate))
             TriggerUlt();
@@ -170,7 +173,7 @@ public class CrystalSystem : MonoBehaviour
                 enemy.TakeDamage(empoweredDamage, DamageNumberSpawner.ColorUltimate);
         }
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
+        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
             BossBase boss = hit.GetComponent<BossBase>();
@@ -185,7 +188,7 @@ public class CrystalSystem : MonoBehaviour
 
     private void DamageAllEnemies(float multiplier = 1f)
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
+        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
@@ -231,7 +234,7 @@ public class CrystalSystem : MonoBehaviour
 
     private void ApplyNovaDamage(float radius, HashSet<Collider> alreadyHit)
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius);
+        Collider[] hits = Physics.OverlapSphere(transform.position, radius, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
             if (alreadyHit != null && !alreadyHit.Add(hit)) continue; // déjà touché par cette vague
@@ -294,14 +297,18 @@ public class CrystalSystem : MonoBehaviour
 
     private IEnumerator HitstopRoutine()
     {
-        Time.timeScale = 0.05f;
+        const float HitstopScale = 0.05f;
+        Time.timeScale = HitstopScale;
         yield return new WaitForSecondsRealtime(_hitstopDuration);
-        Time.timeScale = 1f;
+        // CORRIGE (2026-10-16, audit) - ne rend le temps que si personne d'autre ne l'a pris entre-temps (pause ou
+        // level-up ouverts pendant le hitstop : timeScale = 0). Avant, le jeu repartait derrière le menu.
+        if (Mathf.Approximately(Time.timeScale, HitstopScale))
+            Time.timeScale = 1f;
     }
 
     private IEnumerator SlowAllEnemies()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange);
+        Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
             EnemyBase eb = hit.GetComponent<EnemyBase>();
@@ -330,12 +337,23 @@ public class CrystalSystem : MonoBehaviour
 
     private IEnumerator OverpowerBuff()
     {
+        // MODIFIÉ (2026-10-16, audit) - passe par le multiplicateur global (PlayerBuffs) au lieu de
+        // WeaponBase.SetDamageMultiplier : double TOUTES les armes, pas seulement le tir de base.
         _overpowerActive = true;
-        WeaponBase wb = GetComponent<WeaponBase>();
-        if (wb != null) wb.SetDamageMultiplier(2f);
+        PlayerBuffs.SetOverpowerActive(true);
         yield return new WaitForSeconds(5f);
-        if (wb != null) wb.SetDamageMultiplier(1f);
+        PlayerBuffs.SetOverpowerActive(false);
         _overpowerActive = false;
+    }
+
+    private void OnDisable()
+    {
+        // coroutine interrompue (fin de partie, changement de scène) : ne jamais laisser le x2 actif
+        if (_overpowerActive)
+        {
+            PlayerBuffs.SetOverpowerActive(false);
+            _overpowerActive = false;
+        }
     }
 
     private void OnDrawGizmosSelected()

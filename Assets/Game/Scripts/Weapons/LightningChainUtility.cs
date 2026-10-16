@@ -51,7 +51,7 @@ public static class LightningChainUtility
 
     private static Transform FindNextTarget(Vector3 from, float chainRange, List<GameObject> alreadyHit)
     {
-        int count = Physics.OverlapSphereNonAlloc(from, chainRange, _buffer);
+        int count = Physics.OverlapSphereNonAlloc(from, chainRange, _buffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = chainRange * chainRange;
         for (int i = 0; i < count; i++)

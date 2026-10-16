@@ -290,7 +290,7 @@ public class BossCorruptedSource : BossBase
                     if (projectileGO == null) continue;
 
                     EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-                    if (projectile != null) projectile.Init(dirToPlayer);
+                    if (projectile != null) projectile.Init(dirToPlayer, "boss");
                 }
             }
 
@@ -316,7 +316,9 @@ public class BossCorruptedSource : BossBase
         if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
         Quaternion targetRot = Quaternion.LookRotation(dir);
 
-        Vector3 impactPos = transform.position + dir * _strikeLungeDistance;
+        // CORRIGE (2026-10-16, audit) - le point d'impact n'était pas borné : près du bord, le boss pouvait plonger hors
+        // de la zone de jeu. Borné ici, et le lunge plus bas va EXACTEMENT à ce point (cercle affiché = vrai impact).
+        Vector3 impactPos = MapBoundaryUtils.ClampToZone(transform.position + dir * _strikeLungeDistance);
         GroundTelegraphFX telegraph = GroundTelegraphFX.Spawn(impactPos, _strikeImpactRadius, _strikeTelegraphColor, GroundTelegraphFX.Style.Zone);
         Track(telegraph.gameObject);
 
@@ -338,9 +340,9 @@ public class BossCorruptedSource : BossBase
         }
 
         Vector3 startPos = transform.position;
-        Vector3 endPos = startPos + dir * _strikeLungeDistance;
+        Vector3 endPos = new Vector3(impactPos.x, startPos.y, impactPos.z);
         float lungeElapsed = 0f;
-        float lungeDuration = _strikeLungeDistance / _strikeLungeSpeed;
+        float lungeDuration = Mathf.Max(0.05f, Vector3.Distance(startPos, endPos) / _strikeLungeSpeed);
 
         // MODIFIE (2026-09-16) - retour utilisateur : le corps du boss
         // infligeait aussi des degats de CONTACT generiques tout le long du
@@ -369,7 +371,7 @@ public class BossCorruptedSource : BossBase
             if (hit.CompareTag("Player"))
             {
                 HealthSystem health = hit.GetComponent<HealthSystem>();
-                if (health != null) health.TakeDamage(_strikeDamage);
+                if (health != null) health.TakeDamage(_strikeDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : multiplicateur sans fin + cause "boss"
             }
         }
 
@@ -478,7 +480,7 @@ public class BossCorruptedSource : BossBase
             if (hit.CompareTag("Player"))
             {
                 HealthSystem health = hit.GetComponent<HealthSystem>();
-                if (health != null) health.TakeDamage(_resurfaceBurstDamage);
+                if (health != null) health.TakeDamage(_resurfaceBurstDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : idem
             }
         }
 
@@ -690,7 +692,7 @@ public class BossCorruptedSource : BossBase
             if (hit.CompareTag("Player"))
             {
                 HealthSystem health = hit.GetComponent<HealthSystem>();
-                if (health != null) health.TakeDamage(_implosionDamage);
+                if (health != null) health.TakeDamage(_implosionDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : idem
             }
         }
 

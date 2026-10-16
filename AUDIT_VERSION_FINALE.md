@@ -3,6 +3,18 @@
 Audit du 2026-10-15. J'ai lu **tous les scripts du jeu** : Systems, Enemies, Player, Weapons (+ 6 fusions), Animation, Settings, Data, UI (toutes les pages), Music & VFX, Challenge, Localization, WaitingScreen, Editor, TrailerCapture. J'ai aussi regardé les prefabs, les scènes et les réglages du projet.
 Ce document ne change rien au code : c'est une liste de travail. Chaque point donne le fichier et la ligne, ce qui se passe, et la correction proposée.
 
+> ### ✅ Avancement au 2026-10-16 : étape 1 du plan faite (§12)
+> Corrigés **et vérifiés en Play** : 1.1 PV du Cerf (90 000 mesurés) · 1.2 soin des boss (600 → 1600 sur 2000, soit +50 %) · 1.3 Ultime en pause + hitstop (la pause reste à `timeScale` 0, et sans pause le temps revient bien à 1) · 1.6 double mort (+1 kill / +1 or seulement, y compris pour un ennemi ressorti du pool) · 1.7 kills après la fin de partie (plus comptés) · 1.8 anneau du Vortex (y = 0,05, rayon 8).
+> Corrigés (code relu, scénario difficile à reproduire en test) : 1.9 frappe du boss 3 bornée à la carte + multiplicateur du mode sans fin sur Frappe/Implosion/Ressurgissement · 2.1 fuite du maillage du clone de Lyra · 2.2 compteurs statiques des éclairs **et** des éclats d'impact (`ImpactSparkVFX` avait le même défaut) remis à zéro à chaque scène · 2.3 masque de couche « Enemy » ajouté à **toutes** les recherches d'ennemis des armes (16 requêtes, nouveau `Weapons/EnemyLayers.cs`) et à celles de l'Ultime/Nova · 2.12 cause « boss » pour les projectiles de boss et le saut du Cerf.
+> **Nouveau bug trouvé pendant les tests et corrigé** : `XPGemSpawner.BossGemBurstRoutine` parcourait sur plusieurs frames la liste partagée de `SpawnGems`. Un ennemi tué pendant la pluie de gemmes d'un boss la vidait : `ArgumentOutOfRangeException`, gerbe interrompue et **XP du boss perdue**. Le scénario a été reproduit, puis revérifié sans erreur.
+> ### ✅ Étape 2 faite (décisions validées par l'utilisateur, vérifiée en Play)
+> - **1.4 Spawner** : les phases de l'`EnemySpawner` sont désormais la seule référence, et leur progression suit `RunTimer`. `WaveManager.ApplyDifficulty` ne garde que la montée du mode sans fin après 15 min (cadence jusqu'à 0,3 s, plafond 160 → 200). Le comptage passe par `EnemySpatialGrid.Count` au lieu de `FindGameObjectsWithTag`. Mesuré à 12,5 min : **160 ennemis** actifs (contre 60 avant), cadence 0,6 s, ~100 FPS dans l'éditeur.
+> - **1.5 XP** : le reste < 10 est reporté sur la mort suivante (XP totale exacte, aucune gemme en plus). Courbe allégée : `XPSystem._baseXP` passe de 50 à 55 (scène + code). ⚠️ Correction de mon estimation : la perte réelle était de **0 à 15 % selon la phase** (environ 12 % entre 2 et 8 min, presque rien ensuite), pas « jusqu'à 33 % ».
+> - **1.10 Bonus de dégâts** : Dégâts+ et Cadence+ sont additifs et identiques sur toutes les armes (mesuré : ×1,4 après 2 prises, ×1,6 après 3, contre ×1,44 / ×1,73 avant sur les armes multiplicatives). Une arme obtenue plus tard rattrape le total. Les Lames Ricochet rattrapent la Cadence+. **Surpuissance** passe dans `PlayerBuffs.OutgoingDamageMultiplier` (×2 sur toutes les armes). L'**Aura**, le **Vortex de Mana**, les **Couteaux** et les **Lames Ricochet** lisent maintenant ce multiplicateur. Ils ignoraient aussi la **Concentration** : c'était un bug de plus.
+> - ⚠️ Correction du point 2.4 : dans la scène, le rayon d'apparition est déjà à **22** (le 15 n'était que la valeur par défaut du code). Pas de problème de « pop » à l'écran pour les ennemis normaux. Seuls les Bulbes (10 u, volontairement) apparaissent dans le champ.
+>
+> Reste à faire : étape 3 (sortie) et étape 4.
+
 Légende :
 - 🔴 **Bug confirmé** : vérifié dans le code (et en jeu quand c'était possible). Effet visible pour le joueur.
 - 🟠 **Probable / à confirmer en jeu** : le code le permet, l'effet dépend du contexte.
@@ -206,8 +218,8 @@ Un jeu Steam de ce genre sera joué à la manette (et sur Steam Deck). C'est le 
 | `FindFreeSpawnPosition` | Renvoie `Vector3.zero` en cas d'échec : un vrai point de la carte. Utiliser un `bool TryFind…(out Vector3)` |
 | Encodage | 3 fichiers ne sont **pas en UTF-8** (`EndScreenIntro.cs`, `GroundTelegraphFX.cs`, `AbandonConfirmReturnToPause.cs`) et 4 ont des accents détruits (« � ») dans les commentaires (`BossFX.cs`, `ChargeLaneFX.cs`, `FXSprites.cs`, `SummonPortalFX.cs`). Ça ne touche que les commentaires et les infobulles de l'Inspector. Réenregistrer en UTF-8 |
 | Commentaires périmés | `SetBossZoom « n'existe plus »` (alors qu'il est appelé), `XP x3` (c'est ×1,5), `F6` pour GrantFullBuild (c'est F4), en-tête de `WeaponBouncingOrb`, commentaires du spawner qui parlent du plafond 160 |
-| `SCRIPTS_INDEX.md` | **Périmé** : cite `WeaponAOE.cs` et `EnemyKaiju.cs` (supprimés), et il manque 19 scripts : BossFX, CameraShakeFX, ChargeLaneFX, EndScreenIntro, EnemyDeathFX, EnemySpatialGrid, FXSprites, GroundTelegraphFX, ImpactSparkVFX, SummonPortalFX, TrailerCapture, TrailerShotDriver, VAT*, XPGemCollectFX, AbandonConfirmReturnToPause… |
-| `AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md` | Vérifier s'il est encore à jour, sinon l'archiver |
+| `SCRIPTS_INDEX.md` | ✅ **Mis à jour le 2026-10-16** (tous les scripts du jeu y figurent, `WeaponAOE`/`EnemyKaiju` retirés). Constat d'origine : **périmé** : cite `WeaponAOE.cs` et `EnemyKaiju.cs` (supprimés), et il manque 19 scripts : BossFX, CameraShakeFX, ChargeLaneFX, EndScreenIntro, EnemyDeathFX, EnemySpatialGrid, FXSprites, GroundTelegraphFX, ImpactSparkVFX, SummonPortalFX, TrailerCapture, TrailerShotDriver, VAT*, XPGemCollectFX, AbandonConfirmReturnToPause… |
+| `AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md` | ✅ Réécrit le 2026-10-16 (contenu V14 : état d'avancement, systèmes actuels, reste à faire priorisé) |
 | `MeshRenderer` cube/capsule désactivés à la racine des prefabs | Supprimer |
 
 ---

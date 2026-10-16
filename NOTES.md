@@ -1,7 +1,28 @@
 # Aether Storm Survivor — Notes de travail
 
 Deux listes vivantes tenues au fil des sessions. Mises à jour à chaque passe.
-Dernière mise à jour : 2026-10-12 (suite 42) - grosse série de retours isolés (un par message, chacun scopé précisément) : panneau de level-up (centrage/cartes fusion/pastilles 5 paliers), correction du nommage des boss (Boss 1 = Dragon de Mana, Boss 2 = Cerf, Boss 3 = Source Corrompue), PV des boss 2/3 et des mini-boss remontés, one-shot par projectiles simultanés et par saut du Cerf corrigés, ratio de tireurs réduit en fin de partie, scaling d'XP adouci en fin de partie, orbes rebondissants qui restaient collés, araignées qui ignoraient le Clone Fantôme de Lyra, et nouveau curseur personnalisé (gantelet) avec confinement à la fenêtre + masquage en pleine partie. Voir suite 42 pour le détail complet.
+Dernière mise à jour : 2026-10-16 - audit complet « version finale » (2026-10-15, documents `AUDIT_VERSION_FINALE.md` et `A_MODELISER_3D.md`), puis étape 1 (12 bugs corrigés et vérifiés en Play) et étape 2 (équilibrage : phases du spawner jusqu'à 160 ennemis, XP sans perte + courbe allégée, Dégâts+/Cadence+ additifs sur toutes les armes, Surpuissance globale). Prochaine étape proposée : étape 3 de l'audit (préparation de la sortie). Synthèse du projet remise à jour (`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`, contenu V14) et `SCRIPTS_INDEX.md` complété.
+
+## 2026-10-16 (suite) — Étape 2 de l'audit : équilibrage (décisions validées par l'utilisateur)
+
+- **Spawner** : `WaveManager.ApplyDifficulty` n'écrase plus les phases de l'`EnemySpawner` (20/45/75/120/105/160 et leurs cadences), qui sont désormais la seule référence (Inspector de l'objet EnemySpawner, scène Game). Phases calées sur `GameManager.RunTimer`. Sans fin après 15 min : cadence 0,6 → 0,3 s, plafond 160 → 200 (+1,5/min). `EnemySpatialGrid.Count` remplace `FindGameObjectsWithTag`. Log de changement de phase retiré. Mesuré : 160 ennemis à 12,5 min (60 avant), ~100 FPS éditeur. **L'utilisateur va tester la densité** : à réajuster dans les phases si trop dur.
+- **XP** : reste < 10 reporté sur la mort suivante (`XPGemSpawner._xpCarry`). Perte réelle mesurée par calcul sur les paliers : 0 à 15 % selon la phase. `XPSystem._baseXP` 50 → 55 (scène + défaut du code).
+- **Dégâts+/Cadence+** additifs partout (`LevelUpManager.DamageBonusTotal/FireRateBonusTotal`, rapport `v/(1+S)` pour les armes multiplicatives, `UpgradeData.ApplyPastGlobalBonuses` pour les armes obtenues plus tard). Vérifié : Couteaux 170,4 → 238,56 (×1,4) → 272,64 (×1,6) ; Orbe pris après : même valeur.
+- **Surpuissance** → `PlayerBuffs.SetOverpowerActive` (×2 global ; `WeaponBase.SetDamageMultiplier` n'est plus appelé). Aura, Vortex, Couteaux et Lames Ricochet appliquent maintenant `PlayerBuffs.OutgoingDamageMultiplier` (ils ignoraient aussi la Concentration).
+
+## 2026-10-16 — Étape 1 de l'audit : correction des bugs (vérifiés en Play, save protégée)
+
+- `BossDeer.Start()` : suppression du `_maxHealth = 50000f` forcé → le prefab (90 000) s'applique enfin (mesuré en Play). Le mini-Cerf du boss 3 passe donc à 0,6 × 90 000 = 54 000.
+- `BossBase.Die` : `Heal(0.5f)` au lieu de `Heal(MaxHealth*0.5)` (mesuré : 600 → 1600 / 2000).
+- `CrystalSystem` : Ultime bloqué si `IsPaused` ; le hitstop ne remet `timeScale = 1` que s'il vaut encore 0,05 (même principe que `BossFX`). Testé avec et sans pause pendant le hitstop.
+- `EnemyBase` : drapeau `_isDead` (remis à faux dans `OnEnable`) + `TakeDamage` ignoré si `IsGameOver`. Testé : triple coup fatal = +1 kill, ennemi réutilisé = +1, après la fin de partie = +0.
+- `WeaponFusionManaVortex` : anneau ramené au sol (même calcul que l'Aura). Mesuré y = 0,05.
+- `BossCorruptedSource` : point d'impact de la Frappe borné par `MapBoundaryUtils.ClampToZone` (le lunge va exactement au cercle affiché) ; `EnemyDamageScale` + cause « boss » sur Frappe/Implosion/Ressurgissement ; cause « boss » aussi sur le saut du Cerf et les projectiles de boss (`EnemyProjectile.Init(dir, source)`).
+- `PlayerController` : le maillage figé du clone de Lyra est détruit avec le clone.
+- `LightningBoltVFX` + `ImpactSparkVFX` : compteur/pile statiques remis à zéro à chaque `sceneLoaded`.
+- Nouveau `Weapons/EnemyLayers.cs` : masque « Enemy » sur toutes les `OverlapSphereNonAlloc` des armes (12 fichiers) et les `OverlapSphere` de l'Ultime/Nova. Vérifié : tous les ennemis et boss ont leur collider racine sur la couche Enemy.
+- **Bug trouvé en testant** : `XPGemSpawner.BossGemBurstRoutine` lisait le cache partagé sur plusieurs frames → exception et XP du boss perdue si un ennemi mourait pendant la gerbe. Copie locale ; scénario reproduit puis revérifié sans erreur.
+- Console propre, `save.json` non modifié, langue et personnage inchangés.
 
 ## 2026-10-15 — Audit complet « version finale » + liste 3D (rapport seulement, aucun code modifié)
 
@@ -1060,7 +1081,7 @@ L'utilisateur avait baissé les PV des 3 boss pour tester plus vite (`00:30`/bos
 
 - **Unity 6000.0.83f1** (migré depuis 2021.3.45f2 le 2026-09-10).
 - Cinemachine **2.10.7** conservé (ligne 2.x, supportée sur Unity 6) → `CinemachineVirtualCamera`, `m_Lens`, `LensSettings` toujours valides, aucune migration CM3.
-- Legacy Input Manager (pas de package Input System) → `Input.*` OK.
+- Legacy Input Manager (pas de package Input System) → `Input.*` OK. Migration vers le nouvel Input System recommandée avant la sortie pour une vraie prise en charge manette (voir `AUDIT_VERSION_FINALE.md` §5).
 - URP 17.0.4, TMP intégré à `com.unity.ugui` 2.0.0 (`using TMPro;` inchangé).
 - Seul correctif code requis par la migration : `FindObjectOfType`/`FindObjectsOfType` (obsolètes, warnings) → `FindFirstObjectByType` / `FindObjectsByType(FindObjectsSortMode.None)` — 6 sites corrigés (CrystalSystem, GameManager, ObjectPool ×2, WaveManager). Scripts Editor (`SkeletonSwapTool`, `BoundaryDecorationPlacer`, template `ReadmeEditor`) et le sample `Sequences` : API stable, rien à changer.
 
@@ -1068,13 +1089,7 @@ L'utilisateur avait baissé les PV des 3 boss pour tester plus vite (`00:30`/bos
 
 ## À modéliser (Tripo) — session dédiée 1 mois, à faire d'un coup
 
-> Rien ne se modélise avant la session Tripo. On accumule ici.
-
-| Élément | Type | Notes |
-|---|---|---|
-| Bulbe cracheur de projectile | Ennemi | Shooter **fixe** (ne bouge pas une fois spawné), tir en éventail à cadence faible dès que le joueur est à portée. À différencier visuellement du Gobelin shooter. Déjà dans les tâches en attente V13. |
-
-_(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours sont 100 % procéduraux / code)_
+> **Remplacé (2026-10-15) par `A_MODELISER_3D.md`**, la liste complète et priorisée après audit de tout le jeu : 21 skins, Bulbe cracheur (encore un cube), Sanglier (modèle sans prefab), tous les projectiles (sphères), zones de boue et fusions au sol (cylindres), Nova/Ultime/Bouclier de Mana, cristaux et prefabs du boss 3, sol et décor de l'arène, effets génériques à remplacer, et les **bruitages** (le jeu n'en a aucun).
 
 ---
 
@@ -1136,7 +1151,7 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 
 - ~~**HUD — rappel du défi en cours jamais construit**~~ ✅ **réglé (session 2026-09-13→16)** — voir section dédiée tout en haut du fichier.
 - **`SaveSystem.Load()` a renvoyé un `SaveData` par défaut (tout à 0) une fois**, en plein milieu de cette session de test, alors que le vrai `save.json` sur disque contenait déjà de la vraie progression (totalRuns 6, 5735 Or, etc. — confirmé intact par une lecture directe du fichier après coup, rien perdu). Point isolé, pas reproduit une 2ᵉ fois, cause non identifiée (piste : lock transitoire du fichier juste après un rechargement de scène/domain reload). À surveiller si ça se reproduit, pas creusé plus loin cette passe.
-- **Grille d'upgrades** — `GameUI.PopulateBuildGrid()` codé, câblé et vérifié (Victory). Prefab `UpgradeGridSlot` fait (68×68, ancrage stretch, nom masqué). **Reste** : même traitement 3-temps + grille pour le **Game Over** (teinte désaturée, "Tentative n°X", aperçu du prochain déblocage à la place du portrait triomphant) — pas encore commencé.
+- ~~**Grille d'upgrades** du **Game Over**~~ ✅ fait (GameOverPanel construit en parité avec la Victoire, validé le 2026-09-16, voir plus haut).
 
 ### Correctifs méta-progression (audit) — statut
 
@@ -1150,7 +1165,7 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 | Concentration (Aether) : `GetBonusConcentrationCap()` jamais lu | ✅✅ implémenté ET câblé (`PlayerBuffs`, 2/3/5%/s par palier, plafonds 15/30/50, HUD avec descente animée) — terminé |
 | 3 persos = stats prefab identiques | 🔁 **décision revue** : ne PAS ajouter d'étage de stats prefab (3 couches = confus, redondant avec l'arbre). À la place, traits **innés qualitatifs** (une règle / un verbe, pas un %), à trancher avant le Next Fest : Lyra = dash réellement plus court (1,5 s) ; Kael = une règle tanky (ex. immunité au contact en avançant, ou -50 % dégâts 3 s après un gros coup) ; Aether = baseline, rien (choix assumé). Alt légère : rendre le 1ᵉʳ level-up plus rapide (baisser l'XP niv. 2) pour que l'arme exclusive surgisse en <20 s. |
 
-### Système de déblocage des personnages ✅ (code fait, câblage Unity à faire)
+### Système de déblocage des personnages ✅ (code ET câblage faits : voile/chaînes/cadenas, condition et bouton Éclats sur la page Personnages, annonce sur les écrans de fin)
 
 - **Aether** : dès le départ. **Kael** : atteindre le Boss 2 en une partie (`WaveManager.SpawnBoss` → `UnlockCharacter(1)`). **Lyra** : gagner une partie / Boss 3 (`MetaProgressionManager.SaveRunResults` si `victory` → `UnlockCharacter(2)`).
 - Filet Éclats : Kael 500, Lyra 1200 (`TryUnlockCharacterWithEclats`, réglable dans l'Inspector de `MetaProgressionManager`).
@@ -1175,8 +1190,8 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 
 ### Dette créée par ces correctifs (à traiter plus tard)
 
-- **`PlayerBuffs.OutgoingDamageMultiplier`** (nouveau, central) est lu par : `WeaponBase`, `WeaponFireball`, `WeaponLightningChain`, `OrbitalProjectile`, `BouncingOrbProjectile`, `MudPuddleZone`. **Pas** par `WeaponAura`, `WeaponShurikenBarrage`, `WeaponAOE` — inutile aujourd'hui (Concentration = Guerrier only), mais à ajouter si un buff dynamique cross-personnage apparaît.
-- **Migrer "Surpuissance" dans `PlayerBuffs`** : aujourd'hui `CrystalSystem.OverpowerBuff()` n'appelle que `WeaponBase.SetDamageMultiplier(2f)` → ne double QUE le tir de base, pas Fireball/Orbital/etc. La plomberie centrale existe maintenant, c'est un petit refactor.
+- ~~`PlayerBuffs.OutgoingDamageMultiplier` pas lu par toutes les armes~~ ✅ **fait (2026-10-16)** : Aura, Vortex de Mana, Couteaux et Lames Ricochet le lisent aussi (`WeaponAOE` a été supprimé).
+- ~~Migrer "Surpuissance" dans `PlayerBuffs`~~ ✅ **fait (2026-10-16)** : `PlayerBuffs.SetOverpowerActive`, ×2 sur toutes les armes.
 
 ### Grands chantiers (validés en principe, à traiter un par un)
 
@@ -1198,16 +1213,16 @@ _(rien d'autre pour l'instant — le Bouclier de Mana et les correctifs en cours
 
 ### Plus petit / à confirmer
 
-- `_phasesDeJeu` (EnemySpawner) écrasé chaque frame par `WaveManager.ApplyDifficulty()` → configuration inspecteur morte. Choisir une seule source de vérité pour la courbe de difficulté.
-- `MapBoundaryUtils` existe en double (classe autonome + classe imbriquée dans `WaveManager`).
-- `WeaponAOE.cs` : arme orpheline (aucun `UpgradeType.AOE`). Supprimer ou brancher.
+- ~~`_phasesDeJeu` (EnemySpawner) écrasé chaque frame par `WaveManager.ApplyDifficulty()`~~ ✅ **corrigé (2026-10-16)** : les phases de l'`EnemySpawner` sont la seule source de vérité.
+- `MapBoundaryUtils` existe en double (classe autonome + classe imbriquée dans `WaveManager`). Toujours ouvert (`AUDIT_VERSION_FINALE.md` §10).
+- ~~`WeaponAOE.cs` : arme orpheline~~ ✅ supprimée (2026-10-03).
 - ~~`ObjectPool.ClearPool()` jamais appelé → projectiles ennemis volent pendant l'écran de victoire.~~ ✅ **corrigé (2026-09-17)** : appelée (`EnemyProjectile` + `Projectile`) dans `ShowVictory()` ET `ShowGameOver()` (même problème visuel des deux côtés).
 - ~~`GetNextUnlockPreview()` compare "manque d'Or" et "manque d'Éclats" sur la même échelle (devises différentes)~~ ✅ déjà réglé pendant la construction du GameOverPanel (comparaison par ratio) — voir section dédiée plus haut, entrée obsolète laissée par erreur.
 - ~~Fragmentation : texte dit "20 %", code = 15 %.~~ ✅ **corrigé (2026-09-17)** : texte aligné sur la vraie valeur (15 %, `_fragmentationNodeChance`).
-- Restes de debug connus (déjà notés V13) : `ResetSkillTree()` → `totalGold = 10000`, bouton debug reset Réputation, **`MetaProgressionManager.DebugUnlockAllCharacters()` / `DebugResetCharacterUnlocks()`** + le champ `_debugResetUnlocksButton` + `OnDebugResetUnlocksClicked()` sur `CharacterSelectUI` (nouveaux), + le nouvel outil `DebugCheats.cs` (F5-F8). **Volontairement pas touché maintenant** — outils encore activement utiles en développement, à retirer juste avant release (déjà le cas pour les précédents, s'auto-neutralisent hors éditeur/dev build).
+- ⚠️ **Mis à jour 2026-10-15** : le bouton de reset de la Réputation (donne 20 000 Éclats) et le bouton « RÉINITIALISER » de la page Personnages sont **visibles en build release** (pas de garde `Debug.isDebugBuild`, contrairement à celui des Compétences). À traiter à l'étape 3 de l'audit (`AUDIT_VERSION_FINALE.md` §3). Historique : restes de debug connus (déjà notés V13) : `ResetSkillTree()` → `totalGold = 10000`, bouton debug reset Réputation, **`MetaProgressionManager.DebugUnlockAllCharacters()` / `DebugResetCharacterUnlocks()`** + le champ `_debugResetUnlocksButton` + `OnDebugResetUnlocksClicked()` sur `CharacterSelectUI` (nouveaux), + le nouvel outil `DebugCheats.cs` (F5-F8). **Volontairement pas touché maintenant** — outils encore activement utiles en développement, à retirer juste avant release (déjà le cas pour les précédents, s'auto-neutralisent hors éditeur/dev build).
 - ~~`GameManager.GoToMainMenu()` ne sauvegarde pas la partie (vs `AbandonRun()`)~~ ✅ **vérifié (2026-09-17), c'était une fausse alerte** : `GoToMainMenu()` n'est câblé QUE sur les boutons "Retour au menu" des écrans de fin (`GameOverPanel`/`VictoryPanel`), jamais accessible en cours de run — la sauvegarde a déjà eu lieu via `ShowGameOver()`/`ShowVictory()` avant que ce bouton soit même visible. `AbandonRun()` (bouton distinct, `PausePanel/AbandonConfirmPanel`) est le seul vrai point de sortie EN COURS de run, et sauvegardait déjà correctement. **Vrai bug trouvé au passage en creusant cette question** : `AbandonRun()` ne déclenchait jamais `ChallengeManager.EvaluateAndApplyReward()` (contrairement aux 2 autres fins de run) — un défi déjà "Réussi" dans le HUD perdait silencieusement son bonus d'Or si le joueur abandonnait au lieu de finir la run. Corrigé.
-- Death causes : étendre au-delà de `boss`/`horde`. Plomberie identifiée — `EnemyBase` ligne ~191 (`TryTakeContactDamage` sans source), `EnemyProjectile.Init()` (pas de param source), attaques Kaiju/Weaver/BossDeer saut.
-- Perf : `FindGameObjectsWithTag`/`FindObjectsOfType` par frame ou par mort ; `Physics.OverlapSphere` allouant dans CrystalSystem / bosses ; `GetComponentInChildren` répétés dans `EnemyBase.Update`.
+- Death causes : étendre au-delà de `boss`/`horde`. ✅ En partie fait (2026-10-16) : `EnemyProjectile.Init(dir, source)` (projectiles de boss = « boss »), saut du Cerf et attaques du boss 3 = « boss ». Reste : distinguer les types d'ennemis si on veut des messages plus précis.
+- Perf : ✅ `FindGameObjectsWithTag` du spawner remplacé par `EnemySpatialGrid.Count` et masque de couche sur les recherches des armes/Ultime (2026-10-16). Reste : `EnemyDeathFX`/`XPGemCollectFX` non poolés (`new GameObject` à chaque mort/gemme), profilage complet à faire (`AUDIT_VERSION_FINALE.md` §8).
 
 ---
 

@@ -102,14 +102,14 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         if (go == null) return;
         ProjectileBasic projectile = go.GetComponent<ProjectileBasic>();
         if (projectile == null) return;
-        projectile.Init(direction, _damage, DamageNumberSpawner.ColorKnives);
+        projectile.Init(direction, _damage * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorKnives); // + Concentration / Surpuissance (2026-10-16, audit)
         projectile.SetPiercing(true, _pierceCount);
         projectile.SetRicochet(_ricochetCount, _ricochetRange);
     }
 
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;
         for (int i = 0; i < count; i++)

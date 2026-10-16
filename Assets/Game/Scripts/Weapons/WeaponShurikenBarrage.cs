@@ -105,7 +105,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;
         for (int i = 0; i < count; i++)
@@ -129,7 +129,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
         ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
         if (projectile != null)
         {
-            projectile.Init(direction, _damage, DamageNumberSpawner.ColorKnives);
+            projectile.Init(direction, _damage * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorKnives); // + Concentration / Surpuissance (2026-10-16, audit)
             projectile.SetPiercing(true, _maxPierceCount);
         }
     }

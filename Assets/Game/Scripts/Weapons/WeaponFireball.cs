@@ -66,7 +66,7 @@ public class WeaponFireball : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;
         for (int i = 0; i < count; i++)

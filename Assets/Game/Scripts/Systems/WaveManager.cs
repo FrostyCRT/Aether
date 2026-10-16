@@ -14,8 +14,6 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private GameObject _bossPrefab2;
     [SerializeField] private GameObject _bossPrefab3;
 
-    [Header("Limite ennemis")]
-    [SerializeField] private int _maxEnemiesOnScreen = 15;
 
     private int  _bossCount = 0;
     private bool _bossAlive = false;
@@ -229,55 +227,28 @@ public class WaveManager : MonoBehaviour
         GameUI.Instance.UpdateTimer(runTimer); // ← même timer partout
     }
 
+    // MODIFIÉ (2026-10-16, audit version finale) - cette méthode imposait CHAQUE FRAME une cadence et un plafond
+    // d'ennemis (15/25/30/40/50/60) qui écrasaient les phases de l'EnemySpawner (20/45/75/120/105/160, avec leurs
+    // propres cadences) : seul "ennemisParVague" des phases comptait réellement. Les phases de l'EnemySpawner sont
+    // désormais la seule source de la difficulté de spawn (réglables dans l'Inspector, objet EnemySpawner de la
+    // scène Game). Il ne reste ici que la montée propre au mode Sans fin au-delà de 15 min, appliquée par-dessus la
+    // dernière phase (0,6 s / 160 ennemis) : cadence qui accélère jusqu'à 0,3 s et plafond qui monte jusqu'à 200
+    // (+1,5 par minute) - même pente qu'avant, partant du plafond réel de la dernière phase.
+    private const float EndlessBaseInterval = 0.6f;
+    private const int EndlessBaseMaxEnemies = 160;
+    private const int EndlessMaxEnemiesCap = 200;
+
     private void ApplyDifficulty()
     {
-        if (_enemySpawner == null) return;
+        if (_enemySpawner == null || GameManager.Instance == null) return;
+        if (!GameModes.IsEndless) return;
 
         float minutes = GameManager.Instance.RunTimer / 60f;
+        if (minutes < GameModes.EndlessScaleStartMinutes) return;
 
-        if (minutes < 3f)
-        {
-            _enemySpawner.SetSpawnInterval(3f);
-            _maxEnemiesOnScreen = 15;
-        }
-        else if (minutes < 5f)
-        {
-            _enemySpawner.SetSpawnInterval(2f);
-            _maxEnemiesOnScreen = 25;
-        }
-        else if (minutes < 8f)
-        {
-            _enemySpawner.SetSpawnInterval(1.5f);
-            _maxEnemiesOnScreen = 30;
-        }
-        else if (minutes < 10f)
-        {
-            _enemySpawner.SetSpawnInterval(1f);
-            _maxEnemiesOnScreen = 40;
-        }
-        else if (minutes < 13f)
-        {
-            _enemySpawner.SetSpawnInterval(0.8f);
-            _maxEnemiesOnScreen = 50;
-        }
-        else
-        {
-            float interval = 0.6f;
-            int max = 60;
-
-            // Sans fin : au-delà de 15 min la densité continue de monter, avec un plafond pour rester fluide.
-            if (GameModes.IsEndless && minutes >= GameModes.EndlessScaleStartMinutes)
-            {
-                float extra = minutes - GameModes.EndlessScaleStartMinutes;
-                interval = Mathf.Max(0.3f, 0.6f - 0.01f * extra);
-                max = Mathf.Min(110, 60 + Mathf.RoundToInt(extra * 1.5f));
-            }
-
-            _enemySpawner.SetSpawnInterval(interval);
-            _maxEnemiesOnScreen = max;
-        }
-
-        _enemySpawner.SetMaxEnemies(_maxEnemiesOnScreen);
+        float extra = minutes - GameModes.EndlessScaleStartMinutes;
+        _enemySpawner.SetSpawnInterval(Mathf.Max(0.3f, EndlessBaseInterval - 0.01f * extra));
+        _enemySpawner.SetMaxEnemies(Mathf.Min(EndlessMaxEnemiesCap, EndlessBaseMaxEnemies + Mathf.RoundToInt(extra * 1.5f)));
     }
 
     private void SpawnBoss(int bossNumber)

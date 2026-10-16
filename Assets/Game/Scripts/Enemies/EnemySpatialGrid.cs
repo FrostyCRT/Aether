@@ -28,6 +28,10 @@ public static class EnemySpatialGrid
     private static readonly List<EnemyBase> _registered = new List<EnemyBase>(512);
     private static int _builtFrame = -1;
 
+    // AJOUTÉ (2026-10-16) - nombre d'ennemis normaux actifs (enregistrés dans OnEnable, retirés dans OnDisable) : lu
+    // par EnemySpawner à la place de FindGameObjectsWithTag("Enemy"), qui allouait un tableau à chaque vague.
+    public static int Count => _registered.Count;
+
     public static void Register(EnemyBase enemy)
     {
         if (!_registered.Contains(enemy)) _registered.Add(enemy);

@@ -10,8 +10,14 @@ public class EnemyProjectile : MonoBehaviour
     private Vector3 _startPosition;
     private bool _hasHit = false;
 
-    public void Init(Vector3 direction)
+    // AJOUTE (2026-10-16, audit) - cause de mort transmise au HealthSystem : "boss" pour les tirs de boss (sinon le
+    // message de défaite parlait toujours de la horde, même tué par un projectile de boss). Projectile poolé : remis
+    // à chaque Init.
+    private string _damageSource = "horde";
+
+    public void Init(Vector3 direction, string damageSource = "horde")
     {
+        _damageSource = damageSource;
         direction.y = 0f; // AJOUTÉ — sécurité, empêche toute trajectoire qui dériverait en hauteur
         _direction = direction.normalized;
 
@@ -92,7 +98,7 @@ public class EnemyProjectile : MonoBehaviour
             // HealthSystem.TakeDamageFromProjectile, qui a maintenant sa propre fenêtre anti-cumul).
             if (playerHealthCheck != null)
             {
-                playerHealthCheck.TakeDamageFromProjectile(_damage * GameModes.EnemyDamageScale);
+                playerHealthCheck.TakeDamageFromProjectile(_damage * GameModes.EnemyDamageScale, _damageSource);
 
                 // AJOUTÉ (2026-10-03) - jusqu'ici le projectile disparaissait sans rien au moment même où il touche le
                 // joueur (seul le chiffre de dégâts, un peu après, signalait le coup). Même rouge que

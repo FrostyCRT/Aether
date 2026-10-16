@@ -99,7 +99,7 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
 
     private Transform FindEnemyTouching(Vector3 position)
     {
-        int count = Physics.OverlapSphereNonAlloc(position, _puddleRadius, _overlapBuffer);
+        int count = Physics.OverlapSphereNonAlloc(position, _puddleRadius, _overlapBuffer, EnemyLayers.Mask);
         for (int i = 0; i < count; i++)
         {
             Collider hit = _overlapBuffer[i];
@@ -112,7 +112,7 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
     // zone de détection, pas seulement au contact d'une flaque (voir note ci-dessus).
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _activeDetectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _activeDetectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _activeDetectionRange * _activeDetectionRange;
         for (int i = 0; i < count; i++)

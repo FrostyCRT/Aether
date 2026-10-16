@@ -128,7 +128,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
     [SerializeField] private float _contactCheckRadius = 0.8f;
     private Transform FindEnemyTouching(Vector3 position)
     {
-        int count = Physics.OverlapSphereNonAlloc(position, _contactCheckRadius, _overlapBuffer);
+        int count = Physics.OverlapSphereNonAlloc(position, _contactCheckRadius, _overlapBuffer, EnemyLayers.Mask);
         for (int i = 0; i < count; i++)
         {
             Collider hit = _overlapBuffer[i];
@@ -141,7 +141,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
     // zone de détection, pas seulement au contact d'un orbe (voir note ci-dessus).
     private Transform FindNearestEnemy()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _activeDetectionRange, _detectionBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _activeDetectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _activeDetectionRange * _activeDetectionRange;
         for (int i = 0; i < count; i++)

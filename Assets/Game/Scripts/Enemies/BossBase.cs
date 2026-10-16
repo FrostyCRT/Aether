@@ -281,7 +281,7 @@ public class BossBase : MonoBehaviour
 
             EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
             if (projectile != null)
-                projectile.Init(direction);
+                projectile.Init(direction, "boss");
         }
     }
 
@@ -635,8 +635,11 @@ public class BossBase : MonoBehaviour
                 HealthSystem playerHP = GameObject.FindWithTag("Player")?.GetComponent<HealthSystem>();
                 if (playerHP != null)
                 {
+                    // CORRIGE (2026-10-16, audit) - Heal() attend un POURCENTAGE (0..1) : lui passer MaxHealth * 0.5
+                    // (ex. 150) soignait 150 x MaxHealth, donc toujours 100 %. On passe directement 0.5 ;
+                    // healAmount reste en PV pour le chiffre vert affiché.
                     float healAmount = playerHP.MaxHealth * 0.5f;
-                    playerHP.Heal(healAmount);
+                    playerHP.Heal(0.5f);
 
                     if (DamageNumberSpawner.Instance != null)
                     {

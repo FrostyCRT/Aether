@@ -150,7 +150,7 @@ public class ProjectileBasic : MonoBehaviour
             // armes à cadence élevée, pour ne pas secouer l'écran en permanence en plein combat.
             CameraShakeFX.Shake(0.35f);
 
-            int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _fragmentRadius, _overlapBuffer);
+            int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _fragmentRadius, _overlapBuffer, EnemyLayers.Mask);
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = _overlapBuffer[i];
@@ -178,7 +178,7 @@ public class ProjectileBasic : MonoBehaviour
     // Renvoie false (et laisse ReturnToPool faire son travail) si aucune cible n'est trouvée.
     private bool TryRicochet()
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _ricochetRange, _ricochetBuffer);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _ricochetRange, _ricochetBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _ricochetRange * _ricochetRange;
         for (int i = 0; i < count; i++)
