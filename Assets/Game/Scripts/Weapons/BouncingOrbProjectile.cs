@@ -91,14 +91,6 @@ public class BouncingOrbProjectile : MonoBehaviour
         _speed = speed;
     }
 
-    // AJOUTÉ (2026-10-05) - utilisé par WeaponFusionTwinOrbs pour agrandir visuellement les 2 orbes ("duo
-    // iconique") via transform.localScale : _orbRadius n'est calculé qu'UNE FOIS dans Awake() (à partir du
-    // SphereCollider et de l'échelle du moment), donc un changement d'échelle APRÈS coup (sur une instance poolée
-    // déjà vivante) ne s'y répercute jamais tout seul - sans ce setter, l'orbe rebondirait visuellement trop tôt/
-    // tard sur les bords (son rayon de rebond resterait celui d'un orbe normal, pas celui, agrandi, affiché).
-    public void SetOrbRadius(float radius) => _orbRadius = radius;
-    public float OrbRadius => _orbRadius;
-
     private void Update()
     {
         if (GameManager.Instance != null && (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused)) return;

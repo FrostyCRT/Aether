@@ -98,6 +98,15 @@ public class ReputationUI : MonoBehaviour
     private float _confirmUntil;
     private float _shownGold, _shownEclats;
     private int _lastGold = -1, _lastEclats = -1;
+    // AJOUTÉ (2026-10-18, retour utilisateur, captures à l'appui : "quand on quitte et qu'on revient dans le jeu, ça
+    // affiche ça [cartes de Réputation vides/pastilles grises] au lieu de l'affichage classique") - RefreshStatCards()
+    // n'était appelé qu'une fois, dans OnEnable() ; si MetaProgressionManager.Instance.Data n'a pas fini de se
+    // recharger depuis le disque à cet instant précis (ReputationStatCardUI.Refresh() retourne alors immédiatement
+    // sans rien écrire), les cartes restent figées sur leur état par défaut du prefab pour toujours - rien ne les
+    // rafraîchissait après coup. L'or/les éclats n'avaient jamais ce problème car Update() les recalcule à CHAQUE
+    // frame dès que meta.Data existe (voir plus bas) ; _statCardsSynced applique le même principe de rattrapage aux
+    // cartes de stats, qui n'avaient jusqu'ici qu'un seul essai.
+    private bool _statCardsSynced;
     private Coroutine _toast, _intro, _fade, _punch;
     private readonly List<SkinCardUI> _cards = new List<SkinCardUI>();
     private readonly Dictionary<CanvasGroup, Vector2> _blockBase = new Dictionary<CanvasGroup, Vector2>();
@@ -144,6 +153,7 @@ public class ReputationUI : MonoBehaviour
             _shownEclats = meta.TotalEclats;
         }
         _lastGold = _lastEclats = -1;
+        _statCardsSynced = meta != null && meta.Data != null;
 
         RefreshAll();
         if (_intro != null) StopCoroutine(_intro);
@@ -165,6 +175,12 @@ public class ReputationUI : MonoBehaviour
             int g = Mathf.RoundToInt(_shownGold), e = Mathf.RoundToInt(_shownEclats);
             if (g != _lastGold && _goldText != null) { _goldText.text = g.ToString(); _lastGold = g; }
             if (e != _lastEclats && _eclatsText != null) { _eclatsText.text = e.ToString(); _lastEclats = e; }
+
+            if (!_statCardsSynced)
+            {
+                _statCardsSynced = true;
+                RefreshStatCards();
+            }
         }
 
         // l'achat de skin demande une seconde confirmation : elle expire au bout de 3 s
@@ -301,7 +317,11 @@ public class ReputationUI : MonoBehaviour
         // action
         string label; bool interactable; bool showPrice = false; Color tint = Color.white; Color labelColor = ReputationStyle.ButtonText; bool glow = false;
         if (locked) { label = Loc.T("PERSONNAGE VERROUILLÉ"); interactable = false; tint = new Color(0.6f, 0.55f, 0.55f, 0.85f); labelColor = new Color32(0x8A, 0x2E, 0x24, 0xFF); }
-        else if (owned && equipped) { label = Loc.T("ÉQUIPÉ"); interactable = false; tint = new Color(0.85f, 0.8f, 0.6f, 0.95f); labelColor = new Color32(0x6B, 0x55, 0x1E, 0xFF); }
+        // CORRIGÉ (2026-10-18, retour utilisateur : "pourquoi tu as mis du vert ? Je t'ai dis que je voulais que
+        // ce soit comme dans la sélection de personnage") - dans CharacterSelectUI, "Sélectionné" ne recolore PAS
+        // le bouton : même fond que d'habitude, bouton désactivé, texte gris neutre (0.5,0.5,0.5). Même traitement
+        // ici : tint reste blanc (fond par défaut, pas de teinte), seul le texte passe au gris neutre.
+        else if (owned && equipped) { label = Loc.T("ÉQUIPÉ"); interactable = false; labelColor = new Color(0.5f, 0.5f, 0.5f, 1f); }
         else if (owned) { label = Loc.T("ÉQUIPER"); interactable = true; glow = true; }
         else if (!CanAfford(meta, skin))
         {

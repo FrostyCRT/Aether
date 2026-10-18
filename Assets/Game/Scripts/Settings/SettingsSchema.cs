@@ -112,13 +112,13 @@ public static class SettingsSchema
         display.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Mode d'affichage", key = GameSettings.DisplayMode, options = DisplayModeNames,
-            description = "Plein écran, fenêtre sans bordure ou fenêtre classique.",
+            description = "Plein écran, fenêtre sans bordure ou fenêtre classique",
             affectsDisplay = true
         });
         display.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Résolution", key = GameSettings.Resolution,
-            description = "Définition de l'image en plein écran et en mode fenêtré.",
+            description = "Définition de l'image en plein écran et en mode fenêtré",
             dynamicOptions = ResolutionNames, getIndex = ResolutionIndex, setIndex = SetResolutionIndex,
             isEnabled = () => GameSettings.GetInt(GameSettings.DisplayMode) != 1,
             disabledHint = "Le mode sans bordure utilise toujours la résolution du bureau.",
@@ -128,7 +128,7 @@ public static class SettingsSchema
         display.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Limite d'images par seconde", key = GameSettings.FpsCap, options = FpsCapNames(),
-            description = "Plafonne le nombre d'images affichées par seconde.",
+            description = "Plafonne le nombre d'images affichées par seconde",
             isEnabled = () => !GameSettings.GetBool(GameSettings.VSync),
             disabledHint = "Sans effet tant que la synchronisation verticale est activée."
         });
@@ -143,7 +143,7 @@ public static class SettingsSchema
         gfx.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Effets d'ambiance des menus", key = GameSettings.MenuEffects, options = MenuEffectNames,
-            description = "Poussières et halos lumineux animés dans les menus.",
+            description = "Poussières et halos lumineux animés dans les menus",
             getIndex = () => GameSettings.GetInt(GameSettings.MenuEffects) > 0 ? 1 : 0,
             setIndex = i => GameSettings.SetInt(GameSettings.MenuEffects, i == 0 ? 0 : 2)
         });
@@ -162,7 +162,7 @@ public static class SettingsSchema
         game.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Visée", key = GameSettings.AutoAim,
-            description = "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle.",
+            description = "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle",
             options = new[] { "À la souris", "Automatique" },
             getIndex = () => GameSettings.GetBool(GameSettings.AutoAim) ? 1 : 0,
             setIndex = i => GameSettings.SetBool(GameSettings.AutoAim, i == 1)
@@ -188,7 +188,7 @@ public static class SettingsSchema
         // ---------------------------------------------------------------- COMMANDES
         CategoryDef controls = new CategoryDef { id = "controls", title = "COMMANDES", subtitle = "Clavier, souris et manette" };
         controls.rows.Add(Note("Cliquez sur une touche pour la modifier.   Échap : annuler   •   Retour arrière : effacer."));
-        controls.rows.Add(new RowDef { kind = RowKind.Presets, label = "Disposition du clavier", description = "Règle le déplacement et les orbites. Les autres touches ne changent pas." });
+        controls.rows.Add(new RowDef { kind = RowKind.Presets, label = "Disposition du clavier", description = "Règle le déplacement et les orbites. Les autres touches ne changent pas" });
         controls.rows.Add(Header("Déplacement"));
         controls.rows.Add(Key(GameAction.MoveUp));
         controls.rows.Add(Key(GameAction.MoveDown));
@@ -217,7 +217,7 @@ public static class SettingsSchema
         lang.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Langue du jeu", key = GameSettings.Language, options = LanguageNames,
-            description = "Tous les textes du jeu changent immédiatement, menus et parties compris."
+            description = "Tous les textes du jeu changent immédiatement, menus et parties compris"
         });
         cats.Add(lang);
 

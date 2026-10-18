@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1428e6999d2a31348a9800bb7957652e, type: 3}
-  m_Name: SO_Fusion_TwinOrbs
-  m_EditorClassIdentifier: 
-  upgradeName: Orbes Jumeaux
-  description: "FUSION \u2014 Double tir + Orbe rebondissant : ton tir de base se
-    d\xE9double en deux sph\xE8res qui ricochent sans fin."
-  icon: {fileID: 21300000, guid: cc16a1ecee590cb4cb36e6a1396f856b, type: 3}
+  m_Name: SO_Fusion_MudOrb
+  m_EditorClassIdentifier:
+  upgradeName: Sillage Boueux
+  description: "FUSION — Orbe rebondissant + Boue : tes orbes laissent d\xE9sormais
+    derri\xE8re eux un sillage de flaques boueuses qui ralentissent et blessent
+    tout ce qu'elles touchent"
+  icon: {fileID: 21300000, guid: a9b083511ba052a4f87363f74817bc4a, type: 3}
   upgradeType: 11
   value: 0
-  _fusionSource1: 3
-  _fusionSource2: 10
-  _fusionResultId: TwinOrbs
+  _fusionSource1: 10
+  _fusionSource2: 9
+  _fusionResultId: MudOrb
   _fusionBranch: 3
   _levelValues:
   - 0

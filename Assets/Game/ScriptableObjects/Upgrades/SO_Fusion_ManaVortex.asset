@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Vortex de Mana
   description: "FUSION \u2014 Aura + Orbitaux : un tourbillon d'\xE9clats de mana,
-    bien plus large et bien plus puissant, tourne d\xE9sormais autour de toi."
+    bien plus large et bien plus puissant, tourne d\xE9sormais autour de toi"
   icon: {fileID: 21300000, guid: fff06a5bf0db4154496a4f184d56bff8, type: 3}
   upgradeType: 11
   value: 0

@@ -13,6 +13,13 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
     // voir NOTES.md) - _puddleCount=3 était même en dessous du max de la Boue seule (6, via ses 3 picks AddPuddle),
     // et la décharge de foudre ajoutée ne compensait pas cet écart. Nombre de flaques et fréquence de décharge
     // augmentés + bonus de dégâts explicite - retesté à l'équivalent des autres fusions après ce changement.
+    // CORRIGÉ (2026-10-18, audit complet des fusions) - remesuré avec la méthode [[balance-testing-dummies]] : la
+    // frappe de foudre ACTIVE (ci-dessous) sauve cette fusion du même bug trouvé sur Terre Calcinée (elle n'est
+    // pas réduite à 0 comme Terre Calcinée l'était), mais ne faisait que ×1,73 la référence (957 DPS contre 553) -
+    // une marge trop juste pour "très puissant". Cause identique : _spawnDistance=6,5 vise un anneau que les
+    // ennemis ne traversent qu'une fois avant de rester plaqués au corps-à-corps (~1,2 unité). Rapproché à 3,2 (la
+    // Boue elle-même n'est PAS touchée, seule cette fusion) - voir WeaponFusionScorchedEarth pour le même
+    // raisonnement détaillé.
     [Header("Zones (héritées de la Boue)")]
     [SerializeField] private float _spawnInterval = 3f;
     [SerializeField] private float _puddleDuration = 4f;
@@ -20,7 +27,7 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
     [SerializeField] private float _slowMultiplier = 0.6f;
     [SerializeField] private int _puddleCount = 7;
     [SerializeField] private Color _cursedTint = new Color(0.35f, 0.55f, 0.2f); // vert maladif - distinct de la Boue normale (ambre) et de Terre Calcinée (braises)
-    [SerializeField] private float _spawnDistance = 6.5f;
+    [SerializeField] private float _spawnDistance = 3.2f;
     [SerializeField] private float _groundY = 0.2f;
     [SerializeField] private float _rotationPerWave = 25f;
 
@@ -51,10 +58,15 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
     public void Init(GameObject puddlePrefab, float inheritedPuddleDamage, float inheritedLightningDamage)
     {
         _puddlePrefab = puddlePrefab;
-        _puddleDamagePerSecond = inheritedPuddleDamage * 1.3f;
-        // Multiplicateur plus bas que les flaques : la frappe active (ajoutée ci-dessus) tire déjà bien plus
-        // souvent que l'ancien proc au contact seul, donc moins de boost par coup nécessaire.
-        _lightningDamage = inheritedLightningDamage * 1.1f;
+        // CORRIGÉ (2026-10-18) - ×1,3/×1,1 dataient d'avant la correction de _spawnDistance ci-dessus. Une fois les
+        // flaques capables de toucher les ennemis de façon fiable, CHAQUE flaque occupée déclenche sa propre chaîne
+        // de foudre complète (jusqu'à _maxChains+1 cibles) toutes les 0,35s, EN PLUS de la frappe active toutes les
+        // 1s - un comportement à PROC, pas un DPS continu plat comme Terre Calcinée, donc le gain de fiabilité se
+        // multiplie bien plus fort : mesuré à ×20 la référence (11270 DPS contre 553) avec les anciens
+        // multiplicateurs. Redescendus fortement pour revenir à une marge "très puissant" mais pas absurde - un
+        // premier essai à ×0,3/×0,3 donnait encore ×5,35 (2957 DPS), redescendu une dernière fois à ×0,17/×0,17.
+        _puddleDamagePerSecond = inheritedPuddleDamage * 0.17f;
+        _lightningDamage = inheritedLightningDamage * 0.17f;
     }
 
     public void AddDamage(float value)

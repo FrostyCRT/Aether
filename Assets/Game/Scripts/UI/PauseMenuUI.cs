@@ -287,7 +287,20 @@ public class PauseMenuUI : MonoBehaviour
         _descriptionTooltip.gameObject.SetActive(true);
         _descriptionText.text = upgrade.Description;
         _descriptionText.ForceMeshUpdate();
-        GameUI.ApplyReadableOutline(_descriptionText);
+        // CORRIGÉ (2026-10-18, retour utilisateur : "toujours trop en gras blanc qui se chevauche") - propriétés
+        // vérifiées en jeu : texte BLANC, contour quasi-blanc (0xF5ECD6, pensé pour l'usage inverse - texte sombre
+        // sur parchemin clair), posé sur un fond de bulle presque NOIR. Un contour clair sur un texte déjà blanc ne
+        // fait que fusionner avec lui au lieu de le cerner ; le blanc sur noir a déjà un contraste excellent sans
+        // aucun contour. Contour retiré entièrement pour cette bulle.
+        _descriptionText.fontMaterial.DisableKeyword("OUTLINE_ON");
+        // AJOUTÉ (2026-10-18, retour utilisateur : "pas encore parfait [...] plus d'ajustements pour que ce soit
+        // encore plus lisible") - Bangers est une police d'affiche très resserrée (pensée pour de gros titres, où
+        // les lettres se touchent presque exprès pour un effet d'impact) : à 22pt, ce resserrement naturel donnait
+        // encore l'impression que les lettres se chevauchaient, contour ou pas. Espacement des caractères et des
+        // lignes élargi spécifiquement pour ce texte de lecture (pas touché ailleurs, où ce resserrement sert le
+        // style des titres) - testé en jeu, nettement plus aéré et lisible sans perdre le style de la police.
+        _descriptionText.characterSpacing = 2f;
+        _descriptionText.lineSpacing = 6f;
 
         // Taille du panneau = taille du texte (+ marge intérieure) - plus de format fixe, un texte court donne un
         // petit panneau, un texte long s'enroule à TooltipMaxTextWidth puis grandit en hauteur.

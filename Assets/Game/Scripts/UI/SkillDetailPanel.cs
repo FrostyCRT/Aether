@@ -263,7 +263,9 @@ public class SkillDetailPanel : MonoBehaviour
         {
             label = data.isUnique ? Loc.T("ACQUIS") : Loc.T("NIVEAU MAX");
             status = data.isUnique ? Loc.T("Ce talent est actif.") : Loc.T("Cette compétence est au maximum.");
-            statusColor = SkillTreeStyle.Gold;
+            // CORRIGÉ (2026-10-18, retour utilisateur : trop de doré sur la page) - l'or reste réservé à la puce
+            // "NIVEAU 3/3" juste au-dessus (voir SetChip) ; cette phrase descriptive repasse en gris neutre.
+            statusColor = SkillTreeStyle.Muted;
         }
         else if (!activeBranch)
         {

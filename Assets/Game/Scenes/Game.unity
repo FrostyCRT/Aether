@@ -19830,7 +19830,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c8547c7b811527d48b2c54787fab94e4, type: 2}
   - {fileID: 11400000, guid: 6c2ddb4ec3905214bb4cd89df6ac5526, type: 2}
   - {fileID: 11400000, guid: 8f749f99b902e6849b0b66ade2f422ec, type: 2}
-  - {fileID: 11400000, guid: 50445a2b40966f647a17d910fa457299, type: 2}
+  - {fileID: 11400000, guid: 6dd365096ac1899e54106ce03ddd6bb7, type: 2}
   _levelUpPanel: {fileID: 732463668}
   _upgradeUI: {fileID: 732463670}
 --- !u!4 &751845164

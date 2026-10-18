@@ -16,7 +16,7 @@ MonoBehaviour:
   - id: aether_default
     characterIndex: 0
     displayName: Tenue d'origine
-    description: La tenue avec laquelle Aether part au combat.
+    description: La tenue avec laquelle Aether part au combat
     tier: 0
     cost: 0
     isDefault: 1
@@ -25,7 +25,7 @@ MonoBehaviour:
   - id: kael_default
     characterIndex: 1
     displayName: Tenue d'origine
-    description: La tenue avec laquelle Kael part au combat.
+    description: La tenue avec laquelle Kael part au combat
     tier: 0
     cost: 0
     isDefault: 1
@@ -34,7 +34,7 @@ MonoBehaviour:
   - id: lyra_default
     characterIndex: 2
     displayName: Tenue d'origine
-    description: La tenue avec laquelle Lyra part au combat.
+    description: La tenue avec laquelle Lyra part au combat
     tier: 0
     cost: 0
     isDefault: 1

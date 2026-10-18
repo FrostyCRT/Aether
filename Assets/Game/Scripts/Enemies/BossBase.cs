@@ -490,65 +490,23 @@ public class BossBase : MonoBehaviour
         return _damageNumberHeight.Value;
     }
 
-    // AJOUTÉ (2026-10-06, retour utilisateur "boss pas assez résistants, trop de sources de dégâts cumulables") -
-    // mesuré : un build avec les 10 types d'améliorations au palier max tue le Boss 1 (20 000 PV) en ~6,5 s, le
-    // Boss 2 (50 000) en ~11,5 s, le Boss 3 (125 000) en ~19,4 s - chaque arme ajoute son propre DPS sans aucune
-    // limite de cumul. Plafond de dégâts par FENÊTRE GLISSANTE courte, en % des PV MAX (proportionnel aux 3
-    // paliers 20k/50k/125k, aucun réglage par boss) : un build faible/partiel reste toujours sous ce plafond et
-    // n'est jamais affecté ; seul le PIC (beaucoup de sources qui tapent dans la même fenêtre) est écrêté.
-    // MODIFIE (2026-10-07, retour utilisateur : "la limite de dégâts qu'on peut leur infliger est trop faible...
-    // il y aura le système de niveau de difficulté donc si dans la meta progression on a plein de moyen d'avoir
-    // plus de dégâts, ils servent surtout pour les moyens de difficulté qu'on va bientôt mettre en place") - le
-    // plancher de ~30s minimum (0,5%) ne laissait plus aucune marge à un futur build méta très investi pour tuer
-    // un boss plus vite qu'un build de base : le plafond devenait le vrai facteur limitant, pas l'équipement du
-    // joueur. Relevé ×5 (plancher ramené à ~6s minimum) : un build faible/partiel reste sous ce plafond comme
-    // avant, mais un build très optimisé (actuel OU futur via la méta-progression) peut enfin aller nettement
-    // plus vite - à réajuster une fois le système de difficulté en place si besoin.
-    [Header("Boss — Anti-cumul (plafond de dégâts simultanés)")]
-    [SerializeField] private float _burstWindowDuration = 0.15f;
-    [SerializeField] private float _maxBurstPercentPerWindow = 0.025f; // 2,5 % des PV max / fenêtre ≈ plancher ~6 s même en cumul extrême
-
-    private float _burstWindowStart = -999f;
-    private float _burstWindowDamageDealt = 0f;
-
-    // CORRIGE (2026-10-07, retour utilisateur : "la limite est aussi compté pour les mini boss, est-ce que c'est
-    // voulu ?") - non : _maxBurstPercentPerWindow est un pourcentage des PV MAX de CETTE instance, donc un
-    // mini-boss (PV déjà réduits à 30% via InitWithReducedHP, voir BossCorruptedSource) héritait du même PLANCHER
-    // DE TEMPS minimum (~6 s) qu'un vrai boss avec ses PV complets, alors qu'il est censé être un objectif
-    // secondaire rapide à abattre pendant le combat principal. Les mini-boss ne sont plus jamais plafonnés.
-    private float ClampBurstDamage(float damage)
-    {
-        if (IsSummoned) return damage;
-
-        float now = Time.time;
-        if (now - _burstWindowStart > _burstWindowDuration)
-        {
-            _burstWindowStart = now;
-            _burstWindowDamageDealt = 0f;
-        }
-
-        float budget = _maxHealth * _maxBurstPercentPerWindow;
-        float allowed = Mathf.Max(0f, budget - _burstWindowDamageDealt);
-        float applied = Mathf.Min(damage, allowed);
-        _burstWindowDamageDealt += applied;
-        return applied;
-    }
-
+    // RETIRÉ (2026-10-18, retour utilisateur : "je veux que tu enlève la limite de dégâts qu'on peut infliger au
+    // boss 1 2 et 3. Il ne faut pas de limite de dégâts en fait") - le plafond anti-cumul par fenêtre glissante
+    // (introduit le 2026-10-06, assoupli le 2026-10-07) limitait encore les builds les plus optimisés ; supprimé
+    // entièrement, plus aucune limite sur les dégâts infligés à un boss.
     public virtual void TakeDamage(float damage, Color color = default)
     {
         if (DebugInvincible) return;
         if (_deathTriggered) return;
+        if (damage <= 0f) return;
 
-        float applied = ClampBurstDamage(damage);
-        if (applied <= 0f) return;
-
-        _currentHealth -= applied;
+        _currentHealth -= damage;
 
         if (DamageNumberSpawner.Instance != null)
         {
             Color c = color == default ? DamageNumberSpawner.ColorCritical : color;
             Vector3 spawnPos = transform.position + Vector3.up * DamageNumberHeight();
-            DamageNumberSpawner.Instance.Spawn(spawnPos, applied, c, transform, true);
+            DamageNumberSpawner.Instance.Spawn(spawnPos, damage, c, transform, true);
         }
 
         // MODIFIE (2026-10-07) - un mini-boss invoqué (IsSummoned=true) a sa propre barre, voir GameUI.UpdateMiniBossHP.
@@ -566,10 +524,8 @@ public class BossBase : MonoBehaviour
 
     // AJOUTE (2026-10-07, retour utilisateur : "si on tue le boss 3 alors qu'un mini boss est encore en vie, il
     // ne faut pas lancer le Victory panel tout de suite, il faut abattre le mini boss même si la source est
-    // morte") - mise à mort immédiate, SANS passer par TakeDamage()/ClampBurstDamage() (le plafond anti-cumul
-    // plus haut écrêterait un gros dégât ponctuel à ~0,5 % des PV max, donc ne tuerait pas le mini-boss d'un
-    // coup). Réservé à ce genre de mise à mort scriptée (voir BossCorruptedSource.Die()), jamais aux dégâts du
-    // joueur.
+    // morte") - mise à mort immédiate, sans passer par TakeDamage(). Réservé à ce genre de mise à mort scriptée
+    // (voir BossCorruptedSource.Die()), jamais aux dégâts du joueur.
     public void ForceKill()
     {
         if (_deathTriggered) return;

@@ -40,6 +40,13 @@ public class WeaponBouncingOrb : MonoBehaviour
     // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
     public float CurrentDamage => _damage;
 
+    // AJOUTÉ (2026-10-18, fusion Sillage Boueux) - même correctif que WeaponOrbital.OrbitalCount : sans ce getter,
+    // la fusion fixerait le nombre d'orbes et leur vitesse en dur au lieu d'hériter des VRAIES valeurs accumulées
+    // (jusqu'à 2 orbes via AddOrb() maxé seul) - exactement le bug qui avait fait sous-performer ManaVortex/
+    // ThunderingOrbs avant correction (audit du 2026-10-18).
+    public int OrbCount => _orbCount;
+    public float CurrentSpeed => _speed;
+
     public void AddSpeed(float value)
     {
         _speed += _speed * value;

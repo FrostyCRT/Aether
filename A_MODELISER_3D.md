@@ -1,6 +1,6 @@
 # Aether Storm Survivor : ce qu'il reste à modéliser en 3D (et à habiller)
 
-Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
+Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé) puis le 2026-10-18 (fusion "Orbes Jumeaux" retirée, remplacée par "Sillage Boueux" — voir §4.1 et §5). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
 Le principe : **tout ce que le joueur voit en partie et qui est encore une primitive Unity (cube, sphère, cylindre, capsule) avec un simple matériau de couleur** doit être remplacé par un vrai modèle, un vrai effet visuel ou une vraie texture.
 
 Légende des priorités :
@@ -20,7 +20,7 @@ Rappel de la DA (direction artistique) : les modèles actuels viennent de Tripo3
 | Ennemis encore en placeholder | 1 (Bulbe cracheur) + 1 modèle existant non intégré (Sanglier) | 🔴 P1 |
 | Projectiles du joueur en sphères | 5 (tir de base, couteaux, boule de feu, orbitaux, orbe rebondissant) | 🔴 P1 |
 | Projectiles ennemis / boss en sphères | 1 prefab partagé par 6 sources + cristaux du boss 3 | 🔴 P1 |
-| Zones au sol en cylindres | Boue + 2 fusions | 🔴 P1 |
+| Zones au sol en cylindres | Boue + 3 fusions | 🔴 P1 |
 | Effets en cylindres/capsules | Nova, Ultime, Bouclier de Mana, prefabs du boss 3 | 🟠 P2 |
 | Environnement de l'arène | Sol plat unique, aucun décor dans l'aire de jeu | 🔴 P1 |
 | Effets procéduraux « génériques » à remplacer par de vrais VFX | ~10 | 🟡 P3 |
@@ -116,7 +116,7 @@ C'est le placeholder **le plus visible du jeu** : des sphères unies partout, to
 | **Couteaux de Lyra** | `ProjectileShuriken` | Sphères violettes (`MAT_EnemyShooter`, le matériau d'un ennemi !) | Modèle de **lame/couteau de lancer** qui tourne sur lui-même, avec une traînée bleu-violet. Également utilisé par la fusion **Lames Ricochet**. |
 | **Boule de feu (Aether)** | `ProjectileFireball` | Sphère orange (`MAT_RougeOrange`) | Boule de feu : cœur émissif + particules de flammes + traînée de fumée. L'explosion à l'impact doit être un vrai VFX (aujourd'hui anneau générique). |
 | **Orbitaux** | `Resources/OrbitalProjectile` | Petites sphères cyan (`MAT_Orbital`) | **Éclats de mana / cristaux** qui tournent. Également utilisés par les fusions **Vortex de Mana** et **Orbes Foudroyants**. |
-| **Orbe rebondissant** | `Resources/BouncingOrbProjectile` | Grosse sphère jaune unie (`MAT_PulseAOE`) | **Orbe de cristal** avec halo intérieur. La fusion **Orbes Jumeaux** utilise le même orbe ×1,6 relié par un `LineRenderer` : il faut un vrai lien d'énergie (texture animée). |
+| **Orbe rebondissant** | `Resources/BouncingOrbProjectile` | Grosse sphère jaune unie (`MAT_PulseAOE`) | **Orbe de cristal** avec halo intérieur. La fusion **Sillage Boueux** (remplace "Orbes Jumeaux", retirée le 2026-10-18) réutilise le même orbe tel quel, sans lien visuel entre orbes ; voir plutôt la flaque de boue qu'il laisse derrière lui, ligne "Fusion Sillage Boueux" ci-dessous (§5). |
 | **Éclair en chaîne** | `LightningBoltVFX` (LineRenderer procédural) | Fonctionnel | 🟡 Texture d'éclair animée + flash d'impact. |
 
 ### 4.2 Projectiles ennemis
@@ -136,6 +136,7 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 | **Flaques de boue** | `Resources/MudPuddleZone` | Cylindres plats **marron** (`Maron.mat`) | **Décal** ou maillage plat avec texture de boue animée (bulles, reflets), bord irrégulier. |
 | Fusion **Terre Calcinée** | même prefab | Cylindres orange | Sol brûlé : braises, fissures incandescentes, petites flammes. |
 | Fusion **Marécage Maudit** | même prefab | Cylindres verts | Marécage toxique : eau verte, bulles, brume. |
+| Fusion **Sillage Boueux** (nouvelle, 2026-10-18) | même prefab | Cylindres bleu-gris délavé (teinte « boue limoneuse ») | Même traitement que les 2 fusions ci-dessus : sillage continu de petites flaques déposées par les orbes en mouvement plutôt qu'un anneau fixe. |
 | **Aura de Kael** | LineRenderer + disque | Fonctionnel mais générique | 🟡 Cercle runique au sol qui tourne, particules vertes. |
 | **Vortex de Mana** (fusion) | LineRenderer | Anneau simple, ramené au sol le 2026-10-16 | Tourbillon au sol animé. |
 

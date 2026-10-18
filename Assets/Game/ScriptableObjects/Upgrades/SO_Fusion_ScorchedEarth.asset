@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeName: "Terre Calcin\xE9e"
   description: "FUSION \u2014 Boule de feu + Boue : des zones de cendres br\xFBlantes
     bien plus grandes et bien plus d\xE9vastatrices apparaissent en cercle autour
-    de toi."
+    de toi"
   icon: {fileID: 21300000, guid: 534d0dd7d55912c4b8f75c6d12a337aa, type: 3}
   upgradeType: 11
   value: 0

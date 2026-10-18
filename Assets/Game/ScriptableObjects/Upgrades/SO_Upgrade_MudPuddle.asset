@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Boue
   description: "Fait appara\xEEtre des flaques de boue qui ralentissent et blessent
-    les ennemis qui s'y trouvent."
+    les ennemis qui s'y trouvent"
   icon: {fileID: 21300000, guid: 55daf796565e0b243a99e85a048533b0, type: 3}
   upgradeType: 9
   value: 0

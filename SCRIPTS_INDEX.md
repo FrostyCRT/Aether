@@ -3,10 +3,10 @@
 Ce fichier est un **index de repérage rapide** : pour chaque script C# du projet, une ou deux lignes qui disent ce qu'il EST (type de composant) et ce qu'il FAIT. Ce n'est pas une documentation exhaustive.
 
 - Pour l'historique détaillé session par session (pourquoi tel choix, quels bugs ont été corrigés, quelles valeurs ont été réglées à la main) : **`NOTES.md`**, la source la plus à jour.
-- Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`** (remis à jour le 2026-10-16, version V14). En cas de doute, `NOTES.md` fait foi.
+- Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`** (remis à jour le 2026-10-18, version V15). En cas de doute, `NOTES.md` fait foi.
 - Pour la liste des bugs / points à régler avant la sortie et leur avancement : **`AUDIT_VERSION_FINALE.md`**. Pour tout ce qui reste à modéliser en 3D (skins compris) et les sons manquants : **`A_MODELISER_3D.md`**.
 
-*Index vérifié le 2026-10-16 contre les fichiers réels : tous les scripts du jeu y figurent.*
+*Index vérifié le 2026-10-18 contre les fichiers réels : tous les scripts du jeu y figurent (fusion "Orbes Jumeaux" retirée, "Sillage Boueux" ajoutée).*
 
 ## Comment naviguer
 
@@ -87,10 +87,10 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `WeaponFireball.cs` | Boule de feu (Aether) : explosion garantie à l'impact, palier 2 = dégâts, palier 3 = Brûlure. |
 | `WeaponFusionCursedSwamp.cs` | Fusion "Marécage Maudit" (Boue + Foudre, universelle) : flaques de Boue qui déclenchent aussi une décharge de foudre en chaîne. |
 | `WeaponFusionManaVortex.cs` | Fusion "Vortex de Mana" (Aura + Orbitaux, Kael) : champ de l'Aura + éclats en orbite des Orbitaux réunis, plus forts que la somme des deux. |
+| `WeaponFusionMudOrb.cs` | Fusion "Sillage Boueux" (Orbe rebondissant + Boue, universelle, créée le 2026-10-18 en remplacement d'"Orbes Jumeaux") : les orbes rebondissants laissent derrière eux un sillage continu de flaques de Boue (déposées à la position réelle de chaque orbe, jamais à distance fixe du joueur). |
 | `WeaponFusionRicochetBlades.cs` | Fusion "Lames Ricochet" (Couteaux + Orbe rebondissant, Lyra) : salve en éventail dont les lames ricochent vers l'ennemi non touché le plus proche une fois leur perforation épuisée. |
 | `WeaponFusionScorchedEarth.cs` | Première fusion créée : "Terre Calcinée" (Boule de feu + Boue, universelle) : zones au sol façon Boue avec dégâts hérités des deux armes sources. |
 | `WeaponFusionThunderingOrbs.cs` | Fusion "Orbes Foudroyants" (Orbitaux + Foudre, universelle) : orbes en orbite qui déclenchent une chaîne de foudre à chaque impact. |
-| `WeaponFusionTwinOrbs.cs` | Fusion "Orbes Jumeaux" (Double Tir + Orbe rebondissant, universelle) : deux orbes rebondissants toujours lancés ensemble en directions opposées. |
 | `WeaponLightningChain.cs` | Chaîne de Foudre : tir qui saute d'ennemi en ennemi (dégâts dégressifs par saut), utilise `LightningChainUtility`/`LightningBoltVFX` pour le rendu. |
 | `WeaponMudPuddle.cs` | Boue : fait apparaître des flaques (`MudPuddleZone`) en anneau autour du joueur à intervalle régulier. |
 | `WeaponOrbital.cs` | Orbitaux : éclats en orbite autour du joueur, rayon ajustable en jeu (touches A/E). |

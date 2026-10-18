@@ -5,6 +5,10 @@ using UnityEngine.UI;
 // curseur de base blanc") - remplace le curseur système par défaut (flèche blanche de l'OS) par le gantelet
 // fantasy fourni (Assets/Resources/Cursor_Gauntlet.png, déplacé ici depuis Assets/Game/Assets 2D/UI/System/ pour
 // pouvoir être chargé par Resources.Load sans référence de scène - même pattern que SettingsApplier/UI_Exposure.mat).
+// MODIFIÉ (2026-10-18) - un second curseur (Cursor_v2.png, même dossier) a été essayé puis comparé à celui-ci à
+// qualité d'import égale (RGBA32 non compressé + mipmaps sur les deux, voir aussi _displaySize ci-dessous - le
+// gantelet d'origine paraissait "en low" avec l'ancien import DXT5/sans mipmaps). Retour utilisateur après
+// comparaison en jeu : "on garde la V1" - Cursor_Gauntlet.png reste le curseur définitif.
 //
 // Objet persistant créé tout seul au lancement (RuntimeInitializeOnLoadMethod, comme SettingsApplier : rien à
 // poser dans une scène, fonctionne dans TOUTES les scènes y compris LoadingScreen) : cache le curseur système, puis
@@ -33,10 +37,10 @@ public class CustomCursor : MonoBehaviour
     [SerializeField] private Vector2 _displaySize = new Vector2(48f, 48f);
 
     // Point de la texture qui correspond à la VRAIE position de la souris (où les clics se produisent) - le bout
-    // du doigt pointé, proche du coin haut-gauche de l'image (mesuré visuellement sur le PNG source : la pointe du
-    // doigt est à environ 15% de la largeur depuis la gauche, tout en haut). (0,1) = coin haut-gauche exact,
-    // (0.5,0.5) = centre.
-    [SerializeField] private Vector2 _hotspotPivot = new Vector2(0.15f, 0.98f);
+    // du doigt pointé, proche du coin haut-gauche de l'image. (0,1) = coin haut-gauche exact, (0.5,0.5) = centre.
+    // MODIFIÉ (2026-10-18) - mesuré par échantillonnage de pixels (pixel opaque le plus haut de la texture
+    // 1490x1490), pas à l'œil : pointe à x=0.149, y=0.995 de la largeur/hauteur.
+    [SerializeField] private Vector2 _hotspotPivot = new Vector2(0.15f, 0.995f);
 
     private RectTransform _rect;
     private Canvas _canvas;

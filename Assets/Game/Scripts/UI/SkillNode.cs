@@ -252,8 +252,10 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             _nameLabel.color = locked ? new Color(0.78f, 0.76f, 0.85f, 0.92f) : Color.white;
         }
 
-        // pastilles : couleur du perso, dorées quand le nœud est maîtrisé
-        Color fill = maxed ? SkillTreeStyle.Gold : _accent;
+        // CORRIGÉ (2026-10-18, retour utilisateur : "dans l'arbre de compétence ... quand on a mis tout au max,
+        // tout est doré, les dots, les halos, les bandes") - les pastilles gardent la couleur du personnage même
+        // maîtrisées ; l'or reste réservé au halo (UpdateGlow, state Maxed), seul signal de maîtrise du nœud.
+        Color fill = _accent;
         if (_isUnique)
         {
             if (_dot2 != null) _dot2.gameObject.SetActive(false);
@@ -268,10 +270,10 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             SetPip(_dot2, level >= 2, fill);
             SetPip(_dot3, level >= 3, fill);
         }
-        // liseré du cartouche : éteint (verrouillé) / couleur du perso (acquis) / or (maîtrisé)
+        // liseré du cartouche : éteint (verrouillé) / couleur du perso (acquis, y compris maîtrisé)
         if (_plateBorder != null)
         {
-            Color b = locked ? SkillTreeStyle.EmptyRing : (maxed ? SkillTreeStyle.Gold : _accent);
+            Color b = locked ? SkillTreeStyle.EmptyRing : _accent;
             b.a = locked ? 0.9f : 0.85f;
             _plateBorder.color = b;
         }

@@ -56,8 +56,13 @@ public class WeaponFusionManaVortex : MonoBehaviour
     // passe une valeur inférieure par erreur.
     public void Init(GameObject orbitalPrefab, float inheritedFieldDamage, float inheritedOrbitalDamage, int inheritedOrbitalCount)
     {
-        _fieldDamagePerSecond = inheritedFieldDamage * 3f;
-        _orbitalDamage = inheritedOrbitalDamage * 3f;
+        // CORRIGÉ (2026-10-18, audit complet des fusions) - remesuré avec la méthode [[balance-testing-dummies]] :
+        // ×3/×3 ne donnait que ×1,99 la référence (5174 DPS contre 2601 pour Aura + Orbitaux maxées séparément) -
+        // tout juste au-dessus du double, en dessous de la marge des autres fusions déjà auditées (~2,2-2,9x).
+        // Relevé légèrement (le champ de l'Aura, un disque plein centré sur le joueur, n'avait de toute façon
+        // jamais le problème de portée trouvé sur les fusions à base de flaques en anneau).
+        _fieldDamagePerSecond = inheritedFieldDamage * 3.8f;
+        _orbitalDamage = inheritedOrbitalDamage * 3.8f;
         _orbitalCount = Mathf.Max(_orbitalCount, inheritedOrbitalCount);
         CreateRingVisual();
         SpawnOrbitals(orbitalPrefab);

@@ -101,8 +101,12 @@ public class SkinCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             }
             else if (equipped)
             {
-                _chip.color = ReputationStyle.Gold;
-                _chipText.text = Loc.T("ÉQUIPÉ"); _chipText.color = ReputationStyle.ButtonText;
+                // CORRIGÉ (2026-10-18, retour utilisateur : "pourquoi tu as mis du vert ? ... comme dans la
+                // sélection de personnage") - même pastille neutre que "POSSÉDÉ" juste en dessous (fond blanc
+                // translucide, texte clair), un peu plus opaque pour rester lisible comme état distinct ; plus
+                // aucune couleur vive (ni or ni vert) sur cette pastille.
+                _chip.color = new Color(1f, 1f, 1f, 0.22f);
+                _chipText.text = Loc.T("ÉQUIPÉ"); _chipText.color = Color.white;
             }
             else
             {

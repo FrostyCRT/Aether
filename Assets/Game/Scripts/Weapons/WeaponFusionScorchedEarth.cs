@@ -14,14 +14,29 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     // la Boue SEULE (6, via ses 3 upgrades +1), et la Boule de feu perd son identité de burst single-target en
     // se diluant dans un DPS de zone continu sans aucun bonus pour compenser cette perte. Nombre de flaques porté
     // à 8 (nettement au-dessus du max solo) + bonus de dégâts explicite (voir Init).
+    // CORRIGÉ (2026-10-18, audit complet des fusions demandé par l'utilisateur : "une fusion doit être plus
+    // puissante que ses 2 sous-upgrades améliorées au max") - remesuré avec la méthode [[balance-testing-dummies]]
+    // (ennemis dispersés 3-18 unités, PV x300, 15s) : malgré le ×3 de dégâts de 2026-10-05, la fusion ne faisait
+    // QUE 777 DPS contre 2542 pour Boule de feu + Boue maxées séparément (×0,3, toujours en dessous). Cause RÉELLE
+    // trouvée par instrumentation (compteur de ticks sur MudPuddleZone) : les ennemis chassent le joueur jusqu'au
+    // contact (~1 unité) en 2-3 secondes puis y restent plaqués pour le reste du combat - l'anneau de flaques à
+    // 6,5 unités n'est traversé qu'UNE SEULE FOIS à l'approche, jamais revisité ensuite (41 ticks de dégâts
+    // relevés sur toute la fenêtre de 15s, contre ~390 attendus si les flaques étaient réellement occupées). Le
+    // nombre de flaques/leur dégât n'étaient donc jamais le problème : l'anneau visait une zone que les ennemis ne
+    // fréquentent quasiment pas. _spawnDistance rapproché à 2,8 (couvre la zone de corps-à-corps où les ennemis
+    // s'agglutinent réellement, mesuré à ~1,2 unité du joueur mais avec du jeu - testé à 4 unités d'abord, DPS
+    // retombé à peine au-dessus de la référence, la portée intérieure ne couvrait plus assez souvent le tas
+    // d'ennemis). _puddleRadius réduit (2,4 -> 1,6) à la place pour retrouver de la portée SANS recréer le bloc
+    // continu indifférencié observé à spawnDistance=2,8/radius=2,4 (les 8 flaques fusionnaient visuellement en une
+    // seule masse orange, en contradiction avec la description "des zones [...] apparaissent en cercle").
     [Header("Stats (zones plus grandes/plus fréquentes/plus fortes qu'une Boue simple)")]
     [SerializeField] private float _spawnInterval = 2.5f;
     [SerializeField] private float _puddleDuration = 4f;
-    [SerializeField] private float _puddleRadius = 2.4f;
+    [SerializeField] private float _puddleRadius = 1.6f;
     [SerializeField] private float _slowMultiplier = 0.55f;
     [SerializeField] private int _puddleCount = 8;
     [SerializeField] private Color _scorchedTint = new Color(0.85f, 0.35f, 0.08f); // braises - cohérent avec ColorFireball
-    [SerializeField] private float _spawnDistance = 6.5f;
+    [SerializeField] private float _spawnDistance = 2.8f;
     [SerializeField] private float _groundY = 0.2f;
     [SerializeField] private float _rotationPerWave = 25f;
 
@@ -37,7 +52,13 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     public void Init(GameObject puddlePrefab, float startingDamagePerSecond)
     {
         _puddlePrefab = puddlePrefab;
-        _damagePerSecond = startingDamagePerSecond * 3f;
+        // CORRIGÉ (2026-10-18) - le ×3 datait d'avant la correction de _spawnDistance ci-dessus (voir commentaire) :
+        // une fois les flaques capables d'atteindre les ennemis, ×3 donnait ~10,8x la référence (2173 DPS mesurés
+        // pour Boule de feu + Boue maxées séparément) - bien au-delà de "très puissant". Après le passage à
+        // _puddleRadius=1,6 (pour ne plus fusionner visuellement en un bloc, voir commentaire plus haut), la
+        // portée perdue a fait retomber la mesure à ×1,4 seulement (trop juste) - remonté à ×1,5 pour compenser,
+        // remesuré à ~6500 DPS (×3 la référence) : net, confortable, sans être absurde.
+        _damagePerSecond = startingDamagePerSecond * 1.5f;
     }
 
     public void AddDamage(float value) => _damagePerSecond += _damagePerSecond * value;

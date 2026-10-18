@@ -80,10 +80,16 @@ public class GameUI : MonoBehaviour
     // GameManager.SetIntroLock(true/false) gèle tout le gameplay (joueur, ennemis, spawner, chrono - tous déjà
     // basés sur IsPaused) pendant TOUTE la séquence, du tout premier instant du vol aller jusqu'à l'arrivée
     // complète du vol retour.
+    // MODIFIÉ (2026-10-18, retour utilisateur : "le fond beige est de la même couleur que le parchemin [...] on
+    // enlève le cadre, et on met le texte directement sur l'icône du parchemin, et donc l'icône de parchemin on
+    // l'agrandit beaucoup et on la met au milieu") - plus de cadre/fond séparé (voir l'historique de
+    // EnsureChallengeIntroBuilt juste en dessous) : la "carte" EST l'icône de parchemin (parchemin_quest_transparent),
+    // très agrandie, dimensionnée à son vrai ratio (1395x1086) pour ne jamais la déformer.
+    // MODIFIÉ (2026-10-18, retour utilisateur : "il faut aussi qu'il soit un peu moins grand") - 1000 -> 760.
     [Header("Défi — annonce de lancement (grand format, centrée)")]
-    [SerializeField] private float _challengeIntroIconSize = 150f;
-    [SerializeField] private float _challengeIntroTitleFontSize = 44f;
-    [SerializeField] private float _challengeIntroDescFontSize = 26f;
+    [SerializeField] private float _challengeIntroCardWidth = 760f;
+    [SerializeField] private float _challengeIntroTitleFontSize = 64f;
+    [SerializeField] private float _challengeIntroDescFontSize = 34f;
     [Tooltip("Échelle de la carte à son point de départ/arrivée (position réelle du widget HUD, bien plus petit que la carte centrale).")]
     [SerializeField] private float _challengeIntroOriginScale = 0.22f;
     [SerializeField] private float _challengeIntroFlyInDuration = 0.6f;
@@ -503,7 +509,10 @@ public class GameUI : MonoBehaviour
                     ? ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent())
                     : "";
                 introTitle = Loc.F("{0} : Niv. {1}", challengeName, $"<color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>");
-                introDesc = string.IsNullOrEmpty(rewardText) ? def.Description : def.Description + "\n" + Loc.F("Récompense : {0}", rewardText);
+                // MODIFIÉ (2026-10-16, retour utilisateur : "il y a de la place, [...] pour comprendre exactement
+                // ce qu'il faut faire") - LongDescription (phrase complète) au lieu de Description (version
+                // courte à 35 car. pensée pour l'espace réduit du menu Pause, voir PauseMenuUI.PullChallengeInfo).
+                introDesc = string.IsNullOrEmpty(rewardText) ? def.LongDescription : def.LongDescription + "\n" + Loc.F("Récompense : {0}", rewardText);
             }
 
             StartCoroutine(PlayChallengeIntroRoutine(introTitle, introDesc, GetChallengeIconSprite()));
@@ -597,46 +606,73 @@ public class GameUI : MonoBehaviour
         _challengeIntroCard.anchorMin = _challengeIntroCard.anchorMax = new Vector2(0.5f, 0.5f);
         _challengeIntroCard.pivot = new Vector2(0.5f, 0.5f);
         _challengeIntroCard.anchoredPosition = Vector2.zero;
-        // MODIFIÉ (2026-10-13) - carte plus haute (170 -> 210) : le sous-texte affiche désormais 2 lignes
-        // (description + récompense) au lieu d'une seule, voir UpdateChallengeDisplay.
-        _challengeIntroCard.sizeDelta = new Vector2(760f, 210f);
-
-        // MODIFIÉ (2026-10-13, retour utilisateur : "il faudrait que tu mette un fond sur le panel [...] une
-        // couleur qui va avec le parchemin pour le fond") - même sprite biseauté que les barres du HUD
-        // (HudSprites.Frame), mais teinté en parchemin chaud (papier vieilli) au lieu du fond sombre neutre
-        // d'origine - cohérent avec le reste de l'habillage "parchemin" du jeu (cartes d'upgrade, menu Pause).
-        GameObject bgGO = new GameObject("Backdrop", typeof(RectTransform), typeof(Image));
-        var bgRt = (RectTransform)bgGO.transform;
-        bgRt.SetParent(_challengeIntroCard, false);
-        bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
-        bgRt.offsetMin = bgRt.offsetMax = Vector2.zero;
-        Image bg = bgGO.GetComponent<Image>();
-        bg.sprite = HudSprites.Frame;
-        bg.type = Image.Type.Sliced;
-        bg.color = new Color32(0xE4, 0xD3, 0xA8, 0xF2);
+        // MODIFIÉ (2026-10-18, retour utilisateur : "le fond beige est de la même couleur que le parchemin, donc la
+        // couleur ne va pas [...] on enlève le cadre, et on met le texte directement sur l'icône du parchemin [...]
+        // on l'agrandit beaucoup et on la met au milieu") - plus de cadre/fond séparé (l'ancien duo Frame+Inset
+        // beige, voir historique Git) : la "carte" EST désormais l'icône de parchemin elle-même
+        // (parchemin_quest_transparent), très agrandie. Dimensionnée à son vrai ratio (sprite 1395x1086) pour ne
+        // jamais la déformer.
+        float cardHeight = _challengeIntroCardWidth * (1086f / 1395f);
+        _challengeIntroCard.sizeDelta = new Vector2(_challengeIntroCardWidth, cardHeight);
 
         GameObject iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
         var iconRt = (RectTransform)iconGO.transform;
         iconRt.SetParent(_challengeIntroCard, false);
-        iconRt.anchorMin = iconRt.anchorMax = new Vector2(0f, 0.5f);
-        iconRt.pivot = new Vector2(0f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(28f, 0f);
-        iconRt.sizeDelta = new Vector2(_challengeIntroIconSize, _challengeIntroIconSize);
+        iconRt.anchorMin = Vector2.zero; iconRt.anchorMax = Vector2.one;
+        iconRt.offsetMin = iconRt.offsetMax = Vector2.zero;
         _challengeIntroIconImage = iconGO.GetComponent<Image>();
-        _challengeIntroIconImage.preserveAspect = true;
 
-        float textLeft = 28f + _challengeIntroIconSize + 24f;
+        // AJOUTÉ (2026-10-18, retour utilisateur : "comme sur l'icône du parchemin il y a un cercle noir au milieu,
+        // il faudrait le cacher [...] avec un carré de la même couleur que le parchemin") - le médaillon
+        // étoile/couronne au centre du sprite (visible une fois agrandi) est caché par un carré plein, échantillonné
+        // sur la texture (zone crème plate, loin du médaillon et du sceau du rouleau : #ECDDBB). UNIQUEMENT pour cet
+        // affichage - ce cache n'existe que dans cette hiérarchie, jamais sur la petite icône du HUD ni sur les
+        // cartes du menu Pause, qui réutilisent le même sprite intact ailleurs (GetChallengeIconSprite/ConfigureBuildGridSlot).
+        // Zone choisie généreusement (couvre aussi la couronne de laurier autour de l'étoile, pas juste l'étoile) :
+        // mesurée en échantillonnant la texture (médaillon centré pile au centre du sprite, ~265x280px sur 1395x1086).
+        // MODIFIÉ (2026-10-18, retour utilisateur : "déplace le texte un peu sur la droite") - cache + texte décalés
+        // ensemble de +0.05 en X (le cache doit suivre le texte, sinon le médaillon sombre dépasserait derrière).
+        GameObject coverGO = new GameObject("MedallionCover", typeof(RectTransform), typeof(Image));
+        var coverRt = (RectTransform)coverGO.transform;
+        coverRt.SetParent(_challengeIntroCard, false);
+        coverRt.anchorMin = new Vector2(0.14f, 0.24f);
+        coverRt.anchorMax = new Vector2(0.77f, 0.76f);
+        coverRt.offsetMin = coverRt.offsetMax = Vector2.zero;
+        Image cover = coverGO.GetComponent<Image>();
+        cover.color = new Color32(0xEC, 0xDD, 0xBB, 0xFF);
+
+        // MODIFIÉ (2026-10-18, retour utilisateur, capture à l'appui : "quand il y a un texte long, le texte n'est
+        // plus centré en Y, donc remonte un peu") - ANCIEN : titre et description vivaient chacun dans leur propre
+        // moitié FIXE (haut 0.50-0.76 / bas 0.24-0.50), alignés Bottom/Top pour se rejoindre pile sur la ligne du
+        // milieu. Ça ne marchait que quand la description tenait sur ses 2 lignes prévues (description + récompense)
+        // : dès qu'un défi a une description plus longue qui s'enroule sur une 3e ligne, elle grandit uniquement
+        // vers le BAS depuis son ancrage Top fixe - le bloc titre+description entier n'est plus centré dans la zone
+        // du parchemin, son centre de masse réel descend sans que le titre ne bouge, donnant l'impression que tout
+        // "remonte" par rapport au vrai centre visuel. NOUVEAU : titre et description sont désormais 2 enfants d'un
+        // groupe unique (TextGroup) avec un VerticalLayoutGroup qui les empile et les centre comme UN SEUL bloc dans
+        // toute la zone (même rectangle que MedallionCover) - peu importe le nombre de lignes de la description, le
+        // bloc entier reste centré verticalement, exactement comme un ContentSizeFitter centré le ferait.
+        GameObject groupGO = new GameObject("TextGroup", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        var groupRt = (RectTransform)groupGO.transform;
+        groupRt.SetParent(_challengeIntroCard, false);
+        groupRt.anchorMin = new Vector2(0.14f, 0.24f);
+        groupRt.anchorMax = new Vector2(0.77f, 0.76f);
+        groupRt.offsetMin = new Vector2(24f, 8f);
+        groupRt.offsetMax = new Vector2(-24f, -8f);
+        VerticalLayoutGroup textGroupLayout = groupGO.GetComponent<VerticalLayoutGroup>();
+        textGroupLayout.childAlignment = TextAnchor.MiddleCenter;
+        textGroupLayout.childControlWidth = true;
+        textGroupLayout.childControlHeight = true;
+        textGroupLayout.childForceExpandWidth = true;
+        textGroupLayout.childForceExpandHeight = false;
+        textGroupLayout.spacing = 6f;
 
         GameObject titleGO = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
         var titleRt = (RectTransform)titleGO.transform;
-        titleRt.SetParent(_challengeIntroCard, false);
-        titleRt.anchorMin = new Vector2(0f, 0.5f);
-        titleRt.anchorMax = new Vector2(1f, 1f);
-        titleRt.offsetMin = new Vector2(textLeft, 0f);
-        titleRt.offsetMax = new Vector2(-28f, -16f);
+        titleRt.SetParent(groupRt, false);
         _challengeIntroTitleText = titleGO.GetComponent<TextMeshProUGUI>();
         _challengeIntroTitleText.fontSize = _challengeIntroTitleFontSize;
-        _challengeIntroTitleText.alignment = TextAlignmentOptions.BottomLeft;
+        _challengeIntroTitleText.alignment = TextAlignmentOptions.Center;
         // MODIFIÉ (2026-10-13) - encre brune sur parchemin (GameUI.ParchmentInkColor) au lieu de blanc, qui ne lit
         // plus du tout sur le nouveau fond clair - même couleur que les noms d'upgrade sur parchemin (ConfigureBuildGridSlot).
         _challengeIntroTitleText.color = ParchmentInkColor;
@@ -644,30 +680,32 @@ public class GameUI : MonoBehaviour
         // auto-tassement : les 12 défis ont des noms/descriptions de longueurs très différentes, jamais garanti de
         // tenir sur une ligne à taille fixe - plutôt que de clipper ou déborder du cadre, le texte rapetisse au besoin.
         _challengeIntroTitleText.enableAutoSizing = true;
-        _challengeIntroTitleText.fontSizeMin = 28f;
+        _challengeIntroTitleText.fontSizeMin = 32f;
         _challengeIntroTitleText.fontSizeMax = _challengeIntroTitleFontSize;
         if (_challengeText != null) _challengeIntroTitleText.font = _challengeText.font;
 
         GameObject descGO = new GameObject("Desc", typeof(RectTransform), typeof(TextMeshProUGUI));
         var descRt = (RectTransform)descGO.transform;
-        descRt.SetParent(_challengeIntroCard, false);
-        descRt.anchorMin = new Vector2(0f, 0f);
-        descRt.anchorMax = new Vector2(1f, 0.5f);
-        descRt.offsetMin = new Vector2(textLeft, 16f);
-        descRt.offsetMax = new Vector2(-28f, 0f);
+        descRt.SetParent(groupRt, false);
         _challengeIntroDescText = descGO.GetComponent<TextMeshProUGUI>();
         _challengeIntroDescText.fontSize = _challengeIntroDescFontSize;
-        _challengeIntroDescText.alignment = TextAlignmentOptions.TopLeft;
-        // MODIFIÉ (2026-10-13) - encre brune (atténuée) sur parchemin au lieu du gris clair d'origine (fond sombre).
-        _challengeIntroDescText.color = ParchmentInkColor;
+        _challengeIntroDescText.alignment = TextAlignmentOptions.Center;
+        // MODIFIÉ (2026-10-18, retour utilisateur : "je veux que tu change de couleur le texte descriptif [...] une
+        // couleur un peu plus faite [...] donc une couleur plus clair") - ParchmentInkColorLight (variante plus
+        // claire de l'encre) au lieu de ParchmentInkColor plein, pour distinguer visuellement le petit texte
+        // descriptif du titre, qui garde l'encre pleine.
+        _challengeIntroDescText.color = ParchmentInkColorLight;
         // MODIFIÉ (2026-10-13) - le sous-texte a désormais 2 lignes (description + récompense, voir
         // UpdateChallengeDisplay) : NoWrap devient Normal (retour à la ligne autorisé) pour que chacune des 2
         // lignes puisse s'enrouler si besoin au lieu de déborder du cadre.
         _challengeIntroDescText.textWrappingMode = TextWrappingModes.Normal;
         _challengeIntroDescText.enableAutoSizing = true;
-        _challengeIntroDescText.fontSizeMin = 16f;
+        _challengeIntroDescText.fontSizeMin = 18f;
         _challengeIntroDescText.fontSizeMax = _challengeIntroDescFontSize;
         if (_challengeText != null) _challengeIntroDescText.font = _challengeText.font;
+        // Pas de LayoutElement : TextMeshProUGUI fournit déjà sa propre hauteur préférée (ILayoutElement), recalculée
+        // automatiquement par le VerticalLayoutGroup à chaque fois que PlayChallengeIntroRoutine change .text plus
+        // bas - c'est ce qui permet au bloc de rester centré que la description tienne sur 1, 2 ou 3 lignes.
     }
 
     private static float EaseOutBack(float x)
@@ -716,16 +754,26 @@ public class GameUI : MonoBehaviour
         CanvasGroup realGroupFade = GetOrAddCanvasGroup(_challengeGroup);
         if (realGroupFade != null) realGroupFade.alpha = 0f;   // invisible tant que la carte d'annonce ne l'a pas "rejoint"
 
+        // AJOUTÉ (2026-10-18, retour utilisateur : "au lancement de la game, il est déjà là") - EnsureChallengeIntroBuilt
+        // vient de créer toute la hiérarchie à l'instant : tant qu'aucune passe de layout n'a eu lieu, la position
+        // monde de _challengeGroup (ancrée dans le HUD) peut encore refléter un état transitoire du tout premier
+        // frame. Forcer la mise à jour ici garantit que originWorldPos/centerWorldPos sont bien les positions
+        // RÉELLES avant de poser la carte à son point de départ - sinon le "vol aller" pouvait démarrer d'un point
+        // quasi confondu avec l'arrivée, rendant l'animation imperceptible.
+        Canvas.ForceUpdateCanvases();
+
         Vector3 originWorldPos = _challengeGroup != null
             ? ((RectTransform)_challengeGroup.transform).position
             : _challengeIntroRoot.position;
         Vector3 centerWorldPos = _challengeIntroRoot.position;
 
-        _challengeIntroCanvasGroup.alpha = 1f;
+        _challengeIntroCanvasGroup.alpha = 0f;
         _challengeIntroCard.position = originWorldPos;
         _challengeIntroCard.localScale = Vector3.one * _challengeIntroOriginScale;
+        yield return null;   // un frame posé (petit, transparent, à l'origine) avant d'animer - jamais de flash
 
-        // 1) Vol aller : de la place réelle dans le HUD jusqu'au centre de l'écran
+        // 1) Vol aller : de la place réelle dans le HUD jusqu'au centre de l'écran, fondu-enchaîné en plus du
+        // déplacement/zoom (retour utilisateur : l'arrivée doit se VOIR, pas juste être déjà là).
         float t = 0f;
         while (t < _challengeIntroFlyInDuration)
         {
@@ -736,13 +784,24 @@ public class GameUI : MonoBehaviour
             // position suit son propre easing (EaseInOutCubic) pour un déplacement qui reste bien fluide.
             float scaleEased = EaseOutBack(p);
             _challengeIntroCard.localScale = Vector3.LerpUnclamped(Vector3.one * _challengeIntroOriginScale, Vector3.one, scaleEased);
+            _challengeIntroCanvasGroup.alpha = Mathf.Clamp01(p / 0.5f);   // apparu aux 2/3 du trajet, jamais un pop brutal
             yield return null;
         }
         _challengeIntroCard.position = centerWorldPos;
         _challengeIntroCard.localScale = Vector3.one;
+        _challengeIntroCanvasGroup.alpha = 1f;
 
-        // 2) Maintien immobile, le temps de lire
-        yield return new WaitForSecondsRealtime(_challengeIntroHoldDuration);
+        // 2) Maintien immobile, le temps de lire - interrompu si le joueur presse Échap/Entrée/Espace/clic gauche.
+        // AJOUTÉ (2026-10-18, retour utilisateur : "je veux aussi que tu mette des raccourcis clavier si le joueur
+        // veut skip cette affichage [...] ça raccourcit juste le délai [...] donc on garde quand même les
+        // animations") - seul CE délai de lecture est écourté ; le vol aller déjà joué et le vol retour ci-dessous
+        // restent intégralement joués dans les 2 cas.
+        float holdT = 0f;
+        while (holdT < _challengeIntroHoldDuration && !ChallengeIntroSkipRequested())
+        {
+            holdT += Time.unscaledDeltaTime;
+            yield return null;
+        }
 
         // 3) Vol retour : du centre vers la place réelle dans le HUD, avec fondu croisé dans la 2e moitié
         t = 0f;
@@ -765,6 +824,15 @@ public class GameUI : MonoBehaviour
 
         // Le panel est "reparti" à son endroit d'origine - le jeu peut enfin commencer.
         if (GameManager.Instance != null) GameManager.Instance.SetIntroLock(false);
+    }
+
+    // AJOUTÉ (2026-10-18, retour utilisateur : "touche Echap, entrer ou espace, ou clique gauche") - Échap est
+    // déjà avalée par GameManager pendant SetIntroLock (voir _introLockActive, GameManager.cs) : aucun conflit
+    // avec la Pause normale, qui ne redevient disponible qu'une fois cette coroutine terminée.
+    private static bool ChallengeIntroSkipRequested()
+    {
+        return Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
     }
 
     // =====================
@@ -1489,8 +1557,16 @@ public class GameUI : MonoBehaviour
             if (showNames)
             {
                 refs.nameText.text = upgrade.Name;
-                refs.nameText.color = owned ? ParchmentInkColor : ParchmentInkColorDim;
-                ApplyReadableOutline(refs.nameText);
+                // CORRIGÉ (2026-10-18, retour utilisateur, capture à l'appui : "les titres n'ont pas la même
+                // couleur [...] moi je veux qu'ils aient la même couleur") - le titre reste dans la même encre
+                // (ParchmentInkColor) qu'une carte possédée, qu'elle soit débloquée ou non ; seuls l'icône et le
+                // fond de la carte (assombris ailleurs) marquent la différence verrouillé/débloqué.
+                // MODIFIÉ (2026-10-18, retour utilisateur : "remet quand même un contour, mais plus léger, je veux
+                // que ça puisse se voir nettement") - contour remis mais nettement plus fin que le défaut (0,16,
+                // pensé pour de grands titres) : 0,08 reste visible à la taille de ces cartes (~30pt) sans fusionner
+                // les lettres entre elles comme l'ancien réglage (voir ApplyReadableOutline).
+                refs.nameText.color = ParchmentInkColor;
+                ApplyReadableOutline(refs.nameText, 0.08f);
             }
         }
         if (refs.stackCountText != null)
@@ -1779,15 +1855,25 @@ public class GameUI : MonoBehaviour
     // bordure végétale dessinée (mesurée à l'œil sur parchment_sobre_final.jpg/ParcheminDoré.png : un brun sienna
     // moyen, pas un brun-noir) plutôt qu'une encre plus sombre inventée.
     public static readonly Color ParchmentInkColor = new Color32(0x6B, 0x42, 0x26, 0xFF);
-    // Variante atténuée (upgrade pas encore possédée) : même famille "encre", juste plus claire/moins saturée -
-    // remplace l'ancien gris neutre, qui détonnait sur un fond parchemin.
-    public static readonly Color ParchmentInkColorDim = new Color32(0x9C, 0x82, 0x6A, 0xD9);
 
-    public static void ApplyReadableOutline(TextMeshProUGUI text)
+    // AJOUTÉ (2026-10-18, retour utilisateur : "pour la nouvelle fusion [...] je veux que ce qu'il y a en dessous tu
+    // mette une couleur un peu plus faite pour voir des petits textes descriptifs, donc une couleur plus clair")
+    // - variante plus claire/douce de ParchmentInkColor (même teinte sépia, luminosité remontée) réservée aux petits
+    // textes descriptifs secondaires (ex: description de défi sous le titre) pour les distinguer visuellement des
+    // titres/noms, qui gardent l'encre pleine ParchmentInkColor.
+    public static readonly Color ParchmentInkColorLight = new Color32(0x9C, 0x7A, 0x5E, 0xFF);
+
+    // MODIFIÉ (2026-10-18, retour utilisateur, capture à l'appui : "le texte est trop gros, et j'ai l'impression
+    // qu'il est en gras, donc les lettres se chevauchent en gros blanc") - `outlineWidth` est une fraction FIXE de
+    // la taille de police (pas des pixels absolus) : 0,16 reste fin sur un grand titre (44-64pt) mais devient un
+    // contour énorme, qui déborde d'une lettre à l'autre, sur un petit texte (ex. 22pt, l'infobulle de description
+    // du menu Pause) - zoom x3 à l'appui, les lettres fusionnaient littéralement entre elles. `outlineWidth`
+    // paramétrable (défaut 0,16 inchangé pour tous les appels existants), l'infobulle Pause passe désormais 0,06.
+    public static void ApplyReadableOutline(TextMeshProUGUI text, float outlineWidth = 0.16f)
     {
         if (text == null) return;
         text.fontMaterial.EnableKeyword("OUTLINE_ON");
-        text.outlineWidth = 0.16f;
+        text.outlineWidth = outlineWidth;
         text.outlineColor = new Color32(0xF5, 0xEC, 0xD6, 0xFF);
     }
 

@@ -68,7 +68,7 @@ public static class SkillTreeData
         AddNode("concentration", new NodeData
         {
             displayName = "Concentration",
-            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu.",
+            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu",
             isUnique = false,
             level1Desc = "+8% / sec, plafond +15%",
             level2Desc = "+8% / sec, plafond +30%",
@@ -83,7 +83,7 @@ public static class SkillTreeData
         AddNode("cadence", new NodeData
         {
             displayName = "Cadence",
-            description = "Augmente la vitesse de tir de toutes tes armes.",
+            description = "Augmente la vitesse de tir de toutes tes armes",
             isUnique = false,
             level1Desc = "+10%",
             level2Desc = "+20%",
@@ -98,7 +98,7 @@ public static class SkillTreeData
         AddNode("fragmentation", new NodeData
         {
             displayName = "Fragmentation",
-            description = "Les projectiles ont 15% de chance d'exploser à l'impact.",
+            description = "Les projectiles ont 15% de chance d'exploser à l'impact",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "concentration" }, // MODIFIÉ — était "damage"
@@ -108,7 +108,7 @@ public static class SkillTreeData
         AddNode("crystalDamage", new NodeData
         {
             displayName = "Dégâts Cristal",
-            description = "Augmente les dégâts de l'ultime et de la Nova.",
+            description = "Augmente les dégâts de l'ultime et de la Nova",
             isUnique = false,
             level1Desc = "+25%",
             level2Desc = "+50%",
@@ -123,7 +123,7 @@ public static class SkillTreeData
         AddNode("overpower", new NodeData
         {
             displayName = "Surpuissance",
-            description = "Après l'ultime, tes dégâts sont doublés pendant 5 secondes.",
+            description = "Après l'ultime, tes dégâts sont doublés pendant 5 secondes",
             isUnique = true,
             costLevel1 = 1000,
             prerequisites = new[] { "fragmentation", "crystalDamage" },
@@ -135,7 +135,7 @@ public static class SkillTreeData
         AddNode("vitality", new NodeData
         {
             displayName = "Vitalité",
-            description = "Augmente tes points de vie maximum.",
+            description = "Augmente tes points de vie maximum",
             isUnique = false,
             level1Desc = "+15%",
             level2Desc = "+30%",
@@ -151,7 +151,7 @@ public static class SkillTreeData
         AddNode("recuperation", new NodeData
         {
             displayName = "Récupération",
-            description = "Chaque projectile absorbé par le dash restaure des PV.",
+            description = "Chaque projectile absorbé par le dash restaure des PV",
             isUnique = false,
             level1Desc = "+20 PV par absorption",
             level2Desc = "+50 PV par absorption",
@@ -166,7 +166,7 @@ public static class SkillTreeData
         AddNode("secondWind", new NodeData
         {
             displayName = "Second Souffle",
-            description = "Une fois par partie, survit à un coup fatal avec 1 PV.",
+            description = "Une fois par partie, survit à un coup fatal avec 1 PV",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "vitality" },
@@ -176,7 +176,7 @@ public static class SkillTreeData
         AddNode("armor", new NodeData
         {
             displayName = "Armure",
-            description = "Réduit les dégâts reçus de tous les ennemis.",
+            description = "Réduit les dégâts reçus de tous les ennemis",
             isUnique = false,
             level1Desc = "-8%",
             level2Desc = "-15%",
@@ -191,7 +191,7 @@ public static class SkillTreeData
         AddNode("manaShield", new NodeData
         {
             displayName = "Bouclier de Mana",
-            description = "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.",
+            description = "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes",
             isUnique = true,
             costLevel1 = 900,
             prerequisites = new[] { "secondWind", "armor" },
@@ -204,7 +204,7 @@ public static class SkillTreeData
         AddNode("impulsionNova", new NodeData
         {
             displayName = "Impulsion Nova",
-            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.",
+            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = System.Array.Empty<string>(),
@@ -214,7 +214,7 @@ public static class SkillTreeData
         AddNode("dash", new NodeData
         {
             displayName = "Dash Amélioré",
-            description = "Réduit le temps de recharge du dash.",
+            description = "Réduit le temps de recharge du dash",
             isUnique = false,
             level1Desc = "-0.3s",
             level2Desc = "-0.6s",
@@ -229,7 +229,7 @@ public static class SkillTreeData
         AddNode("crystalMastery", new NodeData
         {
             displayName = "Maîtrise du Cristal",
-            description = "Réduit le nombre de charges nécessaires pour l'ultime.",
+            description = "Réduit le nombre de charges nécessaires pour l'ultime",
             isUnique = true,
             costLevel1 = 600,
             prerequisites = new[] { "impulsionNova" }, // MODIFIÉ — était "agility"
@@ -239,7 +239,7 @@ public static class SkillTreeData
         AddNode("novaRadius", new NodeData
         {
             displayName = "Nova Étendue",
-            description = "Augmente le rayon de la Nova de Cristal.",
+            description = "Augmente le rayon de la Nova de Cristal",
             isUnique = false,
             level1Desc = "+30%",
             level2Desc = "+60%",
@@ -258,7 +258,7 @@ public static class SkillTreeData
             // declenchement automatique via le dash, qui ne correspond plus a
             // l'implementation actuelle (touche dediee, independante du dash).
             // Pas de nom de touche ici : depend des futurs parametres de remapping.
-            description = "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.",
+            description = "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes",
             isUnique = true,
             costLevel1 = 1200,
             prerequisites = new[] { "crystalMastery", "novaRadius" },

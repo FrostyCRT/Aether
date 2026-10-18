@@ -12,12 +12,21 @@ public class ChallengeDefinition
     public string id;
     public string displayName;
     public string description;
+    // AJOUTÉ (2026-10-16, retour utilisateur : "pour le défis qui s'affiche au milieu [au lancement], il faut
+    // faire des phrases plus descriptives [...] pour comprendre exactement ce qu'il faut faire") - description
+    // longue, UNIQUEMENT pour l'annonce de lancement (GameUI.PlayChallengeIntroRoutine), qui a la place pour une
+    // vraie phrase. `description` reste la version courte (35 car. max) utilisée dans le menu Pause, à l'espace
+    // compté (PauseMenuUI.PullChallengeInfo) - ne jamais l'allonger, ça ferait déborder. Laissé à null quand la
+    // version courte était déjà sans ambiguïté (kill150, level10, boss1, dash20, boss2, level20in10min, level30) :
+    // LongDescription retombe alors sur Description.
+    public string longDescription;
     public ChallengeDifficulty difficulty;
 
     // AJOUTÉ (2026-10-14) - textes à AFFICHER (langue courante, voir Loc). displayName/description restent la
     // donnée française d'origine (clés de traduction).
     public string Name => Loc.T(displayName);
     public string Description => Loc.T(description);
+    public string LongDescription => Loc.T(string.IsNullOrEmpty(longDescription) ? description : longDescription);
 }
 
 public static class ChallengeDatabase
@@ -35,14 +44,14 @@ public static class ChallengeDatabase
         // "Terminer la partie avec au moins 3000 Or ramasse"). Le prefixe
         // "Terminer la partie"/"Atteindre le" est retire quand redondant (une
         // description de defi porte deja implicitement sur la partie entiere).
-        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", longDescription = "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "boss2", displayName = "Double Chasse", description = "Vaincre 2 boss dans la même partie", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 20 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
-        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", longDescription = "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", difficulty = ChallengeDifficulty.Medium },
 
-        new ChallengeDefinition { id = "noDamage", displayName = "Sans-Faute", description = "Aucun dégât jusqu'au boss 1", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 3000 Or ramassé", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "noDamage", displayName = "Sans-Faute", description = "Aucun dégât jusqu'au boss 1", longDescription = "Ne subir aucun dégât avant d'avoir vaincu le 1er boss", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", longDescription = "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 3000 Or ramassé", longDescription = "Ramasser au moins 3000 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 30 dans la même partie", difficulty = ChallengeDifficulty.Hard },
     };
 

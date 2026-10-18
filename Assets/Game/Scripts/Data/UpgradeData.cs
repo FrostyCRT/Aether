@@ -642,8 +642,8 @@ public class UpgradeData : ScriptableObject
                     WeaponFusionCursedSwamp cursedSwamp = playerGO.GetComponent<WeaponFusionCursedSwamp>();
                     if (cursedSwamp != null) cursedSwamp.AddDamage(ratio);
 
-                    WeaponFusionTwinOrbs twinOrbs = playerGO.GetComponent<WeaponFusionTwinOrbs>();
-                    if (twinOrbs != null) twinOrbs.AddDamage(ratio);
+                    WeaponFusionMudOrb mudOrb = playerGO.GetComponent<WeaponFusionMudOrb>();
+                    if (mudOrb != null) mudOrb.AddDamage(ratio);
 
                     if (weapon != null) weapon.AddDamage(value); // additive en interne
 
@@ -835,23 +835,28 @@ public class UpgradeData : ScriptableObject
                     break;
                 }
 
-            case "TwinOrbs":
+            case "MudOrb":
                 {
-                    // Double tir n'a pas de composant propre (voir WeaponFusionTwinOrbs) : seul l'Orbe rebondissant
-                    // est détruit. Le bonus du "jumelage" (dégâts + nombre d'orbes) est appliqué dans Init().
                     WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
-                    float inheritedDamage = orb != null ? orb.CurrentDamage : 1f;
+                    WeaponMudPuddle mud = playerGO.GetComponent<WeaponMudPuddle>();
+
+                    float inheritedOrbDamage = orb != null ? orb.CurrentDamage : 0f;
+                    float inheritedSpeed = orb != null ? orb.CurrentSpeed : 6f;
+                    int inheritedOrbCount = orb != null ? orb.OrbCount : 0;
+                    float inheritedPuddleDamage = mud != null ? mud.CurrentDamagePerSecond : 0f;
 
                     if (orb != null) Object.Destroy(orb);
+                    if (mud != null) Object.Destroy(mud);
 
-                    if (playerGO.GetComponent<WeaponFusionTwinOrbs>() == null)
+                    if (playerGO.GetComponent<WeaponFusionMudOrb>() == null)
                     {
-                        WeaponFusionTwinOrbs fused = playerGO.AddComponent<WeaponFusionTwinOrbs>();
-                        GameObject prefab = Resources.Load<GameObject>("BouncingOrbProjectile");
-                        if (prefab != null)
-                            fused.Init(prefab, Mathf.Max(1f, inheritedDamage));
+                        WeaponFusionMudOrb fused = playerGO.AddComponent<WeaponFusionMudOrb>();
+                        GameObject orbPrefab = Resources.Load<GameObject>("BouncingOrbProjectile");
+                        GameObject puddlePrefab = Resources.Load<GameObject>("MudPuddleZone");
+                        if (orbPrefab != null && puddlePrefab != null)
+                            fused.Init(orbPrefab, puddlePrefab, Mathf.Max(1f, inheritedOrbDamage), inheritedSpeed, inheritedOrbCount, Mathf.Max(1f, inheritedPuddleDamage));
                         else
-                            Debug.LogWarning("Prefab BouncingOrbProjectile introuvable dans Resources !");
+                            Debug.LogWarning("Prefab BouncingOrbProjectile ou MudPuddleZone introuvable dans Resources !");
                     }
                     break;
                 }

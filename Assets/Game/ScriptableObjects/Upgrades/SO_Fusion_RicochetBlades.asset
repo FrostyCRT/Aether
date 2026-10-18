@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Lames Ricochet
   description: "FUSION \u2014 Couteaux + Orbe rebondissant : ta salve perfore ET
-    ricoche d\xE9sormais d'ennemi en ennemi."
+    ricoche d\xE9sormais d'ennemi en ennemi"
   icon: {fileID: 21300000, guid: b55f11a1c3eac8c408a4b22f54057aa1, type: 3}
   upgradeType: 11
   value: 0

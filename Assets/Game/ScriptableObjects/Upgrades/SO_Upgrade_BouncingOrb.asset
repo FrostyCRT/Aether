@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   upgradeName: Orbe Rebondissant
   description: "Lance des orbes qui rebondissent sans arr\xEAt dans l'ar\xE8ne et
-    blessent les ennemis touch\xE9s."
+    blessent les ennemis touch\xE9s"
   icon: {fileID: 21300000, guid: edf5f4280d6ef6c439bfcc36dc059a09, type: 3}
   upgradeType: 10
   value: 0

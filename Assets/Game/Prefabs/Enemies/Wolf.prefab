@@ -102,6 +102,7 @@ MonoBehaviour:
   _clipSet: {fileID: 11400000, guid: ad8ee3c901a5efa489b08ecaff2dcd7f, type: 2}
   _idleClipName: Walk
   _attackClipName: Bite
+  _attackLocalYRotation: 0
 --- !u!1 &5184907456140866790
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,7 +304,7 @@ Transform:
   m_GameObject: {fileID: 5723849798731669916}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -350,7 +351,7 @@ PrefabInstance:
     - target: {fileID: -6601043233671942095, guid: b509fa5055fa70c41ba96ed1bfc974ba,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.848
+      value: -0.67
       objectReference: {fileID: 0}
     - target: {fileID: -6601043233671942095, guid: b509fa5055fa70c41ba96ed1bfc974ba,
         type: 3}

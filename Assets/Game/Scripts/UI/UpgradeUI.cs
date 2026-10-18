@@ -455,7 +455,12 @@ public class UpgradeUI : MonoBehaviour
         // (Dégâts/Cadence/Soin, maxLevel=5, tombaient dans le compteur "xN" à la place). Plafond supprimé : même
         // principe que GameUI.ConfigureBuildGridSlot (Pause/Victoire/Défaite), `dotCount` plafonné à 5 pastilles
         // quel que soit maxLevel réel (jamais dépassé ici en pratique, aucune upgrade n'a plus de 5 paliers).
-        bool showDots = maxLevel > 1 && card.tierDotsContainer != null && card.tierDots != null;
+        // MODIFIÉ (2026-10-18, retour utilisateur : "enlève les dots qu'il y a sur les cartes de Heal [...] parce
+        // que ces dots ne servent à rien") - Soin a bien _maxLevel=5 (pour autoriser jusqu'à 5 picks par run), mais
+        // chaque pick est un effet instantané identique (restaure 50% des PV max) : il n'y a pas de "palier" qui
+        // monte en puissance d'un pick à l'autre, contrairement à Dégâts+/Cadence+ où les pastilles montrent une
+        // vraie progression. Les pastilles n'avaient donc aucune information utile à transmettre sur cette carte.
+        bool showDots = maxLevel > 1 && upgrade.upgradeType != UpgradeType.Heal && card.tierDotsContainer != null && card.tierDots != null;
         int dotCount = Mathf.Clamp(maxLevel, 1, 5);
 
         if (card.tierDotsContainer != null)

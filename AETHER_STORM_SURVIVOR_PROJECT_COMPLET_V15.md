@@ -1,6 +1,6 @@
-# AETHER STORM SURVIVOR — Documentation projet (V14)
+# AETHER STORM SURVIVOR — Documentation projet (V15)
 
-> **Mise à jour : 2026-10-16.** Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire. Le nom du fichier garde « V13 » pour ne pas casser les liens des autres documents.
+> **Mise à jour : 2026-10-18** (fusion "Orbes Jumeaux" remplacée par "Sillage Boueux", panneau de défi recentré, bug d'affichage de la Réputation après relancement corrigé, pastilles inutiles retirées de la carte Soin - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire. Le nom du fichier garde « V13 » pour ne pas casser les liens des autres documents.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -57,7 +57,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 
 - **Armes** : tir de base, Boule de feu (Aether), Aura (Kael), Couteaux (Lyra), Orbitaux, Chaîne de foudre, Boue, Orbe rebondissant, Double tir.
 - **Améliorations universelles** : Dégâts+ et Cadence+ (+20 % par prise, 5 prises), Soin. Depuis le 2026-10-16, elles sont **additives et identiques sur toutes les armes** (5 × 20 % = ×2) et s'appliquent aussi aux armes obtenues plus tard.
-- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Orbes Jumeaux (Double tir + Orbe). Proposées en Classique et Sans fin uniquement.
+- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Sillage Boueux (Orbe rebondissant + Boue). Proposées en Classique et Sans fin uniquement. (Remplace depuis le 2026-10-18 l'ancienne fusion "Orbes Jumeaux", Double tir + Orbe, jugée incohérente et retirée.)
 - **Dash / Absorption / Nova / Ultime** : le Dash (invincible) absorbe un projectile → Nova (dégâts + ralentissement) + charge de Cristal. Cristal plein = 1 Ultime stocké (max 2, la 2e charge donne un Ultime renforcé). Dégâts de l'Ultime ×1 → ×4 sur 15 min.
 - Bonus de dégâts dynamiques centralisés dans `PlayerBuffs.OutgoingDamageMultiplier` (Concentration × Surpuissance), lu par toutes les armes.
 
@@ -138,6 +138,7 @@ Seul le Classique compte pour la progression (défis, déblocages). Les 3 autres
 3. Remplacer les primitives visibles : projectiles, zones au sol, Bulbe cracheur, Nova/Ultime/Bouclier, et habiller l'arène (sol + décor).
 4. Playtests d'équilibrage après les changements du 2026-10-16 (densité 160 ennemis, XP, bonus de dégâts) avec les 3 personnages.
 5. Intégration Steamworks (SDK, succès, Cloud, Steam Input).
+6. Session du 2026-10-18 entièrement faite avec le pont Unity MCP déconnecté : **à vérifier en priorité dès que possible** - compilation, mesure du DPS de la fusion "Sillage Boueux" (multiplicateurs posés par analogie, jamais mesurés), vérification visuelle du panneau de défi recentré et du correctif Réputation.
 
 **Niveau « jeu pro »**
 - Manette complète (nouvel Input System, navigation des menus, icônes de boutons) et accessibilité (désactiver secousses et flashs).
@@ -154,6 +155,10 @@ Seul le Classique compte pour la progression (défis, déblocages). Les 3 autres
 
 ---
 
-## 10. Principaux bugs corrigés récemment (2026-10-16)
+## 10. Principaux bugs corrigés récemment
 
-PV du Cerf ignorés (50 000 forcés au lieu de 90 000) · soin de mort de boss à 100 % au lieu de 50 % · Ultime utilisable en pause et relançant le temps derrière le menu · ennemis tués deux fois (or/XP doublés) · kills comptés après la mort · anneau du Vortex de Mana en l'air · frappe du boss 3 hors de la carte · fuite mémoire du clone de Lyra · compteurs d'effets bloqués après plusieurs parties · armes qui ignoraient des ennemis quand beaucoup de gemmes étaient au sol · pluie de gemmes des boss qui plantait (XP perdue) · phases de difficulté du spawner écrasées · XP perdue à chaque kill · bonus de dégâts incohérents entre armes · Aura/Vortex/Couteaux/Lames qui ignoraient la Concentration. Détail : `AUDIT_VERSION_FINALE.md` et `NOTES.md`.
+**2026-10-18** : affichage de la Réputation complètement buggé après avoir quitté et relancé le jeu (pastilles remplies et texte de valeur invisibles - couleur d'accent transparente, piège d'ordre `Awake`/`OnEnable` entre composants parent/enfant) · panneau de défi pas centré en Y quand la description est longue · fusion "Orbes Jumeaux" incohérente retirée et remplacée par "Sillage Boueux".
+
+**2026-10-16** : PV du Cerf ignorés (50 000 forcés au lieu de 90 000) · soin de mort de boss à 100 % au lieu de 50 % · Ultime utilisable en pause et relançant le temps derrière le menu · ennemis tués deux fois (or/XP doublés) · kills comptés après la mort · anneau du Vortex de Mana en l'air · frappe du boss 3 hors de la carte · fuite mémoire du clone de Lyra · compteurs d'effets bloqués après plusieurs parties · armes qui ignoraient des ennemis quand beaucoup de gemmes étaient au sol · pluie de gemmes des boss qui plantait (XP perdue) · phases de difficulté du spawner écrasées · XP perdue à chaque kill · bonus de dégâts incohérents entre armes · Aura/Vortex/Couteaux/Lames qui ignoraient la Concentration.
+
+Détail : `AUDIT_VERSION_FINALE.md` et `NOTES.md`.

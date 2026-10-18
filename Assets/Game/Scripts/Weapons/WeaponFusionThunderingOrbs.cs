@@ -56,10 +56,14 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
 
     public void Init(GameObject orbitalPrefab, float inheritedOrbitalDamage, float inheritedLightningDamage, int inheritedOrbitalCount)
     {
-        _orbitalDamage = inheritedOrbitalDamage * 1.8f;
+        // CORRIGÉ (2026-10-18, audit complet des fusions) - remesuré avec la méthode [[balance-testing-dummies]] :
+        // ×1,8/×1,1 ne donnait que ×1,90 la référence (1523 DPS contre 804 pour Orbitaux + Foudre maxées séparément)
+        // - sous la fourchette "2x à 3,3x" visée par le commentaire ci-dessus et sous la marge des 2 autres fusions
+        // déjà auditées (~2,8-2,9x). Relevé légèrement.
+        _orbitalDamage = inheritedOrbitalDamage * 2.2f;
         // Multiplicateur plus bas que l'orbital : la frappe active (ajoutée ci-dessus) tire déjà bien plus souvent
         // que l'ancien proc au contact seul, donc moins de boost par coup nécessaire pour un DPS global équivalent.
-        _lightningDamage = inheritedLightningDamage * 1.1f;
+        _lightningDamage = inheritedLightningDamage * 1.3f;
         _orbitalCount = Mathf.Max(_orbitalCount, inheritedOrbitalCount);
         if (ObjectPool.Instance == null || orbitalPrefab == null) return;
         for (int i = 0; i < _orbitalCount; i++)
