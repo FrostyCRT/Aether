@@ -171,6 +171,9 @@ public class CharacterSelectUI : MonoBehaviour
 
         if (_debugResetUnlocksButton != null)
         {
+            // CORRIGÉ (2026-10-18, diagnostic complet - audit §3) - ce bouton restait VISIBLE et CLIQUABLE en
+            // version release : n'importe quel joueur pouvait reverrouiller/déverrouiller Kael et Lyra à volonté.
+            DevOnly.Show(_debugResetUnlocksButton.gameObject);
             _debugResetUnlocksButton.onClick.RemoveAllListeners();
             _debugResetUnlocksButton.onClick.AddListener(OnDebugResetUnlocksClicked);
         }

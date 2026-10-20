@@ -165,22 +165,30 @@ public class BossBase : MonoBehaviour
     private float _healthOverride = 0f;
     public void SetHealthOverride(float hp) { _healthOverride = Mathf.Max(0f, hp); }
 
+    // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté, posé par
+    // WaveManager.SpawnBoss comme les 2 ci-dessus.
+    // MODIFIÉ (2026-10-20, carrousel de difficulté - "les boss [...] dans les autres difficultés bénéficient du
+    // scale [...] logique qu'il y ait un niveau de difficulté pour ça aussi") - n'est plus mutuellement exclusif
+    // avec les 2 ci-dessus : le palier de difficulté s'applique maintenant EN PLUS du multiplicateur Sans fin ou
+    // de la valeur imposée en Ruée de boss (voir InitUI plus bas, qui les cumule au lieu de les traiter comme des
+    // alternatives).
+    private float _difficultyHealthMultiplier = 1f;
+    public void SetDifficultyHealthMultiplier(float multiplier) { _difficultyHealthMultiplier = Mathf.Max(1f, multiplier); }
+
     private IEnumerator InitUI()
     {
         yield return null;
 
         if (!IsSummoned)
         {
-            if (_healthOverride > 0f)
-            {
-                _maxHealth = _healthOverride;
-                _currentHealth = _maxHealth;
-            }
-            else if (_endlessHealthMultiplier > 1f)
-            {
-                _maxHealth *= _endlessHealthMultiplier;
-                _currentHealth = _maxHealth;
-            }
+            // MODIFIÉ (2026-10-20, carrousel de difficulté) - ces 3 sources de PV se CUMULENT maintenant (base ou
+            // valeur imposée, puis multiplicateur Sans fin, puis multiplicateur de palier) plutôt que de s'exclure
+            // mutuellement - jusqu'ici un if/else if, donc un boss de Ruée de boss ou de Sans fin ignorait
+            // totalement le palier de difficulté choisi, malgré l'appel à SetDifficultyHealthMultiplier.
+            if (_healthOverride > 0f) _maxHealth = _healthOverride;
+            if (_endlessHealthMultiplier > 1f) _maxHealth *= _endlessHealthMultiplier;
+            if (_difficultyHealthMultiplier > 1f) _maxHealth *= _difficultyHealthMultiplier;
+            _currentHealth = _maxHealth;
         }
 
         if (!IsSummoned)
@@ -538,8 +546,8 @@ public class BossBase : MonoBehaviour
     {
         DestroyTelegraphZone();
 
-        // Choc des titans : l'XP ne sert à rien (build complet, pas de niveaux) -> aucune gemme.
-        if (XPGemSpawner.Instance != null && !GameModes.IsTitans)
+        // Choc des titans : aucune récompense (build complet, pas de niveaux).
+        if (!GameModes.IsTitans)
         {
             // CORRIGE (2026-09-16) - le pivot des boss est au sol (Y=0),
             // contrairement aux ennemis normaux : les gemmes d'XP spawnaient
@@ -547,19 +555,30 @@ public class BossBase : MonoBehaviour
             // utilisateur). Force Y=1,5, une hauteur ramassable normale.
             Vector3 gemSpawnPos = transform.position;
             gemSpawnPos.y = 1.5f;
-            float xpReward = _xpValue;
-            // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
-            if (_xpBarFraction > 0f && XPSystem.Instance != null)
-                xpReward = XPSystem.Instance.XPToNextLevel * _xpBarFraction;
 
-            // AJOUTÉ (2026-10-04, suite 3) - retour utilisateur : "quand on tue un boss... je veux que ce soit
-            // impressionnant et gratifiant visuellement" au lieu d'un simple tas de gemmes superposées. Un VRAI
-            // boss (pas un mini-boss invoqué) a droit à la fontaine en cascade ; un mini-boss invoqué reste sur le
-            // comportement normal (discret, cohérent avec un ennemi un peu plus gros).
+            // MODIFIÉ (2026-10-18, diagnostic complet - décision "mort de boss") - un VRAI boss (pas un mini-boss
+            // invoqué) ne donne plus de burst d'XP : il fait apparaître un coffre (BossChest) qui accorde 2 vrais
+            // tirages de carte complets au ramassage, sans jamais donner d'XP (voir BossChest.cs). Choix retenu
+            // pour avoir une récompense fixe et lisible plutôt qu'une XP qui pouvait être "gâchée" (pas de level-up
+            // visible) ou au contraire déclencher une cascade de plusieurs cartes peu lisible. Un mini-boss invoqué
+            // garde le comportement d'origine (gemmes classiques, discret, cohérent avec un ennemi un peu plus gros).
             if (!IsSummoned)
-                XPGemSpawner.Instance.SpawnBossGemBurst(gemSpawnPos, xpReward);
-            else
+            {
+                if (ObjectPool.Instance != null)
+                {
+                    GameObject chestGO = ObjectPool.Instance.Get("BossChest", gemSpawnPos, Quaternion.identity);
+                    BossChest chest = chestGO != null ? chestGO.GetComponent<BossChest>() : null;
+                    if (chest != null) chest.Init(gemSpawnPos.y);
+                }
+            }
+            else if (XPGemSpawner.Instance != null)
+            {
+                float xpReward = _xpValue;
+                // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
+                if (_xpBarFraction > 0f && XPSystem.Instance != null)
+                    xpReward = XPSystem.Instance.XPToNextLevel * _xpBarFraction;
                 XPGemSpawner.Instance.SpawnGems(gemSpawnPos, xpReward);
+            }
         }
 
         GameManager.Instance.AddKill();

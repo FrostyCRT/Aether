@@ -81,7 +81,7 @@ public static class LocTableRU
         { "Réinitialiser", "Сбросить" }, { "Page « {0} » réinitialisée.", "Страница «{0}» сброшена." }, { "TOUT RÉINITIALISER ?", "СБРОСИТЬ ВСЁ?" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "Все настройки и клавиши вернутся к значениям по умолчанию." },
         { "Tout réinitialiser", "Сбросить всё" }, { "Tous les paramètres ont été réinitialisés.", "Все настройки сброшены." },
-        { "QUITTER LE JEU ?", "ВЫЙТИ ИЗ ИГРЫ?" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "Игра закроется. Твои настройки сохранены." },
+        { "QUITTER LE JEU ?", "ВЫЙТИ ИЗ ИГРЫ?" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "Игра закроется. Твои настройки сохранены." },
         { "Quitter", "Выйти" }, { "Disposition « {0} » appliquée.", "Раскладка «{0}» применена." }, { "OUI", "ВКЛ" }, { "NON", "ВЫКЛ" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "Только стрелки" },
 
@@ -93,7 +93,7 @@ public static class LocTableRU
         { "Un cheveu de ton meilleur niveau...", "До лучшего уровня — рукой подать..." }, { "Nouveau record d'Or en une partie : {0} !", "Новый рекорд золота за забег: {0}!" },
         { "Tout près de ton record d'Or...", "Рекорд золота был совсем рядом..." }, { "Nouveau personnage débloqué : {0} !", "Новый персонаж открыт: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Эта ветка получила от тебя всё. Буквально." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Здесь больше нечего открывать — смени персонажа, чтобы двигаться дальше." },
-        { "Cette branche n'a plus de secret pour toi.", "У этой ветки больше нет от тебя секретов." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Дерево и репутация на максимуме. Смени персонажа, если хочется чего-то нового." },
+        { "Cette branche n'a plus de secret pour toi.", "У этой ветки больше нет от тебя секретов." }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "Дерево и репутация на максимуме. Смени персонажа, если хочется чего-то нового." },
         { "Or", "золота" }, { "Éclats", "осколков" }, { "Encore {0} {1} pour débloquer {2}", "Не хватает {0} {1}, чтобы открыть «{2}»" },
         { "De quoi débloquer {0} dès maintenant !", "Уже можно открыть «{0}»!" }, { "Tentative n°{0}", "Попытка №{0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Выживание {0:00}:{1:00}    ·    Титаны {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Выживание {0:00}:{1:00}    ·    Убийства {2}    ·    Уровень {3}    ·    {4}" },
@@ -112,7 +112,7 @@ public static class LocTableRU
         { "Une victoire sans la moindre compétence. Chapeau.", "Победа без единого навыка. Снимаю шляпу." }, { "Aucune compétence récupérée. Le style, ça compte double.", "Ни одного подобранного навыка. Стиль засчитывается вдвойне." },
         { "Rien pris en cours de route, et pourtant tu es là.", "По пути ничего не подобрано, и всё же ты здесь." }, { "Pas eu le temps de récupérer la moindre compétence.", "Не нашлось времени подобрать хоть один навык." },
         { "Aucune compétence récupérée cette fois.", "На этот раз без подобранных навыков." }, { "VICTOIRE !", "ПОБЕДА!" },
-        { "FIN DE PARTIE", "КОНЕЦ ИГРЫ" }, { "DÉFAITE", "ПОРАЖЕНИЕ" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "Время: {0:00}:{1:00}\nУбито врагов: {2}\nЗолото: {3}" },
+        { "FIN DE PARTIE", "КОНЕЦ ИГРЫ" }, { "DÉFAITE", "ПОРАЖЕНИЕ" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "Время: {0:00}:{1:00}\nУбито врагов: {2}\nЗолото: {3}" },
         { "Or : {0}", "Золото: {0}" }, { "Éliminations : {0}", "Убийства: {0}" }, { "Niv. {0}", "Ур. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -121,8 +121,8 @@ public static class LocTableRU
         { "Utiliser le Dash 20 fois", "Соверши рывок 20 раз" }, { "Sang-Froid", "Хладнокровие" }, { "Garder 30% de vie jusqu'au boss 2", "Держи здоровье выше 30% до босса 2" },
         { "Double Chasse", "Двойная охота" }, { "Vaincre 2 boss dans la même partie", "Победи 2 боссов за один забег" },
         { "Ascension Rapide", "Стремительный взлёт" }, { "Niveau 20 avant la 10e minute", "20-й уровень до 10-й минуты" },
-        { "Sans Cristal", "Без кристалла" }, { "Sans Ultime jusqu'au boss 2", "Без ульты до босса 2" }, { "Sans-Faute", "Безупречность" },
-        { "Aucun dégât jusqu'au boss 1", "Не получай урона до босса 1" }, { "Éclair", "Молния" }, { "Vaincre un boss en moins de 30s", "Победи босса быстрее чем за 30 с" },
+        { "Sans Cristal", "Без кристалла" }, { "Sans Ultime jusqu'au boss 2", "Без ульты до босса 2" }, { "Résilience", "Стойкость" },
+        { "Garder plus de 50% de vie jusqu'au boss 1", "Удерживай больше 50% здоровья до босса 1" }, { "Éclair", "Молния" }, { "Vaincre un boss en moins de 30s", "Победи босса быстрее чем за 30 с" },
         { "Fortune", "Фортуна" }, { "Avec au moins 3000 Or ramassé", "Собери не меньше 3000 золота" }, { "Puissance Absolue", "Абсолютная мощь" },
         { "Niveau 30 dans la même partie", "30-й уровень за один забег" }, { "Or x{0}", "Золото x{0}" }, { "Niv. {0}/{1}", "Ур. {0}/{1}" },
         { "En cours", "В процессе" }, { "{0}/3000 Or", "{0}/3000 золота" }, { "Pas de défi dans ce mode.", "В этом режиме испытаний нет." },
@@ -144,9 +144,9 @@ public static class LocTableRU
         { "Bouclier de Mana", "Щит маны" }, { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "Автоматически поглощает 1 вражеский снаряд каждые 8 секунд." },
         { "Impulsion Nova", "Импульс Новы" }, { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "Если Нова, вызванная поглощением, убивает хотя бы одного врага, перезарядка рывка мгновенно сбрасывается." },
         { "Dash Amélioré", "Улучшенный рывок" }, { "Réduit le temps de recharge du dash.", "Сокращает перезарядку рывка." },
-        { "Maîtrise du Cristal", "Мастерство кристалла" }, { "Réduit le nombre de charges nécessaires pour l'ultime.", "Уменьшает число зарядов, нужных для ульты." },
+        { "Maîtrise du Cristal", "Мастерство кристалла" }, { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "Уменьшает число зарядов Новы, нужных для твоей ульты, на 1 (с 6 до 5)." },
         { "Nova Étendue", "Широкая Нова" }, { "Augmente le rayon de la Nova de Cristal.", "Увеличивает радиус Кристальной Новы." },
-        { "Dash Fantôme", "Призрачный рывок" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Открывает призрачного клона, которого вызывает отдельная клавиша: 2 секунды он притягивает ближайших врагов." },
+        { "Clone Spectral", "Призрачный клон" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Открывает призрачного клона, которого вызывает отдельная клавиша: 2 секунды он притягивает ближайших врагов." },
         { "TALENT UNIQUE", "УНИКАЛЬНЫЙ ТАЛАНТ" }, { "NIVEAU {0} / {1}", "УРОВЕНЬ {0} / {1}" }, { "débloqué", "нужно открыть" },
         { "niveau 1", "нужен уровень 1" }, { "NIV {0}", "УР. {0}" }, { "ACQUIS", "ИЗУЧЕНО" }, { "NIVEAU MAX", "МАКС. УРОВЕНЬ" },
         { "Ce talent est actif.", "Этот талант активен." }, { "Cette compétence est au maximum.", "Этот навык прокачан до максимума." },
@@ -170,7 +170,7 @@ public static class LocTableRU
         { "Terre Calcinée", "Выжженная земля" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "СЛИЯНИЕ — Огненный шар + Грязь: вокруг тебя кольцом возникают зоны раскалённого пепла — гораздо больше и гораздо смертоноснее." },
         { "Orbes Foudroyants", "Громовые сферы" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "СЛИЯНИЕ — Спутники + Цепная молния: при каждом касании твои спутники выпускают цепную молнию." },
         { "Orbes Jumeaux", "Сферы-близнецы" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "СЛИЯНИЕ — Двойной выстрел + Прыгучая сфера: твой базовый выстрел раздваивается на две сферы, которые отскакивают без конца." },
-        { "Aura", "Аура" }, { "Zone Aura", "Зона ауры" }, { "Orbe Rebondissant", "Прыгучая сфера" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Выпускает сферы, которые без остановки отскакивают по арене и ранят каждого задетого врага." },
+        { "Aura", "Аура" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Создаёт вокруг тебя постоянное поле, которое наносит урон и замедляет врагов поблизости" }, { "Orbe Rebondissant", "Прыгучая сфера" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Выпускает сферы, которые без остановки отскакивают по арене и ранят каждого задетого врага." },
         { "Dégâts +", "Урон +" }, { "+20% aux dégâts", "+20% к урону" }, { "Double Tir", "Двойной выстрел" }, { "Tire 2 projectiles en rafale", "Выпускает очередь из 2 снарядов" },
         { "Boule de Feu", "Огненный шар" }, { "Lance une boule de feu", "Бросает огненный шар" }, { "Cadence+", "Скорострельность+" },
         { "+20% à la cadence de tir", "+20% к скорострельности" }, { "Soin", "Лечение" }, { "Restaure 50% des HP maximum", "Восстанавливает 50% максимального запаса здоровья" },
@@ -243,7 +243,7 @@ public static class LocTableRU
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "В следующий раз получится." }, { "Une défaite de plus vers la victoire.", "Ещё одно поражение на пути к победе." },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "Снова в бой. Только так и становятся сильнее." }, { "Relève-toi, c'est pas fini.", "Вставай, это ещё не конец." },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "Снова в бой. Только так и становятся сильнее." }, { "Relève-toi, c'est pas fini.", "Вставай, это ещё не конец." },
         { "Tu as le niveau pour la suivante.", "Следующий забег тебе по силам." }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "Ты уже знаешь, что пошло не так. Исправь это." },
         { "Ça ne s'est pas joué à grand-chose.", "Всё решила самая малость." }, { "Tu étais proche. Refais-en une.", "Было совсем близко. Давай ещё разок." },
         { "Il ne t'a laissé aucune ouverture cette fois.", "На этот раз он не оставил тебе ни единого шанса." }, { "Un adversaire coriace. Il faudra revenir plus fort.", "Крепкий противник. Придётся вернуться сильнее." },
@@ -273,5 +273,11 @@ public static class LocTableRU
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "УМЕРЕННЫЙ" }, { "VIOLENT", "СУРОВЫЙ" }, { "APOCALYPTIQUE", "АПОКАЛИПТИЧЕСКИЙ" },
+        { "L'expérience Classique telle qu'elle a toujours été", "Классический режим точно таким, каким он всегда был" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "Карта больше, враги прочнее и опаснее, зато больше Золота и Осколков" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "Карта намного больше, враги заметно прочнее и опаснее, Золото и Осколки по максимуму" },
     };
 }

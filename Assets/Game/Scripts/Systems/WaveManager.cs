@@ -122,7 +122,7 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    // Toutes les améliorations au palier max (même logique que le raccourci de debug F6 de DebugCheats).
+    // Toutes les améliorations au palier max (même logique que le raccourci de debug F4 de DebugCheats).
     private void GrantFullBuild()
     {
         if (LevelUpManager.Instance == null || LevelUpManager.Instance.AllUpgrades == null) return;
@@ -266,7 +266,16 @@ public class WaveManager : MonoBehaviour
         _enemySpawner.gameObject.SetActive(false);
 
         GameObject player    = GameObject.FindWithTag("Player");
-        Vector3    spawnPos  = player.transform.position + new Vector3(10f, 0f, 0f);
+        // CORRIGÉ (2026-10-18, diagnostic complet - audit §2.5) - l'ancien décalage fixe (+10 en X) plaçait le boss
+        // PILE sur le joueur si celui-ci se trouvait près du bord est de la carte (le clamp qui suit ramenait le
+        // boss à la même position que le joueur). Décalage maintenant calculé VERS LE CENTRE de la zone depuis la
+        // position du joueur : le boss apparaît toujours du côté où il y a de la place, quel que soit l'endroit où
+        // se trouve le joueur sur la carte.
+        Vector3 towardCenter = -player.transform.position;
+        towardCenter.y = 0f;
+        if (towardCenter.sqrMagnitude < 0.01f) towardCenter = Vector3.right;
+        towardCenter.Normalize();
+        Vector3 spawnPos = player.transform.position + towardCenter * 10f;
         spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
 
         GameObject bossPrefab = bossNumber == 1 ? _bossPrefab1 :
@@ -275,6 +284,16 @@ public class WaveManager : MonoBehaviour
         if (bossPrefab != null)
         {
             GameObject bossInstance = Instantiate(bossPrefab, spawnPos, Quaternion.identity); // MODIFIÉ — on garde la référence
+
+            // AJOUTÉ (2026-10-20, chantier satisfaction - "tu peux faire les animations pour l'arrivée du boss") -
+            // impact au sol à l'instant où le boss apparaît (onde de choc + étincelles + secousse de caméra) : le
+            // seul retour avant ce correctif était un zoom de caméra (voir SetBossZoom plus bas) + la barre de vie
+            // qui se remplissait, rien ne marquait le moment précis de L'ARRIVÉE elle-même. CameraShakeFX est
+            // volontairement utilisée ici (contrairement aux dégâts courants, où elle est proscrite - voir son
+            // en-tête) : l'arrivée d'un boss EST justement l'un des "gros moments rares" auxquels elle est réservée.
+            ExpandingRingVFX.Spawn(spawnPos, 4f, new Color(0.85f, 0.15f, 0.15f), 0.6f);
+            ImpactSparkVFX.Spawn(spawnPos, new Color(0.85f, 0.15f, 0.15f), 2.2f);
+            CameraShakeFX.Shake(0.55f);
 
             // AJOUTÉ — applique le zoom propre à CE boss, lu directement sur son prefab
             BossBase bossScript = bossInstance.GetComponent<BossBase>();
@@ -297,8 +316,18 @@ public class WaveManager : MonoBehaviour
                 GameModes.SetRushBossDamage(GameModes.RushBossDamageScale(spawnIndex));
             }
 
+            // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté ; x1 au palier
+            // Modéré, donc SetDifficultyHealthMultiplier(1f) ne change rien (la garde Mathf.Max(1f,...) dans
+            // BossBase laisse _maxHealth intact dans ce cas).
+            // ÉTENDU (2026-10-20, carrousel de difficulté - "les boss [...] dans les autres difficultés bénéficient
+            // du scale") - s'applique maintenant aussi en Sans fin et Ruée de boss, EN PLUS de leur propre
+            // multiplicateur/valeur imposée (voir BossBase.InitUI, qui les cumule maintenant au lieu de les
+            // traiter comme mutuellement exclusifs).
+            if (bossScript != null && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
+                bossScript.SetDifficultyHealthMultiplier(DifficultyTiers.BossHealthMultiplier(DifficultyTiers.Current));
+
             if (bossScript != null && BossCameraZoom.Instance != null)
-                BossCameraZoom.Instance.SetBossZoom(bossScript.CameraZoomMargin); // MODIFIÉ // MODIFIÉ — SetBossZoom() n'existe plus, remplacé par SetBossOffset()
+                BossCameraZoom.Instance.SetBossZoom(bossScript.CameraZoomMargin);
         }
         else
             Debug.LogWarning($"Boss {bossNumber} prefab non assigné !");
@@ -306,17 +335,11 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"Boss {bossNumber} spawné !");
     }
 
-    public static class MapBoundaryUtils
-    {
-        public const float ZoneHalfSize = 55f;
-
-        public static Vector3 ClampToZone(Vector3 position)
-        {
-            position.x = Mathf.Clamp(position.x, -ZoneHalfSize, ZoneHalfSize);
-            position.z = Mathf.Clamp(position.z, -ZoneHalfSize, ZoneHalfSize);
-            return position;
-        }
-    }
+    // SUPPRIMÉ (2026-10-18, diagnostic complet - audit §10) - classe MapBoundaryUtils imbriquée ici, en double avec
+    // la classe autonome Systems/MapBoundaryUtils.cs. Tous les appels `MapBoundaryUtils.ClampToZone(...)` de ce
+    // fichier résolvaient vers CETTE copie (le compilateur préfère un type imbriqué à un type de plus haut niveau
+    // du même nom) ; ils résolvent maintenant naturellement vers la classe autonome, sans rien changer à leur
+    // écriture - voir Systems/MapBoundaryUtils.cs pour le détail et la nouvelle taille de zone variable.
 
     // AJOUTE (2026-10-04) - DEBUG/TEST uniquement (voir DebugCheats.cs) : simple enrobage public pour exposer
     // ClearAllEnemies() (privee) a un raccourci clavier - "enlever les ennemis" a la demande.

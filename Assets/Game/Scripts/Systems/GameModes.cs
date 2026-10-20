@@ -94,6 +94,16 @@ public static class GameModes
         }
     }
 
+    // AJOUTÉ (2026-10-18, diagnostic complet - décision "modes de jeu") - Choc des titans retiré de la sélection
+    // pour la version finale : il donne la build ENTIÈREMENT maxée dès le départ (GrantFullBuild) et aucune XP,
+    // donc zéro décision de build pendant la partie - à l'opposé du cœur stratégique du genre (level-up, fusions),
+    // et ses constantes de balance (TitansPlayerDps, TitansUptime...) ne sont que des premiers jets jamais
+    // playtestés. Retrait NON destructif : enum, SaveData (titansRuns/titansWins/...), GameModes.Current/Info/
+    // scaling et tout le code de WaveManager restent intacts - seul le sélecteur de mode ne peut plus s'y arrêter
+    // (voir GameModeSelector.Step ci-dessous et EnsureCurrentIsAvailable) - récupérable en 1 ligne pour un futur
+    // mode "New Game+"/défi post-lancement sans aucun travail de reconstruction.
+    public static bool IsShippable(GameMode mode) => mode != GameMode.Titans;
+
     public static string LockedHint(GameMode mode)
     {
         if (mode == GameMode.Titans) return Loc.T("Remporte une partie en mode Classique pour débloquer ce mode");
@@ -144,7 +154,7 @@ public static class GameModes
     // Ramène un mode sauvegardé devenu indisponible (save édité...) au Classique.
     public static void EnsureCurrentIsAvailable(SaveData data)
     {
-        if (!IsUnlocked(Current, data)) Current = GameMode.Classic;
+        if (!IsUnlocked(Current, data) || !IsShippable(Current)) Current = GameMode.Classic;
     }
 
     // ---- Sans fin --------------------------------------------------------------------------------------------------------
@@ -257,26 +267,35 @@ public static class GameModes
     public static float EnemyDamageScale { get; private set; } = 1f;
     private static float _rushBossDamage = 1f;
 
+    // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté, x1 au palier Modéré.
+    // ÉTENDU (2026-10-20, carrousel de difficulté - "les boss [...] dans les autres difficultés bénéficient du
+    // scale [...] logique qu'il y ait un niveau de difficulté pour ça aussi") - s'applique maintenant aussi en
+    // Sans fin et Ruée de boss, plus seulement le Classique (x1 pour Choc des titans, qui n'a pas de palier).
+    // Toujours inclus dans EnemyDamageScale ci-dessous, quel que soit le chemin qui l'a écrit en dernier (Sans fin,
+    // Ruée de boss ou reset).
+    private static float DifficultyMultiplier => (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+        ? DifficultyTiers.DamageMultiplier(DifficultyTiers.Current) : 1f;
+
     public static void UpdateScaling(float runMinutes)
     {
-        EnemyDamageScale = EndlessDamageScale(runMinutes) * _rushBossDamage;
+        EnemyDamageScale = EndlessDamageScale(runMinutes) * _rushBossDamage * DifficultyMultiplier;
     }
 
     public static void SetRushBossDamage(float scale)
     {
         _rushBossDamage = Mathf.Max(0.1f, scale);
-        EnemyDamageScale = _rushBossDamage;
+        EnemyDamageScale = _rushBossDamage * DifficultyMultiplier;
     }
 
     public static void ClearRushBossDamage()
     {
         _rushBossDamage = 1f;
-        EnemyDamageScale = 1f;
+        EnemyDamageScale = DifficultyMultiplier;
     }
 
     public static void ResetScaling()
     {
         _rushBossDamage = 1f;
-        EnemyDamageScale = 1f;
+        EnemyDamageScale = DifficultyMultiplier;
     }
 }

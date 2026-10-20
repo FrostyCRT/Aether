@@ -31,15 +31,9 @@ public class XPSystem : MonoBehaviour
     public void AddXP(float amount)
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
-        // Ruée de boss : le joueur doit monter beaucoup plus vite (XP x3), voir GameModes.RushXpMultiplier.
+        // Ruée de boss : le joueur doit monter plus vite (XP ×1,5 - corrigé 2026-10-18, diagnostic complet : le
+        // commentaire disait ×3, GameModes.RushXpMultiplier vaut bien 1,5), voir GameModes.RushXpMultiplier.
         amount *= GameModes.XpMultiplier;
-
-        // Application du bonus méta d'XP s'il existe
-        if (MetaProgressionManager.Instance != null)
-        {
-            float bonusXP = MetaProgressionManager.Instance.GetBonusXP();
-            amount += amount * bonusXP;
-        }
         CurrentXP += amount;
         // CORRECTION CRITIQUE : Sauvegarde du palier actuel avant que le niveau ne change
         while (CurrentXP >= XPToNextLevel)

@@ -3,10 +3,10 @@
 Ce fichier est un **index de repérage rapide** : pour chaque script C# du projet, une ou deux lignes qui disent ce qu'il EST (type de composant) et ce qu'il FAIT. Ce n'est pas une documentation exhaustive.
 
 - Pour l'historique détaillé session par session (pourquoi tel choix, quels bugs ont été corrigés, quelles valeurs ont été réglées à la main) : **`NOTES.md`**, la source la plus à jour.
-- Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V13.md`** (remis à jour le 2026-10-18, version V15). En cas de doute, `NOTES.md` fait foi.
+- Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V16.md`** (remis à jour le 2026-10-19, version V16 - le nom du fichier suit maintenant le numéro de version). En cas de doute, `NOTES.md` fait foi.
 - Pour la liste des bugs / points à régler avant la sortie et leur avancement : **`AUDIT_VERSION_FINALE.md`**. Pour tout ce qui reste à modéliser en 3D (skins compris) et les sons manquants : **`A_MODELISER_3D.md`**.
 
-*Index vérifié le 2026-10-18 contre les fichiers réels : tous les scripts du jeu y figurent (fusion "Orbes Jumeaux" retirée, "Sillage Boueux" ajoutée).*
+*Index vérifié le 2026-10-19 contre les fichiers réels : tous les scripts du jeu y figurent (diagnostic complet - `DifficultyTiers.cs`, `BossChest.cs`, `DifficultySelector.cs`, `DevOnly.cs` ajoutés).*
 
 ## Comment naviguer
 
@@ -28,17 +28,19 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `DamageNumberSpawner.cs` | Singleton qui spawne les nombres de dégâts flottants via l'`ObjectPool`, fusionne les coups rapprochés sur une même cible et respecte les réglages Paramètres (dégâts infligés/subis affichés ou non). |
 | `DebugCheats.cs` | Raccourcis clavier DEBUG uniquement (inactifs hors éditeur/build dev) : F1-F3 sauter à un boss, F4 donner tout le build sauf fusions, F5 forcer un level-up, F6/F7 invincibilité joueur/ennemis, F8/F9/F11 faire apparaître une gemme petite/moyenne/grande, F12 vider les ennemis. |
 | `GameManager.cs` | Singleton central d'une run : état Game Over/Pause, spawn du personnage sélectionné (avec son skin), chrono, compteur de kills/boss. |
-| `GameModes.cs` | Classe statique : définit les 4 modes de jeu (Classique/Sans fin/Ruée de boss/Titans), leurs règles d'échelle et si les fusions sont activées pour ce mode. |
+| `DevOnly.cs` | Classe statique (2026-10-19) : point d'appel unique pour cacher un objet hors éditeur/build dev (`Application.isEditor \|\| Debug.isDebugBuild`) - utilisé par les 3 boutons de debug du jeu (Réputation, Personnages, Compétences), 2 d'entre eux restaient visibles en version release avant cette passe. |
+| `DifficultyTiers.cs` | Classe statique (2026-10-19) : les 3 paliers de difficulté du mode Classique (Modéré/Violent/Apocalyptique, persisté par `PlayerPrefs`) - taille de carte, PV/dégâts ennemis, plafonds de spawn, Or/Éclats, nombre de décors de bordure. |
+| `GameModes.cs` | Classe statique : définit les modes de jeu (Classique/Sans fin/Ruée de boss, + Titans conservé mais retiré de la sélection via `IsShippable` depuis le 2026-10-19), leurs règles d'échelle et si les fusions sont activées pour ce mode. |
 | `GameSceneSettingsApplier.cs` | Applique le réglage Ombres (Paramètres) à la lumière directionnelle de la scène Game au démarrage. |
-| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. Retient aussi le total des bonus « Dégâts+ » / « Cadence+ » pris (`DamageBonusTotal` / `FireRateBonusTotal`), pour qu'ils soient additifs et identiques sur toutes les armes. |
-| `MapBoundaryUtils.cs` | Classe statique utilitaire : borne une position à la zone de jeu carrée. |
+| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. Retient aussi le total des bonus « Dégâts+ » / « Cadence+ » pris (`DamageBonusTotal` / `FireRateBonusTotal`), pour qu'ils soient additifs et identiques sur toutes les armes. Depuis le 2026-10-19, `GrantFreePicks(int)` accorde des paliers directement (coffre de boss), sans passer par l'XP. |
+| `MapBoundaryUtils.cs` | Classe statique utilitaire : borne une position à la zone de jeu carrée. `ZoneHalfSize` n'est plus une constante depuis le 2026-10-19 (varie selon le palier de difficulté du Classique, fixée une fois par `GameManager.Awake()`) ; l'ancienne copie imbriquée dans `WaveManager` a été supprimée (doublon, voir `AUDIT_VERSION_FINALE.md` §10). |
 | `MetaProgressionManager.cs` | Singleton persistant (`DontDestroyOnLoad`) : progression méta complète — Or/Éclats, sauvegarde (`SaveSystem`), déblocage de personnages, bonus de Réputation, aperçu du prochain palier pour le Game Over. |
 | `ObjectPool.cs` | Singleton générique de pooling d'objets par tag (ennemis, projectiles, VFX...), pré-instanciés à taille fixe. |
 | `SaveSystem.cs` | Classe statique : lecture/écriture de `save.json` (+ backup automatique), avec `SuppressWrites` pour tester sans toucher à la vraie sauvegarde. |
 | `SkinCatalog.cs` | ScriptableObject : catalogue des skins de personnage (Classique=Or / Prestige=Éclats), un skin = une ligne éditable dans l'Inspector, aucun code à toucher pour en ajouter un. |
 | `WaveManager.cs` | Singleton pilotant l'apparition des 3 boss classiques (ou la logique Sans fin/Ruée de boss/Titans selon le mode courant). La densité d'ennemis est réglée par les phases de l'`EnemySpawner` ; `WaveManager` n'y ajoute que la montée du mode Sans fin après 15 min (cadence jusqu'à 0,3 s, plafond 160 → 200). |
 | `XPGem.cs` | Gemme d'XP ramassable poolée (3 tailles), attirée vers le joueur une fois dans son rayon d'attraction. |
-| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère la gerbe de gemmes des boss et le rayon d'attraction global (débloqué niveau 3). |
+| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère le rayon d'attraction global (débloqué niveau 3). La gerbe de gemmes (`SpawnBossGemBurst`) ne sert plus qu'aux mini-boss invoqués depuis le 2026-10-19 (un vrai boss fait apparaître un `BossChest`, voir Weapons). |
 | `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau^1.5`), déclenche les montées de niveau. |
 
 ## Player (`Assets/Game/Scripts/Player`)
@@ -47,7 +49,6 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 |---|---|
 | `CharacterIdentity.cs` | Composant minimal qui tague un prefab joueur avec son `CharacterType` (Aether/Kael/Lyra). |
 | `CrystalSystem.cs` | Charges d'Ultime, absorption au Dash, Nova (dégâts + ralentissement de zone), scaling de l'Ulti dans le temps, soin de "Récupération" à l'absorption. |
-| `DashCircleUI.cs` | Ancienne jauge radiale du Dash. **Utilisé nulle part** (aucune scène ni prefab) : à supprimer (voir `AUDIT_VERSION_FINALE.md`). |
 | `HealthSystem.cs` | PV du joueur, invincibilité (dash + externe), régénération/armure méta, retient la cause de mort pour le message de Game Over. |
 | `ManaShield.cs` | Nœud capstone Gardien : bouclier à charges qui annule totalement un projectile ennemi et alimente le Cristal comme une absorption ; verrouillage temporaire si les charges tombent à 0. |
 | `PlayerBuffs.cs` | Multiplicateur STATIQUE de dégâts sortants du joueur (`OutgoingDamageMultiplier` = Concentration × Surpuissance), lu par TOUTES les armes au moment des dégâts. Concentration est gérée ici ; Surpuissance est activée par `CrystalSystem` via `SetOverpowerActive`. |
@@ -79,6 +80,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `LightningBoltVFX.cs` | Utilitaire statique : dessine les éclairs visibles (ricochet + flash d'impact) de la Foudre et de ses fusions, avec un pool interne de `LineRenderer` pour éviter le churn d'objets à haute fréquence. |
 | `LightningChainUtility.cs` | Algorithme statique de chaîne de foudre (saut d'ennemi en ennemi, dégâts dégressifs), extrait de `WeaponLightningChain` pour être réutilisé tel quel par les fusions qui ajoutent la foudre. |
 | `MudPuddleZone.cs` | Instance poolée d'une flaque de Boue : ralentissement + DPS léger aux ennemis (et boss) dans son rayon pendant sa durée de vie. |
+| `BossChest.cs` | Instance poolée (2026-10-19) : coffre qui apparaît à la mort d'un vrai boss (remplace le burst d'XP) - pop d'apparition, bob/rotation en attendant, ramassage par trigger (hitstop + `ExpandingRingVFX`) qui accorde `LevelUpManager.GrantFreePicks(2)`. |
 | `OrbitalProjectile.cs` | Un éclat en orbite autour du joueur (Orbitaux) : dégâts de contact avec cooldown par ennemi. |
 | `ProjectileBasic.cs` | Projectile générique de l'attaque de base et de plusieurs armes : portée, fragmentation à l'impact, perforation, Brûlure, Ricochet (fusion Lames Ricochet). |
 | `WeaponAura.cs` | Champ de dégâts/ralentissement continu autour du joueur (anneau visuel procédural en `LineRenderer`). |
@@ -150,7 +152,8 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `CharacterSelectUI.cs` | Contrôleur de l'onglet Sélection de personnage : fond dédié par personnage, portrait, logo, verrouillage. |
 | `CustomCursor.cs` | Remplace le curseur système par le gantelet fantasy (`Resources/Cursor_Gauntlet`) via une Image UI qui suit la souris ; objet auto-créé dans toutes les scènes (comme `SettingsApplier`), masqué pendant le jeu actif et affiché sur les panneaux (pause/paramètres/level-up/Game Over) via `GameManager.NeedsCursor`. |
 | `DamageNumber.cs` | Instance poolée d'un nombre de dégâts flottant (texte 3D, contour, montée + fondu). |
-| `GameModeSelector.cs` | Sélecteur de mode de jeu du menu principal (flèches, nom, description, record), verrouille JOUER si le mode choisi n'est pas débloqué. |
+| `DifficultySelector.cs` | Sélecteur du palier de difficulté du Classique (2026-10-19), sous `GameModeSelector` dans l'onglet Jouer : rangée fixe de 3 boutons toujours cliquables (jamais verrouillé, contrairement au mode de jeu), visible seulement en Classique. |
+| `GameModeSelector.cs` | Sélecteur de mode de jeu du menu principal (flèches, nom, description, record), verrouille JOUER si le mode choisi n'est pas débloqué. Saute les modes non commercialisés (`GameModes.IsShippable`) depuis le 2026-10-19. |
 | `GameOverMessagePool.cs` | Classe statique : pool de messages contextuels de Game Over selon la cause de mort et le temps de survie (ton "dur mais motivant"). |
 | `GameUI.cs` | **Le plus gros script UI.** HUD complet (vie/XP/boss/dash/ultime), grille d'armes 3×3 partagée par le menu Pause ET les écrans Victoire/Défaite (`ConfigureBuildGridSlot`, `PopulatePauseGrid`, `PopulateBuildGrid`), messages de fin de run, records. |
 | `HudBar.cs` | Une barre du HUD habillée (vie/boss/XP/esquive) : cadre, remplissage animé, traînée de dégâts, flash au coup reçu, pulsation vie basse. |

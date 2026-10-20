@@ -110,9 +110,11 @@ public class SkillTreeUI : MonoBehaviour
             }
         }
 
-        // Le bouton de remise à zéro est un outil de développement : il ne doit jamais
-        // atteindre un joueur (Debug.isDebugBuild = vrai dans l'éditeur et les builds de dev).
-        if (_debugResetButton != null) _debugResetButton.SetActive(Debug.isDebugBuild);
+        // Le bouton de remise à zéro est un outil de développement : il ne doit jamais atteindre un joueur.
+        // MODIFIÉ (2026-10-18, diagnostic complet - audit §3) - passe par DevOnly, point d'appel unique désormais
+        // partagé avec ReputationUI/CharacterSelectUI (les 2 autres boutons de debug du jeu, eux restés visibles en
+        // release jusqu'à cette passe).
+        DevOnly.Show(_debugResetButton);
 
         RefreshAllNodes();
         Loc.Changed += OnLanguageChanged;
@@ -189,7 +191,7 @@ public class SkillTreeUI : MonoBehaviour
         if (shown != _goldTextValue)
         {
             _goldTextValue = shown;
-            _goldText.text = shown.ToString();
+            _goldText.text = Loc.Int(shown); // MODIFIÉ (2026-10-18, diagnostic complet - audit §9, séparateur de milliers)
             if (_goldPill != null)
             {
                 // la pastille épouse le nombre (pièce à gauche, chiffres à droite)

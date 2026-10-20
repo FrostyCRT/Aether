@@ -71,6 +71,15 @@ public class MetaProgressionManager : MonoBehaviour
 
     public void AddRunGold(int amount)
     {
+        // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté ; ÉTENDU 2026-10-20, carrousel de
+        // difficulté - "les boss [...] dans les autres difficultés bénéficient du scale donc [...] un niveau de
+        // difficulté pour ça aussi") - l'or encaissé pendant la partie est majoré au palier de difficulté, qui
+        // s'applique maintenant aussi en Sans fin et Ruée de boss (plus seulement le Classique) ; x1 hors ces 3
+        // modes ou au palier Modéré. Arrondi au plus proche pour ne jamais perdre le dernier point d'or sur un
+        // petit montant.
+        if (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+            amount = Mathf.RoundToInt(amount * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
+
         RunGold += amount;
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
             GameUI.Instance.UpdateGold(RunGold);
@@ -134,7 +143,12 @@ public class MetaProgressionManager : MonoBehaviour
             }
             default:
             {
-                if (runTime > Data.bestTime) Data.bestTime = runTime;
+                // MODIFIÉ (2026-10-20, carrousel de difficulté) - le record de survie du Classique se tient
+                // maintenant PAR PALIER (voir EnsureBestTimeByTierArray) ; l'ancien champ bestTime n'est plus
+                // écrit (gardé seulement pour la migration en lecture d'une sauvegarde pré-existante).
+                EnsureBestTimeByTierArray();
+                int tierIndex = (int)DifficultyTiers.Current;
+                if (runTime > Data.bestTimeByTier[tierIndex]) Data.bestTimeByTier[tierIndex] = runTime;
                 if (kills > Data.bestKills) Data.bestKills = kills;
                 // AJOUTE - 2 records supplementaires. RunGold est lu AVANT d'etre remis a
                 // 0 plus bas, et reflete deja le bonus de defi eventuel (deja applique
@@ -190,6 +204,29 @@ public class MetaProgressionManager : MonoBehaviour
     // PARCOURS PAR PERSONNAGE (fiche de l'onglet Personnage)
     // =====================
 
+    // AJOUTÉ (2026-10-20, carrousel de difficulté) - même technique que EnsureCharacterStatArrays ci-dessous :
+    // garantit 3 cases (Modéré/Violent/Apocalyptique). Migration UNE SEULE FOIS (seulement quand le tableau vient
+    // d'être créé, donc une vraie sauvegarde pré-existante) : l'ancien record unique (bestTime, toutes parties
+    // Classique confondues avant l'existence des paliers) devient le record du palier Modéré, Violent/Apocalyptique
+    // démarrent à 0.
+    private void EnsureBestTimeByTierArray()
+    {
+        if (Data == null) return;
+        if (Data.bestTimeByTier == null || Data.bestTimeByTier.Length < 3)
+        {
+            bool hadLegacyRecord = Data.bestTime > 0f;
+            System.Array.Resize(ref Data.bestTimeByTier, 3);
+            if (hadLegacyRecord) Data.bestTimeByTier[(int)DifficultyTier.Moderate] = Data.bestTime;
+        }
+    }
+
+    // Record de survie du Classique pour UN palier donné (voir carrousel de difficulté, page Accueil).
+    public float GetBestTime(DifficultyTier tier)
+    {
+        EnsureBestTimeByTierArray();
+        return Data != null ? Data.bestTimeByTier[(int)tier] : 0f;
+    }
+
     // Garantit 3 cases par tableau (save ancien/édité/tronqué) en conservant l'existant.
     private void EnsureCharacterStatArrays()
     {
@@ -235,14 +272,20 @@ public class MetaProgressionManager : MonoBehaviour
     // ÉCLATS PAR MODE - le classique est la référence (une partie de 15 min). Les autres modes sont plafonnés pour ne pas
     // devenir une ferme à Éclats :
     //  - Sans fin : niveau compté jusqu'à 30 et 9 boss au plus (une partie de 15 min vaut ~ 24 niveaux + 3 boss).
-    //  - Ruée de boss : moitié moins par boss, aucun point "niveau" (l'XP x3 gonfle les niveaux) ; la victoire rapporte
+    //  - Ruée de boss : moitié moins par boss, aucun point "niveau" (l'XP ×1,5 gonfle déjà les niveaux) ; la victoire rapporte
     //    le bonus proportionnellement à sa taille (1 / 2 / 3 tiers du bonus classique).
     private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode = GameMode.Classic)
     {
         switch (mode)
         {
             case GameMode.Endless:
-                return (Mathf.Min(levelReached, 30) * _eclatsPerLevel) + (Mathf.Min(bossKills, 9) * _eclatsPerBossKill);
+            {
+                int total = (Mathf.Min(levelReached, 30) * _eclatsPerLevel) + (Mathf.Min(bossKills, 9) * _eclatsPerBossKill);
+                // AJOUTÉ (2026-10-20, carrousel de difficulté) - même majoration que le Classique (voir default
+                // ci-dessous), le palier de difficulté s'applique maintenant aussi au Sans fin.
+                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
+                return total;
+            }
             case GameMode.BossRush:
             {
                 int total = (bossKills * _eclatsPerBossKill) / 2;
@@ -251,6 +294,9 @@ public class MetaProgressionManager : MonoBehaviour
                     int progress = Mathf.Max(1, GameModes.ClassicBossProgress(Data));
                     total += (_eclatsVictoryBonus * progress) / 3;
                 }
+                // AJOUTÉ (2026-10-20, carrousel de difficulté) - idem, le palier de difficulté s'applique
+                // maintenant aussi à la Ruée de boss.
+                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
                 return total;
             }
             case GameMode.Titans:
@@ -264,6 +310,9 @@ public class MetaProgressionManager : MonoBehaviour
             {
                 int total = (levelReached * _eclatsPerLevel) + (bossKills * _eclatsPerBossKill);
                 if (victory) total += _eclatsVictoryBonus;
+                // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté du
+                // Classique (DifficultyTiers.RewardMultiplier) ; x1 au palier Modéré.
+                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
                 return total;
             }
         }
@@ -373,27 +422,32 @@ public class MetaProgressionManager : MonoBehaviour
         return s;
     }
 
-    // DEBUG - à retirer avant release (cf. NOTES.md). Débloque tout, utile après
-    // avoir ajouté le système de déblocage sur un save existant.
+    // DEBUG - outil de développement, jamais exposé en release (le bouton qui l'appelle est caché par DevOnly.Show,
+    // et le corps lui-même est maintenant compilé uniquement hors build release - audit §3 "code mort en release").
+    // Débloque tout, utile après avoir ajouté le système de déblocage sur un save existant.
     public void DebugUnlockAllCharacters()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Data == null) LoadData();
         Data.kaelUnlocked = true;
         Data.lyraUnlocked = true;
         SaveSystem.Save(Data);
+#endif
     }
 
-    // DEBUG - à retirer avant release. Remet les déblocages à l'état "première
+    // DEBUG - même traitement que ci-dessus. Remet les déblocages à l'état "première
     // partie" : seul Aether disponible, sélection ramenée sur Aether. Ne touche
     // PAS aux arbres / à l'Or / aux Éclats (resets séparés).
     public void DebugResetCharacterUnlocks()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Data == null) LoadData();
         Data.kaelUnlocked = false;
         Data.lyraUnlocked = false;
         Data.selectedCharacterIndex = 0;
         PendingUnlockNotification = null;
         SaveSystem.Save(Data);
+#endif
     }
 
     public GameObject GetSelectedCharacterPrefab()
@@ -854,17 +908,18 @@ public class MetaProgressionManager : MonoBehaviour
         SaveSystem.Save(Data);
     }
 
+    // DEBUG - outil de développement, jamais exposé en release (voir DebugUnlockAllCharacters ci-dessus).
     public void DebugResetReputation()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Data == null) LoadData();
         Data.reputationDamageLevel = 0;
         Data.reputationSpeedLevel = 0;
         Data.reputationRegenLevel = 0;
         Data.totalEclats = 20000;
         SaveSystem.Save(Data);
+#endif
     }
-
-    public float GetBonusXP() => 0f;
 
     // AJOUTE - cherche, parmi les noeuds de la branche du personnage actif (Or)
     // et les 3 noeuds de Reputation (Eclats), celui qui necessite le MOINS de

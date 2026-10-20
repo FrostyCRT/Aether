@@ -849,9 +849,12 @@ public class GameUI : MonoBehaviour
     {
         if (text == null) yield break;
 
+        // MODIFIÉ (2026-10-18, diagnostic complet - audit §9 "les grands nombres (or, Éclats) s'affichent sans
+        // séparateur de milliers") - Loc.Int() au lieu d'un ToString() brut : sans effet sur les petits nombres
+        // (kills, boss), ajoute le bon séparateur selon la langue sur l'Or/les Éclats en fin de partie.
         if (duration <= 0f || from == to)
         {
-            text.text = to.ToString();
+            text.text = Loc.Int(to);
             yield break;
         }
 
@@ -862,11 +865,11 @@ public class GameUI : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = 1f - Mathf.Pow(1f - t, 3f);
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, eased));
-            text.text = value.ToString();
+            text.text = Loc.Int(value);
             yield return null;
         }
 
-        text.text = to.ToString();
+        text.text = Loc.Int(to);
     }
 
     // AJOUTE - orchestre la sequence complete pour l'Or : compte jusqu'au
@@ -993,7 +996,7 @@ public class GameUI : MonoBehaviour
                 // uniquement : un temps qui s'affiche pareil que le record compte comme égalé, pas "presque".
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(data.bestTime), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie...") },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current)), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie...") },
                     new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount), nearRecordMessage = Loc.T("Si proche de ton record d'éliminations...") },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached), nearRecordMessage = Loc.T("Un cheveu de ton meilleur niveau...") },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun), nearRecordMessage = Loc.T("Tout près de ton record d'Or...") },
@@ -1869,12 +1872,31 @@ public class GameUI : MonoBehaviour
     // contour énorme, qui déborde d'une lettre à l'autre, sur un petit texte (ex. 22pt, l'infobulle de description
     // du menu Pause) - zoom x3 à l'appui, les lettres fusionnaient littéralement entre elles. `outlineWidth`
     // paramétrable (défaut 0,16 inchangé pour tous les appels existants), l'infobulle Pause passe désormais 0,06.
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §2.8) - `text.fontMaterial` (au lieu de `fontSharedMaterial`)
+    // fait cloner à TMP un NOUVEAU Material à chaque appel sur un texte qui n'en a pas encore un à lui ; si les
+    // tuiles de la grille du menu Pause/Victoire/Défaite sont réinstanciées (pas réutilisées) à chaque ouverture,
+    // ces clones s'accumulent sans jamais être libérés avant le prochain chargement de scène (petite fuite mémoire
+    // sur une longue session). Seules 2 combinaisons (police, largeur de contour) existent réellement dans tout le
+    // jeu (0,16 par défaut, 0,06 pour l'infobulle du menu Pause) : un seul Material partagé est créé par combinaison
+    // la première fois qu'elle est demandée, puis réutilisé par TOUS les textes suivants via `fontSharedMaterial`
+    // (jamais `fontMaterial`, qui redéclencherait un clone individuel).
+    private static readonly Dictionary<(TMP_FontAsset font, float width), Material> _outlineMaterialCache = new Dictionary<(TMP_FontAsset, float), Material>();
+    private static readonly Color32 OutlineColor = new Color32(0xF5, 0xEC, 0xD6, 0xFF);
+
     public static void ApplyReadableOutline(TextMeshProUGUI text, float outlineWidth = 0.16f)
     {
-        if (text == null) return;
-        text.fontMaterial.EnableKeyword("OUTLINE_ON");
-        text.outlineWidth = outlineWidth;
-        text.outlineColor = new Color32(0xF5, 0xEC, 0xD6, 0xFF);
+        if (text == null || text.font == null) return;
+
+        var key = (text.font, outlineWidth);
+        if (!_outlineMaterialCache.TryGetValue(key, out Material shared) || shared == null)
+        {
+            shared = new Material(text.fontSharedMaterial);
+            shared.EnableKeyword("OUTLINE_ON");
+            shared.SetFloat(ShaderUtilities.ID_OutlineWidth, outlineWidth);
+            shared.SetColor(ShaderUtilities.ID_OutlineColor, OutlineColor);
+            _outlineMaterialCache[key] = shared;
+        }
+        text.fontSharedMaterial = shared;
     }
 
     private Color GetTileTint(UpgradeBranch branch)
@@ -1901,7 +1923,7 @@ public class GameUI : MonoBehaviour
         "Tu as tout donné à cette branche. Littéralement.",
         "Plus rien à débloquer ici — change de personnage pour la suite.",
         "Cette branche n'a plus de secret pour toi.",
-        "Arbre et Réputation à fond. Change de perso si tu veux du neuf.",
+        "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.",
     };
 
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
@@ -2214,7 +2236,7 @@ public class GameUI : MonoBehaviour
             {
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = runTime, best = data.bestTime, newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)) },
+                    new RecordCheck { current = runTime, best = MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)) },
                     new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount) },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached) },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun) },
@@ -2341,15 +2363,234 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    public void SetHUDVisible(bool visible)
+    // AJOUTÉ (2026-10-19, retour utilisateur : "quand on peut choisir une upgrade dans le level up panel, je veux
+    // que tu affiche quand même la barre de vie qu'on a... parce que si il y a l'upgrade Soin qui tombe, le joueur
+    // ne peut pas savoir à l'avance combien de vie il a") - keepHealthBar ne cache PAS tout _hudPanel (ce qui
+    // cacherait aussi "Health", son enfant direct - voir HudStyler.ApplyBars) : il garde le panneau actif mais
+    // désactive individuellement chaque enfant SAUF "Health". Utilisé uniquement par LevelUpManager ; les écrans de
+    // fin de partie / le menu pause (autres appelants, visible=false sans ce paramètre) continuent de tout cacher.
+    private GameObject _healthHudGroup;
+    private bool _hudHealthOnlyMode;
+
+    public void SetHUDVisible(bool visible, bool keepHealthBar = false)
     {
-        if (_hudPanel != null)
-            _hudPanel.SetActive(visible);
+        if (_hudPanel == null) return;
+
+        if (visible)
+        {
+            if (_hudHealthOnlyMode)
+            {
+                foreach (Transform child in _hudPanel.transform)
+                    child.gameObject.SetActive(true);
+                _hudHealthOnlyMode = false;
+            }
+            _hudPanel.SetActive(true);
+            return;
+        }
+
+        if (!keepHealthBar)
+        {
+            _hudPanel.SetActive(false);
+            return;
+        }
+
+        if (_healthHudGroup == null)
+        {
+            Transform t = _hudPanel.transform.Find("Health");
+            _healthHudGroup = t != null ? t.gameObject : null;
+        }
+
+        _hudPanel.SetActive(true);
+        _hudHealthOnlyMode = true;
+        foreach (Transform child in _hudPanel.transform)
+            child.gameObject.SetActive(child.gameObject == _healthHudGroup);
+    }
+
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §1.11 "Ultime sans aucun retour visuel à l'écran") - avant,
+    // cette méthode ne faisait qu'un Debug.Log("ULT ACTIF") : rien ne distinguait à l'écran les 3 secondes où les
+    // ennemis sont ralentis (CrystalSystem._slowDuration) du reste du jeu. Teinte plein écran bleu-cristal (couleur
+    // de la branche Ultime/Cristal dans tout le reste du jeu), construite en code une seule fois (même principe que
+    // EnsureChallengeIntroBuilt juste au-dessus : zéro asset/objet de scène à préparer à la main) : un flash net à
+    // l'activation puis un palier doux qui respire légèrement tant que l'effet dure, et un fondu de sortie à la fin.
+    private RectTransform _ultVfxRoot;
+    private Image _ultVfxImage;
+    private Coroutine _ultVfxRoutine;
+    private static readonly Color UltVfxColor = new Color(0.55f, 0.85f, 1f);
+
+    private void EnsureUltimateVFXBuilt()
+    {
+        if (_ultVfxRoot != null) return;
+        if (_hudPanel == null) return;
+        RectTransform hudRect = _hudPanel.GetComponent<RectTransform>();
+        if (hudRect == null || !(hudRect.parent is RectTransform canvasRoot)) return;
+
+        GameObject rootGO = new GameObject("UltimateVFX", typeof(RectTransform), typeof(Image));
+        _ultVfxRoot = (RectTransform)rootGO.transform;
+        _ultVfxRoot.SetParent(canvasRoot, false);
+        _ultVfxRoot.anchorMin = Vector2.zero;
+        _ultVfxRoot.anchorMax = Vector2.one;
+        _ultVfxRoot.offsetMin = _ultVfxRoot.offsetMax = Vector2.zero;
+        _ultVfxRoot.SetAsLastSibling();
+
+        _ultVfxImage = rootGO.GetComponent<Image>();
+        _ultVfxImage.color = new Color(UltVfxColor.r, UltVfxColor.g, UltVfxColor.b, 0f);
+        _ultVfxImage.raycastTarget = false;
+        rootGO.SetActive(false);
     }
 
     public void ShowUltEffect(bool show)
     {
-        Debug.Log(show ? "ULT ACTIF — ennemis ralentis !" : "ULT terminé");
+        EnsureUltimateVFXBuilt();
+        if (_ultVfxRoot == null) return;
+
+        if (_ultVfxRoutine != null) StopCoroutine(_ultVfxRoutine);
+        _ultVfxRoutine = StartCoroutine(show ? UltimateVFXInRoutine() : UltimateVFXOutRoutine());
+    }
+
+    // MODIFIÉ (2026-10-19, retour utilisateur : "l'effet dure trop longtemps, et quand j'ai level up en même temps
+    // que cet effet de couleur bleu, l'effet de couleur est toujours là alors qu'il y a le panel") - 2 corrections :
+    // (1) la respiration ne boucle plus indéfiniment jusqu'à ce que CrystalSystem appelle ShowUltEffect(false) à la
+    // fin des 3s du ralenti (_slowDuration) - elle se limite désormais à une courte tenue puis s'éteint TOUTE SEULE
+    // (~1,3s au total, flash+palier+tenue+fondu compris), bien avant la fin du ralenti ; (2) tout le minutage utilise
+    // désormais Time.unscaledDeltaTime/unscaledTime au lieu de Time.deltaTime/Time.time - le LevelUpManager pose
+    // Time.timeScale=0 pendant le choix de carte, ce qui gelait l'ancienne boucle (Time.deltaTime=0) et laissait la
+    // teinte bleue visible à l'écran tant que le joueur n'avait pas choisi, PAR-DESSUS/DERRIÈRE le panel - en temps
+    // non affecté par la pause, l'effet termine son propre cycle et s'éteint même si un level-up survient en même
+    // temps, sans dépendre d'aucun couplage direct avec LevelUpManager.
+    private IEnumerator UltimateVFXInRoutine()
+    {
+        _ultVfxRoot.gameObject.SetActive(true);
+        // Flash net (0 -> 0.32) en 0.12s, puis retombe sur un palier doux (0.14) en 0.25s de plus - évite un
+        // aplat plat pendant toute la durée du ralenti, sans jamais gêner la lisibilité des ennemis/projectiles.
+        const float FlashPeak = 0.32f, RestingAlpha = 0.14f, HoldDuration = 0.6f;
+        float t = 0f;
+        while (t < 0.12f)
+        {
+            t += Time.unscaledDeltaTime;
+            SetUltVfxAlpha(Mathf.Lerp(0f, FlashPeak, t / 0.12f));
+            yield return null;
+        }
+        t = 0f;
+        while (t < 0.25f)
+        {
+            t += Time.unscaledDeltaTime;
+            SetUltVfxAlpha(Mathf.Lerp(FlashPeak, RestingAlpha, t / 0.25f));
+            yield return null;
+        }
+        // Courte respiration (tenue fixe, plus une boucle infinie) puis extinction automatique.
+        t = 0f;
+        while (t < HoldDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = RestingAlpha + 0.03f * Mathf.Sin(Time.unscaledTime * 3f);
+            SetUltVfxAlpha(k);
+            yield return null;
+        }
+        yield return UltimateVFXOutRoutine();
+        _ultVfxRoutine = null;
+    }
+
+    private IEnumerator UltimateVFXOutRoutine()
+    {
+        float start = _ultVfxImage != null ? _ultVfxImage.color.a : 0f;
+        float t = 0f;
+        while (t < 0.3f)
+        {
+            t += Time.unscaledDeltaTime;
+            SetUltVfxAlpha(Mathf.Lerp(start, 0f, t / 0.3f));
+            yield return null;
+        }
+        SetUltVfxAlpha(0f);
+        if (_ultVfxRoot != null) _ultVfxRoot.gameObject.SetActive(false);
+        _ultVfxRoutine = null;
+    }
+
+    private void SetUltVfxAlpha(float a)
+    {
+        if (_ultVfxImage != null) _ultVfxImage.color = new Color(UltVfxColor.r, UltVfxColor.g, UltVfxColor.b, a);
+    }
+
+    // AJOUTÉ (2026-10-20, chantier satisfaction - comparaison aux autres survivors) - avant ce correctif, se faire
+    // toucher ne produisait RIEN à l'écran à part le chiffre de dégâts et la barre de vie qui bouge : aucun retour
+    // visuel immédiat sur le coup lui-même (contrairement aux ennemis, qui ont déjà un flash de teinte - voir
+    // EnemyBase.TriggerHitFlash). Un flash rouge plein écran au moment de l'impact est un standard quasi universel
+    // du genre (Vampire Survivors, Brotato, Halls of Torment le font tous) - MÊME construction que l'effet de
+    // l'Ultime juste au-dessus (flash net + fondu de sortie, construit en code, un seul Image réutilisé), mais
+    // l'intensité et la durée du fondu de sortie sont PROPORTIONNELLES à la gravité du coup (`severity01` = dégâts
+    // / PV max) : un chip de dégâts reste discret, un coup qui retire une grosse part de la vie se voit nettement -
+    // sans jamais aller jusqu'à gêner la lisibilité (plafond de _peakAlpha ci-dessous). Volontairement SANS secousse
+    // de caméra (voir CameraShakeFX, header : réservée aux gros moments, jamais aux dégâts courants reçus en combat
+    // normal - un choix déjà fait et documenté, pas remis en cause ici).
+    private RectTransform _damageVfxRoot;
+    private Image _damageVfxImage;
+    private Coroutine _damageVfxRoutine;
+    private static readonly Color DamageVfxColor = new Color(0.75f, 0.05f, 0.05f);
+
+    private void EnsureDamageVFXBuilt()
+    {
+        if (_damageVfxRoot != null) return;
+        if (_hudPanel == null) return;
+        RectTransform hudRect = _hudPanel.GetComponent<RectTransform>();
+        if (hudRect == null || !(hudRect.parent is RectTransform canvasRoot)) return;
+
+        GameObject rootGO = new GameObject("DamageVFX", typeof(RectTransform), typeof(Image));
+        _damageVfxRoot = (RectTransform)rootGO.transform;
+        _damageVfxRoot.SetParent(canvasRoot, false);
+        _damageVfxRoot.anchorMin = Vector2.zero;
+        _damageVfxRoot.anchorMax = Vector2.one;
+        _damageVfxRoot.offsetMin = _damageVfxRoot.offsetMax = Vector2.zero;
+        _damageVfxRoot.SetAsLastSibling();
+
+        _damageVfxImage = rootGO.GetComponent<Image>();
+        _damageVfxImage.color = new Color(DamageVfxColor.r, DamageVfxColor.g, DamageVfxColor.b, 0f);
+        _damageVfxImage.raycastTarget = false;
+        rootGO.SetActive(false);
+    }
+
+    // severity01 : dégâts de ce coup / PV max du joueur (0 = chip minime, 1 = perte totale/quasi-totale en un coup).
+    public void FlashDamageVignette(float severity01)
+    {
+        EnsureDamageVFXBuilt();
+        if (_damageVfxRoot == null) return;
+
+        severity01 = Mathf.Clamp01(severity01);
+        if (_damageVfxRoutine != null) StopCoroutine(_damageVfxRoutine);
+        _damageVfxRoutine = StartCoroutine(DamageVFXRoutine(severity01));
+    }
+
+    private IEnumerator DamageVFXRoutine(float severity01)
+    {
+        _damageVfxRoot.gameObject.SetActive(true);
+
+        // Plafonné à 0,5 même pour le pire coup possible : un flash plus fort commencerait à gêner la lecture du
+        // champ de bataille juste après un gros coup, l'instant où le joueur a justement le plus besoin de voir.
+        float peakAlpha = Mathf.Lerp(0.1f, 0.5f, severity01);
+        float outDuration = Mathf.Lerp(0.15f, 0.4f, severity01);
+        const float InDuration = 0.05f;
+
+        float t = 0f;
+        while (t < InDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            SetDamageVfxAlpha(Mathf.Lerp(0f, peakAlpha, t / InDuration));
+            yield return null;
+        }
+        t = 0f;
+        while (t < outDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            SetDamageVfxAlpha(Mathf.Lerp(peakAlpha, 0f, t / outDuration));
+            yield return null;
+        }
+
+        SetDamageVfxAlpha(0f);
+        _damageVfxRoot.gameObject.SetActive(false);
+        _damageVfxRoutine = null;
+    }
+
+    private void SetDamageVfxAlpha(float a)
+    {
+        if (_damageVfxImage != null) _damageVfxImage.color = new Color(DamageVfxColor.r, DamageVfxColor.g, DamageVfxColor.b, a);
     }
 
     public void UpdateDashCooldown(float percent)
@@ -2525,7 +2766,7 @@ public class GameUI : MonoBehaviour
     {
         _hudGold = amount;
         if (_goldText != null)
-            _goldText.text = Loc.F("Or : {0}", amount);
+            _goldText.text = Loc.F("Or : {0}", Loc.Int(amount));
     }
 
     public void UpdateKillCount(int kills)
@@ -2616,6 +2857,115 @@ public class GameUI : MonoBehaviour
         if (_bossHPSlider != null) _bossHPSlider.value = 1f;
         if (_bossIcon != null) _bossIcon.SetActive(true);
         if (_bossHPBar != null) { HudBar hb = _bossHPBar.GetComponent<HudBar>(); if (hb != null) hb.PlayIntro(); }   // la barre se remplit à l'apparition
+
+        PlayBossRevealMask();
+    }
+
+    // CORRIGÉ (2026-10-20, retour utilisateur : "tu as mis tout en haut de l'écran, je ne t'ai jamais dis de
+    // changer la disposition, remet à droite et de haut en bas") - 1re version : un `BossRevealMask` posé EN DUR
+    // DANS LA SCÈNE, parent intercalé entre BossGroup et BossNameText/BossIcon/BossHPBar. Cause du bug : HudStyler
+    // retrouve et positionne ces 3 éléments par un CHEMIN EXACT (`Find<Slider>("BossGroup/BossHPBar")`, etc. - voir
+    // HudStyler.ApplyBoss/ApplyMiniBoss) qui suppose qu'ils sont des enfants DIRECTS de BossGroup ; les avoir
+    // intercalés sous un parent intermédiaire a cassé ce chemin, donc HudStyler ne les a plus jamais stylés
+    // (barre verticale sur le bord droit, icône en haut à droite) - ils sont restés à leurs valeurs d'ÉDITION
+    // (mortes, voir la mémoire du projet "hud-bars-repositioned-at-runtime-by-hudstyler"), qui se trouvaient en
+    // plus être des valeurs PÉRIMÉES d'une session antérieure, d'où l'atterrissage en haut de l'écran.
+    //
+    // Corrigé en construisant le masque ENTIÈREMENT EN CODE, à la toute première apparition d'un boss - donc
+    // BIEN APRÈS que HudStyler ait déjà positionné BossIcon/BossHPBar à leur vraie place (HudStyler tourne une
+    // fois au lancement de la scène, dans Start() ; un boss n'apparaît que des dizaines de secondes plus tard).
+    // `RectTransformUtility.CalculateRelativeRectTransformBounds` lit les bornes RÉELLES de ces 2 éléments tels
+    // que HudStyler les a posés - zéro valeur recopiée à la main, donc zéro risque de désynchronisation si
+    // HudStyler change un jour ses réglages. `SetParent(mask, true)` (worldPositionStays=true) laisse Unity
+    // recalculer lui-même le nouvel ancrage pour une position ÉCRAN inchangée - aucune compensation manuelle.
+    // BossNameText (en haut-CENTRE de l'écran, donc spatialement séparé de l'icône/la barre à droite) n'est PAS
+    // inclus dans ce masque : un rectangle couvrant les 2 zones à la fois engloberait une bonne partie du HUD du
+    // haut (Or, Éliminations, chip de défi) et risquerait de les faire disparaître pendant la révélation.
+    private RectTransform _bossRevealMask;
+    private float _bossRevealFullHeight;
+    private bool _bossRevealMaskBuildAttempted;
+    private Coroutine _bossRevealRoutine;
+    private const float BossRevealDuration = 0.9f;   // "2s max" demandé - volontairement plus court, net sans traîner
+    private const float BossRevealStartFraction = 0.14f; // hauteur déjà visible au tout 1er instant ("on voit que le haut")
+
+    private void EnsureBossRevealMaskBuilt()
+    {
+        if (_bossRevealMaskBuildAttempted) return;
+        if (_bossIcon == null || _bossHPBar == null) return;
+
+        RectTransform iconRt = _bossIcon.GetComponent<RectTransform>();
+        RectTransform barRt = _bossHPBar.GetComponent<RectTransform>();
+        if (iconRt == null || barRt == null) return;
+        RectTransform parent = iconRt.parent as RectTransform;
+        if (parent == null || barRt.parent != parent) return; // les 2 doivent partager le même parent direct (BossGroup)
+
+        _bossRevealMaskBuildAttempted = true;
+
+        Bounds union = RectTransformUtility.CalculateRelativeRectTransformBounds(parent, iconRt);
+        union.Encapsulate(RectTransformUtility.CalculateRelativeRectTransformBounds(parent, barRt));
+
+        const float Margin = 6f;
+        float left = union.min.x - Margin, right = union.max.x + Margin;
+        float bottom = union.min.y - Margin, top = union.max.y + Margin;
+        float width = right - left;
+        float height = top - bottom;
+        if (width <= 0f || height <= 0f) return;
+
+        GameObject maskGO = new GameObject("BossRevealMask", typeof(RectTransform));
+        RectTransform maskRt = (RectTransform)maskGO.transform;
+        maskRt.SetParent(parent, false);
+        maskRt.anchorMin = maskRt.anchorMax = new Vector2(0.5f, 0.5f); // même pivot que BossGroup (son centre = centre écran)
+        maskRt.pivot = new Vector2(0.5f, 1f);                         // piloté depuis le HAUT : le bas bouge, le haut jamais
+        maskRt.sizeDelta = new Vector2(width, height);
+        maskRt.anchoredPosition = new Vector2((left + right) * 0.5f, top);
+        maskGO.AddComponent<RectMask2D>();
+
+        // worldPositionStays=true : Unity recalcule lui-même l'ancrage de chaque enfant pour que sa position à
+        // L'ÉCRAN ne bouge pas d'un pixel - aucune compensation manuelle, contrairement à la 1re version de ce correctif.
+        iconRt.SetParent(maskRt, true);
+        barRt.SetParent(maskRt, true);
+
+        _bossRevealMask = maskRt;
+        _bossRevealFullHeight = height;
+    }
+
+    private void PlayBossRevealMask()
+    {
+        EnsureBossRevealMaskBuilt();
+        if (_bossRevealMask == null) return;
+        if (_bossRevealRoutine != null) StopCoroutine(_bossRevealRoutine);
+        _bossRevealRoutine = StartCoroutine(BossRevealMaskRoutine());
+    }
+
+    // "Rideau qui se lève" : la hauteur du masque grandit depuis un mince filet jusqu'à sa hauteur complète - le
+    // pivot HAUT (voir EnsureBossRevealMaskBuilt) fait que le bord du HAUT ne bouge jamais, seul le bord du BAS
+    // révélé descend. EaseOutCubic (déjà utilisé ailleurs dans ce fichier pour les mêmes raisons) : net au départ,
+    // se pose en douceur à l'arrivée.
+    private System.Collections.IEnumerator BossRevealMaskRoutine()
+    {
+        SetBossRevealFraction(BossRevealStartFraction);
+
+        float t = 0f;
+        while (t < BossRevealDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / BossRevealDuration);
+            float eased = 1f - Mathf.Pow(1f - p, 3f);
+            SetBossRevealFraction(Mathf.Lerp(BossRevealStartFraction, 1f, eased));
+            yield return null;
+        }
+
+        SetBossRevealFraction(1f);
+        _bossRevealRoutine = null;
+    }
+
+    private void SetBossRevealFraction(float visibleFraction)
+    {
+        if (_bossRevealMask == null) return;
+        visibleFraction = Mathf.Clamp01(visibleFraction);
+        Vector2 size = _bossRevealMask.sizeDelta;
+        size.y = _bossRevealFullHeight * visibleFraction;
+        _bossRevealMask.sizeDelta = size;
     }
 
     public void UpdateBossHP(float current, float max)
@@ -2711,7 +3061,16 @@ public class GameUI : MonoBehaviour
 
     public void ShowPausePanel(bool show)
     {
-        if (_pausePanel != null) _pausePanel.SetActive(show);
+        if (_pausePanel != null)
+        {
+            _pausePanel.SetActive(show);
+            // AJOUTÉ (2026-10-20, retour utilisateur : "même réflexion pour le pause panel, le [bleu de l'Ultime]
+            // passe dessus, je veux que ce soit en dessous") - même correctif que LevelUpManager.DisplayLevelUp()
+            // (voir son commentaire) : remonte le panel en DERNIER enfant du Canvas à chaque ouverture, pour qu'il
+            // reste toujours au-dessus de tout effet plein écran déjà présent (dont GameUI._ultVfxRoot, qui se
+            // place lui-même en dernier enfant à sa création) - le bleu, s'il traîne encore, reste caché derrière.
+            if (show) _pausePanel.transform.SetAsLastSibling();
+        }
         SettingsApplier.SetPauseDuck(show);          // le son du jeu baisse légèrement pendant la pause
 
         if (show)
@@ -2725,7 +3084,9 @@ public class GameUI : MonoBehaviour
 
             if (_pauseStatsText != null)
             {
-                _pauseStatsText.text = Loc.F("Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", mins, secs, kills, gold);
+                // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "la pause affiche Gold : dans une clé
+                // française, un anglicisme") - "Gold" -> "Or", et Loc.Int pour le séparateur de milliers.
+                _pauseStatsText.text = Loc.F("Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", mins, secs, kills, Loc.Int(gold));
             }
 
             if (_pauseUpgradesText != null && LevelUpManager.Instance != null)

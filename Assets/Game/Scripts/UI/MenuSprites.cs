@@ -78,6 +78,57 @@ public static class MenuSprites
         }
     }
 
+    // AJOUTÉ (2026-10-20, refonte de la page Accueil) - planche de bois veiné procédurale, même technique que
+    // MenuTabBarFX.BuildWoodSprite (dégradé vertical + 2 couches de bruit de Perlin étirées horizontalement +
+    // légère vignette aux bords), rendue publique et redimensionnable ici pour que le nouveau panneau de la page
+    // Accueil (plus haut qu'une simple barre d'onglets) partage le même bois que le pied de page, sans dupliquer
+    // l'algorithme à l'identique dans 2 fichiers - un seul endroit à retoucher si le grain doit changer un jour.
+    public static Sprite Wood(Color top, Color bottom, float grain, int w = 512, int h = 256)
+    {
+        Texture2D tex = NewTex(w, h);
+        for (int y = 0; y < h; y++)
+        {
+            float v = y / (h - 1f);
+            Color baseC = Color.Lerp(bottom, top, Smooth(0f, 1f, v));
+            for (int x = 0; x < w; x++)
+            {
+                float u = x / (w - 1f);
+                float n1 = Mathf.PerlinNoise(u * 6f + 3.1f, v * 9f + 0.7f);
+                float n2 = Mathf.PerlinNoise(u * 22f + 11.3f, v * 34f + 5.9f);
+                float streak = (n1 * 0.65f + n2 * 0.35f - 0.5f) * 2f;
+                float k = 1f + streak * 0.22f * grain;
+                float edge = Mathf.Min(u, 1f - u);
+                float vig = (0.86f + 0.14f * Smooth(0f, 0.12f, edge)) * k;
+                tex.SetPixel(x, y, new Color(baseC.r * vig, baseC.g * vig, baseC.b * vig, 1f));
+            }
+        }
+        tex.Apply();
+        Sprite s = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        s.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        return s;
+    }
+
+    // AJOUTÉ (2026-10-20, carrousel de difficulté) - dégradé de ciel vertical simple (plus sombre en haut, plus
+    // clair vers l'horizon en bas), teinté par la couleur donnée - sert de prévisualisation jour/crépuscule/nuit en
+    // attendant le vrai diorama 3D (voir DifficultyCarousel.cs, qui calcule cette couleur à partir de la VRAIE
+    // teinte de lumière du palier en jeu, DifficultyTiers.LightColor).
+    public static Sprite SkyGradient(Color baseColor)
+    {
+        const int w = 4, h = 96;
+        Texture2D tex = NewTex(w, h);
+        for (int y = 0; y < h; y++)
+        {
+            float v = y / (h - 1f); // 0 = bas (horizon), 1 = haut (zénith)
+            Color c = Color.Lerp(baseColor * 1.25f, baseColor * 0.6f, Smooth(0f, 1f, v));
+            c.a = 1f;
+            for (int x = 0; x < w; x++) tex.SetPixel(x, y, c);
+        }
+        tex.Apply();
+        Sprite s = Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        s.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        return s;
+    }
+
     // ---- fabrication ----------------------------------------------------------------------------------------
 
     private static Sprite MakeLeaf(float length, float width)

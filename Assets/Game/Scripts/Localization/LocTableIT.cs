@@ -83,7 +83,7 @@ public static class LocTableIT
         { "Réinitialiser", "Ripristina" }, { "Page « {0} » réinitialisée.", "Pagina «{0}» ripristinata." }, { "TOUT RÉINITIALISER ?", "RIPRISTINARE TUTTO?" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "Tutte le impostazioni e tutti i tasti tornano ai valori predefiniti." },
         { "Tout réinitialiser", "Ripristina tutto" }, { "Tous les paramètres ont été réinitialisés.", "Tutte le impostazioni sono state ripristinate." },
-        { "QUITTER LE JEU ?", "USCIRE DAL GIOCO?" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "Il gioco verrà chiuso. Le tue impostazioni sono salvate." },
+        { "QUITTER LE JEU ?", "USCIRE DAL GIOCO?" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "Il gioco verrà chiuso. Le tue impostazioni sono salvate." },
         { "Quitter", "Esci" }, { "Disposition « {0} » appliquée.", "Layout «{0}» applicato." }, { "OUI", "SÌ" }, { "NON", "NO" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "Solo frecce" },
 
@@ -95,7 +95,7 @@ public static class LocTableIT
         { "Un cheveu de ton meilleur niveau...", "A un soffio dal tuo livello migliore..." }, { "Nouveau record d'Or en une partie : {0} !", "Nuovo record d'oro in una partita: {0}!" },
         { "Tout près de ton record d'Or...", "Il record d'oro era a portata di mano..." }, { "Nouveau personnage débloqué : {0} !", "Nuovo personaggio sbloccato: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Hai dato tutto a questo ramo. Letteralmente." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Qui non resta più niente da sbloccare: cambia personaggio per andare avanti." },
-        { "Cette branche n'a plus de secret pour toi.", "Questo ramo non ha più segreti per te." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Albero e Reputazione al massimo. Cambia personaggio se vuoi qualcosa di nuovo." },
+        { "Cette branche n'a plus de secret pour toi.", "Questo ramo non ha più segreti per te." }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "Albero e Reputazione al massimo. Cambia personaggio se vuoi qualcosa di nuovo." },
         { "Or", "monete d'oro" }, { "Éclats", "frammenti" }, { "Encore {0} {1} pour débloquer {2}", "Ancora {0} {1} per sbloccare {2}" },
         { "De quoi débloquer {0} dès maintenant !", "Puoi già sbloccare {0}!" }, { "Tentative n°{0}", "Tentativo n. {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Sopravvivenza {0:00}:{1:00}    ·    Titani {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Sopravvivenza {0:00}:{1:00}    ·    Uccisioni {2}    ·    Livello {3}    ·    {4}" },
@@ -115,7 +115,7 @@ public static class LocTableIT
         { "Rien pris en cours de route, et pourtant tu es là.", "Niente raccolto lungo la strada, eppure eccoti qui." },
         { "Pas eu le temps de récupérer la moindre compétence.", "Non c'è stato il tempo di raccogliere nemmeno un'abilità." },
         { "Aucune compétence récupérée cette fois.", "Nessuna abilità raccolta stavolta." }, { "VICTOIRE !", "VITTORIA!" },
-        { "FIN DE PARTIE", "FINE PARTITA" }, { "DÉFAITE", "SCONFITTA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "Tempo: {0:00}:{1:00}\nNemici uccisi: {2}\nOro: {3}" },
+        { "FIN DE PARTIE", "FINE PARTITA" }, { "DÉFAITE", "SCONFITTA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "Tempo: {0:00}:{1:00}\nNemici uccisi: {2}\nOro: {3}" },
         { "Or : {0}", "Oro: {0}" }, { "Éliminations : {0}", "Uccisioni: {0}" }, { "Niv. {0}", "Liv. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -125,7 +125,7 @@ public static class LocTableIT
         { "Garder 30% de vie jusqu'au boss 2", "Resta sopra il 30% di salute fino al boss 2" }, { "Double Chasse", "Doppia caccia" },
         { "Vaincre 2 boss dans la même partie", "Sconfiggi 2 boss nella stessa partita" }, { "Ascension Rapide", "Ascesa rapida" },
         { "Niveau 20 avant la 10e minute", "Livello 20 prima del 10° minuto" }, { "Sans Cristal", "Senza cristallo" }, { "Sans Ultime jusqu'au boss 2", "Niente suprema fino al boss 2" },
-        { "Sans-Faute", "Impeccabile" }, { "Aucun dégât jusqu'au boss 1", "Nessun danno fino al boss 1" }, { "Éclair", "Fulmineo" },
+        { "Résilience", "Resilienza" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Mantieni oltre il 50% di vita fino al boss 1" }, { "Éclair", "Fulmineo" },
         { "Vaincre un boss en moins de 30s", "Sconfiggi un boss in meno di 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 3000 Or ramassé", "Raccogli almeno 3000 monete d'oro" },
         { "Puissance Absolue", "Potere assoluto" }, { "Niveau 30 dans la même partie", "Livello 30 nella stessa partita" },
         { "Or x{0}", "Oro x{0}" }, { "Niv. {0}/{1}", "Liv. {0}/{1}" }, { "En cours", "In corso" }, { "{0}/3000 Or", "{0}/3000 oro" },
@@ -148,9 +148,9 @@ public static class LocTableIT
         { "Bouclier de Mana", "Scudo di mana" }, { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "Assorbe automaticamente 1 proiettile nemico ogni 8 secondi." },
         { "Impulsion Nova", "Impulso Nova" }, { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "Se la Nova innescata da un assorbimento uccide almeno un nemico, la ricarica dello scatto si azzera all'istante." },
         { "Dash Amélioré", "Scatto potenziato" }, { "Réduit le temps de recharge du dash.", "Riduce il tempo di ricarica dello scatto." },
-        { "Maîtrise du Cristal", "Maestria del cristallo" }, { "Réduit le nombre de charges nécessaires pour l'ultime.", "Riduce il numero di cariche necessarie per la suprema." },
+        { "Maîtrise du Cristal", "Maestria del cristallo" }, { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "Riduce di 1 il numero di cariche di Nova necessarie per la tua Suprema (da 6 a 5)" },
         { "Nova Étendue", "Nova estesa" }, { "Augmente le rayon de la Nova de Cristal.", "Aumenta il raggio della Nova di cristallo." },
-        { "Dash Fantôme", "Scatto fantasma" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Sblocca un clone spettrale, attivabile con un tasto dedicato: attira i nemici vicini per 2 secondi." },
+        { "Clone Spectral", "Clone Spettrale" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Sblocca un clone spettrale, attivabile con un tasto dedicato: attira i nemici vicini per 2 secondi." },
         { "TALENT UNIQUE", "TALENTO UNICO" }, { "NIVEAU {0} / {1}", "LIVELLO {0} / {1}" }, { "débloqué", "sbloccato" },
         { "niveau 1", "livello 1" }, { "NIV {0}", "LIV {0}" }, { "ACQUIS", "ACQUISITO" }, { "NIVEAU MAX", "LIVELLO MAX" },
         { "Ce talent est actif.", "Questo talento è attivo." }, { "Cette compétence est au maximum.", "Questa abilità è al massimo." },
@@ -175,7 +175,7 @@ public static class LocTableIT
         { "Terre Calcinée", "Terra bruciata" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "FUSIONE — Palla di fuoco + Fango: zone di cenere ardente, molto più grandi e devastanti, compaiono in cerchio intorno a te." },
         { "Orbes Foudroyants", "Sfere folgoranti" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSIONE — Orbitali + Fulmine a catena: i tuoi frammenti in orbita ora scatenano un fulmine a catena a ogni contatto." },
         { "Orbes Jumeaux", "Sfere gemelle" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSIONE — Colpo doppio + Sfera rimbalzante: il tuo colpo base si sdoppia in due sfere che rimbalzano senza fine." },
-        { "Aura", "Aura" }, { "Zone Aura", "Zona aura" }, { "Orbe Rebondissant", "Sfera rimbalzante" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lancia sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono." },
+        { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Crea un campo permanente intorno a te che danneggia e rallenta i nemici nelle vicinanze" }, { "Orbe Rebondissant", "Sfera rimbalzante" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lancia sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono." },
         { "Dégâts +", "Danni +" }, { "+20% aux dégâts", "+20% ai danni" }, { "Double Tir", "Colpo doppio" }, { "Tire 2 projectiles en rafale", "Spara 2 proiettili a raffica" },
         { "Boule de Feu", "Palla di fuoco" }, { "Lance une boule de feu", "Lancia una palla di fuoco" }, { "Cadence+", "Cadenza+" },
         { "+20% à la cadence de tir", "+20% alla cadenza di tiro" }, { "Soin", "Cura" }, { "Restaure 50% des HP maximum", "Ripristina il 50% dei PS massimi" },
@@ -250,7 +250,7 @@ public static class LocTableIT
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "La prossima sarà quella buona." }, { "Une défaite de plus vers la victoire.", "Una sconfitta in più verso la vittoria." },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "Torna a combattere. È così che si migliora." }, { "Relève-toi, c'est pas fini.", "Rialzati, non è finita." },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "Torna a combattere. È così che si migliora." }, { "Relève-toi, c'est pas fini.", "Rialzati, non è finita." },
         { "Tu as le niveau pour la suivante.", "Hai la stoffa per la prossima." }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "Sai già cosa non ha funzionato. Correggilo." },
         { "Ça ne s'est pas joué à grand-chose.", "È mancato davvero poco." }, { "Tu étais proche. Refais-en une.", "C'eri quasi. Fanne un'altra." },
         { "Il ne t'a laissé aucune ouverture cette fois.", "Stavolta non ti ha lasciato nemmeno uno spiraglio." }, { "Un adversaire coriace. Il faudra revenir plus fort.", "Un avversario tosto. Dovrai tornare più forte." },
@@ -277,5 +277,11 @@ public static class LocTableIT
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "FUSIONE" }, { "Éclat", "frammento" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "MODERATA" }, { "VIOLENT", "SEVERA" }, { "APOCALYPTIQUE", "APOCALITTICA" },
+        { "L'expérience Classique telle qu'elle a toujours été", "L'esperienza Classica esattamente come è sempre stata" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "Mappa più grande, nemici più resistenti e pericolosi, ma Oro e Frammenti più generosi" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "Mappa molto più grande, nemici decisamente più resistenti e pericolosi, Oro e Frammenti al massimo" },
     };
 }

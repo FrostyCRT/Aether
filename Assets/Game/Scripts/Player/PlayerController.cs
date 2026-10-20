@@ -222,8 +222,14 @@ public class PlayerController : MonoBehaviour
 
         PrecomputeGhostMaterials();
 
-        _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetReputationBonusSpeed();
-        _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
+        // AJOUTÉ (2026-10-18, diagnostic complet - audit §2.14) - garde défensive : lancer la scène Game directement
+        // depuis l'éditeur (sans passer par MainMenu, qui crée le singleton) provoquait un NullReferenceException
+        // ici. Usage développeur uniquement (un vrai joueur passe toujours par MainMenu), mais autant ne pas planter.
+        if (MetaProgressionManager.Instance != null)
+        {
+            _moveSpeed += _moveSpeed * MetaProgressionManager.Instance.GetReputationBonusSpeed();
+            _dashCooldown -= MetaProgressionManager.Instance.GetBonusDashCooldown();
+        }
         _dashCooldown = Mathf.Max(_dashCooldown, 1f);
     }
 
@@ -255,7 +261,7 @@ public class PlayerController : MonoBehaviour
     {
         if (GameUI.Instance != null)
         {
-            GameUI.Instance.SetCloneAvailable(MetaProgressionManager.Instance.HasPhantomDash());
+            GameUI.Instance.SetCloneAvailable(MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.HasPhantomDash());
             GameUI.Instance.UpdateCloneCooldown(1f);
         }
 
@@ -544,7 +550,7 @@ public class PlayerController : MonoBehaviour
     private void HandlePhantomCloneInput()
     {
         if (_phantomCloneCooldownTimer > 0f) return;
-        if (!MetaProgressionManager.Instance.HasPhantomDash()) return;
+        if (MetaProgressionManager.Instance == null || !MetaProgressionManager.Instance.HasPhantomDash()) return;
 
         if (GameInput.Down(GameAction.PhantomClone))
         {

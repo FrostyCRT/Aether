@@ -229,7 +229,12 @@ public static class SkillTreeData
         AddNode("crystalMastery", new NodeData
         {
             displayName = "Maîtrise du Cristal",
-            description = "Réduit le nombre de charges nécessaires pour l'ultime",
+            // CORRIGÉ (2026-10-18, diagnostic complet - audit §7 "sans chiffre, contrairement aux autres
+            // compétences") - valeur réelle lue dans CrystalSystem.Start() : _maxCharges 6 -> 5.
+            // CORRIGÉ (2026-10-18, Unity reconnecté en cours de session - vérifié en direct) : "→" (U+2192) n'est
+            // couvert ni par Bangers (langues latines) ni par les polices CJK réduites du jeu (zh/ja/ko) - glyphe
+            // manquant détecté par Tools/build_language_fonts.py après reconnexion d'Unity. Remplacé par "à".
+            description = "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)",
             isUnique = true,
             costLevel1 = 600,
             prerequisites = new[] { "impulsionNova" }, // MODIFIÉ — était "agility"
@@ -253,7 +258,10 @@ public static class SkillTreeData
 
         AddNode("phantomDash", new NodeData
         {
-            displayName = "Dash Fantôme",
+            // CORRIGÉ (2026-10-18, diagnostic complet - audit §7 "le nom ne correspond pas à l'effet") - l'ancien
+            // nom "Dash Fantôme" datait d'une version où le dash lui-même déclenchait l'effet (voir commentaire plus
+            // bas) ; ce n'est plus un dash du tout aujourd'hui, mais un clone invoqué par une touche dédiée.
+            displayName = "Clone Spectral",
             // MODIFIE - l'ancien texte ("le dash laisse un clone") decrivait un
             // declenchement automatique via le dash, qui ne correspond plus a
             // l'implementation actuelle (touche dediee, independante du dash).

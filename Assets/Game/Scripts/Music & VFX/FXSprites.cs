@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Biblioth�que partag�e des effets visuels de combat (BossFX, GroundTelegraphFX, ChargeLaneFX) : sprites g�n�r�s par
-// le code (aucune image � importer), mat�riau commun, courbes d'animation et pose � plat sur le sol.
+// Bibliothèque partagée des effets visuels de combat (BossFX, GroundTelegraphFX, ChargeLaneFX) : sprites générés par
+// le code (aucune image à importer), matériau commun, courbes d'animation et pose à plat sur le sol.
 // Tous les sprites sont BLANCS : la couleur vient du SpriteRenderer (SpriteRenderer.color).
 public static class FXSprites
 {
@@ -60,7 +60,7 @@ public static class FXSprites
         return 1f - u * u;
     }
 
-    // Rebond l�ger : d�passe un peu la valeur finale puis revient.
+    // Rebond léger : dépasse un peu la valeur finale puis revient.
     public static float EaseOutBack(float t, float c1 = 1.5f)
     {
         float c3 = c1 + 1f;
@@ -69,7 +69,7 @@ public static class FXSprites
     }
 
     // ------------------------------------------------------------------
-    // Cr�ation / pose
+    // Création / pose
     // ------------------------------------------------------------------
 
     public static SpriteRenderer MakeRenderer(Transform parent, string objName, Sprite sprite, int sortingOrder, float localY)
@@ -88,7 +88,7 @@ public static class FXSprites
         return sr;
     }
 
-    // Pose le sprite � PLAT sur le sol, � un diam�tre monde donn�, tourn� de angleDeg autour de la verticale.
+    // Pose le sprite à PLAT sur le sol, à un diamètre monde donné, tourné de angleDeg autour de la verticale.
     public static void SetFlat(SpriteRenderer sr, float diameter, float angleDeg)
     {
         float s = diameter / Mathf.Max(0.01f, sr.sprite.bounds.size.x);
@@ -97,7 +97,7 @@ public static class FXSprites
     }
 
     // ------------------------------------------------------------------
-    // Sprites proc�duraux
+    // Sprites procéduraux
     // ------------------------------------------------------------------
 
     private static Texture2D NewTexture(int w, int h, FilterMode filter)
@@ -115,7 +115,7 @@ public static class FXSprites
         return Smooth((r - lo) / 0.01f) * Smooth((hi - r) / 0.01f);
     }
 
-    // Disque doux (halo, �clat, �tincelles).
+    // Disque doux (halo, éclat, étincelles).
     public static Sprite Glow()
     {
         if (_glow != null) return _glow;
@@ -139,7 +139,7 @@ public static class FXSprites
         return _glow;
     }
 
-    // Disque plein, bord l�g�rement adouci (remplissage des zones de danger).
+    // Disque plein, bord légèrement adouci (remplissage des zones de danger).
     public static Sprite Disc()
     {
         if (_disc != null) return _disc;
@@ -161,8 +161,8 @@ public static class FXSprites
         return _disc;
     }
 
-    // Anneau fin dont le trait est centr� � 94 % du rayon du sprite (donc pour que le trait tombe � R, utiliser un
-    // diam�tre de 2R / 0,94), avec un l�ger d�grad� vers l'int�rieur.
+    // Anneau fin dont le trait est centré à 94 % du rayon du sprite (donc pour que le trait tombe à R, utiliser un
+    // diamètre de 2R / 0,94), avec un léger dégradé vers l'intérieur.
     public static Sprite ThinRing()
     {
         if (_thinRing != null) return _thinRing;
@@ -279,7 +279,7 @@ public static class FXSprites
         return _gem;
     }
 
-    // Carr� blanc de 1 x 1 unit� exactement (bandes de la zone de charge : on le met � l'�chelle largeur x longueur).
+    // Carré blanc de 1 x 1 unité exactement (bandes de la zone de charge : on le met à l'échelle largeur x longueur).
     public static Sprite Square()
     {
         if (_square != null) return _square;
@@ -293,7 +293,7 @@ public static class FXSprites
         return _square;
     }
 
-    // Chevron "^" de 1 x 1 unit�, pointe vers le haut du sprite (donc vers l'avant une fois pos� � plat et orient�).
+    // Chevron "^" de 1 x 1 unité, pointe vers le haut du sprite (donc vers l'avant une fois posé à plat et orienté).
     public static Sprite Chevron()
     {
         if (_chevron != null) return _chevron;
@@ -318,7 +318,7 @@ public static class FXSprites
         return _chevron;
     }
 
-    // Pilier de lumi�re : bords doux, s'estompe vers le haut, pivot en bas.
+    // Pilier de lumière : bords doux, s'estompe vers le haut, pivot en bas.
     public static Sprite Pillar()
     {
         if (_pillar != null) return _pillar;

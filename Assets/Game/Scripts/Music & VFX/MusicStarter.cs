@@ -30,6 +30,14 @@ public class MusicStarter : MonoBehaviour
     private AudioClip _defaultClip;
     private Coroutine _fadeCoroutine;
     private bool _started = false;
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §2.9) - volume "normal" de l'AudioSource (le son réel du
+    // joueur passe par le Mixer, cette valeur n'est qu'un point de référence interne pour les fondus de CE script).
+    // Mémorisé UNE SEULE FOIS ici, avant le moindre fondu : SwitchRoutine() lisait auparavant _audioSource.volume
+    // AU MOMENT DU SWITCH pour savoir jusqu'où remonter après le fondu - si un 2e changement de musique arrivait
+    // pendant que le 1er fondu était encore en cours (ex: boss tué moins de 1,5s après son apparition), ce 2e appel
+    // capturait un volume DÉJÀ PARTIELLEMENT BAISSÉ comme "volume cible", et la musique restait bloquée à ce volume
+    // réduit jusqu'au prochain chargement de scène.
+    private float _targetVolume;
 
     private void Awake()
     {
@@ -42,6 +50,7 @@ public class MusicStarter : MonoBehaviour
 
         _audioSource = GetComponent<AudioSource>();
         _defaultClip = _audioSource.clip; // memorise la musique normale assignee dans l'Inspector
+        _targetVolume = _audioSource.volume;
     }
 
     private void Start()
@@ -76,12 +85,11 @@ public class MusicStarter : MonoBehaviour
         if (_audioSource == null) return;
 
         _started = true;
-        float targetVolume = _audioSource.volume;
         _audioSource.volume = 0f;
         _audioSource.Play();
 
         if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
-        _fadeCoroutine = StartCoroutine(FadeInRoutine(targetVolume, _startFadeDuration));
+        _fadeCoroutine = StartCoroutine(FadeInRoutine(_targetVolume, _startFadeDuration));
     }
 
     public void SwitchTo(AudioClip newClip)
@@ -150,15 +158,18 @@ public class MusicStarter : MonoBehaviour
         _audioSource.loop = true;
         _audioSource.Play();
 
+        // CORRIGÉ (2026-10-18) - remonte vers _targetVolume (fixé une fois pour toutes dans Awake), jamais vers
+        // startVolume : ce dernier n'est fiable que pour la moitié "fondu vers le bas" ci-dessus (on part bien d'où
+        // le volume se trouve réellement maintenant, même interrompu), pas pour la cible finale.
         elapsed = 0f;
         while (elapsed < halfDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            _audioSource.volume = Mathf.Lerp(0f, startVolume, elapsed / halfDuration);
+            _audioSource.volume = Mathf.Lerp(0f, _targetVolume, elapsed / halfDuration);
             yield return null;
         }
 
-        _audioSource.volume = startVolume;
+        _audioSource.volume = _targetVolume;
     }
 
     private IEnumerator FadeOutRoutine(float duration)

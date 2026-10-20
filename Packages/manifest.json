@@ -2,6 +2,7 @@
   "dependencies": {
     "com.atteneder.gltfast": "6.12.1",
     "com.tripo3d.unitybridge": "file:C:/Users/jules/Downloads/Tripo3d_Unity_Bridge-latest/Tripo3d_Unity_Bridge",
+    "com.unity.adaptiveperformance": "5.1.6",
     "com.unity.ai.assistant": "2.19.0-pre.2",
     "com.unity.ai.inference": "2.6.1",
     "com.unity.ai.navigation": "2.0.14",

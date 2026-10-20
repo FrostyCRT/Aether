@@ -157,12 +157,13 @@ public class BouncingOrbProjectile : MonoBehaviour
     private Bounds GetEffectiveBounds()
     {
         Bounds cameraBounds = GetCameraGroundBounds();
-        float mapHalf = WaveManager.MapBoundaryUtils.ZoneHalfSize;
-
-        float minX = Mathf.Max(cameraBounds.min.x, -mapHalf) + _orbRadius;
-        float maxX = Mathf.Min(cameraBounds.max.x, mapHalf) - _orbRadius;
-        float minZ = Mathf.Max(cameraBounds.min.z, -mapHalf) + _orbRadius;
-        float maxZ = Mathf.Min(cameraBounds.max.z, mapHalf) - _orbRadius;
+        // MODIFIÉ (2026-10-19, diagnostic complet - refonte de la forme de carte) - un seul mapHalf symétrique ne
+        // décrit plus la carte (tunnel du Violent, X infini ; boîte resserrée de l'Apocalyptique) : bornes séparées
+        // par axe (Mathf.Max/Min gèrent nativement ±Infinity sur l'axe sans mur, aucun cas particulier requis).
+        float minX = Mathf.Max(cameraBounds.min.x, MapBoundaryUtils.MinX) + _orbRadius;
+        float maxX = Mathf.Min(cameraBounds.max.x, MapBoundaryUtils.MaxX) - _orbRadius;
+        float minZ = Mathf.Max(cameraBounds.min.z, MapBoundaryUtils.MinZ) + _orbRadius;
+        float maxZ = Mathf.Min(cameraBounds.max.z, MapBoundaryUtils.MaxZ) - _orbRadius;
 
         // Garde-fou — si la zone effective devient dégénérée (min > max, ex: caméra très
         // dézoomée sur une carte plus petite que le diamètre de l'orbe, cas extrême), on

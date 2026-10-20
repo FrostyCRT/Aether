@@ -71,7 +71,7 @@ public static class LocTableKO
         { "RÉINITIALISER « {0} » ?", "{0} 페이지를 초기화할까요？" }, { "Les réglages de cette page reprennent leur valeur d'origine.", "이 페이지의 설정이 기본값으로 돌아갑니다．" },
         { "Réinitialiser", "초기화" }, { "Page « {0} » réinitialisée.", "{0} 페이지를 초기화했습니다．" }, { "TOUT RÉINITIALISER ?", "모두 초기화할까요？" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "모든 설정과 키가 기본값으로 돌아갑니다．" }, { "Tout réinitialiser", "모두 초기화" },
-        { "Tous les paramètres ont été réinitialisés.", "모든 설정을 초기화했습니다．" }, { "QUITTER LE JEU ?", "게임을 종료할까요？" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "게임이 종료됩니다． 설정은 저장되어 있습니다．" },
+        { "Tous les paramètres ont été réinitialisés.", "모든 설정을 초기화했습니다．" }, { "QUITTER LE JEU ?", "게임을 종료할까요？" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "게임이 종료됩니다． 설정은 저장되어 있습니다．" },
         { "Quitter", "종료" }, { "Disposition « {0} » appliquée.", "{0} 배열을 적용했습니다．" }, { "OUI", "켬" }, { "NON", "끔" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "화살표 키만" },
 
@@ -83,7 +83,7 @@ public static class LocTableKO
         { "Un cheveu de ton meilleur niveau...", "최고 레벨까지 한 끗 차이였어요．．．" }, { "Nouveau record d'Or en une partie : {0} !", "한 판 골드 신기록： {0}!" },
         { "Tout près de ton record d'Or...", "골드 기록이 바로 눈앞이었어요．．．" }, { "Nouveau personnage débloqué : {0} !", "새 캐릭터 해금： {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "이 트리에 모든 걸 쏟아부었어요． 말 그대로요．" }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "여기서 더 해금할 건 없어요． 다른 캐릭터로 계속해 보세요．" },
-        { "Cette branche n'a plus de secret pour toi.", "이 트리엔 더 이상 비밀이 없네요．" }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "트리도 명성도 최대예요． 새로운 걸 원한다면 캐릭터를 바꿔 보세요．" },
+        { "Cette branche n'a plus de secret pour toi.", "이 트리엔 더 이상 비밀이 없네요．" }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "트리도 명성도 최대예요． 새로운 걸 원한다면 캐릭터를 바꿔 보세요．" },
         { "Or", "골드" }, { "Éclats", "파편" }, { "Encore {0} {1} pour débloquer {2}", "{2} 해금까지 {1} {0} 남음" }, { "De quoi débloquer {0} dès maintenant !", "지금 바로 {0} 해금 가능！" },
         { "Tentative n°{0}", "{0}번째 도전" }, { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "생존 {0:00}:{1:00}    ·    타이탄 {2}/3" },
         { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "생존 {0:00}:{1:00}    ·    처치 {2}    ·    레벨 {3}    ·    {4}" },
@@ -99,7 +99,7 @@ public static class LocTableKO
         { "Aucun exploit cette fois — juste une victoire de plus.", "이번엔 대단한 업적은 없어요． 그저 승리가 하나 늘었을 뿐．" }, { "Une victoire sans la moindre compétence. Chapeau.", "스킬 하나 없이 거둔 승리． 대단해요．" },
         { "Aucune compétence récupérée. Le style, ça compte double.", "획득한 스킬 0개． 스타일 점수는 두 배예요．" }, { "Rien pris en cours de route, et pourtant tu es là.", "오는 길에 아무것도 줍지 않았는데， 그래도 여기까지 왔네요．" },
         { "Pas eu le temps de récupérer la moindre compétence.", "스킬 하나 주울 시간도 없었어요．" }, { "Aucune compétence récupérée cette fois.", "이번엔 획득한 스킬이 없어요．" },
-        { "VICTOIRE !", "승리！" }, { "FIN DE PARTIE", "게임 오버" }, { "DÉFAITE", "패배" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "시간： {0:00}:{1:00}\n처치한 적： {2}\n골드： {3}" },
+        { "VICTOIRE !", "승리！" }, { "FIN DE PARTIE", "게임 오버" }, { "DÉFAITE", "패배" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "시간： {0:00}:{1:00}\n처치한 적： {2}\n골드： {3}" },
         { "Or : {0}", "골드： {0}" }, { "Éliminations : {0}", "처치： {0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -107,7 +107,7 @@ public static class LocTableKO
         { "Premier Sang", "퍼스트 블러드" }, { "Vaincre 1 boss", "보스 1마리 처치" }, { "Toujours en Mouvement", "멈추지 마" }, { "Utiliser le Dash 20 fois", "대시 20회 사용" },
         { "Sang-Froid", "냉정함" }, { "Garder 30% de vie jusqu'au boss 2", "보스 2까지 HP 30% 이상 유지" }, { "Double Chasse", "더블 헌트" },
         { "Vaincre 2 boss dans la même partie", "한 판에서 보스 2마리 처치" }, { "Ascension Rapide", "초고속 성장" }, { "Niveau 20 avant la 10e minute", "10분 전에 레벨 20 달성" },
-        { "Sans Cristal", "크리스탈 봉인" }, { "Sans Ultime jusqu'au boss 2", "보스 2까지 궁극기 사용 금지" }, { "Sans-Faute", "무결점" }, { "Aucun dégât jusqu'au boss 1", "보스 1까지 피해 받지 않기" },
+        { "Sans Cristal", "크리스탈 봉인" }, { "Sans Ultime jusqu'au boss 2", "보스 2까지 궁극기 사용 금지" }, { "Résilience", "회복력" }, { "Garder plus de 50% de vie jusqu'au boss 1", "보스 1까지 체력 50% 이상 유지" },
         { "Éclair", "번개처럼" }, { "Vaincre un boss en moins de 30s", "보스를 30초 안에 처치" }, { "Fortune", "일확천금" }, { "Avec au moins 3000 Or ramassé", "골드 3000 이상 획득" },
         { "Puissance Absolue", "절대적인 힘" }, { "Niveau 30 dans la même partie", "한 판에서 레벨 30 달성" }, { "Or x{0}", "골드 x{0}" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "진행 중" }, { "{0}/3000 Or", "{0}/3000 골드" }, { "Pas de défi dans ce mode.", "이 모드에는 도전이 없습니다．" },
@@ -127,8 +127,8 @@ public static class LocTableKO
         { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "8초마다 적의 탄환 1발을 자동으로 흡수합니다．" }, { "Impulsion Nova", "노바 충격" },
         { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "흡수로 발동한 노바가 적을 한 마리라도 처치하면 대시 재사용 대기시간이 즉시 초기화됩니다．" },
         { "Dash Amélioré", "대시 강화" }, { "Réduit le temps de recharge du dash.", "대시 재사용 대기시간이 줄어듭니다．" }, { "Maîtrise du Cristal", "크리스탈 숙련" },
-        { "Réduit le nombre de charges nécessaires pour l'ultime.", "궁극기에 필요한 충전 횟수가 줄어듭니다．" }, { "Nova Étendue", "광역 노바" },
-        { "Augmente le rayon de la Nova de Cristal.", "크리스탈 노바의 범위가 넓어집니다．" }, { "Dash Fantôme", "팬텀 대시" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "전용 키로 소환하는 환영 분신을 해금합니다． 분신은 2초 동안 주변의 적을 끌어당깁니다．" },
+        { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "궁극기에 필요한 노바 충전 횟수를 1 줄입니다 (6에서 5로)．" }, { "Nova Étendue", "광역 노바" },
+        { "Augmente le rayon de la Nova de Cristal.", "크리스탈 노바의 범위가 넓어집니다．" }, { "Clone Spectral", "환영 분신" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "전용 키로 소환하는 환영 분신을 해금합니다． 분신은 2초 동안 주변의 적을 끌어당깁니다．" },
         { "TALENT UNIQUE", "고유 특성" }, { "NIVEAU {0} / {1}", "레벨 {0} / {1}" }, { "débloqué", "해금 필요" }, { "niveau 1", "레벨 1 필요" },
         { "NIV {0}", "Lv.{0}" }, { "ACQUIS", "습득함" }, { "NIVEAU MAX", "최대 레벨" }, { "Ce talent est actif.", "이 특성은 활성화되어 있습니다．" },
         { "Cette compétence est au maximum.", "이 스킬은 최대 레벨입니다．" }, { "INDISPONIBLE", "사용 불가" }, { "Sélectionne {0} dans l'onglet Personnages pour acheter.", "캐릭터 탭에서 {0} 캐릭터를 선택하면 구매할 수 있어요．" },
@@ -150,7 +150,7 @@ public static class LocTableKO
         { "Terre Calcinée", "초토화" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "융합 ― 파이어볼 ＋ 진흙： 훨씬 크고 훨씬 파괴적인 불타는 재의 영역이 주위에 원을 그리며 나타납니다．" },
         { "Orbes Foudroyants", "뇌격 구체" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "융합 ― 오비탈 ＋ 연쇄 번개： 주위를 도는 파편이 닿을 때마다 연쇄 번개를 방출합니다．" },
         { "Orbes Jumeaux", "쌍둥이 구체" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "융합 ― 더블 샷 ＋ 튕기는 구체： 기본 사격이 두 개의 구체로 나뉘어 끝없이 튕겨 다닙니다．" },
-        { "Aura", "오라" }, { "Zone Aura", "오라 영역" }, { "Orbe Rebondissant", "튕기는 구체" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "경기장 안을 끊임없이 튕겨 다니며 맞힌 적에게 피해를 주는 구체를 발사합니다．" },
+        { "Aura", "오라" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "주변에 지속되는 장을 만들어 사정거리 안의 적에게 피해를 주고 느리게 만듭니다." }, { "Orbe Rebondissant", "튕기는 구체" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "경기장 안을 끊임없이 튕겨 다니며 맞힌 적에게 피해를 주는 구체를 발사합니다．" },
         { "Dégâts +", "피해＋" }, { "+20% aux dégâts", "피해 +20%" }, { "Double Tir", "더블 샷" }, { "Tire 2 projectiles en rafale", "탄환 2발을 연속으로 발사" },
         { "Boule de Feu", "파이어볼" }, { "Lance une boule de feu", "불덩이를 발사" }, { "Cadence+", "연사 속도＋" }, { "+20% à la cadence de tir", "연사 속도 +20%" },
         { "Soin", "회복" }, { "Restaure 50% des HP maximum", "최대 HP의 50% 회복" }, { "Couteaux", "단검" }, { "Envoie des salves de couteaux", "단검을 연달아 던짐" },
@@ -216,7 +216,7 @@ public static class LocTableKO
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "다음엔 꼭 해낼 거예요．" }, { "Une défaite de plus vers la victoire.", "승리로 가는 길에 패배가 하나 더해졌을 뿐이에요．" },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "다시 전투로． 그렇게 강해지는 거예요．" }, { "Relève-toi, c'est pas fini.", "일어나요， 아직 끝나지 않았어요．" },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "다시 전투로． 그렇게 강해지는 거예요．" }, { "Relève-toi, c'est pas fini.", "일어나요， 아직 끝나지 않았어요．" },
         { "Tu as le niveau pour la suivante.", "다음 판은 충분히 해낼 실력이 있어요．" }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "뭐가 문제였는지 이미 알고 있잖아요． 고쳐 봐요．" },
         { "Ça ne s'est pas joué à grand-chose.", "정말 종이 한 장 차이였어요．" }, { "Tu étais proche. Refais-en une.", "거의 다 왔었어요． 한 판 더 해요．" },
         { "Il ne t'a laissé aucune ouverture cette fois.", "이번엔 빈틈을 하나도 보여 주지 않았네요．" }, { "Un adversaire coriace. Il faudra revenir plus fort.", "만만치 않은 상대예요． 더 강해져서 돌아와요．" },
@@ -240,5 +240,11 @@ public static class LocTableKO
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "융합" }, { "Éclat", "파편" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "보통" }, { "VIOLENT", "심각" }, { "APOCALYPTIQUE", "종말" },
+        { "L'expérience Classique telle qu'elle a toujours été", "언제나 그대로의 클래식 경험" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "맵이 더 커지고 적이 더 단단하고 위험해지지만, 골드와 파편을 더 넉넉하게 얻습니다" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "맵이 훨씬 더 커지고 적이 눈에 띄게 단단하고 위험해지지만, 골드와 파편을 최대로 얻습니다" },
     };
 }

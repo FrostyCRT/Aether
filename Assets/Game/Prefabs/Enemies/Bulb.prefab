@@ -172,8 +172,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2, y: 1.6, z: 1.2}
-  m_Center: {x: 0, y: 0.8, z: 0}
+  m_Size: {x: 1.2, y: 3, z: 1.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &3319921077068963342
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -214,13 +214,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 0
-  _maxHealth: 300
+  _maxHealth: 180
   _isFlying: 0
   _xpValue: 12
   _goldValue: 2
   _poolTag: EnemyBulb
   _playerContactRadius: 1.3
-  _contactDamage: 150
+  _contactDamage: 125
   _contactDamageCooldown: 0.5
   _burnTickInterval: 0.5
   _burnTintIntensity: 0.55

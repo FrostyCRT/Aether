@@ -89,7 +89,9 @@ public class WeaponMudPuddle : MonoBehaviour
             float rad = angle * Mathf.Deg2Rad;
             Vector3 offset = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * _spawnDistance;
             Vector3 spawnPos = transform.position + offset;
-            spawnPos = WaveManager.MapBoundaryUtils.ClampToZone(spawnPos);
+            // MODIFIÉ (2026-10-18, diagnostic complet - audit §10) - WaveManager.MapBoundaryUtils (copie imbriquée
+            // en double) a été supprimée ; référence désormais la classe autonome Systems/MapBoundaryUtils.cs.
+            spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
             spawnPos.y = _groundY;
 
             GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", spawnPos, Quaternion.identity);

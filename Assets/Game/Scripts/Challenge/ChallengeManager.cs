@@ -12,7 +12,7 @@ public class ChallengeManager : MonoBehaviour
     [SerializeField] private float _hardWeight = 15f;
 
     // MODIFIE (2026-09-13) - doubles sur retour utilisateur : +50% (x1,5) sur
-    // le palier Difficile jugé trop faible vu l'effort demandé (ex. Sans-Faute,
+    // le palier Difficile jugé trop faible vu l'effort demandé (ex. Résilience,
     // Éclair). Facile et Moyen doubles dans les memes proportions pour garder
     // un ecart coherent entre paliers (x1,2 / x1,5 / x2).
     [Header("Bonus d'or par palier (pourcentage de l'or ramassé)")]
@@ -71,7 +71,6 @@ public class ChallengeManager : MonoBehaviour
 
     private int _dashUsedCount = 0;
     private bool _ultimateUsedThisRun = false;
-    private bool _tookDamageThisRun = false;
     private float _minHealthPercent = 1f;
     private bool _level20ReachedInTime = false;
 
@@ -215,12 +214,6 @@ public class ChallengeManager : MonoBehaviour
         CheckFailureConditions();
     }
 
-    public void NotifyDamageTaken()
-    {
-        _tookDamageThisRun = true;
-        CheckFailureConditions();
-    }
-
     public void NotifyHealthChanged(float current, float max)
     {
         if (max <= 0f) return;
@@ -277,7 +270,7 @@ public class ChallengeManager : MonoBehaviour
         {
             case "hp30never": return 2;
             case "noUltimate": return 2;
-            case "noDamage": return 1;
+            case "hp50boss1": return 1;
             default: return 0;
         }
     }
@@ -297,8 +290,8 @@ public class ChallengeManager : MonoBehaviour
             case "noUltimate":
                 failed = _ultimateUsedThisRun;
                 break;
-            case "noDamage":
-                failed = _tookDamageThisRun;
+            case "hp50boss1":
+                failed = _minHealthPercent < 0.50f;
                 break;
             case "hp30never":
                 failed = _minHealthPercent < 0.30f;
@@ -317,7 +310,7 @@ public class ChallengeManager : MonoBehaviour
     // (ex. "Vaincre 1 boss" apres avoir tue un boss) - retour utilisateur.
     // Les defis "jalon" (kills/niveau/boss/or/dash/rapidite) sont acquis pour
     // de bon des que le seuil est franchi, peu importe la suite. Les defis
-    // "endurance" (hp30never/noUltimate/noDamage) ne PEUVENT pas etre confirmes
+    // "endurance" (hp30never/noUltimate/hp50boss1) ne PEUVENT pas etre confirmes
     // avant la fin reelle de la partie (la condition doit tenir jusqu'au bout) -
     // ils restent donc "En cours" tant qu'ils n'ont pas echoue, c'est correct
     // et voulu, pas un oubli.
@@ -343,7 +336,7 @@ public class ChallengeManager : MonoBehaviour
             case "level30": return level >= 30;
             case "hp30never":
             case "noUltimate":
-            case "noDamage":
+            case "hp50boss1":
                 return _enduranceCompleted;
             default: return false;
         }
@@ -388,7 +381,7 @@ public class ChallengeManager : MonoBehaviour
             case "boss2": return $"{Mathf.Min(bossKills, 2)}/2";
             case "level20in10min": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 20), 20);
             case "noUltimate": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
-            case "noDamage": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
+            case "hp50boss1": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
             case "bossUnder30s": return Loc.T("En cours");
             case "gold3000": return Loc.F("{0}/3000 Or", Mathf.Min(gold, 3000));
             case "level30": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 30), 30);
@@ -414,7 +407,7 @@ public class ChallengeManager : MonoBehaviour
             case "dash20": success = _dashUsedCount >= 20; break;
             case "hp30never":
             case "noUltimate":
-            case "noDamage":
+            case "hp50boss1":
                 success = _enduranceCompleted; break;
             case "boss2": success = bossKillCount >= 2; break;
             case "level20in10min": success = _level20ReachedInTime; break;

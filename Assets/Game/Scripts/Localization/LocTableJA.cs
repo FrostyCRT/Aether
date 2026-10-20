@@ -72,7 +72,7 @@ public static class LocTableJA
         { "RÉINITIALISER « {0} » ?", "「{0}」をリセットしますか？" }, { "Les réglages de cette page reprennent leur valeur d'origine.", "このページの設定が初期値に戻ります。" },
         { "Réinitialiser", "リセット" }, { "Page « {0} » réinitialisée.", "「{0}」ページをリセットしました。" }, { "TOUT RÉINITIALISER ?", "すべてリセットしますか？" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "すべての設定とキーが初期値に戻ります。" }, { "Tout réinitialiser", "すべてリセット" },
-        { "Tous les paramètres ont été réinitialisés.", "すべての設定をリセットしました。" }, { "QUITTER LE JEU ?", "ゲームを終了しますか？" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "ゲームが終了します。設定は保存されています。" },
+        { "Tous les paramètres ont été réinitialisés.", "すべての設定をリセットしました。" }, { "QUITTER LE JEU ?", "ゲームを終了しますか？" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "ゲームが終了します。設定は保存されています。" },
         { "Quitter", "終了" }, { "Disposition « {0} » appliquée.", "「{0}」配列を適用しました。" }, { "OUI", "オン" }, { "NON", "オフ" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "矢印キーのみ" },
 
@@ -84,7 +84,7 @@ public static class LocTableJA
         { "Un cheveu de ton meilleur niveau...", "最高レベルまで、あと少し⋯⋯" }, { "Nouveau record d'Or en une partie : {0} !", "1プレイの獲得ゴールド新記録：{0}！" },
         { "Tout près de ton record d'Or...", "ゴールドの記録は目の前だった⋯⋯" }, { "Nouveau personnage débloqué : {0} !", "新キャラクター解放：{0}！" },
         { "Tu as tout donné à cette branche. Littéralement.", "このツリーにすべてを注ぎ込んだ。文字どおりにね。" }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "ここで解放できるものはもうない。次はキャラクターを変えてみよう。" },
-        { "Cette branche n'a plus de secret pour toi.", "このツリーにもう秘密はない。" }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "ツリーも名声も最大。新鮮さが欲しいならキャラクターを変えよう。" },
+        { "Cette branche n'a plus de secret pour toi.", "このツリーにもう秘密はない。" }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "ツリーも名声も最大。新鮮さが欲しいならキャラクターを変えよう。" },
         { "Or", "ゴールド" }, { "Éclats", "個の欠片" }, { "Encore {0} {1} pour débloquer {2}", "あと{0}{1}で「{2}」を解放" }, { "De quoi débloquer {0} dès maintenant !", "今すぐ「{0}」を解放できる！" },
         { "Tentative n°{0}", "挑戦{0}回目" }, { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "生存 {0:00}:{1:00}    ·    タイタン {2}/3" },
         { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "生存 {0:00}:{1:00}    ·    撃破 {2}    ·    レベル {3}    ·    {4}" },
@@ -98,7 +98,7 @@ public static class LocTableJA
         { "Aucun exploit cette fois — juste une victoire de plus.", "今回は偉業なし。勝利がひとつ増えただけ。" }, { "Une victoire sans la moindre compétence. Chapeau.", "スキルひとつ取らずに勝利。お見事。" },
         { "Aucune compétence récupérée. Le style, ça compte double.", "スキルの取得ゼロ。スタイル点は2倍だ。" }, { "Rien pris en cours de route, et pourtant tu es là.", "道中なにも拾わず、それでもここにいる。" },
         { "Pas eu le temps de récupérer la moindre compétence.", "スキルを拾う暇すらなかった。" }, { "Aucune compétence récupérée cette fois.", "今回はスキルを取得しなかった。" },
-        { "VICTOIRE !", "勝利！" }, { "FIN DE PARTIE", "ゲームオーバー" }, { "DÉFAITE", "敗北" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "時間：{0:00}:{1:00}\n倒した敵：{2}\nゴールド：{3}" },
+        { "VICTOIRE !", "勝利！" }, { "FIN DE PARTIE", "ゲームオーバー" }, { "DÉFAITE", "敗北" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "時間：{0:00}:{1:00}\n倒した敵：{2}\nゴールド：{3}" },
         { "Or : {0}", "ゴールド：{0}" }, { "Éliminations : {0}", "撃破数：{0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -106,7 +106,7 @@ public static class LocTableJA
         { "Premier Sang", "ファーストブラッド" }, { "Vaincre 1 boss", "ボスを1体倒す" }, { "Toujours en Mouvement", "止まるな" }, { "Utiliser le Dash 20 fois", "ダッシュを20回使う" },
         { "Sang-Froid", "冷静沈着" }, { "Garder 30% de vie jusqu'au boss 2", "ボス2までHPを30%以上に保つ" }, { "Double Chasse", "ダブルハント" },
         { "Vaincre 2 boss dans la même partie", "1回のプレイでボスを2体倒す" }, { "Ascension Rapide", "急成長" }, { "Niveau 20 avant la 10e minute", "10分経過までにレベル20" },
-        { "Sans Cristal", "クリスタル禁止" }, { "Sans Ultime jusqu'au boss 2", "ボス2まで必殺技を使わない" }, { "Sans-Faute", "ノーダメージ" }, { "Aucun dégât jusqu'au boss 1", "ボス1までダメージを受けない" },
+        { "Sans Cristal", "クリスタル禁止" }, { "Sans Ultime jusqu'au boss 2", "ボス2まで必殺技を使わない" }, { "Résilience", "レジリエンス" }, { "Garder plus de 50% de vie jusqu'au boss 1", "ボス1まで体力を50%以上に保つ" },
         { "Éclair", "電光石火" }, { "Vaincre un boss en moins de 30s", "ボスを30秒以内に倒す" }, { "Fortune", "一攫千金" }, { "Avec au moins 3000 Or ramassé", "ゴールドを3000以上拾う" },
         { "Puissance Absolue", "絶対的な力" }, { "Niveau 30 dans la même partie", "1回のプレイでレベル30" }, { "Or x{0}", "ゴールド x{0}" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "進行中" }, { "{0}/3000 Or", "{0}/3000ゴールド" }, { "Pas de défi dans ce mode.", "このモードにチャレンジはない。" },
@@ -126,8 +126,8 @@ public static class LocTableJA
         { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "8秒ごとに敵の弾を1発自動で吸収する。" }, { "Impulsion Nova", "ノヴァインパルス" },
         { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "吸収で発動したノヴァが敵を1体でも倒すと、ダッシュのクールダウンが即座にリセットされる。" },
         { "Dash Amélioré", "ダッシュ強化" }, { "Réduit le temps de recharge du dash.", "ダッシュのクールダウンを短くする。" }, { "Maîtrise du Cristal", "クリスタル熟練" },
-        { "Réduit le nombre de charges nécessaires pour l'ultime.", "必殺技に必要なチャージ数を減らす。" }, { "Nova Étendue", "ワイドノヴァ" },
-        { "Augmente le rayon de la Nova de Cristal.", "クリスタルノヴァの範囲を広げる。" }, { "Dash Fantôme", "ファントムダッシュ" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "専用キーで呼び出せる幻影分身を解放する。分身は2秒間、周りの敵を引き寄せる。" },
+        { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "アルティメットに必要なノヴァのチャージ数を1減らす（6から5）。" }, { "Nova Étendue", "ワイドノヴァ" },
+        { "Augmente le rayon de la Nova de Cristal.", "クリスタルノヴァの範囲を広げる。" }, { "Clone Spectral", "幻影分身" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "専用キーで呼び出せる幻影分身を解放する。分身は2秒間、周りの敵を引き寄せる。" },
         { "TALENT UNIQUE", "固有能力" }, { "NIVEAU {0} / {1}", "レベル {0} / {1}" }, { "débloqué", "解放が必要" }, { "niveau 1", "レベル1が必要" },
         { "NIV {0}", "Lv.{0}" }, { "ACQUIS", "習得済み" }, { "NIVEAU MAX", "最大レベル" }, { "Ce talent est actif.", "この能力は有効。" },
         { "Cette compétence est au maximum.", "このスキルは最大レベル。" }, { "INDISPONIBLE", "使用不可" }, { "Sélectionne {0} dans l'onglet Personnages pour acheter.", "購入するには「キャラクター」タブで{0}を選択しよう。" },
@@ -149,7 +149,7 @@ public static class LocTableJA
         { "Terre Calcinée", "焦土" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "融合（ファイアボール＋泥沼）：はるかに大きく、はるかに破壊的な灼熱の灰のエリアが、周囲に円を描いて現れる。" },
         { "Orbes Foudroyants", "雷撃のオーブ" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "融合（オービタル＋連鎖雷撃）：周回する欠片が、触れるたびに連鎖する雷を放つ。" },
         { "Orbes Jumeaux", "ツインオーブ" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "融合（ダブルショット＋バウンドオーブ）：通常弾が2つの球に分かれ、どこまでも跳ね返り続ける。" },
-        { "Aura", "オーラ" }, { "Zone Aura", "オーラエリア" }, { "Orbe Rebondissant", "バウンドオーブ" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "アリーナ中を跳ね回り続けるオーブを放ち、当たった敵にダメージを与える。" },
+        { "Aura", "オーラ" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "自分の周囲に常時フィールドを展開し、範囲内の敵にダメージを与えて動きを遅くする。" }, { "Orbe Rebondissant", "バウンドオーブ" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "アリーナ中を跳ね回り続けるオーブを放ち、当たった敵にダメージを与える。" },
         { "Dégâts +", "ダメージ＋" }, { "+20% aux dégâts", "ダメージ+20%" }, { "Double Tir", "ダブルショット" }, { "Tire 2 projectiles en rafale", "弾を2発連続で撃つ" },
         { "Boule de Feu", "ファイアボール" }, { "Lance une boule de feu", "火の玉を放つ" }, { "Cadence+", "連射速度＋" }, { "+20% à la cadence de tir", "連射速度+20%" },
         { "Soin", "回復" }, { "Restaure 50% des HP maximum", "最大HPの50%を回復" }, { "Couteaux", "ナイフ" }, { "Envoie des salves de couteaux", "ナイフを連続で投げる" },
@@ -213,7 +213,7 @@ public static class LocTableJA
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "次こそはいける。" }, { "Une défaite de plus vers la victoire.", "勝利へ向かう、敗北がひとつ増えただけ。" },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "また戦いへ。そうやって強くなるんだ。" }, { "Relève-toi, c'est pas fini.", "立ち上がれ、まだ終わっちゃいない。" },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "また戦いへ。そうやって強くなるんだ。" }, { "Relève-toi, c'est pas fini.", "立ち上がれ、まだ終わっちゃいない。" },
         { "Tu as le niveau pour la suivante.", "次はきっといける実力がある。" }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "何がまずかったかは、もうわかっているはず。直していこう。" },
         { "Ça ne s'est pas joué à grand-chose.", "紙一重の勝負だった。" }, { "Tu étais proche. Refais-en une.", "あと少しだった。もう一回いこう。" },
         { "Il ne t'a laissé aucune ouverture cette fois.", "今回はまったく隙を見せてくれなかった。" }, { "Un adversaire coriace. Il faudra revenir plus fort.", "手ごわい相手だ。もっと強くなって戻ってこよう。" },
@@ -237,5 +237,11 @@ public static class LocTableJA
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "融合" }, { "Éclat", "個の欠片" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "モデレート" }, { "VIOLENT", "シビア" }, { "APOCALYPTIQUE", "アポカリプス" },
+        { "L'expérience Classique telle qu'elle a toujours été", "いつもと変わらないクラシック体験" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "マップが広がり、敵がより頑丈で危険になる代わりに、ゴールドと欠片がより豪華に" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "マップが大きく広がり、敵が明らかに頑丈で危険になる代わりに、ゴールドと欠片が最大に" },
     };
 }

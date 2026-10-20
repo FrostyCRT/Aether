@@ -68,8 +68,7 @@ public class PlayerBuffs : MonoBehaviour
     }
 
     // Appelé par HealthSystem.TakeDamage() à chaque coup RÉELLEMENT encaissé
-    // (y compris un coup atténué par Second Souffle) — même point que la
-    // notification du défi "Sans-Faute".
+    // (y compris un coup atténué par Second Souffle).
     public void NotifyDamaged()
     {
         if (_concentrationCap <= 0f) return;

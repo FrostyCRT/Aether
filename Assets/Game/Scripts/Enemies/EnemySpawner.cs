@@ -32,10 +32,25 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float _bulbSpawnRadius = 10f;
     [SerializeField] private float _bulbMinSeparation = 4f;
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "quand il y a plein de tireur, notamment les bulbe [...] c'est
+    // impossible d'esquiver et c'est mort instantanément") - au-delà d'un certain nombre de tireurs (EnemyShooter/
+    // EnemyBulb, voir EnemyBase.IsRangedAttacker) vivants EN MÊME TEMPS, plus aucune direction n'est sûre pour
+    // esquiver, quels que soient les PV/dégâts de CHACUN pris séparément - le vrai problème est la DENSITÉ de
+    // tireurs, pas un seul chiffre à retoucher. Un tirage qui retomberait sur un tireur une fois le plafond atteint
+    // est redessiné en excluant les tireurs (toujours au moins un type de mêlée dans chaque palier, voir
+    // _paliersEnnemis) - ne bloque jamais un spawn, redistribue juste son poids vers la mêlée ce tour-ci.
+    [Header("Plafond de tireurs simultanés (EnemyShooter + EnemyBulb, voir EnemyBase.ActiveRangedCount)")]
+    [SerializeField] private int _maxSimultaneousRanged = 6;
+
     // Variables de contrôle internes synchronisées par les phases
     private float _spawnInterval = 2f;
     private int _enemiesPerWave = 1;
     private int _maxEnemies = 15;
+
+    // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - lu une seule fois dans Start() : une carte
+    // agrandie (DifficultyTiers.ZoneHalfSize, voir MapBoundaryUtils) a plus de place, donc plus d'ennemis doivent
+    // pouvoir y tenir en même temps pour rester aussi dense qu'au palier Modéré. 1 si hors Classique ou palier Modéré.
+    private float _spawnCountMultiplier = 1f;
 
     private float _spawnTimer = 0f;
     private float _gameTimer = 0f;
@@ -51,6 +66,16 @@ public class EnemySpawner : MonoBehaviour
             GameObject player = GameObject.FindWithTag("Player");
             if (player != null) _playerTransform = player.transform;
         }
+
+        // MODIFIÉ (2026-10-19, diagnostic complet - refonte de la forme de carte) - l'ancien ratio (rayon de spawn
+        // proportionnel à une unique ZoneHalfSize) n'a plus de sens pour un tunnel (X infini, Z étroit) ou une
+        // boîte resserrée (Apocalyptique, plus petite que l'ancien Modéré) : le rayon de spawn garde sa valeur
+        // d'Inspector pour tous les paliers, et MapBoundaryUtils.ClampToZone() (déjà appelé dans
+        // FindFreeSpawnPosition ci-dessous) confine naturellement chaque candidat à la forme réelle de la carte -
+        // un ennemi qui "déborderait" du tunnel ou de la boîte est simplement ramené sur le mur le plus proche.
+        // ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée de boss.
+        _spawnCountMultiplier = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+            ? DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current) : 1f;
 
         // Initialisation de la première phase si elle existe
         if (_phasesDeJeu.Count > 0)
@@ -98,8 +123,11 @@ public class EnemySpawner : MonoBehaviour
 
     private void AppliquerPhase(SpawnPhase phase)
     {
-        _maxEnemies = phase.maxEnemiesSurMap;
-        _enemiesPerWave = phase.ennemisParVague;
+        // MODIFIÉ (2026-10-18, diagnostic complet - système de difficulté) - plafond et taille de vague mis à
+        // l'échelle du palier de difficulté (_spawnCountMultiplier, voir Start()) ; la cadence (intervalleSpawn)
+        // reste inchangée pour ne pas cumuler 3 leviers de difficulté à la fois sur un système jamais playtesté.
+        _maxEnemies = Mathf.RoundToInt(phase.maxEnemiesSurMap * _spawnCountMultiplier);
+        _enemiesPerWave = Mathf.Max(1, Mathf.RoundToInt(phase.ennemisParVague * _spawnCountMultiplier));
         _spawnInterval = phase.intervalleSpawn;
     }
 
@@ -124,10 +152,21 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    private static bool IsRangedTag(string tag) => tag == "EnemyShooter" || tag == "EnemyBulb";
+
     private void SpawnEnemy()
     {
         PalierEnnemis palier = GetCurrentPalier();
         string tag = PickWeightedTag(palier.composition);
+
+        if (IsRangedTag(tag) && EnemyBase.ActiveRangedCount >= _maxSimultaneousRanged)
+        {
+            string meleeTag = PickWeightedTag(palier.composition, excludeRanged: true);
+            // Palier 100% tireurs (ne devrait jamais arriver, voir commentaire sur _maxSimultaneousRanged) :
+            // on saute ce spawn plutôt que de forcer un tireur au-delà du plafond.
+            if (string.IsNullOrEmpty(meleeTag)) return;
+            tag = meleeTag;
+        }
 
         if (string.IsNullOrEmpty(tag))
         {
@@ -144,12 +183,27 @@ public class EnemySpawner : MonoBehaviour
 
         // Mode sans fin : les PV continuent de croître au-delà de 15 min (x1 en classique, voir GameModes).
         float runMinutes = GameManager.Instance != null ? GameManager.Instance.RunTimer / 60f : 0f;
-        float healthMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
+        // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté, x1 au palier
+        // Modéré. ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée
+        // de boss, plus seulement le Classique.
+        float difficultyMultiplier = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+            ? DifficultyTiers.HealthMultiplier(DifficultyTiers.Current) : 1f;
+        float timeBasedMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
+        float healthMultiplier = timeBasedMultiplier * difficultyMultiplier;
 
         GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier);
 
         if (spawned == null)
+        {
             Debug.LogWarning($"[SPAWNER] Tag de pool '{tag}' introuvable — vérifie l'orthographe dans ObjectPool._pools ET dans _paliersEnnemis.");
+            return;
+        }
+
+        // AJOUTÉ (2026-10-20, retour utilisateur : "trop d'xp en difficulté 3") - l'XP à la mort (EnemyBase.Die)
+        // suit la partie TEMPORELLE de ce multiplicateur, jamais le palier de difficulté : plus dur à tuer ne doit
+        // pas vouloir dire plus rentable à tuer, sous peine de vider le sens du palier de difficulté.
+        EnemyBase spawnedEnemy = spawned.GetComponent<EnemyBase>();
+        if (spawnedEnemy != null) spawnedEnemy.SetXpHealthMultiplier(timeBasedMultiplier);
     }
 
 
@@ -252,27 +306,33 @@ public class EnemySpawner : MonoBehaviour
         return current;
     }
 
-    private string PickWeightedTag(List<WeightedEnemyEntry> composition)
+    private string PickWeightedTag(List<WeightedEnemyEntry> composition, bool excludeRanged = false)
     {
         if (composition == null || composition.Count == 0) return null;
 
         float total = 0f;
         for (int i = 0; i < composition.Count; i++)
+        {
+            if (excludeRanged && IsRangedTag(composition[i].poolTag)) continue;
             total += composition[i].poids;
+        }
 
         if (total <= 0f) return null;
 
         float roll = Random.Range(0f, total);
         float cumulative = 0f;
+        string lastValidTag = null;
 
         for (int i = 0; i < composition.Count; i++)
         {
+            if (excludeRanged && IsRangedTag(composition[i].poolTag)) continue;
+            lastValidTag = composition[i].poolTag;
             cumulative += composition[i].poids;
             if (roll <= cumulative)
                 return composition[i].poolTag;
         }
 
-        return composition[composition.Count - 1].poolTag; // filet de sécurité, arrondi flottant
+        return lastValidTag; // filet de sécurité, arrondi flottant
     }
 
     

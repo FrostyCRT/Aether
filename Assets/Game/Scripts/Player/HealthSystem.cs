@@ -56,11 +56,20 @@ public class HealthSystem : MonoBehaviour
 
     private void Awake()
     {
-        float bonusHP = MetaProgressionManager.Instance.GetBonusMaxHP();
-        _maxHealth += _maxHealth * bonusHP;
+        // AJOUTÉ (2026-10-18, diagnostic complet - audit §2.14) - même garde que PlayerController.Awake() : lancer
+        // la scène Game directement depuis l'éditeur (sans passer par MainMenu) laissait Instance à null ici.
+        if (MetaProgressionManager.Instance != null)
+        {
+            float bonusHP = MetaProgressionManager.Instance.GetBonusMaxHP();
+            _maxHealth += _maxHealth * bonusHP;
+            _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
+            _regenPerSecond = _baseRegenPerSecond + MetaProgressionManager.Instance.GetReputationBonusRegen();
+        }
+        else
+        {
+            _regenPerSecond = _baseRegenPerSecond;
+        }
         _currentHealth = _maxHealth;
-        _armorReduction = MetaProgressionManager.Instance.GetBonusArmor();
-        _regenPerSecond = _baseRegenPerSecond + MetaProgressionManager.Instance.GetReputationBonusRegen();
         _secondWindUsed = false;
         _isDead = false;
         _playerBuffs = GetComponent<PlayerBuffs>();
@@ -131,19 +140,13 @@ public class HealthSystem : MonoBehaviour
         // tue - jamais un coup anterieur ni un coup encaisse apres coup.
         _lastDamageSource = source;
 
-        // A ce point, un vrai coup va etre encaisse (normal ou attenue
-        // par Second Souffle plus bas) - notifie le defi "Sans-Faute" ici, avant
-        // toute branche, pour ne jamais le manquer.
-        if (ChallengeManager.Instance != null)
-            ChallengeManager.Instance.NotifyDamageTaken();
-
         // AJOUTE - même point : réinitialise la Concentration (nœud Guerrier).
         if (_playerBuffs != null)
             _playerBuffs.NotifyDamaged();
 
         damage *= (1f - _armorReduction);
 
-        if (MetaProgressionManager.Instance.HasSecondWind() && !_secondWindUsed)
+        if (MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.HasSecondWind() && !_secondWindUsed)
         {
             if (_currentHealth - damage <= 0f)
             {
@@ -160,7 +163,13 @@ public class HealthSystem : MonoBehaviour
                 transform.position, damage, DamageNumberSpawner.ColorPlayer);
 
         if (GameUI.Instance != null)
+        {
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+            // AJOUTÉ (2026-10-20, chantier satisfaction) - voir GameUI.FlashDamageVignette : un coup reçu n'avait
+            // jusqu'ici aucun retour visuel propre (juste le chiffre + la barre), contrairement aux ennemis qui
+            // flashent déjà à l'impact. Intensité proportionnelle à la part des PV max perdue dans CE coup.
+            GameUI.Instance.FlashDamageVignette(damage / Mathf.Max(1f, _maxHealth));
+        }
 
         // AJOUTE - tracke le minimum de vie atteint pour le defi "Sang-Froid"
         // (ne jamais descendre sous 30%).
@@ -177,7 +186,12 @@ public class HealthSystem : MonoBehaviour
         _currentHealth = 1f;
 
         if (GameUI.Instance != null)
+        {
             GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+            // Coup qui aurait dû être fatal sans Second Souffle : mérite le flash le plus fort (severity=1), pas
+            // proportionnel aux PV réellement perdus comme TakeDamage() - sans ça ce "quasi-mort" paraîtrait anodin.
+            GameUI.Instance.FlashDamageVignette(1f);
+        }
 
         // AJOUTE - le Second Souffle ramene la vie a 1 PV, largement sous 30% -
         // doit compter pour "Sang-Froid" comme n'importe quelle autre chute de vie.
@@ -200,11 +214,20 @@ public class HealthSystem : MonoBehaviour
     // AUCUNE protection entre projectiles différents (contrairement aux dégâts de contact, qui partagent déjà
     // _damageTimer via TryTakeContactDamage). 8 projectiles encaissés la même frame = mort instantanée. Cette
     // méthode existait déjà mais n'était jamais appelée (EnemyProjectile appelait TakeDamage directement) : lui
-    // donne maintenant sa propre fenêtre anti-cumul très courte (0,15 s, bien plus courte que le cooldown de
-    // contact à 0,6-0,8 s) - assez longue pour fondre une salve simultanée en 1 seul coup, assez courte pour ne
-    // jamais bloquer 2 projectiles réellement distincts qui arrivent à des moments différents.
+    // donne maintenant sa propre fenêtre anti-cumul très courte (bien plus courte que le cooldown de contact à
+    // 0,6-0,8 s) - assez longue pour fondre une salve simultanée en 1 seul coup, assez courte pour ne jamais
+    // bloquer 2 projectiles réellement distincts qui arrivent à des moments différents.
+    // CORRIGÉ (2026-10-20, retour utilisateur : "quand je prends 2 projectiles en même temps, je prends des
+    // dégâts que d'un au lieu de deux") - élargie à 0,22s plus tôt dans la même session (suite 8, pour le
+    // problème "trop de tireurs") pour limiter le débit de dégâts d'un essaim de tireurs - ça a justement cassé la
+    // garantie documentée ci-dessus : 220 ms est assez long pour que 2 vrais tirs DISTINCTS (2 ennemis différents,
+    // pas la même salve) tombent dans la même fenêtre et que le 2e soit purement perdu. Le vrai problème "essaim de
+    // tireurs" a depuis sa propre solution dédiée (`EnemySpawner._maxSimultaneousRanged`, voir EnemyBase.
+    // ActiveRangedCount) - cette fenêtre n'a plus besoin de faire ce travail en double. Redescendue à 0,1s, plus
+    // courte même que l'originale (0,15s) : une vraie salve simultanée (même frame, ~16 ms d'écart) reste fondue en
+    // un coup, mais 2 tirs à 100 ms d'écart ou plus comptent maintenant chacun pour de vrai.
     private float _projectileDamageTimer = 0f;
-    [SerializeField] private float _projectileDamageMergeWindow = 0.15f;
+    [SerializeField] private float _projectileDamageMergeWindow = 0.1f;
 
     public void TakeDamageFromProjectile(float damage, string source = "horde")
     {

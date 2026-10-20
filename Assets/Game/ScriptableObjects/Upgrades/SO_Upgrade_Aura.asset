@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Aura
   m_EditorClassIdentifier: 
   upgradeName: Aura
-  description: Zone Aura
+  description: Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée
   icon: {fileID: 21300000, guid: 6aadc56ad08c97c4f9efa22bd470c7d6, type: 3}
   upgradeType: 5
   value: 0

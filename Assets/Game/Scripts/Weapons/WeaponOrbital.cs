@@ -20,6 +20,15 @@ public class WeaponOrbital : MonoBehaviour
     [Header("Limites")]
     [SerializeField] private int _maxOrbitalCount = 10;
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "la range des orbitaux et de l'aura n'est pas la même par rapport
+    // au centre [...] je pense que c'est parce que les orbitaux sont en hauteur et pas au sol comme l'aura") -
+    // diagnostic confirmé : Update() ci-dessous plaçait chaque orbe à transform.position.y, soit la hauteur de
+    // TORSE du joueur (~1,5, voir WeaponAura._ringGroundY/_fillGroundY et CrystalSystem._novaGroundY pour le même
+    // problème déjà corrigé ailleurs) - avec une caméra inclinée (pas purement zénithale), une orbite à hauteur de
+    // torse se projette décalée par rapport à un cercle au sol de même rayon (celui de l'Aura), au lieu d'être
+    // concentrique. Même technique de correction que WeaponAura (hauteur ABSOLUE au sol, pas relative au joueur).
+    [SerializeField] private float _groundY = 0.2f;
+
     private float _upgradeDamageModifier = 0f;
     private float _currentDamage;
 
@@ -132,7 +141,10 @@ public class WeaponOrbital : MonoBehaviour
             float x = Mathf.Cos(angle) * _orbitRadius;
             float z = Mathf.Sin(angle) * _orbitRadius;
 
-            Vector3 orbitOffset = new Vector3(x, 0f, z);
+            // toGround : annule la hauteur de torse du parent (transform.position.y) pour retomber sur une
+            // hauteur ABSOLUE au sol (_groundY), même technique que WeaponAura.LateUpdate() (toGround).
+            float toGround = _groundY - transform.position.y;
+            Vector3 orbitOffset = new Vector3(x, toGround, z);
             _orbitals[i].transform.position = transform.position + orbitOffset;
         }
     }

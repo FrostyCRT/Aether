@@ -27,6 +27,13 @@ public class GameModeSelector : MonoBehaviour
 
     private Coroutine _punchRoutine;
 
+    // AJOUTÉ (2026-10-20, carrousel de difficulté) - le "meilleur temps" du Classique dépend maintenant du palier
+    // (voir RefreshRecord) : sans repoller, changer de palier via le carrousel (un script séparé, sans référence
+    // directe vers celui-ci - même principe de découplage que DifficultySelector/GameModeSelector déjà en place)
+    // laisserait ce texte affiché sur l'ancien palier jusqu'au prochain changement de MODE. Polling léger, même
+    // style que DifficultySelector.Update() juste à côté.
+    private DifficultyTier _lastSeenTier;
+
     private void Awake()
     {
         if (_leftButton != null)
@@ -44,11 +51,21 @@ public class GameModeSelector : MonoBehaviour
     private void OnEnable()
     {
         GameModes.EnsureCurrentIsAvailable(CurrentData());
+        _lastSeenTier = DifficultyTiers.Current;
         Refresh(animate: false);
         Loc.Changed += OnLanguageChanged;
     }
 
     private void OnDisable() => Loc.Changed -= OnLanguageChanged;
+
+    private void Update()
+    {
+        if (DifficultyTiers.Current != _lastSeenTier)
+        {
+            _lastSeenTier = DifficultyTiers.Current;
+            Refresh(animate: false);
+        }
+    }
 
     private void OnLanguageChanged() => Refresh(animate: false);
 
@@ -59,8 +76,17 @@ public class GameModeSelector : MonoBehaviour
 
     private void Step(int direction)
     {
+        // MODIFIÉ (2026-10-18, diagnostic complet - décision "modes de jeu") - saute tout mode non commercialisé
+        // (GameModes.IsShippable, ex: Choc des titans) : le joueur ne peut plus s'y arrêter en tournant les
+        // flèches, sans rien retirer du code/des données qui le sous-tendent. Boucle bornée à `count` tours pour
+        // rester sûr même si, un jour, TOUS les modes devenaient non commercialisés par erreur.
         int count = GameModes.Count;
-        int next = ((int)GameModes.Current + direction + count) % count;
+        int next = (int)GameModes.Current;
+        for (int i = 0; i < count; i++)
+        {
+            next = (next + direction + count) % count;
+            if (GameModes.IsShippable((GameMode)next)) break;
+        }
         GameModes.Current = (GameMode)next;
         Refresh(animate: true);
     }
@@ -125,8 +151,14 @@ public class GameModeSelector : MonoBehaviour
                     : Loc.T("Aucune partie jouée");
                 break;
             default:
-                _recordText.text = data.bestTime > 0f ? Loc.F("Meilleur temps : {0}", Clock(data.bestTime)) : "";
+            {
+                // MODIFIÉ (2026-10-20, carrousel de difficulté - "il faut aussi adapter le 'meilleur temps' par
+                // difficulté, parce que c'est pas le même pour tous") - record désormais propre à CHAQUE palier
+                // (voir MetaProgressionManager.GetBestTime) plutôt qu'un seul temps toutes difficultés confondues.
+                float best = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current) : 0f;
+                _recordText.text = best > 0f ? Loc.F("Meilleur temps : {0}", Clock(best)) : "";
                 break;
+            }
         }
     }
 

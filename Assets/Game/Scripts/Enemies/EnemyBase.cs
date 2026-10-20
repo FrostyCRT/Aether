@@ -35,6 +35,20 @@ public class EnemyBase : MonoBehaviour
     [Header("Scaling difficulté")]
     private float _healthMultiplier = 1f;
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "il y a trop d'xp en difficulté 3, j'suis à 5min sur les 15min et je
+    // suis déjà niveau 18") - _healthMultiplier inclut maintenant le palier DE DIFFICULTÉ (x1/1,25/1,5, voir
+    // EnemySpawner.SpawnEnemy) EN PLUS du palier de temps normal (progression dans la partie + Sans Fin au-delà de
+    // 15 min) - et Die() (plus bas) fait suivre l'XP à la MOITIÉ de la croissance de _healthMultiplier (voir le
+    // commentaire du 2026-10-11 sur xpHealthMultiplier). Un ennemi Apocalyptique touché par les 2 facteurs à la
+    // fois gagnait donc un bonus d'XP PERMANENT lié au palier de difficulté, par-dessus la courbe de temps déjà
+    // calibrée - ce n'était jamais l'intention ("plus difficile" ne doit pas vouloir dire "on monte plus vite", ça
+    // viderait le sens du palier). _xpHealthMultiplier reçoit uniquement la partie TEMPORELLE (palier de vague +
+    // Sans Fin), sans le facteur de difficulté - la difficulté reste plus dure à tuer, sans rapporter plus d'XP.
+    // -1 = jamais fixé explicitement (chemins de spawn hors EnemySpawner, ex. tests) : Die() retombe alors sur
+    // _healthMultiplier en entier, comportement d'avant ce correctif.
+    private float _xpHealthMultiplier = -1f;
+    public void SetXpHealthMultiplier(float multiplier) => _xpHealthMultiplier = multiplier;
+
     // AJOUTE - systeme de Brulure (palier 3 Fireball). Un seul stack actif a la
     // fois : reapplique = redemarre la duree plutot que d'additionner plusieurs
     // brulures en parallele, pour eviter un scaling degats hors de controle si le
@@ -237,11 +251,23 @@ public class EnemyBase : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "quand il y a plein de tireur [...] c'est impossible d'esquiver et
+    // c'est mort instantanément") - compteur global des ennemis À DISTANCE actuellement vivants (EnemyShooter/
+    // EnemyBulb, voir leur IsRangedAttacker), tenu à jour ici plutôt que par une requête spatiale coûteuse. Lu par
+    // EnemySpawner.SpawnEnemy() pour refuser un tireur supplémentaire une fois le plafond atteint (redessine un
+    // ennemi de mêlée à la place) - la vraie source du problème n'est pas le dégât d'UN projectile mais le nombre
+    // de tireurs actifs EN MÊME TEMPS autour du joueur, qui rend l'esquive géométriquement impossible une fois
+    // encerclé de tous les côtés.
+    protected virtual bool IsRangedAttacker => false;
+    public static int ActiveRangedCount { get; private set; }
+
     protected virtual void OnEnable()
     {
         // AJOUTÉ (2026-10-04) - voir EnemySpatialGrid : s'enregistre pour la grille de séparation (remplace
         // Physics.OverlapSphereNonAlloc appelé individuellement par chaque ennemi chaque frame).
         EnemySpatialGrid.Register(this);
+
+        if (IsRangedAttacker) ActiveRangedCount++;
 
         _currentHealth = _maxHealth * _healthMultiplier;
         _isDead = false; // nouvelle vie à la sortie du pool (voir TakeDamage/Die)
@@ -280,6 +306,8 @@ public class EnemyBase : MonoBehaviour
     private void OnDisable()
     {
         EnemySpatialGrid.Unregister(this);
+
+        if (IsRangedAttacker) ActiveRangedCount = Mathf.Max(0, ActiveRangedCount - 1);
 
         PlayerController.OnPhantomDestroyed -= HandlePhantomDestroyed;
         GameManager.OnGameEnded -= HandleGameEnded;
@@ -320,10 +348,34 @@ public class EnemyBase : MonoBehaviour
         _currentTarget = _playerTransform;
     }
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "dans les map sans bordure, difficulté 1 et 2, quand le max
+    // d'ennemi à spawn, rien empêche le joueur de fuir à l'infini parce que plus rien ne peut spawn") - sur un axe
+    // sans mur (Modéré : les 2 axes, Violent : X seul, voir MapBoundaryUtils/DifficultyTiers), rien ne ramenait
+    // jamais un ennemi laissé loin derrière vers le joueur : une fois le plafond EnemySpatialGrid.Count atteint
+    // (voir EnemySpawner.SpawnWave), ces ennemis "perdus" continuaient d'occuper le budget de spawn pour toujours,
+    // empêchant tout nouvel ennemi d'apparaître près du joueur qui s'éloigne - Apocalyptique (boîte fermée des 2
+    // côtés) n'a pas ce problème, les murs forcent naturellement l'affrontement. Recyclé directement au pool (PAS
+    // un Die() : aucune XP/or/kill, ce n'est pas une mort) dès qu'un ennemi dépasse LeashDistance du VRAI joueur
+    // (jamais du Clone Fantôme, qui n'est pas pertinent ici) - EnemySpawner en fait alors spawner un autre, plus
+    // proche, à sa prochaine vague.
+    private const float LeashDistance = 40f; // nettement au-delà du plus grand rayon de spawn (22, voir EnemySpawner._spawnRadius)
+    private const float LeashDistanceSqr = LeashDistance * LeashDistance;
+
     private void Update()
     {
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
+
+        if (_playerTransform != null && (!MapBoundaryUtils.HasBoundX || !MapBoundaryUtils.HasBoundZ))
+        {
+            Vector3 toPlayerFlat = transform.position - _playerTransform.position;
+            toPlayerFlat.y = 0f;
+            if (toPlayerFlat.sqrMagnitude > LeashDistanceSqr)
+            {
+                if (ObjectPool.Instance != null) ObjectPool.Instance.ReturnToPool(_poolTag, gameObject);
+                return;
+            }
+        }
 
         if (_currentTarget == null)
             SetTarget(_playerTransform);
@@ -638,7 +690,8 @@ public class EnemyBase : MonoBehaviour
         // que prévu. L'XP suit maintenant la MOITIÉ de la croissance des PV au lieu de la totalité (reste à 1x au
         // palier 0, seulement 3x au lieu de 5x au dernier palier) - toujours croissant (pas de retour au problème
         // de 2026-10-07), mais la pente est allégée.
-        float xpHealthMultiplier = 1f + (_healthMultiplier - 1f) * 0.5f;
+        float xpBaseMultiplier = _xpHealthMultiplier >= 0f ? _xpHealthMultiplier : _healthMultiplier;
+        float xpHealthMultiplier = 1f + (xpBaseMultiplier - 1f) * 0.5f;
         if (XPGemSpawner.Instance != null)
             XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * xpHealthMultiplier);
 

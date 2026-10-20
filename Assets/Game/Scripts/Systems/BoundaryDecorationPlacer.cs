@@ -1,6 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+// MODIFIÉ (2026-10-19, diagnostic complet - refonte de la forme de carte par palier) - l'ancien modèle ("ceinture"
+// de décor juste à l'extérieur d'une zone carrée) ne correspond plus à aucun des 3 paliers : Modéré n'a plus AUCUN
+// décor (retour utilisateur : ce sont de vrais modèles 3D, bizarre à longer dans un monde censé être infini - voir
+// DifficultyTiers.cs), Violent est un tunnel infini sur X (décor généré dynamiquement par zones, voir
+// Systems/InfiniteDecorStreamer.cs, pas ce script), et Apocalyptique est une boîte FERMÉE sur ses 4 côtés où le
+// décor forme une bande STRICTEMENT EXTÉRIEURE aux murs (voir PlaceDecorationsOutsideBox - retour utilisateur
+// 2026-10-19 : le joueur doit pouvoir circuler librement partout à l'intérieur), coins compris, en profondeur,
+// dense mais sans superposition.
 public class BoundaryDecorationPlacer : MonoBehaviour
 {
     public enum DecorCategory { Tree, Rock }
@@ -17,30 +25,60 @@ public class BoundaryDecorationPlacer : MonoBehaviour
     [Header("Prefabs de décor")]
     [SerializeField] private DecorEntry[] _decorEntries;
 
-    [Header("Zone")]
-    [SerializeField] private float _zoneHalfSize = 60f;
-    [SerializeField] private float _beltWidth = 30f;
-    [SerializeField] private int _decorCount = 400;
-
+    // MODIFIÉ (2026-10-19, diagnostic complet - test en Play) - l'échelle 7,5-10 (arbres) héritée de l'ancienne
+    // "ceinture" (décor posé hors de la zone jouable, jamais vu de près) produit des couronnes qui se chevauchent
+    // visuellement dans la boîte Apocalyptique dès que 2 troncs sont à la distance minimale (4, qui ne mesurait que
+    // l'écart entre PIVOTS, pas entre couronnes réelles) - le joueur disparaissait entièrement sous le feuillage à
+    // l'écran. Réduit et l'espacement augmenté en conséquence pour que la boîte reste dense mais lisible.
     [Header("Échelle par catégorie")]
-    [SerializeField] private float _treeMinScale = 7.5f;
-    [SerializeField] private float _treeMaxScale = 10f;
-    [SerializeField] private float _rockMinScale = 4f;
-    [SerializeField] private float _rockMaxScale = 7.5f;
+    [SerializeField] private float _treeMinScale = 3.5f;
+    [SerializeField] private float _treeMaxScale = 5f;
+    [SerializeField] private float _rockMinScale = 2f;
+    [SerializeField] private float _rockMaxScale = 3.5f;
 
     [Header("Ratio (poids de tirage)")]
     [Range(0f, 1f)]
     [SerializeField] private float _treeProbability = 0.75f;
 
     [Header("Espacement")]
-    [SerializeField] private float _minDistanceBetweenDecor = 4f;
+    [SerializeField] private float _minDistanceBetweenDecor = 9f;
     [SerializeField] private int _maxAttemptsPerPoint = 30;
 
-    [ContextMenu("Générer la bordure de décor")]
-    private void GenerateBorder()
+    // AJOUTÉ (2026-10-19, session esthétique, retour utilisateur : "tu as mis les décors à l'intérieur du jeu,
+    // alors qu'ils doivent être strictement à l'extérieur des limites") - profondeur de la bande EXTÉRIEURE à la
+    // boîte où le décor peut être posé (voir PlaceDecorationsOutsideBox ci-dessous).
+    [SerializeField] private float _beltWidth = 18f;
+
+    // Modéré n'a plus de décor du tout (les anciens enfants posés à la main ont été retirés de la scène). Violent
+    // est géré par InfiniteDecorStreamer. Seul Apocalyptique utilise ce script, pour remplir sa boîte fermée.
+    // ÉTENDU (2026-10-20, carrousel de difficulté) - le palier de difficulté (et sa carte) s'appliquant maintenant
+    // aussi en Sans fin et Ruée de boss (voir MapBoundaryUtils.ResetForNewRun), le décor qui marque visuellement
+    // les murs doit suivre - sans ça, un palier Apocalyptique en Sans fin aurait des murs invisibles sans aucune
+    // bande de décor pour les signaler.
+    private void Start()
+    {
+        if (!(GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)) return;
+        if (DifficultyTiers.Current != DifficultyTier.Apocalyptic) return;
+
+        DifficultyTiers.GetBounds(DifficultyTier.Apocalyptic, out float minX, out float maxX, out float minZ, out float maxZ);
+        PlaceDecorationsOutsideBox(minX, maxX, minZ, maxZ, DifficultyTiers.ApocalypticDecorCount);
+    }
+
+    // CORRIGÉ (2026-10-19, session esthétique, retour utilisateur : "tu as mis les décors à l'intérieur du jeu,
+    // alors qu'ils doivent être strictement à l'extérieur des limites") - remplissait TOUTE la boîte (coins
+    // compris) de décor ; le joueur doit pouvoir se déplacer librement partout à l'intérieur des 4 murs. Les
+    // candidats sont désormais tirés dans une boîte EXTÉRIEURE élargie de _beltWidth sur chaque côté, puis tout
+    // point qui tombe encore À L'INTÉRIEUR de la boîte jouable est rejeté - ce qui, par construction, couvre aussi
+    // les 4 coins (un point hors de la boîte jouable mais dans le coin de la boîte élargie passe le test) sans
+    // aucun cas particulier. decorCount est un PLAFOND : le nombre réellement posé dépend de ce qui tient sans
+    // violer _minDistanceBetweenDecor (voir le journal en fin de méthode).
+    private void PlaceDecorationsOutsideBox(float minX, float maxX, float minZ, float maxZ, int decorCount)
     {
         for (int i = transform.childCount - 1; i >= 0; i--)
-            DestroyImmediate(transform.GetChild(i).gameObject);
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+            if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
+        }
 
         List<DecorEntry> trees = new List<DecorEntry>();
         List<DecorEntry> rocks = new List<DecorEntry>();
@@ -50,17 +88,27 @@ public class BoundaryDecorationPlacer : MonoBehaviour
             else rocks.Add(entry);
         }
 
+        float outerMinX = minX - _beltWidth;
+        float outerMaxX = maxX + _beltWidth;
+        float outerMinZ = minZ - _beltWidth;
+        float outerMaxZ = maxZ + _beltWidth;
+
         List<Vector3> placedPositions = new List<Vector3>();
         int placedCount = 0;
 
-        for (int i = 0; i < _decorCount; i++)
+        for (int i = 0; i < decorCount; i++)
         {
             Vector3 position = Vector3.zero;
             bool foundValidSpot = false;
 
             for (int attempt = 0; attempt < _maxAttemptsPerPoint; attempt++)
             {
-                Vector3 candidate = GetRandomBeltPosition();
+                float x = Random.Range(outerMinX, outerMaxX);
+                float z = Random.Range(outerMinZ, outerMaxZ);
+                bool insidePlayableBox = x > minX && x < maxX && z > minZ && z < maxZ;
+                if (insidePlayableBox) continue; // strictement à l'extérieur des murs
+
+                Vector3 candidate = new Vector3(x, 0f, z);
                 if (IsFarEnoughFromOthers(candidate, placedPositions))
                 {
                     position = candidate;
@@ -96,7 +144,7 @@ public class BoundaryDecorationPlacer : MonoBehaviour
             instance.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
         }
 
-        Debug.Log($"Décor généré : {placedCount} / {_decorCount} éléments placés.");
+        Debug.Log($"Décor (boîte Apocalyptique) généré : {placedCount} / {decorCount} éléments placés.");
     }
 
     private bool IsFarEnoughFromOthers(Vector3 candidate, List<Vector3> placedPositions)
@@ -107,20 +155,5 @@ public class BoundaryDecorationPlacer : MonoBehaviour
                 return false;
         }
         return true;
-    }
-
-    private Vector3 GetRandomBeltPosition()
-    {
-        int side = Random.Range(0, 4);
-        float alongEdge = Random.Range(-_zoneHalfSize, _zoneHalfSize);
-        float depthInBelt = Random.Range(_zoneHalfSize, _zoneHalfSize + _beltWidth);
-
-        switch (side)
-        {
-            case 0: return new Vector3(alongEdge, 0f, depthInBelt);
-            case 1: return new Vector3(alongEdge, 0f, -depthInBelt);
-            case 2: return new Vector3(depthInBelt, 0f, alongEdge);
-            default: return new Vector3(-depthInBelt, 0f, alongEdge);
-        }
     }
 }

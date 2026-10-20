@@ -10,16 +10,30 @@ public static class SaveSystem
     // joueur reste intacte, les changements ne vivent qu'en mémoire).
     public static bool SuppressWrites;
 
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §6) - numéro de version du format de sauvegarde, pour pouvoir
+    // migrer proprement un jour sans deviner si un save vient d'avant ou après un changement de structure.
+    public const int CurrentVersion = 1;
+
     public static void Save(SaveData data)
     {
         if (SuppressWrites) return;
         try
         {
+            data.version = CurrentVersion;
             string json = JsonUtility.ToJson(data, true);
+            string tempPath = _savePath + ".tmp";
+            File.WriteAllText(tempPath, json);
+
+            // CORRIGÉ (2026-10-18, diagnostic complet - audit §6) - écriture ATOMIQUE : avant, File.WriteAllText
+            // écrivait DIRECTEMENT sur save.json ; une coupure de courant pile à ce moment-là laissait un fichier
+            // tronqué (JSON invalide) - récupérable via le backup, mais save.json restait cassé jusqu'à la
+            // sauvegarde suivante. File.Replace() écrit d'abord sur un fichier à part, puis ne remplace save.json
+            // (et ne met à jour save.bak avec l'ancien contenu) qu'en UNE SEULE opération atomique du système de
+            // fichiers : plus aucune fenêtre où save.json peut se retrouver à moitié écrit.
             if (File.Exists(_savePath))
-                File.Copy(_savePath, _backupPath, true);
-            File.WriteAllText(_savePath, json);
-            Debug.Log($"Sauvegarde réussie : {_savePath}");
+                File.Replace(tempPath, _savePath, _backupPath);
+            else
+                File.Move(tempPath, _savePath);
         }
         catch (Exception e)
         {
@@ -73,6 +87,18 @@ public static class SaveSystem
                 Debug.LogError($"Backup corrompu : {e.Message}");
             }
         }
+        // CORRIGÉ (2026-10-18, diagnostic complet - audit §6) - avant, un save ET un backup tous les deux illisibles
+        // faisaient directement repartir sur une SaveData vierge, qui écrasait le fichier corrompu dès la prochaine
+        // sauvegarde automatique - aucune chance de l'inspecter après coup. Copié en save.corrupt d'abord.
+        try
+        {
+            if (File.Exists(_savePath))
+                File.Copy(_savePath, Application.persistentDataPath + "/save.corrupt", true);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Impossible de conserver le fichier corrompu : {e.Message}");
+        }
         Debug.LogError("Création d'une nouvelle sauvegarde vierge.");
         return new SaveData();
     }
@@ -80,10 +106,21 @@ public static class SaveSystem
 [System.Serializable]
 public class SaveData
 {
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §6) - permet de savoir, à la lecture, si un save vient d'avant
+    // ou après un futur changement de structure (migration). 0 = sauvegarde créée avant l'ajout de ce champ.
+    public int version = 0;
+
     // Statistiques
     public int totalGold = 0;
     public int totalRuns = 0;
     public float bestTime = 0f;
+    // AJOUTÉ (2026-10-20, carrousel de difficulté - "il faut aussi adapter le 'meilleur temps' par difficulté,
+    // parce que c'est pas le même pour tous") - bestTime ci-dessus devient le record du palier MODÉRÉ uniquement
+    // (migration dans MetaProgressionManager.EnsureBestTimeByTierArray, même technique que bestTimeByCharacter) ;
+    // Violent/Apocalyptique démarrent à 0 pour chaque joueur. Null sur une sauvegarde pré-existante (JsonUtility) -
+    // toujours passer par EnsureBestTimeByTierArray()/MetaProgressionManager.GetBestTime(), jamais lire ce tableau
+    // directement avant qu'il ait été redimensionné.
+    public float[] bestTimeByTier;
     public int bestKills = 0;
     // AJOUTE - 2 records supplementaires (le systeme ne couvrait que temps/kills
     // jusqu'ici), pour enrichir les messages de record du Game Over.

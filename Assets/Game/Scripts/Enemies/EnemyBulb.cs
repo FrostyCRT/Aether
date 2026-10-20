@@ -13,11 +13,21 @@ public class EnemyBulb : EnemyBase
     [SerializeField] private float _fanAngle = 60f;
 
     [Header("Cadence")]
+    // CORRIGÉ (2026-10-21, retour utilisateur : "tu as mal compris, c'est pas la cadence mais la vitesse du
+    // projectile lui-même [...] que je voulais ralentir") - la demande du 2026-10-20 (suite 17, point 4) avait été
+    // mal interprétée comme une cadence à ralentir (3s -> 4,5s) ; cadence redescendue à sa valeur d'origine, voir
+    // _projectileSpeed ci-dessous pour le VRAI correctif.
     [Tooltip("Secondes entre deux salves (gobelin tireur : ~0,67 s).")]
     [SerializeField] private float _fireInterval = 3f;
     [Tooltip("Délai avant la première salve après l'apparition (évite un tir instantané au spawn).")]
     [SerializeField] private float _firstShotDelay = 1.2f;
     [SerializeField] private float _attackRange = 14f;
+
+    // AJOUTÉ (2026-10-21, retour utilisateur : "la vitesse du projectile lui-même pour se déplacer que je voulais
+    // ralentir") - EnemyProjectile est PARTAGÉ avec le gobelin tireur/les boss (voir EnemyProjectile._speed, 6 par
+    // défaut) : override local plutôt que de toucher au prefab partagé, pour ne ralentir QUE les tirs du Bulbe.
+    [Tooltip("Vitesse de déplacement des projectiles du Bulbe (vitesse par défaut du prefab partagé : 6).")]
+    [SerializeField] private float _projectileSpeed = 3.5f;
 
     [Header("Visuel")]
     [SerializeField] private Transform _projectileSpawnPoint;
@@ -26,6 +36,9 @@ public class EnemyBulb : EnemyBase
 
     private float _fireTimer;
     private EnemyAnimatorController _bulbAnimator;
+
+    // AJOUTÉ (2026-10-20) - voir EnemyBase.ActiveRangedCount/IsRangedAttacker (plafond de tireurs simultanés).
+    protected override bool IsRangedAttacker => true;
 
     protected override void OnEnable()
     {
@@ -88,7 +101,7 @@ public class EnemyBulb : EnemyBase
             if (projectileGO == null) continue;
 
             EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-            if (projectile != null) projectile.Init(direction);
+            if (projectile != null) projectile.Init(direction, "horde", _projectileSpeed);
         }
     }
 }

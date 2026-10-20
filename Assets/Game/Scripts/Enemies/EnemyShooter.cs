@@ -15,6 +15,9 @@ public class EnemyShooter : EnemyBase
     private float _fireTimer = 0f;
     private EnemyAnimatorController _shooterAnimatorController;
 
+    // AJOUTÉ (2026-10-20) - voir EnemyBase.ActiveRangedCount/IsRangedAttacker (plafond de tireurs simultanés).
+    protected override bool IsRangedAttacker => true;
+
     private static readonly EnemyBase[] _shooterNeighbourBuffer = new EnemyBase[8];
 
     // CORRIGÉ (2026-10-05) - retour utilisateur, partie réelle de 15 min : "les ennemis shooter ont des bugs de

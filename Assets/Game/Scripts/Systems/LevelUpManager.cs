@@ -23,6 +23,23 @@ public class LevelUpManager : MonoBehaviour
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
 
+    // AJOUTÉ (2026-10-20, chantier satisfaction - "ça montre pas que c'est un vrai pas en avant et une récompense
+    // pour le joueur") - avant ce correctif, DisplayLevelUp() gelait Time.timeScale=0 et affichait les 3 cartes
+    // DANS LA MÊME FRAME que la montée de niveau : aucun instant pour que le joueur PERÇOIVE que quelque chose de
+    // bien vient de se produire avant d'être déjà face à un choix. Les meilleurs survivors du genre (Vampire
+    // Survivors, Brotato) marquent ce moment par un bref "temps fort" JOUABLE (le jeu continue de tourner un
+    // instant) avant d'ouvrir l'écran de choix - un vrai rythme en 2 temps : (1) la récompense arrive et se VOIT
+    // à l'endroit même où le joueur vient de se battre, (2) puis seulement le choix se fige. _preShowTimer tourne
+    // en temps RÉEL NON affecté (Time.deltaTime normal, le jeu n'est pas encore en pause à ce stade).
+    [Header("Fanfare avant l'ouverture du panel (temps réel, jeu pas encore en pause)")]
+    [Tooltip("Durée du temps fort jouable avant que l'écran de choix ne se fige (anneau doré + étincelles au joueur).")]
+    [SerializeField] private float _preShowFanfareDuration = 0.3f;
+    [SerializeField] private float _preShowRingRadius = 2.4f;
+    [SerializeField] private float _preShowRingDuration = 0.4f;
+    private static readonly Color FanfareGold = new Color(1f, 0.788f, 0.302f); // même or que _dotColorMax (UpgradeUI) - identité "palier franchi"
+    private bool _preShowPending = false;
+    private float _preShowTimer = 0f;
+
     private readonly Dictionary<UpgradeData, int> _upgradeLevels = new Dictionary<UpgradeData, int>();
 
     private readonly List<UpgradeData> _obtainedOrder = new List<UpgradeData>();
@@ -76,8 +93,52 @@ public class LevelUpManager : MonoBehaviour
         _hasOfferedCharacterUnlock = false;
     }
 
+    // AJOUTÉ (2026-10-18, retour utilisateur : "si on prend un niveau et qu'on meurt, ou gagne la partie [...] il
+    // peut encore y avoir le levelup panel") - appelée par GameManager dès que TriggerGameOver()/TriggerVictory()
+    // se déclenche (AVANT le délai de _gameOverDelay/_victoryDelay), pour fermer immédiatement un panneau de
+    // level-up resté ouvert ou en file (rafale de plusieurs niveaux d'un coup). Remet EXACTEMENT le même état que
+    // la sortie normale de SelectUpgrade() (Time.timeScale/IsPaused/HUD), mais sans appliquer de carte : sans ce
+    // rattrapage, le jeu restait figé en pause (Time.timeScale=0, posé par DisplayLevelUp) derrière l'écran de fin,
+    // qui ne gère lui-même aucun minuteur capable de le débloquer.
+    public void CancelForGameEnd()
+    {
+        bool wasShowing = _waitingForChoice || _showingDelay || _preShowPending;
+        _waitingForChoice = false;
+        _showingDelay = false;
+        _preShowPending = false;
+        _pendingLevelUps = 0;
+
+        if (_levelUpPanel != null)
+            _levelUpPanel.SetActive(false);
+        if (_upgradeUI != null)
+            _upgradeUI.gameObject.SetActive(false);
+
+        if (!wasShowing) return;
+
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetPausedFlag(false);
+        if (GameUI.Instance != null)
+            GameUI.Instance.SetHUDVisible(true);
+    }
+
     private void Update()
     {
+        // Temps réel NORMAL (Time.deltaTime, pas unscaled) - à ce stade le jeu n'est pas encore en pause,
+        // contrairement à _showingDelay ci-dessous (qui tourne lui pendant une rafale déjà figée). Le joueur garde
+        // le contrôle pendant ce bref temps fort : s'il meurt ou que la partie se termine pendant cette fenêtre,
+        // CancelForGameEnd() l'interrompt proprement (voir garde IsGameOver dans DisplayLevelUp()).
+        if (_preShowPending)
+        {
+            _preShowTimer -= Time.deltaTime;
+            if (_preShowTimer <= 0f)
+            {
+                _preShowPending = false;
+                DisplayLevelUp();
+            }
+            return;
+        }
+
         if (_showingDelay)
         {
             _delayTimer -= Time.unscaledDeltaTime;
@@ -108,13 +169,58 @@ public class LevelUpManager : MonoBehaviour
 
     public void ShowLevelUp()
     {
+        // AJOUTÉ (2026-10-18, retour utilisateur : "si on prend un niveau et qu'on meurt, ou gagne la partie [...]
+        // il peut encore y avoir le levelup panel") - XPSystem.AddXP() a bien un garde IsGameOver, mais seulement
+        // au moment où l'XP est ajoutée ; rien n'empêchait un palier déjà en file (_pendingLevelUps) de s'afficher
+        // plus tard via la cascade de SelectUpgrade(), ni un appel direct de ShowLevelUp() passé entre les mailles,
+        // une fois la partie terminée. Garde défensive directement ici, en plus de celle de XPSystem.
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         _pendingLevelUps++;
+        if (_waitingForChoice || _showingDelay || _preShowPending) return;
+        BeginPreShowFanfare();
+    }
+
+    // AJOUTÉ (2026-10-18, diagnostic complet - mécanique du coffre de boss) - point d'entrée dédié pour une
+    // récompense qui n'est PAS de l'XP (le coffre de boss accorde directement des paliers, sans jamais passer par
+    // XPSystem.AddXP/LevelUp). Réutilise exactement le même pipeline que les level-up normaux (file d'attente,
+    // cascade de plusieurs choix d'affilée, pause, 3 cartes à chaque fois) - un coffre qui "accorde 2 upgrades"
+    // déclenche donc 2 VRAIS tirages complets à la suite, pas un choix unique parmi 2 cartes.
+    public void GrantFreePicks(int count)
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        if (count <= 0) return;
+        _pendingLevelUps += count;
         if (_waitingForChoice || _showingDelay) return;
         DisplayLevelUp();
     }
 
+    // AJOUTÉ (2026-10-20, chantier satisfaction) - temps fort JOUABLE déclenché à l'INSTANT où le joueur franchit un
+    // palier (pas une fois le panel déjà ouvert) : anneau doré qui s'étend depuis le joueur, pendant que le jeu
+    // tourne encore normalement - le joueur VOIT la récompense arriver à l'endroit même où il combat, avant que
+    // l'écran ne se fige sur le choix. Reprend exactement les mêmes primitives déjà prouvées (ExpandingRingVFX,
+    // ImpactSparkVFX) que BossChest.OnTriggerEnter, pour la même identité visuelle "récompense" dans tout le jeu.
+    private void BeginPreShowFanfare()
+    {
+        GameObject playerGO = GameObject.FindWithTag("Player");
+        Vector3 origin = playerGO != null ? playerGO.transform.position + Vector3.up * 0.3f : Vector3.zero;
+
+        ExpandingRingVFX.Spawn(origin, _preShowRingRadius, FanfareGold, _preShowRingDuration);
+        ImpactSparkVFX.Spawn(origin, FanfareGold, 1.6f);
+
+        _preShowPending = true;
+        _preShowTimer = _preShowFanfareDuration;
+    }
+
     private void DisplayLevelUp()
     {
+        // Même garde que ci-dessus : DisplayLevelUp() est aussi rappelée par la cascade (choix suivant d'une rafale
+        // de plusieurs niveaux d'un coup) - si la partie se termine PENDANT cette rafale, elle ne doit pas continuer
+        // à proposer de nouvelles cartes.
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            CancelForGameEnd();
+            return;
+        }
         if (_pendingLevelUps <= 0) return;
 
         _pendingLevelUps--;
@@ -167,7 +273,19 @@ public class LevelUpManager : MonoBehaviour
         _currentChoices = choices;
 
         if (_levelUpPanel != null)
+        {
             _levelUpPanel.SetActive(true);
+            // AJOUTÉ (2026-10-20, retour utilisateur : "quand on met un ult, l'écran est bleu, et si on level up
+            // pendant l'absorption, l'écran est encore un peu bleu même avec les cartes") - l'effet plein écran de
+            // l'Ultime (GameUI._ultVfxRoot) s'ajoute toujours en DERNIER enfant du Canvas (SetAsLastSibling, voir
+            // EnsureUltimateVFXBuilt) pour être sûr de passer au-dessus du HUD - mais si le level-up panel était
+            // déjà placé APRÈS lui dans l'ordre des enfants (ou le devient par un futur changement d'ordre), il
+            // peinturlure la teinte bleue PAR-DESSUS les cartes elles-mêmes tant que l'effet n'a pas fini de
+            // s'éteindre tout seul (~1,3s, voir UltimateVFXInRoutine). Remonter le panel en DERNIER enfant À SON
+            // TOUR, à chaque ouverture, garantit qu'il reste toujours au-dessus de tout effet plein écran déjà
+            // présent : le bleu reste visible derrière le fond sombre du panel/les cartes, jamais par-dessus.
+            _levelUpPanel.transform.SetAsLastSibling();
+        }
 
         if (_upgradeUI != null)
             _upgradeUI.gameObject.SetActive(true);
@@ -176,8 +294,11 @@ public class LevelUpManager : MonoBehaviour
         // etc. n'ont rien à faire derrière un choix de carte) ; remis dans SelectUpgrade() uniquement une fois
         // TOUS les level-up en attente traités (même logique que GameManager.SetPausedFlag ci-dessus - pas
         // remontré puis re-masqué entre deux cartes d'une même rafale de montées de niveau).
+        // MODIFIÉ (2026-10-19, retour utilisateur : "je veux que tu affiche quand même la barre de vie... si il y a
+        // l'upgrade Soin qui tombe, le joueur ne peut pas savoir à l'avance combien de vie il a") - keepHealthBar
+        // garde uniquement la barre de vie visible, tout le reste du HUD disparaît comme avant.
         if (GameUI.Instance != null)
-            GameUI.Instance.SetHUDVisible(false);
+            GameUI.Instance.SetHUDVisible(false, keepHealthBar: true);
 
         _upgradeUI.DisplayUpgrades(_currentChoices);
     }

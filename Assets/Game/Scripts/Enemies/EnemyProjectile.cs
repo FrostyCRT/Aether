@@ -3,6 +3,11 @@
 public class EnemyProjectile : MonoBehaviour
 {
     [SerializeField] private float _speed = 6f;
+    // AJOUTÉ (2026-10-21) - garde la valeur sérialisée d'origine (prefab partagé, UNE SEULE instance de pool pour
+    // tous les tireurs) pour pouvoir la restaurer en Init() : sans ça, un projectile dont la vitesse a été modifiée
+    // par un override (voir Init plus bas) garderait cette vitesse modifiée à vie une fois recyclé par le pool, même
+    // pour un tireur différent qui n'a jamais demandé d'override.
+    private float _baseSpeed = -1f;
     [SerializeField] private float _maxRange = 40f;
     [SerializeField] private float _damage = 10f; // Ajout de la stat de dégâts manquante
 
@@ -15,9 +20,19 @@ public class EnemyProjectile : MonoBehaviour
     // à chaque Init.
     private string _damageSource = "horde";
 
-    public void Init(Vector3 direction, string damageSource = "horde")
+    // AJOUTÉ (2026-10-21, retour utilisateur : "pour la cadence des bulbes [...] c'est pas la cadence mais la
+    // vitesse du projectile lui-même pour se déplacer que je voulais ralentir" - correction du point 4 de la suite
+    // 17, mal compris la 1ère fois : la cadence de tir avait été ralentie (3s -> 4,5s, voir EnemyBulb._fireInterval)
+    // alors que la vraie demande portait sur la VITESSE DE DÉPLACEMENT du projectile. Cadence redescendue à 3s.
+    // EnemyProjectile est PARTAGÉ (Bulb/EnemyShooter/BossDeer/BossCorruptedSource/BossBase) : un override optionnel
+    // ici, plutôt que de changer _speed sur le prefab, pour ne ralentir QUE les tirs du Bulbe sans toucher aux
+    // autres tireurs. speedOverride <= 0 = garde _speed par défaut (comportement inchangé pour tous les appelants
+    // existants qui n'utilisent pas ce paramètre).
+    public void Init(Vector3 direction, string damageSource = "horde", float speedOverride = -1f)
     {
         _damageSource = damageSource;
+        if (_baseSpeed < 0f) _baseSpeed = _speed; // capturée une seule fois, à la toute première utilisation réelle
+        _speed = speedOverride > 0f ? speedOverride : _baseSpeed;
         direction.y = 0f; // AJOUTÉ — sécurité, empêche toute trajectoire qui dériverait en hauteur
         _direction = direction.normalized;
 

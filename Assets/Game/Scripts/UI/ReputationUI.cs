@@ -128,6 +128,10 @@ public class ReputationUI : MonoBehaviour
 
         if (_debugResetButton != null)
         {
+            // CORRIGÉ (2026-10-18, diagnostic complet - audit §3) - ce bouton restait VISIBLE et CLIQUABLE en
+            // version release (contrairement à celui de l'arbre de compétences, déjà caché par Debug.isDebugBuild) :
+            // n'importe quel joueur pouvait se donner 20 000 Éclats gratuitement. Voir DevOnly.
+            DevOnly.Show(_debugResetButton.gameObject);
             _debugResetButton.onClick.RemoveAllListeners();
             _debugResetButton.onClick.AddListener(OnDebugResetClicked);
         }
@@ -173,8 +177,9 @@ public class ReputationUI : MonoBehaviour
             _shownGold = Mathf.MoveTowards(_shownGold, meta.Data.totalGold, Mathf.Max(3f, Mathf.Abs(_shownGold - meta.Data.totalGold) * 6f) * Time.unscaledDeltaTime);
             _shownEclats = Mathf.MoveTowards(_shownEclats, meta.TotalEclats, Mathf.Max(3f, Mathf.Abs(_shownEclats - meta.TotalEclats) * 6f) * Time.unscaledDeltaTime);
             int g = Mathf.RoundToInt(_shownGold), e = Mathf.RoundToInt(_shownEclats);
-            if (g != _lastGold && _goldText != null) { _goldText.text = g.ToString(); _lastGold = g; }
-            if (e != _lastEclats && _eclatsText != null) { _eclatsText.text = e.ToString(); _lastEclats = e; }
+            // MODIFIÉ (2026-10-18, diagnostic complet - audit §9, séparateur de milliers)
+            if (g != _lastGold && _goldText != null) { _goldText.text = Loc.Int(g); _lastGold = g; }
+            if (e != _lastEclats && _eclatsText != null) { _eclatsText.text = Loc.Int(e); _lastEclats = e; }
 
             if (!_statCardsSynced)
             {

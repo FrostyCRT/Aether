@@ -80,7 +80,72 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - fixe la taille de la zone jouable pour
+        // TOUTE la partie, avant que quoi que ce soit (spawner, boss, décor de bordure) n'en ait besoin. En premier
+        // dans ce Awake() pour être certain que ça s'exécute avant le Start() de n'importe quel autre script, quel
+        // que soit l'ordre d'exécution des scripts de la scène (Unity garantit tous les Awake avant tous les Start,
+        // jamais l'inverse entre deux Awake de GameObjects différents - GameManager doit donc le faire au plus tôt).
+        MapBoundaryUtils.ResetForNewRun();
+        ScaleGroundToZone();
+
         SpawnSelectedCharacter();
+    }
+
+    // MODIFIÉ (2026-10-19, diagnostic complet - refonte de la forme de carte) - un seul ratio ne suffit plus : X et
+    // Z peuvent avoir des bornes différentes (tunnel du Violent) ou être sans limite (Modéré entier, X du Violent).
+    // Un axe sans limite reçoit une demi-taille "infinie" en pratique (très au-delà de ce qu'une partie peut
+    // parcourir) plutôt qu'un vrai sol procédural sans fin - recommandation acceptée : simple et fiable, le joueur
+    // n'atteindra jamais ce bord en jouant normalement. Un axe borné reçoit une marge de 30 % au-delà du mur
+    // invisible, pour qu'il n'y ait jamais de bord de sol visible avant le mur lui-même. Multiplie l'échelle
+    // EXISTANTE (pas une valeur en dur) : reste correct si l'échelle de base du sol est retouchée dans l'éditeur.
+    private const float InfiniteGroundHalfSize = 2000f;
+    private const float ReferenceHalfSize = 55f; // base historique (carte Modéré d'avant cette passe)
+    private const float BoundedGroundMargin = 1.3f;
+
+    private void ScaleGroundToZone()
+    {
+        GameObject ground = GameObject.Find("Ground");
+        if (ground == null) return;
+
+        float halfX = MapBoundaryUtils.HasBoundX
+            ? (MapBoundaryUtils.MaxX - MapBoundaryUtils.MinX) * 0.5f * BoundedGroundMargin
+            : InfiniteGroundHalfSize;
+        float halfZ = MapBoundaryUtils.HasBoundZ
+            ? (MapBoundaryUtils.MaxZ - MapBoundaryUtils.MinZ) * 0.5f * BoundedGroundMargin
+            : InfiniteGroundHalfSize;
+
+        float ratioX = halfX / ReferenceHalfSize;
+        float ratioZ = halfZ / ReferenceHalfSize;
+
+        Vector3 scale = ground.transform.localScale;
+        ground.transform.localScale = new Vector3(scale.x * ratioX, scale.y, scale.z * ratioZ);
+
+        // CORRIGÉ (2026-10-19, retour utilisateur : "la texture est étirée, c'est pas du tout comme avant") - un
+        // Plane Unity mappe son axe U sur X local et son axe V sur Z local : agrandir SEULEMENT l'échelle du
+        // transform garde le nombre de répétitions de la texture fixe (le "Tiling" du matériau), donc chaque tuile
+        // s'étire pour couvrir un plan plus grand. Il faut aussi multiplier le Tiling par le même ratio, pour que
+        // la texture d'herbe garde exactement la même taille apparente au sol qu'avant, quel que soit le palier.
+        // .material (pas .sharedMaterial) : instancie une copie à l'exécution, ne touche jamais l'asset du projet.
+        Renderer groundRenderer = ground.GetComponent<Renderer>();
+        if (groundRenderer != null)
+        {
+            Vector2 baseTiling = groundRenderer.sharedMaterial.mainTextureScale;
+            Material groundMat = groundRenderer.material; // instancie une copie, voir commentaire ci-dessus
+            groundMat.mainTextureScale = new Vector2(baseTiling.x * ratioX, baseTiling.y * ratioZ);
+
+            // AJOUTÉ (2026-10-20, chantier graphismes - normal map + calque de variation macro du sol) - la "Detail
+            // Albedo Map" a son PROPRE tiling (_DetailAlbedoMap_ST), indépendant de _BaseMap_ST (contrairement au
+            // normal map _BumpMap, qui réutilise directement l'UV de base - rien à faire pour lui). Sans ce correctif,
+            // le calque de variation garderait un nombre de répétitions FIXE quel que soit le palier, et chaque tache
+            // deviendrait géante sur un sol agrandi (palier Modéré, ratio ×36) - même raisonnement que le correctif de
+            // tiling de 2026-10-19 ci-dessus, appliqué au 2e calque de texture.
+            if (groundMat.HasProperty("_DetailAlbedoMap"))
+            {
+                Vector2 detailTiling = groundRenderer.sharedMaterial.GetTextureScale("_DetailAlbedoMap");
+                groundMat.SetTextureScale("_DetailAlbedoMap", new Vector2(detailTiling.x * ratioX, detailTiling.y * ratioZ));
+            }
+        }
     }
 
     private void SpawnSelectedCharacter()
@@ -332,6 +397,15 @@ public class GameManager : MonoBehaviour
         if (_isGameOver) return;
         _isGameOver = true;
         _deathCause = deathCause;
+        // AJOUTÉ (2026-10-18, retour utilisateur : "si on prend un niveau et qu'on meurt [...] il peut encore y
+        // avoir le levelup panel") - ferme immédiatement un panneau de level-up resté ouvert/en file à cet instant
+        // (ex: WaveManager.OnBossDied/mort du joueur sans garde IsPaused, pendant qu'une rafale de plusieurs
+        // niveaux était en cours de choix) - sinon Time.timeScale restait à 0 (posé par le level-up) et l'Invoke
+        // ci-dessous, basé sur le temps mis à l'échelle, ne se déclenchait jamais tant que le joueur n'avait pas
+        // fini de choisir ses cartes, avec le panneau de level-up visible en même temps que l'écran de fin une fois
+        // débloqué.
+        if (LevelUpManager.Instance != null)
+            LevelUpManager.Instance.CancelForGameEnd();
         OnGameEnded?.Invoke();
         // MODIFIÉ (2026-10-01) - délai réglable (_gameOverDelay) au lieu de 1.5 s en dur.
         Invoke(nameof(ShowGameOver), _gameOverDelay);
@@ -395,6 +469,10 @@ public class GameManager : MonoBehaviour
     {
         if (_isGameOver) return;
         _isGameOver = true;
+        // AJOUTÉ (2026-10-18) - voir le commentaire identique dans TriggerGameOver() : ferme immédiatement un
+        // panneau de level-up resté ouvert/en file (WaveManager.OnBossDied() n'a aucune garde IsPaused).
+        if (LevelUpManager.Instance != null)
+            LevelUpManager.Instance.CancelForGameEnd();
         OnGameEnded?.Invoke();
         // MODIFIÉ (2026-10-01) - délai réglable (_victoryDelay) au lieu de 2 s en dur.
         Invoke(nameof(ShowVictory), _victoryDelay);

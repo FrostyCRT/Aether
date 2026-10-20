@@ -36,7 +36,13 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     [SerializeField] private float _slowMultiplier = 0.55f;
     [SerializeField] private int _puddleCount = 8;
     [SerializeField] private Color _scorchedTint = new Color(0.85f, 0.35f, 0.08f); // braises - cohérent avec ColorFireball
-    [SerializeField] private float _spawnDistance = 2.8f;
+    // MODIFIÉ (2026-10-20, retour utilisateur : "la fusion boule de feu plus boue fait spawn la boue bien trop
+    // proche du joueur") - à 2,8 avec un rayon de flaque de 1,6, le bord INTÉRIEUR de chaque flaque tombait à
+    // 2,8-1,6 = 1,2 unité du joueur - dans la zone visuelle du personnage lui-même (collision/sprite du joueur),
+    // pas seulement dans la zone de corps-à-corps des ennemis juste à côté. Remonté à 4 : bord intérieur à 2,4
+    // unités, nettement hors du modèle du joueur, tout en gardant le même rayon de flaque (1,6, choisi en
+    // 2026-10-18 pour éviter que les 8 flaques fusionnent visuellement en un seul bloc).
+    [SerializeField] private float _spawnDistance = 4f;
     [SerializeField] private float _groundY = 0.2f;
     [SerializeField] private float _rotationPerWave = 25f;
 
@@ -91,7 +97,9 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
             float rad = angle * Mathf.Deg2Rad;
             Vector3 offset = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * _spawnDistance;
             Vector3 spawnPos = transform.position + offset;
-            spawnPos = WaveManager.MapBoundaryUtils.ClampToZone(spawnPos);
+            // MODIFIÉ (2026-10-18, diagnostic complet - audit §10) - WaveManager.MapBoundaryUtils (copie imbriquée
+            // en double) a été supprimée ; référence désormais la classe autonome Systems/MapBoundaryUtils.cs.
+            spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
             spawnPos.y = _groundY;
 
             GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", spawnPos, Quaternion.identity);

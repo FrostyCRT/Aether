@@ -82,7 +82,7 @@ public static class LocTablePL
         { "Réinitialiser", "Resetuj" }, { "Page « {0} » réinitialisée.", "Zresetowano stronę „{0}”." }, { "TOUT RÉINITIALISER ?", "ZRESETOWAĆ WSZYSTKO?" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "Wszystkie ustawienia i klawisze wrócą do wartości domyślnych." },
         { "Tout réinitialiser", "Resetuj wszystko" }, { "Tous les paramètres ont été réinitialisés.", "Wszystkie ustawienia zostały zresetowane." },
-        { "QUITTER LE JEU ?", "WYJŚĆ Z GRY?" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "Gra zostanie zamknięta. Twoje ustawienia są zapisane." },
+        { "QUITTER LE JEU ?", "WYJŚĆ Z GRY?" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "Gra zostanie zamknięta. Twoje ustawienia są zapisane." },
         { "Quitter", "Wyjdź" }, { "Disposition « {0} » appliquée.", "Zastosowano układ „{0}”." }, { "OUI", "TAK" }, { "NON", "NIE" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "Tylko strzałki" },
 
@@ -94,7 +94,7 @@ public static class LocTablePL
         { "Un cheveu de ton meilleur niveau...", "O włos od najlepszego poziomu..." }, { "Nouveau record d'Or en une partie : {0} !", "Nowy rekord złota w jednej rozgrywce: {0}!" },
         { "Tout près de ton record d'Or...", "Rekord złota był tuż-tuż..." }, { "Nouveau personnage débloqué : {0} !", "Nowa postać odblokowana: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Ta gałąź dostała od ciebie wszystko. Dosłownie." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Nie ma tu już nic do odblokowania — zmień postać, aby iść dalej." },
-        { "Cette branche n'a plus de secret pour toi.", "Ta gałąź nie ma już przed tobą tajemnic." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego." },
+        { "Cette branche n'a plus de secret pour toi.", "Ta gałąź nie ma już przed tobą tajemnic." }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego." },
         { "Or", "złota" }, { "Éclats", "odłamków" }, { "Encore {0} {1} pour débloquer {2}", "Brakuje {0} {1}, aby odblokować: {2}" },
         { "De quoi débloquer {0} dès maintenant !", "Możesz już odblokować: {0}!" }, { "Tentative n°{0}", "Podejście nr {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Przetrwanie {0:00}:{1:00}    ·    Tytani {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Przetrwanie {0:00}:{1:00}    ·    Zabójstwa {2}    ·    Poziom {3}    ·    {4}" },
@@ -114,7 +114,7 @@ public static class LocTablePL
         { "Rien pris en cours de route, et pourtant tu es là.", "Ani jednej zdobyczy po drodze, a jednak tu jesteś." },
         { "Pas eu le temps de récupérer la moindre compétence.", "Zabrakło czasu, by zebrać choćby jedną umiejętność." },
         { "Aucune compétence récupérée cette fois.", "Tym razem bez zebranych umiejętności." }, { "VICTOIRE !", "ZWYCIĘSTWO!" },
-        { "FIN DE PARTIE", "KONIEC GRY" }, { "DÉFAITE", "PORAŻKA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "Czas: {0:00}:{1:00}\nZabici wrogowie: {2}\nZłoto: {3}" },
+        { "FIN DE PARTIE", "KONIEC GRY" }, { "DÉFAITE", "PORAŻKA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "Czas: {0:00}:{1:00}\nZabici wrogowie: {2}\nZłoto: {3}" },
         { "Or : {0}", "Złoto: {0}" }, { "Éliminations : {0}", "Zabójstwa: {0}" }, { "Niv. {0}", "Poz. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -124,7 +124,7 @@ public static class LocTablePL
         { "Garder 30% de vie jusqu'au boss 2", "Utrzymaj ponad 30% zdrowia do bossa 2" }, { "Double Chasse", "Podwójne łowy" },
         { "Vaincre 2 boss dans la même partie", "Pokonaj 2 bossów w jednej rozgrywce" }, { "Ascension Rapide", "Szybki awans" },
         { "Niveau 20 avant la 10e minute", "20. poziom przed 10. minutą" }, { "Sans Cristal", "Bez kryształu" }, { "Sans Ultime jusqu'au boss 2", "Bez supermocy do bossa 2" },
-        { "Sans-Faute", "Bez skazy" }, { "Aucun dégât jusqu'au boss 1", "Bez obrażeń do bossa 1" }, { "Éclair", "Błyskawica" },
+        { "Résilience", "Odporność" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Utrzymaj ponad 50% zdrowia do bossa 1" }, { "Éclair", "Błyskawica" },
         { "Vaincre un boss en moins de 30s", "Pokonaj bossa w mniej niż 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 3000 Or ramassé", "Zbierz co najmniej 3000 złota" },
         { "Puissance Absolue", "Absolutna potęga" }, { "Niveau 30 dans la même partie", "30. poziom w jednej rozgrywce" },
         { "Or x{0}", "Złoto x{0}" }, { "Niv. {0}/{1}", "Poz. {0}/{1}" }, { "En cours", "W toku" }, { "{0}/3000 Or", "{0}/3000 złota" },
@@ -147,9 +147,9 @@ public static class LocTablePL
         { "Bouclier de Mana", "Tarcza many" }, { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "Automatycznie pochłania 1 wrogi pocisk co 8 sekund." },
         { "Impulsion Nova", "Impuls Novy" }, { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "Jeśli Nova wywołana pochłonięciem zabije choć jednego wroga, czas odnowienia zrywu natychmiast się zeruje." },
         { "Dash Amélioré", "Ulepszony zryw" }, { "Réduit le temps de recharge du dash.", "Skraca czas odnowienia zrywu." },
-        { "Maîtrise du Cristal", "Mistrzostwo kryształu" }, { "Réduit le nombre de charges nécessaires pour l'ultime.", "Zmniejsza liczbę ładunków potrzebnych do supermocy." },
+        { "Maîtrise du Cristal", "Mistrzostwo kryształu" }, { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "Zmniejsza o 1 liczbę ładunków Novy potrzebnych do twojej supermocy (z 6 do 5)." },
         { "Nova Étendue", "Szeroka Nova" }, { "Augmente le rayon de la Nova de Cristal.", "Zwiększa promień Kryształowej Novy." },
-        { "Dash Fantôme", "Widmowy zryw" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 2 sekundy przyciąga pobliskich wrogów." },
+        { "Clone Spectral", "Widmowy Klon" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 2 sekundy przyciąga pobliskich wrogów." },
         { "TALENT UNIQUE", "UNIKALNY TALENT" }, { "NIVEAU {0} / {1}", "POZIOM {0} / {1}" }, { "débloqué", "odblokowanie" },
         { "niveau 1", "poziom 1" }, { "NIV {0}", "POZ. {0}" }, { "ACQUIS", "ZDOBYTY" }, { "NIVEAU MAX", "MAKS. POZIOM" },
         { "Ce talent est actif.", "Ten talent jest aktywny." }, { "Cette compétence est au maximum.", "Ta umiejętność jest na maksymalnym poziomie." },
@@ -173,7 +173,7 @@ public static class LocTablePL
         { "Terre Calcinée", "Spalona ziemia" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "FUZJA — Kula ognia + Błoto: wokół ciebie pojawiają się w kręgu strefy rozżarzonego popiołu, znacznie większe i dużo groźniejsze." },
         { "Orbes Foudroyants", "Gromowe kule" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUZJA — Satelity + Łańcuch błyskawic: twoje krążące odłamki przy każdym trafieniu wyzwalają łańcuch błyskawic." },
         { "Orbes Jumeaux", "Bliźniacze kule" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUZJA — Podwójny strzał + Sprężysta kula: twój podstawowy strzał dzieli się na dwie kule, które odbijają się bez końca." },
-        { "Aura", "Aura" }, { "Zone Aura", "Strefa aury" }, { "Orbe Rebondissant", "Sprężysta kula" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga." },
+        { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Tworzy wokół ciebie stałe pole, które rani i spowalnia pobliskich wrogów" }, { "Orbe Rebondissant", "Sprężysta kula" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga." },
         { "Dégâts +", "Obrażenia +" }, { "+20% aux dégâts", "+20% obrażeń" }, { "Double Tir", "Podwójny strzał" }, { "Tire 2 projectiles en rafale", "Wystrzeliwuje serię 2 pocisków" },
         { "Boule de Feu", "Kula ognia" }, { "Lance une boule de feu", "Ciska kulą ognia" }, { "Cadence+", "Szybkostrzelność+" },
         { "+20% à la cadence de tir", "+20% szybkostrzelności" }, { "Soin", "Leczenie" }, { "Restaure 50% des HP maximum", "Przywraca 50% maksymalnych PŻ" },
@@ -246,7 +246,7 @@ public static class LocTablePL
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "Następnym razem się uda." }, { "Une défaite de plus vers la victoire.", "Kolejna porażka w drodze do zwycięstwa." },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "Wracaj do walki. Tak się robi postępy." }, { "Relève-toi, c'est pas fini.", "Wstawaj, to jeszcze nie koniec." },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "Wracaj do walki. Tak się robi postępy." }, { "Relève-toi, c'est pas fini.", "Wstawaj, to jeszcze nie koniec." },
         { "Tu as le niveau pour la suivante.", "Masz wszystko, czego trzeba, na następną rozgrywkę." }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "Już wiesz, co poszło nie tak. Popraw to." },
         { "Ça ne s'est pas joué à grand-chose.", "Niewiele brakowało." }, { "Tu étais proche. Refais-en une.", "Było blisko. Jeszcze raz!" },
         { "Il ne t'a laissé aucune ouverture cette fois.", "Tym razem nie dał ci żadnej szansy." }, { "Un adversaire coriace. Il faudra revenir plus fort.", "Twardy przeciwnik. Trzeba będzie wrócić w lepszej formie." },
@@ -275,5 +275,11 @@ public static class LocTablePL
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "UMIARKOWANY" }, { "VIOLENT", "SUROWY" }, { "APOCALYPTIQUE", "APOKALIPTYCZNY" },
+        { "L'expérience Classique telle qu'elle a toujours été", "Dokładnie to samo doświadczenie Klasyczne co zawsze" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "Większa mapa, bardziej wytrzymali i groźniejsi wrogowie, ale więcej Złota i Odłamków" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "Dużo większa mapa, zauważalnie bardziej wytrzymali i groźniejsi wrogowie, Złoto i Odłamki na maksimum" },
     };
 }

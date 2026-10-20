@@ -1,22 +1,22 @@
 using System.Collections;
 using UnityEngine;
 
-// A poser sur le GameObject de la fenêtre de confirmation d'abandon (celui assigné au champ
+// A poser sur le GameObject de la fenÃªtre de confirmation d'abandon (celui assignÃ© au champ
 // "Abandon Confirm Panel" du composant GameUI).
 //
-// Problème corrigé (2026-10-01) : Pause > Abandonner > Non refermait la confirmation mais ne rouvrait pas le
-// panel de pause : on se retrouvait en jeu, figé (Time.timeScale = 0, IsPaused = true) et sans menu.
-// Ce script détecte la fermeture de la confirmation (OnDisable) et, si la partie est toujours en pause,
-// réaffiche le panel de pause via GameUI.ShowPausePanel(true).
+// ProblÃ¨me corrigÃ© (2026-10-01) : Pause > Abandonner > Non refermait la confirmation mais ne rouvrait pas le
+// panel de pause : on se retrouvait en jeu, figÃ© (Time.timeScale = 0, IsPaused = true) et sans menu.
+// Ce script dÃ©tecte la fermeture de la confirmation (OnDisable) et, si la partie est toujours en pause,
+// rÃ©affiche le panel de pause via GameUI.ShowPausePanel(true).
 //
-// Le retour est fait à la frame SUIVANTE (et sur GameUI, qui reste actif) : si le bouton "Non" enchaîne
+// Le retour est fait Ã  la frame SUIVANTE (et sur GameUI, qui reste actif) : si le bouton "Non" enchaÃ®ne
 // plusieurs actions dans son OnClick (ex. fermer la confirmation PUIS masquer le panel de pause), c'est
-// notre réaffichage qui passe en dernier. Fonctionne donc quel que soit le câblage du bouton.
+// notre rÃ©affichage qui passe en dernier. Fonctionne donc quel que soit le cÃ¢blage du bouton.
 public class AbandonConfirmReturnToPause : MonoBehaviour
 {
     private void OnDisable()
     {
-        // Pas pendant un déchargement de scène (Abandonner > Oui, retour menu, fermeture du jeu).
+        // Pas pendant un dÃ©chargement de scÃ¨ne (Abandonner > Oui, retour menu, fermeture du jeu).
         if (!gameObject.scene.isLoaded) return;
 
         if (GameUI.Instance == null || GameManager.Instance == null) return;
@@ -32,11 +32,11 @@ public class AbandonConfirmReturnToPause : MonoBehaviour
 
         if (GameUI.Instance == null || GameManager.Instance == null) yield break;
 
-        // "Oui" : AbandonRun() repasse IsPaused à faux avant de charger le menu, on ne rouvre rien.
-        // Échap pendant la confirmation : la partie a repris, rien à rouvrir non plus.
+        // "Oui" : AbandonRun() repasse IsPaused Ã  faux avant de charger le menu, on ne rouvre rien.
+        // Ã‰chap pendant la confirmation : la partie a repris, rien Ã  rouvrir non plus.
         if (!GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver) yield break;
 
-        // La page Paramètres gère elle-même son retour au menu pause (GameUI.OnSettingsClosed).
+        // La page ParamÃ¨tres gÃ¨re elle-mÃªme son retour au menu pause (GameUI.OnSettingsClosed).
         if (SettingsPage.InGameOpen) yield break;
 
         GameUI.Instance.ShowPausePanel(true);

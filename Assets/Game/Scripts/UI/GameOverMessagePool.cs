@@ -29,7 +29,7 @@ public static class GameOverMessagePool
     {
         "La prochaine sera la bonne.",
         "Une défaite de plus vers la victoire.",
-        "Retour au combat. C'est comme ça qu'on progresse.",
+        "Retourne au combat. C'est comme ça qu'on progresse.",
         "Relève-toi, c'est pas fini.",
         "Tu as le niveau pour la suivante.",
         "Tu sais déjà ce qui a coincé. Corrige-le.",

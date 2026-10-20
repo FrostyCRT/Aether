@@ -1,17 +1,17 @@
 using UnityEngine;
 
-// Effets d'ARRIV�E et de MORT des boss, enti�rement construits en code (aucun prefab � poser).
+// Effets d'ARRIVÉE et de MORT des boss, entièrement construits en code (aucun prefab à poser).
 //
 // Mort (PlayDeath) : sur `duration` secondes, le boss reste en place mais inoffensif.
-//   - t = 0 : coup d'�clat (flash, onde de choc, gerbe d'�tincelles) et court RALENTI global (d�sactivable) ;
-//   - jusqu'� 72 % : il se d�bat (tremblement de plus en plus fort), son corps s'embrase de blanc, des braises montent ;
-//   - apr�s : il r�tr�cit jusqu'� dispara�tre en s'embrasant ;
-//   - t = duration : GRAND FINAL (�clat, pilier de lumi�re, double onde de choc, grosse gerbe d'�tincelles), le boss est
-//     d�truit � cet instant, et l'effet termine ses particules tout seul.
-// Arriv�e (PlayArrival) : �clat, onde de choc, courte colonne de lumi�re et gerbe d'�tincelles � l'apparition d'un boss.
+//   - t = 0 : coup d'éclat (flash, onde de choc, gerbe d'étincelles) et court RALENTI global (désactivable) ;
+//   - jusqu'à 72 % : il se débat (tremblement de plus en plus fort), son corps s'embrase de blanc, des braises montent ;
+//   - après : il rétrécit jusqu'à disparaître en s'embrasant ;
+//   - t = duration : GRAND FINAL (éclat, pilier de lumière, double onde de choc, grosse gerbe d'étincelles), le boss est
+//     détruit à cet instant, et l'effet termine ses particules tout seul.
+// Arrivée (PlayArrival) : éclat, onde de choc, courte colonne de lumière et gerbe d'étincelles à l'apparition d'un boss.
 //
-// Le temps utilise Time.deltaTime : tout se fige tout seul en pause. Le ralenti global ne touche JAMAIS �
-// Time.timeScale si le jeu est en pause / sur un �cran de choix, et ne le restaure que si personne d'autre ne l'a modifi�.
+// Le temps utilise Time.deltaTime : tout se fige tout seul en pause. Le ralenti global ne touche JAMAIS à
+// Time.timeScale si le jeu est en pause / sur un écran de choix, et ne le restaure que si personne d'autre ne l'a modifié.
 public class BossFX : MonoBehaviour
 {
     private enum Mode { Arrival, Death }
@@ -66,7 +66,7 @@ public class BossFX : MonoBehaviour
     private float _slowAppliedScale = -1f;
 
     // ------------------------------------------------------------------
-    // Cr�ation
+    // Création
     // ------------------------------------------------------------------
 
     public static void PlayArrival(Vector3 position, float radius, Color color)
@@ -76,8 +76,8 @@ public class BossFX : MonoBehaviour
         fx.InitArrival(new Vector3(position.x, 0f, position.z), radius, color);
     }
 
-    // target : le boss mourant (d�truit par cet effet au moment du final). glowRenderer/glowProperty : corps du boss et
-    // propri�t� d'�mission pour l'embrasement (peuvent �tre nuls : alors pas d'embrasement).
+    // target : le boss mourant (détruit par cet effet au moment du final). glowRenderer/glowProperty : corps du boss et
+    // propriété d'émission pour l'embrasement (peuvent être nuls : alors pas d'embrasement).
     public static void PlayDeath(Transform target, float radius, Color color, float duration, bool slowMotion,
         Renderer glowRenderer, string glowProperty, Color glowColor)
     {
@@ -142,7 +142,7 @@ public class BossFX : MonoBehaviour
         _glowColor = glowColor;
         _pb = new MaterialPropertyBlock();
 
-        // Coup d'�clat initial.
+        // Coup d'éclat initial.
         Vector3 ground = new Vector3(_basePos.x, 0f, _basePos.z);
         Vector3 mid = ground + Vector3.up * 1.2f;
         StartFlash(mid, _radius * 2.5f, 0.3f);
@@ -184,7 +184,7 @@ public class BossFX : MonoBehaviour
         {
             if (_target == null)
             {
-                Finale();   // le boss a disparu autrement (rechargement de sc�ne...) : on joue quand m�me le final
+                Finale();   // le boss a disparu autrement (rechargement de scène...) : on joue quand même le final
             }
             else
             {
@@ -196,7 +196,7 @@ public class BossFX : MonoBehaviour
                 Vector3 jitter = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)) * amp;
                 _target.position = _basePos + jitter;
 
-                // R�tr�cissement final (ease-in cubique).
+                // Rétrécissement final (ease-in cubique).
                 float sk = Mathf.Clamp01((k - jitterEnd) / (1f - jitterEnd));
                 float scale = Mathf.Max(0.001f, 1f - sk * sk * sk);
                 _target.localScale = _baseScale * scale;
@@ -249,7 +249,7 @@ public class BossFX : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // �clat, pilier, �tincelles
+    // Éclat, pilier, étincelles
     // ------------------------------------------------------------------
 
     private void StartFlash(Vector3 center, float peakDiameter, float duration)
@@ -388,14 +388,14 @@ public class BossFX : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Ralenti (touche � Time.timeScale avec prudence)
+    // Ralenti (touche à Time.timeScale avec prudence)
     // ------------------------------------------------------------------
 
     private void BeginSlowMo()
     {
         if (!_slowEnabled) return;
 
-        // Jeu en pause / �cran de choix (timeScale � 0) ou d�j� ralenti par autre chose : on n'y touche pas.
+        // Jeu en pause / écran de choix (timeScale à 0) ou déjà ralenti par autre chose : on n'y touche pas.
         if (!Mathf.Approximately(Time.timeScale, 1f)) return;
 
         _slowActive = true;

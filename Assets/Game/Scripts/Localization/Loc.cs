@@ -168,6 +168,55 @@ public static class Loc
     public static string Num(float value, string format)
         => value.ToString(format, System.Globalization.CultureInfo.InvariantCulture).Replace(".", DecimalSeparator);
 
+    // AJOUTÉ (2026-10-18, diagnostic complet - audit §9 "les grands nombres (or, Éclats) s'affichent sans séparateur
+    // de milliers") - séparateur des milliers selon la langue, en dur comme DecimalSeparator ci-dessus (jamais la
+    // langue de Windows ni CultureInfo.GetCultureInfo, qui peut ne pas exister sur toutes les plateformes). 3 cas
+    // réels parmi les 11 langues : virgule (anglais/chinois/japonais/coréen, qui ont aussi un point décimal - voir
+    // DecimalSeparator), point (allemand/espagnol/portugais/italien, qui ont une virgule décimale), espace
+    // (français/polonais/russe, qui ont AUSSI une virgule décimale mais groupent avec un espace, pas un point).
+    public static string ThousandsSeparator
+    {
+        get
+        {
+            switch (Current)
+            {
+                case GameLanguage.English:
+                case GameLanguage.ChineseSimplified:
+                case GameLanguage.Japanese:
+                case GameLanguage.Korean:
+                    return ",";
+                case GameLanguage.German:
+                case GameLanguage.Spanish:
+                case GameLanguage.PortugueseBR:
+                case GameLanguage.Italian:
+                    return ".";
+                default: // French, Polish, Russian
+                    return " ";
+            }
+        }
+    }
+
+    /// <summary>Grand nombre entier groupé par milliers selon la langue ("12 500" en français, "12,500" en anglais,
+    /// "12.500" en allemand) : utiliser pour tout Or/Éclats/score affiché au joueur au lieu d'un simple ToString().</summary>
+    public static string Int(long value)
+    {
+        bool negative = value < 0;
+        string digits = Math.Abs(value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(digits.Length + 4);
+        int sinceGroup = 0;
+        for (int i = digits.Length - 1; i >= 0; i--)
+        {
+            sb.Insert(0, digits[i]);
+            sinceGroup++;
+            if (sinceGroup == 3 && i > 0)
+            {
+                sb.Insert(0, ThousandsSeparator);
+                sinceGroup = 0;
+            }
+        }
+        return negative ? "-" + sb : sb.ToString();
+    }
+
     /// <summary>Vrai si `text` est la traduction de `fr` dans l'une des langues (sert à LocalizedText).</summary>
     public static bool IsTranslationOf(string fr, string text)
     {

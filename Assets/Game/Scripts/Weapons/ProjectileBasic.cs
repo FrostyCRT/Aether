@@ -154,7 +154,12 @@ public class ProjectileBasic : MonoBehaviour
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = _overlapBuffer[i];
-                if (hit != null && hit.CompareTag("Enemy") && hit != other)
+                // AJOUTE (2026-10-20) - "hit != other" suffisait tant qu'un projectile ne pouvait exploser qu'UNE
+                // fois dans sa vie (premier et seul impact). Un projectile perforant (Boule de feu, voir
+                // WeaponFireball) explose maintenant a CHAQUE ennemi traverse : sans cette verification en plus,
+                // un ennemi deja touche DIRECTEMENT par un impact precedent (donc deja dans _hitInstanceIds)
+                // pouvait reprendre un 2e coup de degats via l'explosion d'un impact suivant tout proche.
+                if (hit != null && hit.CompareTag("Enemy") && hit != other && !_hitInstanceIds.Contains(hit.GetInstanceID()))
                 {
                     ApplyDamage(hit, _fragmentDamage, DamageNumberSpawner.ColorCritical, true);
                     ApplyBurnIfNeeded(hit);

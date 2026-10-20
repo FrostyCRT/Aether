@@ -16,6 +16,18 @@ public class WeaponFireball : MonoBehaviour
     [SerializeField] private float _fragmentDamageRatio = 0.4f;
     [SerializeField] private float _fragmentRadius = 2.25f; // MODIFIE - 1.5 -> 2.25 (x1.5), rayon de base juge trop petit en jeu
 
+    // AJOUTE (2026-10-20, retour utilisateur : "revoir la boule de feu [...] une boule tout de suite plus grosse
+    // qui peut toucher plusieurs ennemis en meme temps, mini explosions de feu derriere, brulure - comme le Q de
+    // Smolder dans LoL") - avant ca, le projectile s'arretait net au TOUT PREMIER ennemi touche (ReturnToPool
+    // immediat) : l'explosion a l'impact touchait bien les voisins, mais le trait lui-meme ne traversait jamais la
+    // cible pour continuer sa route. Desormais perforant : chaque ennemi traverse declenche sa PROPRE explosion
+    // (ProjectileBasic.SetFragmentation est deja appele a chaque OnTriggerEnter, pas seulement au premier - la
+    // perforation suffit a elle seule a creer "des mini explosions de feu derriere" tout le long du trajet, sans
+    // toucher a ProjectileBasic). Le rayon max (20) est tres au-dessus de ce qu'une salve peut reellement croiser
+    // en un seul trajet (portee du projectile = 15, voir ProjectileFireball.prefab) - sert juste a ne jamais couper
+    // la perforation avant la fin reelle de la trajectoire.
+    [SerializeField] private int _maxPierceTargets = 20;
+
     // AJOUTE - Brulure, palier 3. Desactivee tant que le palier n'est pas pris.
     [Header("Brulure (palier 3)")]
     [SerializeField] private bool _burnEnabled = false;
@@ -100,6 +112,10 @@ public class WeaponFireball : MonoBehaviour
 
             // MODIFIE - explosion toujours a 100%, plus de chance meta/carte a combiner.
             projectile.SetFragmentation(1f, dmg * _fragmentDamageRatio, _fragmentRadius);
+
+            // AJOUTE - perforation : traverse les ennemis au lieu de s'arreter au premier (voir commentaire sur
+            // _maxPierceTargets plus haut).
+            projectile.SetPiercing(true, _maxPierceTargets);
 
             if (_burnEnabled)
             {

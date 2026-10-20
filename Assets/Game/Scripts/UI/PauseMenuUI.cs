@@ -436,7 +436,7 @@ public class PauseMenuUI : MonoBehaviour
             _killsText.text = kills.ToString();
 
         if (_goldText != null)
-            _goldText.text = gold.ToString();
+            _goldText.text = Loc.Int(gold); // MODIFIÉ (2026-10-18, diagnostic complet - audit §9, séparateur de milliers)
     }
 
     // ------------------------------------------------------------------

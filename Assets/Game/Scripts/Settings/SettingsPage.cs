@@ -544,7 +544,10 @@ public class SettingsPage : MonoBehaviour
     private void AskQuit()
     {
         if (_inGame) { gameObject.SetActive(false); return; }
-        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("La partie en cours de préparation sera fermée. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
+        // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "formulation maladroite") - "La partie en cours de
+        // préparation sera fermée" était une tournure passive et confuse pour un simple message de confirmation
+        // de fermeture du jeu depuis le menu.
+        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
         {
             GameSettings.Flush();
             InputBindings.Flush();

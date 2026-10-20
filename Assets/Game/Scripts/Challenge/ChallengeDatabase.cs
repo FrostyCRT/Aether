@@ -49,7 +49,7 @@ public static class ChallengeDatabase
         new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 20 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", longDescription = "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", difficulty = ChallengeDifficulty.Medium },
 
-        new ChallengeDefinition { id = "noDamage", displayName = "Sans-Faute", description = "Aucun dégât jusqu'au boss 1", longDescription = "Ne subir aucun dégât avant d'avoir vaincu le 1er boss", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "hp50boss1", displayName = "Résilience", description = "Garder plus de 50% de vie jusqu'au boss 1", longDescription = "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", longDescription = "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 3000 Or ramassé", longDescription = "Ramasser au moins 3000 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 30 dans la même partie", difficulty = ChallengeDifficulty.Hard },

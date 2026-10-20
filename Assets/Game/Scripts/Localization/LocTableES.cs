@@ -83,7 +83,7 @@ public static class LocTableES
         { "Réinitialiser", "Restablecer" }, { "Page « {0} » réinitialisée.", "Página «{0}» restablecida." }, { "TOUT RÉINITIALISER ?", "¿RESTABLECERLO TODO?" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "Todos los ajustes y todas las teclas vuelven a sus valores predeterminados." },
         { "Tout réinitialiser", "Restablecerlo todo" }, { "Tous les paramètres ont été réinitialisés.", "Se han restablecido todos los ajustes." },
-        { "QUITTER LE JEU ?", "¿SALIR DEL JUEGO?" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "El juego se cerrará. Tus ajustes están guardados." },
+        { "QUITTER LE JEU ?", "¿SALIR DEL JUEGO?" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "El juego se cerrará. Tus ajustes están guardados." },
         { "Quitter", "Salir" }, { "Disposition « {0} » appliquée.", "Distribución «{0}» aplicada." }, { "OUI", "SÍ" }, { "NON", "NO" },
         { "AZERTY (ZQSD)", "AZERTY (ZQSD)" }, { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "Solo flechas" },
 
@@ -95,7 +95,7 @@ public static class LocTableES
         { "Un cheveu de ton meilleur niveau...", "A un pelo de tu mejor nivel..." }, { "Nouveau record d'Or en une partie : {0} !", "¡Nuevo récord de oro en una partida: {0}!" },
         { "Tout près de ton record d'Or...", "Muy cerca de tu récord de oro..." }, { "Nouveau personnage débloqué : {0} !", "¡Nuevo personaje desbloqueado: {0}!" },
         { "Tu as tout donné à cette branche. Littéralement.", "Lo has dado todo en esta rama. Literalmente." }, { "Plus rien à débloquer ici — change de personnage pour la suite.", "Aquí ya no queda nada por desbloquear: cambia de personaje para seguir." },
-        { "Cette branche n'a plus de secret pour toi.", "Esta rama ya no tiene secretos para ti." }, { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Árbol y Reputación al máximo. Cambia de personaje si quieres algo nuevo." },
+        { "Cette branche n'a plus de secret pour toi.", "Esta rama ya no tiene secretos para ti." }, { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "Árbol y Reputación al máximo. Cambia de personaje si quieres algo nuevo." },
         { "Or", "de oro" }, { "Éclats", "fragmentos" }, { "Encore {0} {1} pour débloquer {2}", "Necesitas {0} {1} más para desbloquear {2}" },
         { "De quoi débloquer {0} dès maintenant !", "¡Ya puedes desbloquear {0}!" }, { "Tentative n°{0}", "Intento n.º {0}" },
         { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "Supervivencia {0:00}:{1:00}    ·    Titanes {2}/3" }, { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "Supervivencia {0:00}:{1:00}    ·    Bajas {2}    ·    Nivel {3}    ·    {4}" },
@@ -115,7 +115,7 @@ public static class LocTableES
         { "Aucune compétence récupérée. Le style, ça compte double.", "Ninguna habilidad recogida. El estilo cuenta doble." },
         { "Rien pris en cours de route, et pourtant tu es là.", "No has recogido nada por el camino y, aun así, aquí estás." },
         { "Pas eu le temps de récupérer la moindre compétence.", "No hubo tiempo de recoger ni una sola habilidad." }, { "Aucune compétence récupérée cette fois.", "Ninguna habilidad recogida esta vez." },
-        { "VICTOIRE !", "¡VICTORIA!" }, { "FIN DE PARTIE", "FIN DE LA PARTIDA" }, { "DÉFAITE", "DERROTA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "Tiempo: {0:00}:{1:00}\nEnemigos eliminados: {2}\nOro: {3}" },
+        { "VICTOIRE !", "¡VICTORIA!" }, { "FIN DE PARTIE", "FIN DE LA PARTIDA" }, { "DÉFAITE", "DERROTA" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "Tiempo: {0:00}:{1:00}\nEnemigos eliminados: {2}\nOro: {3}" },
         { "Or : {0}", "Oro: {0}" }, { "Éliminations : {0}", "Bajas: {0}" }, { "Niv. {0}", "Nv. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -125,7 +125,7 @@ public static class LocTableES
         { "Garder 30% de vie jusqu'au boss 2", "Mantén más del 30% de vida hasta el jefe 2" }, { "Double Chasse", "Doble cacería" },
         { "Vaincre 2 boss dans la même partie", "Derrota a 2 jefes en la misma partida" }, { "Ascension Rapide", "Ascenso rápido" },
         { "Niveau 20 avant la 10e minute", "Nivel 20 antes del minuto 10" }, { "Sans Cristal", "Sin cristal" }, { "Sans Ultime jusqu'au boss 2", "Sin definitiva hasta el jefe 2" },
-        { "Sans-Faute", "Impecable" }, { "Aucun dégât jusqu'au boss 1", "Ningún daño hasta el jefe 1" }, { "Éclair", "Relámpago" },
+        { "Résilience", "Resiliencia" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Mantén más del 50% de vida hasta el jefe 1" }, { "Éclair", "Relámpago" },
         { "Vaincre un boss en moins de 30s", "Derrota a un jefe en menos de 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 3000 Or ramassé", "Recoge al menos 3000 de oro" },
         { "Puissance Absolue", "Poder absoluto" }, { "Niveau 30 dans la même partie", "Nivel 30 en la misma partida" },
         { "Or x{0}", "Oro x{0}" }, { "Niv. {0}/{1}", "Nv. {0}/{1}" }, { "En cours", "En curso" }, { "{0}/3000 Or", "{0}/3000 de oro" },
@@ -148,9 +148,9 @@ public static class LocTableES
         { "Bouclier de Mana", "Escudo de maná" }, { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "Absorbe automáticamente 1 proyectil enemigo cada 8 segundos." },
         { "Impulsion Nova", "Impulso Nova" }, { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "Si la Nova provocada por una absorción mata al menos a un enemigo, el tiempo de recarga del dash se reinicia al instante." },
         { "Dash Amélioré", "Dash mejorado" }, { "Réduit le temps de recharge du dash.", "Reduce el tiempo de recarga del dash." },
-        { "Maîtrise du Cristal", "Maestría del cristal" }, { "Réduit le nombre de charges nécessaires pour l'ultime.", "Reduce el número de cargas que necesita la definitiva." },
+        { "Maîtrise du Cristal", "Maestría del cristal" }, { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "Reduce en 1 el número de cargas de Nova necesarias para tu Definitiva (de 6 a 5)" },
         { "Nova Étendue", "Nova amplia" }, { "Augmente le rayon de la Nova de Cristal.", "Aumenta el radio de la Nova de cristal." },
-        { "Dash Fantôme", "Dash fantasma" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Desbloquea un clon espectral que se activa con su propia tecla: atrae a los enemigos cercanos durante 2 segundos." },
+        { "Clone Spectral", "Clon Espectral" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "Desbloquea un clon espectral que se activa con su propia tecla: atrae a los enemigos cercanos durante 2 segundos." },
         { "TALENT UNIQUE", "TALENTO ÚNICO" }, { "NIVEAU {0} / {1}", "NIVEL {0} / {1}" }, { "débloqué", "desbloqueado" },
         { "niveau 1", "nivel 1" }, { "NIV {0}", "NV {0}" }, { "ACQUIS", "ADQUIRIDO" }, { "NIVEAU MAX", "NIVEL MÁX." }, { "Ce talent est actif.", "Este talento está activo." },
         { "Cette compétence est au maximum.", "Esta habilidad está al máximo." }, { "INDISPONIBLE", "NO DISPONIBLE" }, { "Sélectionne {0} dans l'onglet Personnages pour acheter.", "Selecciona a {0} en la pestaña Personajes para comprar." },
@@ -173,7 +173,7 @@ public static class LocTableES
         { "Terre Calcinée", "Tierra calcinada" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "FUSIÓN — Bola de fuego + Barro: zonas de ceniza ardiente, mucho más grandes y devastadoras, aparecen en círculo a tu alrededor." },
         { "Orbes Foudroyants", "Orbes fulminantes" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "FUSIÓN — Orbitales + Rayo en cadena: tus fragmentos en órbita desatan ahora un rayo en cadena con cada impacto." },
         { "Orbes Jumeaux", "Orbes gemelos" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "FUSIÓN — Disparo doble + Orbe rebotador: tu disparo básico se divide en dos esferas que rebotan sin fin." },
-        { "Aura", "Aura" }, { "Zone Aura", "Zona de aura" }, { "Orbe Rebondissant", "Orbe rebotador" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lanza orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan." },
+        { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Crea un campo permanente a tu alrededor que daña y ralentiza a los enemigos cercanos" }, { "Orbe Rebondissant", "Orbe rebotador" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "Lanza orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan." },
         { "Dégâts +", "Daño +" }, { "+20% aux dégâts", "+20% de daño" }, { "Double Tir", "Disparo doble" }, { "Tire 2 projectiles en rafale", "Dispara 2 proyectiles en ráfaga" },
         { "Boule de Feu", "Bola de fuego" }, { "Lance une boule de feu", "Lanza una bola de fuego" }, { "Cadence+", "Cadencia+" },
         { "+20% à la cadence de tir", "+20% de cadencia de disparo" }, { "Soin", "Curación" }, { "Restaure 50% des HP maximum", "Restaura el 50% de la vida máxima" },
@@ -247,7 +247,7 @@ public static class LocTableES
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
         { "La prochaine sera la bonne.", "La próxima será la buena." }, { "Une défaite de plus vers la victoire.", "Una derrota más camino de la victoria." },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "De vuelta al combate. Así es como se mejora." }, { "Relève-toi, c'est pas fini.", "Levántate, esto no ha terminado." },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "De vuelta al combate. Así es como se mejora." }, { "Relève-toi, c'est pas fini.", "Levántate, esto no ha terminado." },
         { "Tu as le niveau pour la suivante.", "Tienes nivel de sobra para la siguiente." }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "Ya sabes qué ha fallado. Corrígelo." },
         { "Ça ne s'est pas joué à grand-chose.", "Ha faltado muy poco." }, { "Tu étais proche. Refais-en une.", "Estabas cerca. Otra más." },
         { "Il ne t'a laissé aucune ouverture cette fois.", "Esta vez no te ha dejado ni un hueco." }, { "Un adversaire coriace. Il faudra revenir plus fort.", "Un rival duro de pelar. Tendrás que volver más fuerte." },
@@ -274,5 +274,11 @@ public static class LocTableES
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "FUSIÓN" }, { "Éclat", "fragmento" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "MODERADO" }, { "VIOLENT", "SEVERO" }, { "APOCALYPTIQUE", "APOCALÍPTICO" },
+        { "L'expérience Classique telle qu'elle a toujours été", "La experiencia Clásica tal como ha sido siempre" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "Mapa más grande, enemigos más resistentes y peligrosos, pero más Oro y Fragmentos" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "Mapa mucho más grande, enemigos notablemente más resistentes y peligrosos, Oro y Fragmentos al máximo" },
     };
 }

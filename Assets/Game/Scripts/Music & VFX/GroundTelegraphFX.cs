@@ -1,14 +1,14 @@
 using UnityEngine;
 
-// Signal de danger pos� au sol, construit en code (remplace les prefabs de cercle de t�l�graphe).
+// Signal de danger posé au sol, construit en code (remplace les prefabs de cercle de télégraphe).
 //
-// Style.Zone : zone de danger � rayon FIXE. Le contour complet est visible d�s le d�but (le joueur voit toute la
-//   zone touch�e) et le remplissage grandit du centre vers le bord � mesure que SetProgress(0 -> 1) avance : le
-//   temps restant se lit d'un coup d'oeil. Un anneau gradu� tourne de plus en plus vite, tout pulse de plus en
+// Style.Zone : zone de danger à rayon FIXE. Le contour complet est visible dès le début (le joueur voit toute la
+//   zone touchée) et le remplissage grandit du centre vers le bord à mesure que SetProgress(0 -> 1) avance : le
+//   temps restant se lit d'un coup d'oeil. Un anneau gradué tourne de plus en plus vite, tout pulse de plus en
 //   plus fort. convergeTicks = true ajoute un anneau qui se resserre en boucle vers le centre (attaques qui ATTIRENT).
-//   Impact() : �clat blanc + fondu (au moment o� l'attaque touche).
-// Style.Wave : onde dont le rayon est pilot� frame par frame (SetRadius). Anneau net + l�ger halo.
-// Dismiss() : fondu rapide puis destruction (attaque annul�e / termin�e sans impact).
+//   Impact() : éclat blanc + fondu (au moment où l'attaque touche).
+// Style.Wave : onde dont le rayon est piloté frame par frame (SetRadius). Anneau net + léger halo.
+// Dismiss() : fondu rapide puis destruction (attaque annulée / terminée sans impact).
 //
 // Le temps utilise Time.deltaTime : tout se fige tout seul en pause.
 public class GroundTelegraphFX : MonoBehaviour
@@ -18,7 +18,7 @@ public class GroundTelegraphFX : MonoBehaviour
 
     private const float ImpactDuration = 0.3f;
     private const float DismissDuration = 0.15f;
-    private const float RingBand = 1f / 0.94f;   // le trait de FXSprites.ThinRing() est � 94 % du rayon du sprite
+    private const float RingBand = 1f / 0.94f;   // le trait de FXSprites.ThinRing() est à 94 % du rayon du sprite
 
     private Style _style;
     private State _state = State.Alive;
@@ -37,13 +37,23 @@ public class GroundTelegraphFX : MonoBehaviour
     private float _tickAngle;
 
     // ------------------------------------------------------------------
-    // Cr�ation / pilotage
+    // Création / pilotage
     // ------------------------------------------------------------------
+
+    // MODIFIÉ (2026-10-20, retour utilisateur : "les zones de warning devraient apparaître en priorité pour les
+    // boss [...] là elles sont derrière la boue") - root cause : ce FX est fait de SpriteRenderers (transparents,
+    // triés par sortingOrder, déjà élevé : 10-14) alors que MudPuddleZone est un MeshRenderer en matériau Lit
+    // (OPAQUE) - le sortingOrder ne joue AUCUN rôle face à de l'opaque, seul le vrai test de profondeur (Z-buffer)
+    // compte, et ce FX posait sa géométrie à Y=0 (quasi plat) contre Y=0,2 pour toutes les flaques de boue (voir
+    // WeaponMudPuddle/WeaponFusionScorchedEarth._groundY) : la boue, physiquement plus haute, masquait le
+    // télégraphe en dessous quelle que soit sa couche de tri. Remonté à 0,25 (juste au-dessus de 0,2) pour gagner
+    // le test de profondeur face à N'IMPORTE QUELLE flaque au sol du jeu, qui partagent toutes la même convention.
+    private const float GroundY = 0.25f;
 
     public static GroundTelegraphFX Spawn(Vector3 position, float radius, Color color, Style style, bool convergeTicks = false)
     {
         GameObject go = new GameObject("GroundTelegraphFX");
-        go.transform.position = new Vector3(position.x, 0f, position.z);
+        go.transform.position = new Vector3(position.x, GroundY, position.z);
         GroundTelegraphFX fx = go.AddComponent<GroundTelegraphFX>();
         fx.Init(radius, color, style, convergeTicks);
         return fx;
@@ -76,7 +86,7 @@ public class GroundTelegraphFX : MonoBehaviour
         FXSprites.SetFlat(_flash, 0.05f, 0f);
     }
 
-    // Style.Zone : avancement de l'attaque (0 = d�but, 1 = impact).
+    // Style.Zone : avancement de l'attaque (0 = début, 1 = impact).
     public void SetProgress(float p)
     {
         _progress = Mathf.Clamp01(p);
@@ -88,7 +98,7 @@ public class GroundTelegraphFX : MonoBehaviour
         _currentRadius = Mathf.Max(0.05f, r);
     }
 
-    // L'attaque touche : �clat puis fondu, puis le signal se d�truit tout seul.
+    // L'attaque touche : éclat puis fondu, puis le signal se détruit tout seul.
     public void Impact()
     {
         if (_state != State.Alive) return;
@@ -149,7 +159,7 @@ public class GroundTelegraphFX : MonoBehaviour
 
         if (_converge)
         {
-            // Anneau qui se resserre en boucle vers le centre : "�a tire vers l'int�rieur".
+            // Anneau qui se resserre en boucle vers le centre : "ça tire vers l'intérieur".
             float c = Mathf.Repeat(_t * 1.6f, 1f);
             FXSprites.SetFlat(_convergeRing, _radius * 2f * RingBand * Mathf.Lerp(1.5f, 0.2f, c), 0f);
             _convergeRing.color = FXSprites.A(_hot, Mathf.Sin(c * Mathf.PI) * 0.7f * appear);

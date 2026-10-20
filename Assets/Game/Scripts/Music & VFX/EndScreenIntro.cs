@@ -2,41 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// A poser sur le panneau de Victoire ET sur celui de DÈfaite (les GameObjects assignÈs aux champs "Victory Panel" et
+// A poser sur le panneau de Victoire ET sur celui de D√©faite (les GameObjects assign√©s aux champs "Victory Panel" et
 // "Game Over Panel" de GameUI). Quand le panneau s'affiche : le fond fait un fondu, la carte centrale ("CenterCard")
-// monte avec un petit rebond, puis ses ÈlÈments apparaissent en cascade (titre, portrait, stats, boutons...), mÍme
+// monte avec un petit rebond, puis ses √©l√©ments apparaissent en cascade (titre, portrait, stats, boutons...), m√™me
 // famille d'animation que le panel de level-up.
 //
-// Robuste face au reste de l'interface : les dÈplacements/Èchelles sont appliquÈs en DIFF…RENCE (on ajoute puis retire
-// exactement ce qu'on a ajoutÈ), donc une mise en page recalculÈe en cours de route (textes qui changent, chips de dÈfi...)
-// n'est jamais ÈcrasÈe. L'animation dÈmarre une image aprËs l'activation pour que GameUI ait fini de prÈparer le panneau,
-// et le fond est masquÈ pendant cette image (aucun flash). Temps rÈel (unscaled) : indÈpendant du ralenti / de la pause.
+// Robuste face au reste de l'interface : les d√©placements/√©chelles sont appliqu√©s en DIFF√âRENCE (on ajoute puis retire
+// exactement ce qu'on a ajout√©), donc une mise en page recalcul√©e en cours de route (textes qui changent, chips de d√©fi...)
+// n'est jamais √©cras√©e. L'animation d√©marre une image apr√®s l'activation pour que GameUI ait fini de pr√©parer le panneau,
+// et le fond est masqu√© pendant cette image (aucun flash). Temps r√©el (unscaled) : ind√©pendant du ralenti / de la pause.
 public class EndScreenIntro : MonoBehaviour
 {
-    [Header("GÈnÈral")]
-    [Tooltip("DÈcoche pour revenir ‡ l'apparition instantanÈe d'avant.")]
+    [Header("G√©n√©ral")]
+    [Tooltip("D√©coche pour revenir √† l'apparition instantan√©e d'avant.")]
     [SerializeField] private bool _introEnabled = true;
-    [Tooltip("La carte centrale du panneau. Vide = l'enfant nommÈ \"CenterCard\" est cherchÈ automatiquement.")]
+    [Tooltip("La carte centrale du panneau. Vide = l'enfant nomm√© \"CenterCard\" est cherch√© automatiquement.")]
     [SerializeField] private RectTransform _card;
-    [Tooltip("DurÈe du fondu du panneau entier (fond compris).")]
+    [Tooltip("Dur√©e du fondu du panneau entier (fond compris).")]
     [SerializeField] private float _panelFadeDuration = 0.25f;
 
     [Header("Carte centrale")]
     [SerializeField] private float _cardDuration = 0.4f;
     [Tooltip("Distance (pixels du Canvas) depuis laquelle la carte monte.")]
     [SerializeField] private float _cardSlide = 60f;
-    [Tooltip("…chelle de dÈpart de la carte (1 = pas de variation).")]
+    [Tooltip("√âchelle de d√©part de la carte (1 = pas de variation).")]
     [SerializeField] private float _cardStartScale = 0.9f;
 
-    [Header("…lÈments de la carte (cascade)")]
-    [Tooltip("Fait aussi apparaÓtre en cascade les ÈlÈments affichÈs de la carte (titre, portrait, stats...).")]
+    [Header("√âl√©ments de la carte (cascade)")]
+    [Tooltip("Fait aussi appara√Ætre en cascade les √©l√©ments affich√©s de la carte (titre, portrait, stats...).")]
     [SerializeField] private bool _cascadeCardChildren = true;
     [SerializeField] private float _childFirstDelay = 0.12f;
     [SerializeField] private float _childStagger = 0.07f;
     [SerializeField] private float _childDuration = 0.3f;
     [SerializeField] private float _childSlide = 28f;
     [SerializeField] private float _childStartScale = 0.95f;
-    [Tooltip("Nombre maximum d'ÈlÈments de la carte animÈs individuellement.")]
+    [Tooltip("Nombre maximum d'√©l√©ments de la carte anim√©s individuellement.")]
     [SerializeField] private int _maxCascadedChildren = 8;
 
     private class IntroTarget
@@ -62,7 +62,7 @@ public class EndScreenIntro : MonoBehaviour
             if (_rootGroup == null) _rootGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
-        // Masque tout pendant l'image d'attente (GameUI prÈpare encore le contenu juste aprËs l'activation).
+        // Masque tout pendant l'image d'attente (GameUI pr√©pare encore le contenu juste apr√®s l'activation).
         _rootGroup.alpha = 0f;
 
         if (_routine != null) StopCoroutine(_routine);
@@ -91,7 +91,7 @@ public class EndScreenIntro : MonoBehaviour
 
     private IEnumerator Play()
     {
-        yield return null;   // laisse GameUI finir de prÈparer le panneau (textes, ÈlÈments affichÈs ou non)
+        yield return null;   // laisse GameUI finir de pr√©parer le panneau (textes, √©l√©ments affich√©s ou non)
 
         _targets.Clear();
 
@@ -122,7 +122,7 @@ public class EndScreenIntro : MonoBehaviour
             }
         }
 
-        // Etat de dÈpart appliquÈ avant le premier rendu.
+        // Etat de d√©part appliqu√© avant le premier rendu.
         float total = _panelFadeDuration;
         for (int i = 0; i < _targets.Count; i++)
         {
@@ -176,8 +176,8 @@ public class EndScreenIntro : MonoBehaviour
         });
     }
 
-    // p : avancement 0 -> 1. MontÈe + rebond d'Èchelle + fondu, appliquÈs en DIFF…RENCE par rapport ‡ ce qui a dÈj‡ ÈtÈ
-    // appliquÈ (jamais en valeur absolue) pour ne pas Ècraser une mise en page qui change pendant l'animation.
+    // p : avancement 0 -> 1. Mont√©e + rebond d'√©chelle + fondu, appliqu√©s en DIFF√âRENCE par rapport √† ce qui a d√©j√† √©t√©
+    // appliqu√© (jamais en valeur absolue) pour ne pas √©craser une mise en page qui change pendant l'animation.
     private static void Apply(IntroTarget t, float p)
     {
         Vector2 newOffset = new Vector2(0f, Mathf.Lerp(-t.slide, 0f, EaseOutCubic(p)));

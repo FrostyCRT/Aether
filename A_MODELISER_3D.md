@@ -1,6 +1,6 @@
 # Aether Storm Survivor : ce qu'il reste à modéliser en 3D (et à habiller)
 
-Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé) puis le 2026-10-18 (fusion "Orbes Jumeaux" retirée, remplacée par "Sillage Boueux" — voir §4.1 et §5). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
+Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé), le 2026-10-18 (fusion "Orbes Jumeaux" retirée, remplacée par "Sillage Boueux" — voir §4.1 et §5), le 2026-10-19 (§7.1/§7.2 : diagnostic du sol + liste de nouveaux modèles 3D proposés pour Tripo3D, en remplacement des arbres/rochers de bordure actuels que l'utilisateur juge hors DA), puis le 2026-10-20 (§7.2 confirmée comme LA liste active après l'abandon d'une tentative de props de sol procéduraux, jugés trop pauvres visuellement ; §13 ajoutée : diorama du nouveau carrousel de difficulté de la page Accueil du menu ; §8.1 ajoutée : le coffre de boss, système déjà fonctionnel en jeu, oublié de cette liste jusqu'ici). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
 Le principe : **tout ce que le joueur voit en partie et qui est encore une primitive Unity (cube, sphère, cylindre, capsule) avec un simple matériau de couleur** doit être remplacé par un vrai modèle, un vrai effet visuel ou une vraie texture.
 
 Légende des priorités :
@@ -24,7 +24,29 @@ Rappel de la DA (direction artistique) : les modèles actuels viennent de Tripo3
 | Effets en cylindres/capsules | Nova, Ultime, Bouclier de Mana, prefabs du boss 3 | 🟠 P2 |
 | Environnement de l'arène | Sol plat unique, aucun décor dans l'aire de jeu | 🔴 P1 |
 | Effets procéduraux « génériques » à remplacer par de vrais VFX | ~10 | 🟡 P3 |
+| Diorama du carrousel de difficulté (page Accueil, nouveau 2026-10-20) | 4 modèles (terrain + arbre + rocher + loup, style "cartoon" distinct du reste du jeu) | 🟠 P2 (voir §13) |
+| Coffre de boss (ajouté 2026-10-20) | Système déjà fonctionnel, 1 modèle manquant (réutilise le mesh des gemmes d'XP aujourd'hui) | 🟠 P2 (voir §8.1) |
 | **Sons** (hors 3D mais bloquant pour un jeu pro) | **le jeu n'a aucun bruitage** | 🔴 P1 (voir §9) |
+
+**Total de modèles 3D distincts clairement spécifiés dans ce document (hors options/variantes non chiffrées — voir §0.1) : 53.**
+
+### 0.1 Détail du décompte (53 modèles)
+
+| Section | Modèles comptés | Sous-total |
+|---|---|---|
+| §1 Skins | 21 skins × 1 modèle de personnage chacun (le bâton n'est compté que s'il change, variable selon le thème retenu — non inclus dans ce total) | 21 |
+| §2.1 Bulbe cracheur | 1 | 1 |
+| §3 Boss | Cristaux orbitaux du boss 3, taillés (le reste du §3 est de la retexture/VFX, pas un nouveau modèle) | 1 |
+| §4.1 Projectiles joueur | Tir de base, couteaux/lame, boule de feu, éclat de mana (orbitaux), orbe de cristal (orbe rebondissant) | 5 |
+| §4.2 Projectiles ennemis | Dard de sarbacane, crachat acide, projectile de mana (Dragon), projectile du Cerf, éclat corrompu (boss 3) | 5 |
+| §7.2 Arbres de bordure | Chêne noueux, arbre pétrifié à cristaux, bouleau doré | 3 |
+| §7.2 Rochers de bordure | Rocher moussu fendu, menhir runique, amas rocheux à cristaux | 3 |
+| §7.2 Props d'arène | Touffe d'herbe, bouquet de fleurs, éclat de mana affleurant, caillou, souche, touffe de champignons, patch de mousse | 7 |
+| §7.2 Éléments de lore | Colonne brisée, autel fissuré (la "zone corrompue" est un effet de sol, pas un modèle) | 2 |
+| §13 Diorama du carrousel | Socle de terrain, arbre miniature, rocher miniature, loup miniature | 4 |
+| §8.1 Coffre de boss | Coffre au trésor | 1 |
+| Sanglier (§2.2) | **Non compté** : déjà modélisé, juste à intégrer (rig/anim/script) | 0 |
+| **Total** | | **53** (hors armes de skin variables, hors "nouveau modèle" alternatif du boss 3, hors version 3D optionnelle des gemmes XP/Bouclier de Mana) |
 
 ---
 
@@ -176,6 +198,51 @@ C'est **le plus gros manque** pour l'impression de « jeu fini ».
 7. **Plusieurs biomes / cartes** 🟡 : l'idée « 3 maps » n'est pas commencée. Chaque biome = jeu de textures + props + ambiance + palette d'ennemis éventuellement.
 8. **Arène de boss** 🟡 : un changement visuel quand le boss arrive (cercle de runes au sol, brume, lumière).
 
+### 7.1 Sol — diagnostic et recommandation (2026-10-19)
+**Constat vérifié** (`Mat_Ground_Grass.mat`, shader URP Lit) : `Tex_Ground_GrassV7.png` est une bonne texture peinte à la main (touffes d'herbe, fleurs blanches/jaunes, trèfles — style cohérent avec les illustrations 2D du menu), mais elle est **tuilée telle quelle à l'échelle 20×20 sur tout le sol**, sans `_BumpMap` (aucun normal map → complètement plat sous la caméra inclinée), sans 2e texture ni variation de teinte à grande échelle → la répétition du motif devient visible, et combiné à l'absence totale de prop DANS la zone jouable (§7 point 2, déjà le plus gros manque identifié), le sol se lit comme un papier peint plutôt qu'un terrain.
+
+**Recommandation : ne pas refaire la texture, l'habiller.** Le dessin de base est bon et déjà dans la DA — le proposer ainsi :
+1. **Normal map** généré à partir de `Tex_Ground_GrassV7` (ou repeint) pour casser le côté "plat" sous l'éclairage désormais teinté par palier (voir Bloom/lumière ajoutés le 2026-10-19).
+2. **Calque de variation macro** : une 2e texture à faible opacité (taches de terre/mousse/chemin clair), posée en blend par-dessus au shader, pour casser le motif répétitif sans redessiner la texture de base.
+3. **Props d'arène** (liste ci-dessous, §7.2) : c'est le levier qui compte le plus pour "sol vivant" — une texture seule ne peut pas remplacer des éléments en vrai relief qui projettent une ombre.
+
+Compromis à avoir en tête : plus de travail qu'un simple remplacement de texture (il faut un passage shader + de nouveaux petits meshs + un script de dispersion/instancing GPU pour rester performant avec beaucoup d'ennemis à l'écran), mais c'est la seule version qui corrige vraiment le "ça fait vide" — un sol plus joli mais toujours sans rien dessus resterait vide.
+
+### 7.2 Nouveaux modèles 3D proposés pour Tripo3D (2026-10-19)
+Remplace les arbres/rochers actuels (`Tree_1`, `Tree_2`, `Rock 1`, `Rock 2` dans `TripoModels/`/`Game/3D Models/`, supprimés par l'utilisateur car hors DA) et ajoute des props d'arène qui manquaient totalement (§7 point 2). Même contrainte de style que le reste de la liste (§ Rappel de la DA en tête de document) : silhouettes lisibles vues de dessus, cohérent avec le thème "Fantasy Médiéval avec magie et mana" et les teintes par palier de difficulté déjà en place (ambre Modéré / ambre-orage Violent / violet arcanique Apocalyptique — voir `DifficultyTiers.LightColor`).
+
+**Arbres de bordure** (remplacent `Tree_1`/`Tree_2`) 🔴 :
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Chêne noueux ancien | Tronc noueux et épais, mousse légèrement phosphorescente dans les creux de l'écorce, feuillage dense vert sombre, silhouette large et lisible vue de dessus. |
+| Arbre pétrifié à cristaux | Branches mortes, grises, dénudées, avec de petits cristaux de mana (violet/cyan) qui poussent le long de l'écorce et aux extrémités des branches — écho visuel direct du thème "corruption"/Source Corrompue. |
+| Bouleau doré | Écorce claire, feuillage ambré/doré, plus léger visuellement que le chêne pour varier les silhouettes le long de la bordure. |
+
+**Rochers de bordure** (remplacent `Rock 1`/`Rock 2`) 🔴 :
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Rocher moussu fendu | Bloc de pierre fissuré, mousse et lichen dans les fissures, quelques galets autour à la base. |
+| Menhir runique | Pierre dressée, gravée de runes qui émettent une faible lueur, cohérent avec l'identité "magie/mana" du jeu. |
+| Amas rocheux à cristaux | Blocs de pierre empilés avec des affleurements de cristaux de mana visibles, même famille visuelle que l'arbre pétrifié ci-dessus. |
+
+**Props d'arène, NOUVEAU — à poser à l'intérieur de la zone jouable, sans collision, bas au sol pour ne jamais masquer le joueur/les ennemis** (répond directement à §7 point 2 et au retour utilisateur "le sol est vide") 🔴 :
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Touffe d'herbe stylisée | 2-3 variantes de hauteur/teinte, mêmes verts que `Tex_Ground_GrassV7` pour que le sol et les props se répondent visuellement. |
+| Bouquet de fleurs sauvages | Reprend les fleurs blanches/jaunes déjà peintes dans la texture de sol, en vrai volume pour quelques points d'accroche. |
+| Éclat de mana affleurant | Petit cristal qui sort du sol, lueur douce — cohérent avec les motes de mana ambiantes et la teinte de lumière par palier déjà en place. |
+| Caillou/éclat de pierre | Très petit, pur détail de variation du sol. |
+| Souche ou tronc couché | Référence ponctuelle de "forêt", casse la monotonie sans gêner la lisibilité. |
+| Touffe de champignons | Petite touche de couleur contrastante (rouge/blanc ou bleu luminescent). |
+| Patch de mousse/lichen | Mesh plat ou décal, sert aussi à casser visuellement le tuilage répétitif du sol (voir §7.1 point 2). |
+
+**Éléments de lore, plus rares** (§7 point 3, 🟠) :
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Colonne brisée | Ruine antique, pierre érodée, partiellement envahie de végétation. |
+| Autel fissuré | Petit autel de pierre, runes à moitié effacées, cohérent avec le lore "magie ancienne". |
+| Zone corrompue | Pas un modèle à proprement parler : sol teinté violet avec fissures légèrement lumineuses, à placer près du centre de la carte en écho à la Source Corrompue (boss 3). |
+
 ---
 
 ## 8. Objets à ramasser et interface 3D 🟡 P3
@@ -184,10 +251,20 @@ C'est **le plus gros manque** pour l'impression de « jeu fini ».
 |---|---|---|
 | Gemmes d'XP | Quads texturés + effet de collecte | ✅ OK. Éventuellement une version 3D (cristal facetté) pour les grosses gemmes. |
 | **Or** | Ajouté directement au compteur, rien à ramasser | Pièces/sacs qui tombent des ennemis (plus gratifiant). C'est un choix de design. |
-| Coffres | N'existent pas | Coffre lâché par les boss/mini-boss (choix d'amélioration bonus). Choix de design. |
+| **Coffre de boss** 🟠 | Existe déjà en jeu (`BossChest.cs`, apparaît à CHAQUE mort de vrai boss en Classique/Sans fin/Ruée de boss, accorde 2 tirages de carte complets) mais réutilise le mesh générique des gemmes d'XP, juste teinté or/ambre (`MAT_Gem` + `MaterialPropertyBlock`) - pas un vrai modèle de coffre | **Vrai modèle de coffre au trésor** (voir description ci-dessous) - contrairement aux autres lignes de ce tableau, ce n'est plus un "choix de design" : le système existe et tourne déjà, il ne manque que le modèle. |
 | Soins | N'existent pas (soin seulement à la mort d'un boss) | Potion/fruit à ramasser, rare. Choix de design. |
 | Aimant / bombe | N'existent pas | Classiques du genre survivor. Choix de design. |
 | **Menu principal** | 100 % 2D (illustrations) | ✅ Cohérent et beau. Option : personnage 3D animé (RT_Aether/Kael/Lyra déjà créées et inutilisées) pour montrer les skins. |
+
+### 8.1 Coffre de boss — à modéliser 🟠 P2 (ajouté 2026-10-20)
+
+Contrairement au reste de ce tableau (§8, 🟡 P3, des idées de design pas encore implémentées), **le coffre de boss est un système déjà fonctionnel et vu à chaque run** : il apparaît à la mort de chaque vrai boss (Classique, Sans fin, Ruée de boss), avec sa propre animation (apparition en "pop", lévitation + rotation lente en attendant le ramassage, hitstop + onde de choc + secousse de caméra à l'ouverture). Seul le modèle manque - `BossChest.cs` affiche aujourd'hui le mesh générique des gemmes d'XP (un simple cristal), juste reteint en or/ambre via `MaterialPropertyBlock` : on reconnaît un gros diamant doré, pas un coffre.
+
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Coffre au trésor (boss) | Petit coffre en bois cerclé de métal doré/bronze, couvercle fermé au repos, silhouette lisible vue de dessus en angle 3/4 (même cadrage que le reste des objets ramassables) - cohérent avec l'identité "fantasy médiévale" du jeu. Prévoir idéalement 2 états de maillage ou un morph simple (fermé / entrouvert avec une lueur dorée qui s'échappe) pour accompagner l'animation d'ouverture déjà existante dans le code, mais un seul modèle fermé suffit pour un premier remplacement. |
+
+Point technique : le script attend un `MeshRenderer` (pas un `SpriteRenderer`) sur un enfant du prefab, avec une propriété `_BaseColor` sur son matériau pour la teinte - compatible avec n'importe quel shader URP Lit standard, aucun changement de code nécessaire une fois le modèle importé et branché sur le prefab `BossChest`.
 
 ---
 
@@ -239,6 +316,7 @@ Ils fonctionnent et sont lisibles, mais ce sont des sprites ou des `LineRenderer
 6. 🟠 **Boss 3** (retexture + cristaux) et nettoyage de ses prefabs cylindres (§3).
 7. 🟠 **Skins** (§1), d'abord 1 Classique par personnage pour valider le pipeline (modèle → rig → prefab → portrait → catalogue), puis le reste.
 8. 🟡 Effets génériques, Sanglier, biomes, objets à ramasser.
+9. 🟠 **Diorama du carrousel de difficulté** (§13) : indépendant du reste, peut se faire à tout moment — bloque seulement l'habillage final de la page Accueil du menu (le système/carrousel fonctionne déjà avec un dégradé de ciel temporaire).
 
 ## 12. Fichiers à supprimer une fois les remplacements faits
 - `Assets/Resources/PulseVisual.prefab` (inutilisé)
@@ -249,3 +327,24 @@ Ils fonctionnent et sont lisibles, mais ce sont des sprites ou des `LineRenderer
 - Les `MeshRenderer` cube/capsule désactivés à la racine des prefabs
 - `RT_Aether/Kael/Lyra` si on ne fait pas d'aperçu 3D
 - Le pack `10 Fantasy Medieval Ambient Tracks` s'il ne sert pas (il n'est pas dans le build mais alourdit le projet)
+
+---
+
+## 13. Diorama du carrousel de difficulté (page Accueil du menu, nouveau 2026-10-20) 🟠 P2
+
+Le sélecteur de palier de difficulté de la page Accueil a été repensé en carrousel visuel (`DifficultyCarousel.cs`, remplace l'ancien `DifficultySelector.cs` à 3 cases) : au lieu de boutons plats, chaque palier doit afficher une **mini-scène stylisée façon diorama** (un petit socle de terrain avec 2-3 éléments dessus), avec un **éclairage qui change selon le palier** — jour pour Modéré, crépuscule pour Violent, nuit pour Apocalyptique. Cet éclairage réutilise la VRAIE teinte de lumière déjà utilisée en jeu pour ce palier (`DifficultyTiers.LightColor`/`LightIntensity`), pas une palette inventée à part : le carrousel doit donner un aperçu fidèle de l'ambiance de la vraie partie.
+
+**Important : un seul jeu de modèles suffit pour les 3 paliers** — c'est l'ÉCLAIRAGE qui change, pas le décor. Pas besoin de 3 variantes de terrain/arbre/rocher/loup.
+
+**En attendant ces modèles**, l'emplacement (`DifficultyCarousel._previewImage`) affiche un simple dégradé de ciel procédural teinté par palier (`MenuSprites.SkyGradient`) — purement temporaire, zéro dépendance de code à changer une fois les modèles prêts : il suffira de remplacer le contenu visuel de cet emplacement (sprite, ou une RenderTexture si un rendu 3D en direct est souhaité).
+
+**Style voulu, explicitement différent du reste de la DA du jeu** : "stylisé en cartoon" — plus simple et mignon que les modèles "fantasy peint" du §7.2 (silhouettes rondes, peu de détails, couleurs franches). Ne pas réutiliser les arbres/rochers de bordure du §7.2 tels quels, le contraste de style serait visible dans un si petit cadre.
+
+| Nom | Description (base de prompt Tripo3D) |
+|---|---|
+| Socle de terrain miniature | Petite galette de terrain (ronde ou hexagonale), vue "diorama/jouet", herbe stylisée sur le dessus, flancs visibles (terre/roche) sur la tranche, à l'échelle pour accueillir 2-3 éléments dessus sans paraître vide ni surchargé. |
+| Arbre miniature cartoon | Silhouette simple et ronde, feuillage en boule(s), proportions "jouet" plutôt que réalistes. 2 teintes de feuillage suffisent pour varier (ex. vert été / orangé automne) — pas besoin de 2 modèles séparés si une seule texture peut être retintée. |
+| Rocher miniature cartoon | Petit amas arrondi, 1-2 teintes de gris/mousse, même esprit "jouet" que l'arbre. |
+| Loup miniature cartoon | Version mignonne/simplifiée du loup du jeu (silhouette ronde, PAS le modèle réaliste du §2.3) — une seule pose fixe (assis ou debout) suffit, le diorama est une image statique, aucune animation nécessaire. |
+
+Repère d'échelle technique (déjà posé dans le code, pour que les modèles arrivent à la bonne taille sans retouche) : le socle de terrain fait environ 3,5 unités de diamètre, l'arbre et le rocher environ 1 à 1,5 unité de haut une fois posés dessus, le loup environ 0,8 à 1 unité de long — proportions pensées pour un cadrage de caméra à ~5 unités de recul, angle 3/4 légèrement plongeant.

@@ -161,6 +161,14 @@ public class UpgradeData : ScriptableObject
     // spawn plus avec elle equipee, le premier pick la debloque (equipe l'arme),
     // les 3 picks suivants sont les paliers rayon/degats/brulure (decales de +1
     // par rapport a avant, tier = level-1).
+    // AJOUTÉ (2026-10-20, retour utilisateur : "le +1 au rayon de veut rien dire pour le joueur, il ne sait pas ce
+    // que représente 1") - "+1" (mètres) était une unité abstraite sans repère pour le joueur, contrairement à un
+    // "+1 orbital"/"+1 rebond" ailleurs dans ce fichier qui désigne un OBJET concret et comptable. Le rayon n'a pas
+    // cet avantage : exprimé en pourcentage du rayon de BASE de l'arme (`WeaponFireball._fragmentRadius`, 2,25 -
+    // dupliqué ici en dur plutôt que lu dynamiquement, cette upgrade n'étant prenable qu'une seule fois par
+    // personnage donc toujours calculée depuis la même base), même registre que "+X% dégâts" juste en dessous.
+    private const float FireballBaseFragmentRadius = 2.25f;
+
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
@@ -170,7 +178,7 @@ public class UpgradeData : ScriptableObject
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0} de rayon d'explosion.", Loc.Num(v, "0.#"));
+            case 1: return Loc.F("+{0}% de rayon d'explosion.", PercentOf(v / FireballBaseFragmentRadius));
             case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
             case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée.");
             default: return Description;

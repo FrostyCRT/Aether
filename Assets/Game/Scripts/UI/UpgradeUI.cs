@@ -38,25 +38,70 @@ public class UpgradeUI : MonoBehaviour
     // fondu, le titre "NIVEAU SUPÉRIEUR !" (et le bandeau de fusion) apparaissent en "pop" avec un petit
     // dépassement élastique, puis les cartes montent depuis le bas en cascade (gauche -> droite), chacune avec un
     // fondu et un léger rebond d'échelle. Tout tourne en temps réel (unscaled) : le jeu est en pause pendant le choix.
+    // MODIFIÉ (2026-10-20, chantier satisfaction - retour utilisateur : "quand arrive le level up panel, les 3
+    // cartes s'affichent d'un coup, ça montre pas que c'est un vrai pas en avant") - la cascade existait déjà
+    // (gauche -> droite, voir PlayIntro) mais son rythme (0,07s entre cartes, 0,3s par carte) était trop rapide
+    // pour vraiment se LIRE comme un enchaînement délibéré - à ce tempo, l'œil perçoit un "pop" quasi groupé plutôt
+    // qu'un vrai tirage carte par carte. Timings doublés/allongés + glissement plus ample (plus de distance
+    // parcourue = plus de poids perçu), et un flash d'impact doré ajouté juste avant le pop du titre pour marquer
+    // franchement l'INSTANT où l'écran de récompense s'ouvre (voir _impactFlash ci-dessous).
     [Header("Animation d'arrivée du panel de level-up")]
     [Tooltip("Décoche pour revenir à l'apparition instantanée d'avant.")]
     [SerializeField] private bool _introEnabled = true;
+    [Tooltip("Image plein écran (sibling 0 du panel) qui flashe en doré à l'ouverture, avant le pop du titre.")]
+    [SerializeField] private UnityEngine.UI.Image _impactFlash;
+    [Tooltip("Alpha maximal atteint par le flash d'impact.")]
+    [SerializeField] private float _impactFlashPeakAlpha = 0.45f;
+    [Tooltip("Durée de montée du flash d'impact (0 -> pic).")]
+    [SerializeField] private float _impactFlashInDuration = 0.08f;
+    [Tooltip("Durée de retombée du flash d'impact (pic -> 0).")]
+    [SerializeField] private float _impactFlashOutDuration = 0.35f;
     [Tooltip("Durée du fondu du fond/panneau entier.")]
     [SerializeField] private float _panelFadeDuration = 0.12f;
     [Tooltip("Durée du pop du titre \"NIVEAU SUPÉRIEUR !\" (et du bandeau de fusion).")]
-    [SerializeField] private float _titlePopDuration = 0.28f;
+    [SerializeField] private float _titlePopDuration = 0.32f;
     [Tooltip("Échelle de départ du titre avant son pop (1 = pas de pop).")]
-    [SerializeField] private float _titleStartScale = 0.6f;
+    [SerializeField] private float _titleStartScale = 0.5f;
     [Tooltip("Délai avant l'apparition de la 1re carte.")]
-    [SerializeField] private float _cardFirstDelay = 0.05f;
+    [SerializeField] private float _cardFirstDelay = 0.2f;
+    // MODIFIÉ (2026-10-20, 6e retour : "le délai est légèrement trop long, met à 0,35") - 0,60s (5e essai) encore
+    // un peu trop long. Valeur exacte demandée cette fois. Chaque carte (et sa roulette, voir _iconSpin* -> le
+    // défilement de TOUTE la carte plus bas) suit son PROPRE délai : la 3e ne s'arrête donc jamais en même temps
+    // que la 1re.
     [Tooltip("Délai entre l'apparition de chaque carte successive (effet de cascade).")]
-    [SerializeField] private float _cardStagger = 0.07f;
+    [SerializeField] private float _cardStagger = 0.35f;
     [Tooltip("Durée de l'animation d'UNE carte (montée + fondu + rebond d'échelle).")]
-    [SerializeField] private float _cardDuration = 0.3f;
+    [SerializeField] private float _cardDuration = 0.42f;
     [Tooltip("Distance (en pixels du Canvas) depuis laquelle chaque carte monte vers sa place.")]
-    [SerializeField] private float _cardSlideOffset = 80f;
+    [SerializeField] private float _cardSlideOffset = 220f;
     [Tooltip("Échelle de départ de chaque carte (1 = pas de variation d'échelle).")]
-    [SerializeField] private float _cardStartScale = 0.86f;
+    [SerializeField] private float _cardStartScale = 0.7f;
+
+    // AJOUTÉ (2026-10-20, retour utilisateur : "comme si c'était une roulette pour montrer que c'est des vraies
+    // compétences choisies aléatoirement") - pendant que la carte glisse puis après qu'elle soit posée, son ICÔNE
+    // défile rapidement à travers d'autres icônes d'upgrade avant de se figer sur la vraie - décélération "machine
+    // à sous" (défilement rapide au début, de plus en plus espacé vers la fin). _iconSpinDuration dépasse
+    // VOLONTAIREMENT _cardDuration : le cadre de la carte se pose d'abord, puis l'icône continue de tourner un
+    // instant de plus avant de s'arrêter - exactement le rythme d'une vraie roulette (le boîtier s'arrête avant
+    // que la roue à l'intérieur ne finisse de ralentir).
+    // MODIFIÉ (2026-10-20, 2e retour : "il y a que les icônes qui tournent, mais pas les descriptions et les noms,
+    // et la couleur des parchemins") - le défilement porte maintenant sur TOUTE la carte (icône + nom + description
+    // + parchemin), pas que l'icône seule : à chaque étape, les 4 proviennent de la MÊME upgrade piochée au hasard
+    // (jamais mélangés entre eux), pour rester cohérents visuellement à tout instant du défilement, exactement
+    // comme si la carte montrait vraiment cette upgrade-là. Réservé aux cartes NORMALES (pas de fusion) : la mise
+    // en page d'une carte de fusion (titre "FUSION" + nom en 2e ligne, icône/description inversées) est fixée
+    // AVANT le défilement par DisplayUpgrades() - y faire défiler le nom/la description d'une upgrade normale
+    // entraînerait un texte mal positionné pendant le défilement. Les fusions gardent donc le défilement d'ICÔNE
+    // SEUL (comportement d'origine de ce chantier), les cartes normales défilent intégralement.
+    [Header("\"Roulette\" sur chaque carte (icône + nom + description + parchemin)")]
+    [Tooltip("Décoche pour revenir à l'icône/au texte figés directement sur la bonne upgrade (pas de défilement).")]
+    [SerializeField] private bool _iconSpinEnabled = true;
+    [Tooltip("Durée totale du défilement d'une carte, à partir du même délai que son entrée.")]
+    [SerializeField] private float _iconSpinDuration = 0.8f;
+    [Tooltip("Nombre d'upgrades différentes montrées pendant le défilement (avant la vraie, incluse dans le compte).")]
+    [SerializeField] private int _iconSpinSteps = 12;
+    [Tooltip("Léger pop d'échelle de l'icône à chaque changement pendant le défilement (1 = aucun pop).")]
+    [SerializeField] private float _iconSpinTickPopScale = 1.08f;
 
     [Header("Apparence des pastilles de palier")]
     [Tooltip("Pastille pas encore atteinte. Gris-brun neutre et discret, ne doit pas attirer l'oeil.")]
@@ -106,6 +151,15 @@ public class UpgradeUI : MonoBehaviour
     [Header("Delai et animation apres un pick - s'applique a TOUS les picks")]
     [Tooltip("Duree totale entre le clic et la confirmation du pick (fermeture du panel). Vise 1 a 1.5s.")]
     [SerializeField] private float _pickConfirmDelay = 1.3f;
+
+    // AJOUTÉ (2026-10-20, chantier satisfaction) - avant ce correctif, les 2 cartes NON choisies restaient figées,
+    // intactes, jusqu'à ce que SelectUpgrade() désactive BRUTALEMENT tout le panel (SetActive(false) instantané,
+    // aucune transition) - la fin du choix n'avait donc aucun "bouclage" avec son arrivée en fanfare (voir
+    // PlayIntro). Les cartes non retenues s'effacent maintenant (fondu + rétrécissement + léger recul) pendant la
+    // toute fin du délai de confirmation déjà existant (aucune durée ajoutée au total, juste réutilisée) - la carte
+    // CHOISIE reste seule, pleine taille, à l'écran jusqu'à la fermeture : clairement LE choix qui a été fait.
+    [Tooltip("Duree, prise sur la fin de _pickConfirmDelay, pendant laquelle les 2 cartes NON choisies s'effacent.")]
+    [SerializeField] private float _exitFadeDuration = 0.3f;
 
     [Tooltip("Duree du remplissage fluide (lerp de couleur) d'une pastille ou du losange de deblocage.")]
     [SerializeField] private float _dotFillAnimDuration = 0.3f;
@@ -239,10 +293,16 @@ public class UpgradeUI : MonoBehaviour
         return branchSprite != null ? branchSprite : _parchmentGold;
     }
 
+    // AJOUTÉ (2026-10-20, 2e retour - roulette sur toute la carte) - mémorisé pour que PlayIntro() (appelée juste
+    // après, voir StartIntro en fin de méthode) sache quelle UpgradeData complète correspond à chaque index de
+    // carte, sans avoir à la relire sur les champs déjà affichés (texte/sprite) de la carte elle-même.
+    private List<UpgradeData> _currentCardUpgrades;
+
     public void DisplayUpgrades(List<UpgradeData> upgrades)
     {
         if (upgrades == null) return;
 
+        _currentCardUpgrades = upgrades;
         _pickInProgress = false;
 
         bool hasFusion = false;
@@ -411,6 +471,19 @@ public class UpgradeUI : MonoBehaviour
 
     private void ResetCardScales(UpgradeCard card)
     {
+        // AJOUTÉ (2026-10-20, chantier satisfaction) - le fondu de sortie d'un pick précédent (voir
+        // AnimatePickThenConfirm/otherCardGroups) laisse la carte NON choisie à alpha<1 et une échelle rétrécie sur
+        // son propre CanvasGroup/RectTransform - sans cette remise à zéro, PlayIntro() capturerait CETTE échelle
+        // réduite comme "position finale" de la prochaine apparition (AddIntroTarget lit rt.localScale tel quel),
+        // et la carte resterait visuellement plus petite pour toujours après son 1er fondu de sortie.
+        GameObject cardRootGO = card.cardRoot != null ? card.cardRoot : (card.chooseButton != null ? card.chooseButton.gameObject : null);
+        if (cardRootGO != null)
+        {
+            cardRootGO.transform.localScale = Vector3.one;
+            CanvasGroup grp = cardRootGO.GetComponent<CanvasGroup>();
+            if (grp != null) grp.alpha = 1f;
+        }
+
         if (card.iconImage != null)
             card.iconImage.rectTransform.localScale = Vector3.one;
 
@@ -556,6 +629,92 @@ public class UpgradeUI : MonoBehaviour
     private Coroutine _introRoutine;
     private bool _introPending = false;
 
+    // AJOUTÉ (2026-10-20, retour utilisateur : "si on appuis sur 1, 2, 3 alors que les 3 cartes n'ont pas encore
+    // été dévoilé, ça poursuit quand même le jeu [...] il faut pouvoir cliquer/appuyer sur 1/2/3 que si les 3 sont
+    // dévoilés") - les cartes sont actives (GameObject.activeSelf) dès DisplayUpgrades(), bien avant la fin de leur
+    // animation d'entrée/roulette (PlayIntro, encore en fondu/défilement) : rien n'empêchait jusqu'ici un clic ou un
+    // raccourci clavier de confirmer un choix pendant que son contenu affiché était encore une fausse upgrade de la
+    // roulette. Vrai dès que PlayIntro() démarre, faux dès qu'elle se termine (normalement OU interrompue via
+    // StopIntro) - vérifié dans OnCardSelected(), le point d'entrée COMMUN à la souris et au clavier.
+    private bool _introPlaying = false;
+
+    // MODIFIÉ (2026-10-20, 2e retour utilisateur - voir le commentaire sur _iconSpinEnabled plus haut) : chaque
+    // étape du défilement porte maintenant une upgrade COMPLÈTE (icône + nom + description + parchemin), pas
+    // qu'un sprite isolé - classe (pas struct) : lastStepShown/tickStartTime sont modifiés en place chaque frame
+    // par la boucle de PlayIntro, une struct copiée dans la liste ne le permettrait pas proprement.
+    private class IconSpinState
+    {
+        public Image iconImage;
+        public TextMeshProUGUI nameText;       // null pour une carte de fusion (texte non concerné par le défilement)
+        public TextMeshProUGUI descriptionText; // idem
+        public Image backgroundImage;           // idem (parchemin)
+        public UpgradeData[] sequence; // dernière entrée = la VRAIE upgrade de cette carte
+        public float delay;
+        public float duration;
+        public Vector3 baseScale;
+        public int lastStepShown = -1;
+        public float tickStartTime = -1f;
+
+        // AJOUTÉ (2026-10-20, 3e retour utilisateur : "les dots sont fix, elles doivent aussi bouger") - les
+        // pastilles de palier restaient figées sur l'état de la VRAIE upgrade pendant tout le défilement, alors que
+        // le reste de la carte (icône/nom/description/parchemin) cyclait déjà sur de fausses upgrades : incohérent,
+        // ça trahissait laquelle des 3 était la vraie avant même la fin du tirage. cardIndex/card permettent de
+        // rappeler UpdateTierDots (même logique que l'affichage normal, voir DisplayUpgrades) à CHAQUE étape du
+        // défilement - y compris sur la toute dernière (la vraie upgrade), ce qui remet naturellement les pastilles
+        // dans leur état correct en fin de tirage, sans code de restauration séparé. Jamais pour une carte de
+        // fusion (spinDots=false), par cohérence avec nameText/descriptionText/backgroundImage = null ci-dessus.
+        public int cardIndex;
+        public UpgradeCard card;
+        public bool spinDots;
+    }
+
+    private readonly List<IconSpinState> _iconSpinStates = new List<IconSpinState>();
+    private List<UpgradeData> _spinUpgradePool;
+
+    // Construit une fois (mis en cache) la liste de toutes les upgrades NORMALES (jamais de fusion - voir
+    // commentaire sur _iconSpinEnabled) piochées pour le défilement - indépendant des 3 upgrades réellement
+    // proposées ce tirage-ci (on peut très bien "tomber" par hasard sur l'une d'elles en défilant, comme une
+    // vraie roulette).
+    private List<UpgradeData> GetSpinUpgradePool()
+    {
+        if (_spinUpgradePool != null) return _spinUpgradePool;
+
+        _spinUpgradePool = new List<UpgradeData>();
+        if (LevelUpManager.Instance != null && LevelUpManager.Instance.AllUpgrades != null)
+        {
+            foreach (UpgradeData u in LevelUpManager.Instance.AllUpgrades)
+                if (u != null && u.icon != null && u.upgradeType != UpgradeType.Fusion) _spinUpgradePool.Add(u);
+        }
+        return _spinUpgradePool;
+    }
+
+    private UpgradeData[] BuildSpinSequence(UpgradeData finalUpgrade, List<UpgradeData> pool)
+    {
+        int steps = Mathf.Max(2, _iconSpinSteps);
+        UpgradeData[] seq = new UpgradeData[steps];
+
+        if (pool == null || pool.Count == 0)
+        {
+            for (int i = 0; i < steps; i++) seq[i] = finalUpgrade;
+            return seq;
+        }
+
+        for (int i = 0; i < steps - 1; i++)
+            seq[i] = pool[Random.Range(0, pool.Count)];
+        seq[steps - 1] = finalUpgrade;
+        return seq;
+    }
+
+    // Applique UNE étape du défilement (icône + éventuellement nom/description/parchemin) sur une carte.
+    private void ApplySpinStep(IconSpinState s, UpgradeData upgrade)
+    {
+        s.iconImage.sprite = upgrade.icon;
+        if (s.nameText != null) s.nameText.text = upgrade.Name;
+        if (s.descriptionText != null) s.descriptionText.text = upgrade.GetDynamicDescription();
+        if (s.backgroundImage != null) s.backgroundImage.sprite = GetParchmentFor(upgrade);
+        if (s.spinDots && s.card != null) UpdateTierDots(s.cardIndex, s.card, upgrade);
+    }
+
     // Si le panel n'est pas encore actif au moment où DisplayUpgrades() est appelé (LevelUpManager peut afficher les
     // cartes AVANT d'activer le panel), l'animation est mise en attente et démarre à l'activation (OnEnable).
     private void StartIntro()
@@ -571,6 +730,7 @@ public class UpgradeUI : MonoBehaviour
         _introPending = false;
         StopIntro();
         _introRoutine = StartCoroutine(PlayIntro());
+        _introPlaying = true;
     }
 
     private void OnEnable()
@@ -587,6 +747,7 @@ public class UpgradeUI : MonoBehaviour
             StopCoroutine(_introRoutine);
             _introRoutine = null;
         }
+        _introPlaying = false;
         ApplyIntroFinalState();
     }
 
@@ -603,6 +764,34 @@ public class UpgradeUI : MonoBehaviour
         _introTargets.Clear();
 
         if (_panelGroup != null) _panelGroup.alpha = 1f;
+        if (_impactFlash != null)
+        {
+            Color c = _impactFlash.color;
+            c.a = 0f;
+            _impactFlash.color = c;
+        }
+
+        // Fige chaque carte sur sa VRAIE upgrade (dernière entrée de sa séquence) à l'échelle normale - une
+        // interruption en plein défilement (carte reprise/relancée) ne doit jamais laisser une upgrade aléatoire.
+        // CORRIGÉ (2026-10-20, retour utilisateur : "si c'est une upgrade à 5 dots [...] les dots se centrent, au
+        // début après la roulette de la carte, et quand toutes les cartes ont été révélé, ces 5 dots bougent
+        // légèrement en X") - cette méthode est AUSSI appelée à la fin NORMALE de toute l'intro (voir la fin de
+        // PlayIntro()), pas seulement sur une interruption - elle rappelait donc ApplySpinStep (et donc
+        // UpdateTierDots, qui recalcule la position X des pastilles à partir de la largeur ACTUELLE du conteneur)
+        // une 2e fois pour CHAQUE carte, y compris celles dont le défilement était déjà terminé depuis longtemps
+        // (ex: la 1re carte, figée sur la vraie upgrade dès ~1s, se faisait recalculer une 2e fois quand la 3e
+        // carte finissait la sienne ~1s plus tard) - la mise en page ayant très légèrement varié entre les deux
+        // lectures (dernières cartes qui finissent de s'installer), le 2e calcul ne retombait pas pile sur le même
+        // X que le 1er, d'où le petit saut observé. Ne retouche plus une carte déjà figée sur sa vraie upgrade.
+        for (int i = 0; i < _iconSpinStates.Count; i++)
+        {
+            IconSpinState s = _iconSpinStates[i];
+            if (s.iconImage == null) continue;
+            int lastIndex = s.sequence.Length - 1;
+            if (s.lastStepShown != lastIndex) ApplySpinStep(s, s.sequence[lastIndex]);
+            s.iconImage.rectTransform.localScale = s.baseScale;
+        }
+        _iconSpinStates.Clear();
     }
 
     private void AddIntroTarget(RectTransform rt, float delay, float duration, float startScale, float slideOffset)
@@ -669,20 +858,55 @@ public class UpgradeUI : MonoBehaviour
             AddIntroTarget(_fusionAvailableBanner.rectTransform, 0.1f, _titlePopDuration, _titleStartScale, 0f);
 
         // Cartes : montée depuis le bas + fondu + rebond d'échelle, en cascade de gauche à droite.
+        _iconSpinStates.Clear();
+        List<UpgradeData> spinPool = _iconSpinEnabled ? GetSpinUpgradePool() : null;
         int shown = 0;
         for (int i = 0; i < _cards.Length; i++)
         {
             GameObject target = _cards[i].cardRoot != null ? _cards[i].cardRoot : (_cards[i].chooseButton != null ? _cards[i].chooseButton.gameObject : null);
             if (target == null || !target.activeSelf) continue;
 
-            AddIntroTarget((RectTransform)target.transform, _cardFirstDelay + shown * _cardStagger, _cardDuration, _cardStartScale, _cardSlideOffset);
+            float cardDelay = _cardFirstDelay + shown * _cardStagger;
+            AddIntroTarget((RectTransform)target.transform, cardDelay, _cardDuration, _cardStartScale, _cardSlideOffset);
+
+            // "Roulette" : CETTE carte défile sur d'autres upgrades avant de se figer sur la vraie (déjà affectée
+            // par DisplayUpgrades() avant que StartIntro() ne soit appelée - _currentCardUpgrades[i] donne
+            // l'UpgradeData complète correspondante, jamais recalculée). Fusion -> icône seule (voir le
+            // commentaire sur _iconSpinEnabled) ; carte normale -> icône + nom + description + parchemin.
+            UpgradeData finalUpgrade = _currentCardUpgrades != null && i < _currentCardUpgrades.Count ? _currentCardUpgrades[i] : null;
+            if (_iconSpinEnabled && finalUpgrade != null && _cards[i].iconImage != null && spinPool != null && spinPool.Count > 0)
+            {
+                bool isFusionCard = finalUpgrade.upgradeType == UpgradeType.Fusion;
+                _iconSpinStates.Add(new IconSpinState
+                {
+                    iconImage = _cards[i].iconImage,
+                    nameText = isFusionCard ? null : _cards[i].nameText,
+                    descriptionText = isFusionCard ? null : _cards[i].descriptionText,
+                    backgroundImage = isFusionCard ? null : _cards[i].backgroundImage,
+                    sequence = BuildSpinSequence(finalUpgrade, spinPool),
+                    delay = cardDelay,
+                    duration = _iconSpinDuration,
+                    baseScale = _cards[i].iconImage.rectTransform.localScale,
+                    cardIndex = i,
+                    card = _cards[i],
+                    spinDots = !isFusionCard
+                });
+            }
+
             shown++;
         }
 
         // Etat de départ appliqué IMMÉDIATEMENT (avant le premier yield, donc avant le moindre rendu) : jamais une
         // image des cartes déjà à leur place avant que l'animation ne commence.
         _panelGroup.alpha = 0f;
-        float totalDuration = _panelFadeDuration;
+        if (_impactFlash != null)
+        {
+            Color c0 = _impactFlash.color;
+            c0.a = 0f;
+            _impactFlash.color = c0;
+        }
+        float flashTotalDuration = _impactFlashInDuration + _impactFlashOutDuration;
+        float totalDuration = Mathf.Max(_panelFadeDuration, flashTotalDuration);
         for (int i = 0; i < _introTargets.Count; i++)
         {
             IntroTarget t = _introTargets[i];
@@ -692,12 +916,32 @@ public class UpgradeUI : MonoBehaviour
             totalDuration = Mathf.Max(totalDuration, t.delay + t.duration);
         }
 
+        // Cartes en défilement : contenu de départ = 1re étape de la séquence (jamais la vraie upgrade visible
+        // avant que son délai ne démarre), échelle normale tant que le défilement n'a pas commencé.
+        for (int i = 0; i < _iconSpinStates.Count; i++)
+        {
+            IconSpinState s = _iconSpinStates[i];
+            ApplySpinStep(s, s.sequence[0]);
+            s.iconImage.rectTransform.localScale = s.baseScale;
+            totalDuration = Mathf.Max(totalDuration, s.delay + s.duration);
+        }
+
         float elapsed = 0f;
         while (elapsed < totalDuration)
         {
             elapsed += Time.unscaledDeltaTime;
 
             _panelGroup.alpha = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, _panelFadeDuration));
+
+            if (_impactFlash != null)
+            {
+                float flashAlpha = elapsed < _impactFlashInDuration
+                    ? Mathf.Lerp(0f, _impactFlashPeakAlpha, elapsed / Mathf.Max(0.001f, _impactFlashInDuration))
+                    : Mathf.Lerp(_impactFlashPeakAlpha, 0f, (elapsed - _impactFlashInDuration) / Mathf.Max(0.001f, _impactFlashOutDuration));
+                Color fc = _impactFlash.color;
+                fc.a = Mathf.Clamp01(flashAlpha);
+                _impactFlash.color = fc;
+            }
 
             for (int i = 0; i < _introTargets.Count; i++)
             {
@@ -711,10 +955,51 @@ public class UpgradeUI : MonoBehaviour
                 t.rt.anchoredPosition = t.basePos + new Vector2(0f, Mathf.Lerp(-t.slideOffset, 0f, EaseOutCubic(p)));
             }
 
+            // "Roulette" : avance le défilement de chaque icône. Les temps de changement d'icône suivent une
+            // courbe d'accélération quadratique (switchTime(i) = duration * (i/(N-1))²) - les écarts entre 2
+            // changements sont COURTS au début (défilement rapide) et S'ALLONGENT vers la fin (ralentissement),
+            // exactement le rythme d'une roulette qui s'arrête. Le sprite ne change que lorsqu'on franchit une
+            // nouvelle étape (pas à chaque frame), avec un petit pop d'échelle qui se résorbe tout seul ensuite.
+            for (int i = 0; i < _iconSpinStates.Count; i++)
+            {
+                IconSpinState s = _iconSpinStates[i];
+                if (s.iconImage == null) continue;
+
+                float localElapsed = elapsed - s.delay;
+                if (localElapsed < 0f) continue;
+
+                int lastIndex = s.sequence.Length - 1;
+                if (localElapsed >= s.duration)
+                {
+                    if (s.lastStepShown != lastIndex)
+                    {
+                        s.lastStepShown = lastIndex;
+                        ApplySpinStep(s, s.sequence[lastIndex]);
+                    }
+                    s.iconImage.rectTransform.localScale = s.baseScale;
+                    continue;
+                }
+
+                float tSqrt = Mathf.Sqrt(Mathf.Clamp01(localElapsed / s.duration));
+                int stepIndex = Mathf.Clamp(Mathf.FloorToInt(tSqrt * lastIndex), 0, lastIndex);
+                if (stepIndex != s.lastStepShown)
+                {
+                    s.lastStepShown = stepIndex;
+                    ApplySpinStep(s, s.sequence[stepIndex]);
+                    s.tickStartTime = localElapsed;
+                }
+
+                const float TickPopDecay = 0.08f;
+                float sincePop = s.tickStartTime >= 0f ? localElapsed - s.tickStartTime : TickPopDecay;
+                float popFactor = Mathf.Clamp01(1f - sincePop / TickPopDecay);
+                s.iconImage.rectTransform.localScale = s.baseScale * Mathf.Lerp(1f, _iconSpinTickPopScale, popFactor);
+            }
+
             yield return null;
         }
 
         _introRoutine = null;
+        _introPlaying = false;
         ApplyIntroFinalState();
     }
 
@@ -733,6 +1018,7 @@ public class UpgradeUI : MonoBehaviour
     {
         if (LevelUpManager.Instance == null) return;
         if (_pickInProgress) return;
+        if (_introPlaying) return;
 
         if (gameObject.activeInHierarchy)
         {
@@ -782,6 +1068,20 @@ public class UpgradeUI : MonoBehaviour
 
         if (card.chooseButton != null)
             card.chooseButton.interactable = false;
+
+        // --- Cartes NON choisies : CanvasGroup pour le fondu de sortie (voir boucle plus bas) ---
+        List<CanvasGroup> otherCardGroups = new List<CanvasGroup>();
+        for (int i = 0; i < _cards.Length; i++)
+        {
+            if (i == index) continue;
+            GameObject otherTarget = _cards[i].cardRoot != null ? _cards[i].cardRoot : (_cards[i].chooseButton != null ? _cards[i].chooseButton.gameObject : null);
+            if (otherTarget == null || !otherTarget.activeSelf) continue;
+
+            CanvasGroup grp = otherTarget.GetComponent<CanvasGroup>();
+            if (grp == null) grp = otherTarget.AddComponent<CanvasGroup>();
+            grp.alpha = 1f;
+            otherCardGroups.Add(grp);
+        }
 
         // --- Preparation des elements a animer ---
 
@@ -874,6 +1174,21 @@ public class UpgradeUI : MonoBehaviour
                 float popFactor = Mathf.Sin(rowT * Mathf.PI);
                 float scale = 1f + (_maxTierRowPopScale - 1f) * popFactor;
                 card.tierDotsContainer.transform.localScale = rowOriginalScale * scale;
+            }
+
+            // Fondu de sortie des cartes NON choisies, sur la toute fin du délai (voir _exitFadeDuration) - la
+            // carte choisie, elle, reste pleine taille/opaque jusqu'à la fermeture du panel.
+            if (otherCardGroups.Count > 0)
+            {
+                float exitStart = _pickConfirmDelay - _exitFadeDuration;
+                float exitT = Mathf.Clamp01((elapsed - exitStart) / Mathf.Max(0.01f, _exitFadeDuration));
+                float exitEase = EaseOutCubic(exitT);
+                foreach (CanvasGroup grp in otherCardGroups)
+                {
+                    if (grp == null) continue;
+                    grp.alpha = 1f - exitEase;
+                    grp.transform.localScale = Vector3.one * Mathf.Lerp(1f, 0.85f, exitEase);
+                }
             }
 
             yield return null;

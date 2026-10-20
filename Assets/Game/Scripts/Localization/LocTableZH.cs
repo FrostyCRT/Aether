@@ -69,7 +69,7 @@ public static class LocTableZH
         { "RÉINITIALISER « {0} » ?", "重置「{0}」？" }, { "Les réglages de cette page reprennent leur valeur d'origine.", "本页设置将恢复为默认值。" },
         { "Réinitialiser", "重置" }, { "Page « {0} » réinitialisée.", "「{0}」页面已重置。" }, { "TOUT RÉINITIALISER ?", "全部重置？" },
         { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "所有设置和按键都将恢复为默认值。" }, { "Tout réinitialiser", "全部重置" },
-        { "Tous les paramètres ont été réinitialisés.", "所有设置均已重置。" }, { "QUITTER LE JEU ?", "退出游戏？" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "游戏将会关闭。你的设置已保存。" },
+        { "Tous les paramètres ont été réinitialisés.", "所有设置均已重置。" }, { "QUITTER LE JEU ?", "退出游戏？" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "游戏将会关闭。你的设置已保存。" },
         { "Quitter", "退出" }, { "Disposition « {0} » appliquée.", "已应用「{0}」布局。" }, { "OUI", "开" }, { "NON", "关" }, { "AZERTY (ZQSD)", "AZERTY (ZQSD)" },
         { "QWERTY (WASD)", "QWERTY (WASD)" }, { "Flèches seules", "仅方向键" },
 
@@ -81,7 +81,7 @@ public static class LocTableZH
         { "Un cheveu de ton meilleur niveau...", "离最高等级只有一线之隔⋯⋯" }, { "Nouveau record d'Or en une partie : {0} !", "新的单局金币纪录：{0}！" },
         { "Tout près de ton record d'Or...", "金币纪录近在咫尺⋯⋯" }, { "Nouveau personnage débloqué : {0} !", "新角色已解锁：{0}！" }, { "Tu as tout donné à cette branche. Littéralement.", "你为这条分支倾尽了所有，字面意义上的。" },
         { "Plus rien à débloquer ici — change de personnage pour la suite.", "这里已没有可解锁的内容，换个角色继续吧。" }, { "Cette branche n'a plus de secret pour toi.", "这条分支对你已毫无秘密可言。" },
-        { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "技能树与声望均已满级。想要新鲜感就换个角色吧。" }, { "Or", "金币" },
+        { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "技能树与声望均已满级。想要新鲜感就换个角色吧。" }, { "Or", "金币" },
         { "Éclats", "碎片" }, { "Encore {0} {1} pour débloquer {2}", "还差 {0} {1} 即可解锁「{2}」" }, { "De quoi débloquer {0} dès maintenant !", "现在就能解锁「{0}」！" },
         { "Tentative n°{0}", "第 {0} 次尝试" }, { "Survie {0:00}:{1:00}    ·    Titans {2}/3", "生存 {0:00}:{1:00}    ·    泰坦 {2}/3" },
         { "Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", "生存 {0:00}:{1:00}    ·    击杀 {2}    ·    等级 {3}    ·    {4}" },
@@ -95,7 +95,7 @@ public static class LocTableZH
         { "Aucun exploit cette fois — juste une victoire de plus.", "这次没有什么壮举，只是又一场胜利。" }, { "Une victoire sans la moindre compétence. Chapeau.", "一个技能都没拿就赢了。佩服。" },
         { "Aucune compétence récupérée. Le style, ça compte double.", "一个技能都没拿。风格分翻倍。" }, { "Rien pris en cours de route, et pourtant tu es là.", "一路上什么都没拿，可你还是站在了这里。" },
         { "Pas eu le temps de récupérer la moindre compétence.", "连拿一个技能的时间都没有。" }, { "Aucune compétence récupérée cette fois.", "这次一个技能都没拿。" },
-        { "VICTOIRE !", "胜利！" }, { "FIN DE PARTIE", "游戏结束" }, { "DÉFAITE", "战败" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "时间：{0:00}:{1:00}\n击杀敌人：{2}\n金币：{3}" },
+        { "VICTOIRE !", "胜利！" }, { "FIN DE PARTIE", "游戏结束" }, { "DÉFAITE", "战败" }, { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "时间：{0:00}:{1:00}\n击杀敌人：{2}\n金币：{3}" },
         { "Or : {0}", "金币：{0}" }, { "Éliminations : {0}", "击杀：{0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
@@ -103,7 +103,7 @@ public static class LocTableZH
         { "Premier Sang", "第一滴血" }, { "Vaincre 1 boss", "击败 1 名首领" }, { "Toujours en Mouvement", "永不停歇" }, { "Utiliser le Dash 20 fois", "冲刺 20 次" },
         { "Sang-Froid", "临危不乱" }, { "Garder 30% de vie jusqu'au boss 2", "在第 2 名首领之前保持 30% 以上生命值" }, { "Double Chasse", "双重狩猎" },
         { "Vaincre 2 boss dans la même partie", "在同一局中击败 2 名首领" }, { "Ascension Rapide", "极速晋升" }, { "Niveau 20 avant la 10e minute", "第 10 分钟前达到 20 级" },
-        { "Sans Cristal", "禁用水晶" }, { "Sans Ultime jusqu'au boss 2", "第 2 名首领之前不使用大招" }, { "Sans-Faute", "完美无伤" }, { "Aucun dégât jusqu'au boss 1", "第 1 名首领之前不受任何伤害" },
+        { "Sans Cristal", "禁用水晶" }, { "Sans Ultime jusqu'au boss 2", "第 2 名首领之前不使用大招" }, { "Résilience", "坚韧" }, { "Garder plus de 50% de vie jusqu'au boss 1", "在第 1 名首领之前生命值保持在 50% 以上" },
         { "Éclair", "闪电速攻" }, { "Vaincre un boss en moins de 30s", "在 30 秒内击败一名首领" }, { "Fortune", "财运亨通" }, { "Avec au moins 3000 Or ramassé", "拾取至少 3000 金币" },
         { "Puissance Absolue", "绝对力量" }, { "Niveau 30 dans la même partie", "在同一局中达到 30 级" }, { "Or x{0}", "金币 x{0}" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "进行中" }, { "{0}/3000 Or", "{0}/3000 金币" }, { "Pas de défi dans ce mode.", "此模式没有挑战。" },
@@ -123,8 +123,8 @@ public static class LocTableZH
         { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes.", "每 8 秒自动吸收 1 个敌方投射物。" }, { "Impulsion Nova", "新星脉冲" },
         { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.", "如果吸收触发的新星消灭了至少一名敌人，冲刺冷却会立即重置。" },
         { "Dash Amélioré", "强化冲刺" }, { "Réduit le temps de recharge du dash.", "缩短冲刺的冷却时间。" }, { "Maîtrise du Cristal", "水晶精通" },
-        { "Réduit le nombre de charges nécessaires pour l'ultime.", "减少释放大招所需的充能次数。" }, { "Nova Étendue", "扩展新星" }, { "Augmente le rayon de la Nova de Cristal.", "扩大水晶新星的范围。" },
-        { "Dash Fantôme", "幻影冲刺" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "解锁幻影分身，按专用键召唤：在 2 秒内吸引附近的敌人。" },
+        { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "将终极技能所需的新星充能次数减少1点（从6到5）。" }, { "Nova Étendue", "扩展新星" }, { "Augmente le rayon de la Nova de Cristal.", "扩大水晶新星的范围。" },
+        { "Clone Spectral", "幻影分身" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes.", "解锁幻影分身，按专用键召唤：在 2 秒内吸引附近的敌人。" },
         { "TALENT UNIQUE", "独特天赋" }, { "NIVEAU {0} / {1}", "等级 {0} / {1}" }, { "débloqué", "需解锁" }, { "niveau 1", "需 1 级" },
         { "NIV {0}", "Lv.{0}" }, { "ACQUIS", "已拥有" }, { "NIVEAU MAX", "已满级" }, { "Ce talent est actif.", "此天赋已生效。" }, { "Cette compétence est au maximum.", "此技能已满级。" },
         { "INDISPONIBLE", "不可用" }, { "Sélectionne {0} dans l'onglet Personnages pour acheter.", "请在「角色」页面选择 {0} 后购买。" },
@@ -146,7 +146,7 @@ public static class LocTableZH
         { "Terre Calcinée", "焦土" }, { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi.", "融合（火球＋泥沼）：你周围会环形出现更大、更具毁灭性的灼热灰烬区域。" },
         { "Orbes Foudroyants", "雷霆法球" }, { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact.", "融合（环绕弹＋连锁闪电）：环绕弹每次命中都会释放连锁闪电。" },
         { "Orbes Jumeaux", "双子法球" }, { "FUSION — Double tir + Orbe rebondissant : ton tir de base se dédouble en deux sphères qui ricochent sans fin.", "融合（双重射击＋弹跳法球）：你的基础射击一分为二，化作两颗永不停歇、不断弹跳的法球。" },
-        { "Aura", "光环" }, { "Zone Aura", "光环区域" }, { "Orbe Rebondissant", "弹跳法球" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "发射在竞技场中不停弹跳的法球，伤害每个被击中的敌人。" },
+        { "Aura", "光环" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "在你周围形成一个持续的力场，对附近的敌人造成伤害并使其减速。" }, { "Orbe Rebondissant", "弹跳法球" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés.", "发射在竞技场中不停弹跳的法球，伤害每个被击中的敌人。" },
         { "Dégâts +", "伤害＋" }, { "+20% aux dégâts", "伤害 +20%" }, { "Double Tir", "双重射击" }, { "Tire 2 projectiles en rafale", "连续发射 2 枚投射物" },
         { "Boule de Feu", "火球" }, { "Lance une boule de feu", "发射一枚火球" }, { "Cadence+", "射速＋" }, { "+20% à la cadence de tir", "射速 +20%" },
         { "Soin", "治疗" }, { "Restaure 50% des HP maximum", "恢复最大生命值的 50%" }, { "Couteaux", "飞刀" }, { "Envoie des salves de couteaux", "连续齐射飞刀" },
@@ -207,7 +207,7 @@ public static class LocTableZH
         { "Le Dragon de Mana", "法力巨龙" }, { "Le Cerf Ancestral", "远古神鹿" }, { "Cerf Ancestral", "远古神鹿" }, { "La Source Corrompue", "腐化之源" },
 
         // ======================================================== Messages de Game Over (GameOverMessagePool)
-        { "La prochaine sera la bonne.", "下一局一定行。" }, { "Une défaite de plus vers la victoire.", "又一次失败，离胜利更近一步。" }, { "Retour au combat. C'est comme ça qu'on progresse.", "重返战场，这就是变强的方式。" },
+        { "La prochaine sera la bonne.", "下一局一定行。" }, { "Une défaite de plus vers la victoire.", "又一次失败，离胜利更近一步。" }, { "Retourne au combat. C'est comme ça qu'on progresse.", "重返战场，这就是变强的方式。" },
         { "Relève-toi, c'est pas fini.", "站起来，还没结束。" }, { "Tu as le niveau pour la suivante.", "下一局，你完全有这个实力。" }, { "Tu sais déjà ce qui a coincé. Corrige-le.", "你已经知道问题出在哪了。去改正它。" },
         { "Ça ne s'est pas joué à grand-chose.", "只差那么一点点。" }, { "Tu étais proche. Refais-en une.", "已经很接近了。再来一局。" }, { "Il ne t'a laissé aucune ouverture cette fois.", "这次它没给你留下任何破绽。" },
         { "Un adversaire coriace. Il faudra revenir plus fort.", "难缠的对手。得变得更强再回来。" }, { "Le boss a gagné cette bataille. Il n'a pas gagné la guerre.", "首领赢下了这场战斗，但没有赢下战争。" },
@@ -229,5 +229,11 @@ public static class LocTableZH
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "融合" }, { "Éclat", "碎片" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "中等" }, { "VIOLENT", "剧烈" }, { "APOCALYPTIQUE", "末日" },
+        { "L'expérience Classique telle qu'elle a toujours été", "一如既往的经典体验" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "地图更大，敌人更坚韧更危险，但金币和碎片奖励更丰厚" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "地图大幅扩大，敌人明显更坚韧更危险，金币和碎片奖励拉满" },
     };
 }

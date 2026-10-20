@@ -1,10 +1,10 @@
 using UnityEngine;
 
 // Couloir de charge d'un boss (remplace le simple cube rouge). Construit en code.
-//   - tout le couloir est visible d�s le d�but (le joueur voit o� la charge va passer) ;
+//   - tout le couloir est visible dès le début (le joueur voit où la charge va passer) ;
 //   - un remplissage avance depuis le boss selon la progression du windup (le temps restant se lit d'un coup d'oeil) ;
-//   - deux bords nets, des chevrons qui d�filent vers l'avant de plus en plus vite, et un anneau qui marque l'arriv�e.
-// BossBase l'appelle � chaque frame de windup via UpdateLane(). Le temps utilise Time.deltaTime (fig� en pause).
+//   - deux bords nets, des chevrons qui défilent vers l'avant de plus en plus vite, et un anneau qui marque l'arrivée.
+// BossBase l'appelle à chaque frame de windup via UpdateLane(). Le temps utilise Time.deltaTime (figé en pause).
 public class ChargeLaneFX : MonoBehaviour
 {
     private const int ChevronCount = 6;
@@ -39,8 +39,8 @@ public class ChargeLaneFX : MonoBehaviour
             _chevrons[i] = FXSprites.MakeRenderer(transform, "Chevron", FXSprites.Chevron(), 14, 0f);
     }
 
-    // origin : point de d�part au sol (Y = hauteur du t�l�graphe). dir : direction de la charge. length/width : taille
-    // r�elle du couloir. progress : avancement du windup (0 -> 1).
+    // origin : point de départ au sol (Y = hauteur du télégraphe). dir : direction de la charge. length/width : taille
+    // réelle du couloir. progress : avancement du windup (0 -> 1).
     public void UpdateLane(Vector3 origin, Vector3 dir, float length, float width, float progress)
     {
         _t += Time.deltaTime;
@@ -72,7 +72,7 @@ public class ChargeLaneFX : MonoBehaviour
         _edgeLeft.color = FXSprites.A(_bright, edgeAlpha);
         _edgeRight.color = FXSprites.A(_bright, edgeAlpha);
 
-        // Chevrons qui d�filent vers l'avant, de plus en plus vite.
+        // Chevrons qui défilent vers l'avant, de plus en plus vite.
         // MODIFIÉ (2026-10-04) - retour utilisateur (boss 1, dragon) : "les flèches avancent trop rapidement".
         // Un 1er passage (0,6->2,4 vers 0,35->1,4) n'a pas suffi ("toujours aussi vite" au retour suivant) -
         // repassé nettement plus bas cette fois, même accélération progressive conservée.
@@ -85,7 +85,7 @@ public class ChargeLaneFX : MonoBehaviour
             _chevrons[i].color = FXSprites.A(_hot, Mathf.Sin(phase * Mathf.PI) * (0.35f + 0.5f * progress));
         }
 
-        // Anneau d'arriv�e.
+        // Anneau d'arrivée.
         Place(_endRing, origin + dir * length, rot, width / 0.94f, width / 0.94f);
         _endRing.color = FXSprites.A(_hot, (0.35f + 0.5f * progress) * (0.8f + 0.2f * pulse));
     }

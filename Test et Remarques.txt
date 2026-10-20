@@ -1,12 +1,57 @@
 C:\Users\jules\My project\Aether Storm Survivor
 npx @anthropic-ai/claude-code
- 
+C:\Users\jules\My project\Aether
 
 restyliser la barre de chargement dans le loading screen, mettre des éléments comme les caractères du texte du titre, pour retrouver un peu la DA
 
-
 revoir toutes les descriptions et les noms des upgrades pour les valider pour la version finale.
 
-Ajouter les 3 difficultés
-
 ça tire trop haut sur les wolfs par rapport à l'emplacement de leur modèle 3D
+
+système de roulette ou alternative pour la sélection d'upgrades dans le level up panel, pendant l'animation on ne peut pas cliquer
+
+adapter les fonds d'écran, jour/crépuscule/nuit, avec MetaIA
+
+ajuster les fonds d'écran Aether et Lyra
+
+Main Aether et visage Lyra
+
+Mode coop ? deux joueurs dans la partie.
+
+
+
+
+
+
+
+
+
+-changer ce genre de phrase : 'Arbre et Réputation à fond. Change de perso si tu veux du neuf. '
+Cette phrase est bien trop familière.
+
+-Et dans la phrase d'encouragement, 'Retour au combat. C'est comme ça qu'on progresse.' Ici, il faudrait plutôt écrire 'Retourne' au lieu de 'Retour'
+
+-Le défi Sans dégâts jusqu'au boss 1 est presque impossible à réaliser, dans les 3 difficultés. Il faudrait trouver une alternative plus simple.
+
+-les tirs des bulbes doivent être plus lent
+
+-revoir la boule de feu, on pourrait faire comme le Q spell de smolder dans LoL, avec une boule tout de suite plus grosse qui peut toucher plusieurs ennemis en même temps, mini explosions de feu derrière, brulure.
+
+-des fois j'ai l'impression que les bulbes ne prennent pas les dégâts des orbitaux, ou d'autres compétences.
+
+-Pour l'Up de la boule de feu, le +1 au rayon de veut rien dire pour le joueur, il ne sait pas ce que représente 1.
+
+-Les boss 1 et 2 n'ont pas assez de vie en difficulté 3. Il faut la doubler. Pareil pour les mini boss,  Et il y a trop d'xp en difficulté 3, j'suis à 5min sur les 15min et je suis déjà niveau 18, j'imagine que c'est pareil pour les autres difficultés.
+
+-la fusion boule de feu plus boue fait spawn la boue bien trop proche du joueur
+
+-quand il y a plein d'xp qui se superpose, et qu'ils flottent, des fois il y a bug d'affichage entre eux
+
+-Les xp passent devant les ennemis, ça veut dire que si un ennemi marche et qu'il est à la même position qu'un xp, on voit l'xp en priorité et pas l'ennemi, ça devrait être l'inverse
+
+-les zones de warning devrait apparaitre en priorité pour les boss, parce que là elles sont derrière la boue par exemple.
+
+-en une partie réussie en mode apocalyptique, j'ai gagné 45 000 d'or, c'est pas un peu énorme ? et sans le bonus de quête donc ça aurait pu être encore bien plus.
+
+
+

@@ -29,6 +29,10 @@ public class XPGem : MonoBehaviour
     private GemType _gemType;
     private GemState _state;
 
+    // AJOUTÉ (2026-10-20) - voir le commentaire sur perInstanceTieBreak dans Awake() : compteur partagé par TOUTES
+    // les gemmes, jamais remis à zéro, utilisé uniquement modulo 7 (jamais lu en valeur absolue).
+    private static int _spawnCounter = 0;
+
     private float _xpValue = 10f;
     private float _baseMoveSpeed = 8f;
     private float _maxMoveSpeed = 17f;
@@ -160,7 +164,25 @@ public class XPGem : MonoBehaviour
         {
             _bodyRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _bodyRenderer.receiveShadows = false;
-            _bodyRenderer.sortingOrder = 1;
+
+            // MODIFIÉ (2026-10-20, retour utilisateur : "les xp passent devant les ennemis [...] ça devrait être
+            // l'inverse", + "quand il y a plein d'xp qui se superpose [...] des fois il y a bug d'affichage entre
+            // elles") - sortingOrder fixe à 1 pour TOUTES les gemmes alors qu'aucun script ennemi ne fixe de
+            // sortingOrder (ils restent à 0, valeur par défaut) : en tri par ordre explicite (prioritaire sur le
+            // tri par distance caméra, Default URP), une gemme à 1 gagnait TOUJOURS contre un ennemi à 0, quelle
+            // que soit la position réelle des deux. Base descendue à -1 (toujours sous les ennemis, jamais l'ordre
+            // inverse souhaité). Par ailleurs, TOUTES les gemmes partageant le MÊME sortingOrder (1 avant, -1
+            // maintenant) retombaient entre elles sur le tri par distance caméra - instable/scintillant quand 2
+            // gemmes sont quasi à la même profondeur (gemmes qui flottent superposées). Décalage stable PAR
+            // INSTANCE ajouté pour départager les gemmes entre elles sans jamais dépasser 0 (toujours sous les
+            // ennemis). ESSAYÉ PUIS ABANDONNÉ : dérivé de GetInstanceID() - les ID Unity attribués à des objets créés
+            // dans la même rafale (plusieurs gemmes à la mort d'ennemis proches) avancent par PAS CONSTANT (16 au
+            // test), donc un modulo d'une puissance de 2 (4) retombait quasi toujours sur le même reste - aucune
+            // différenciation réelle, vérifié en Play (10 gemmes instanciées : 9 sur 10 au même sortingOrder).
+            // Remplacé par un compteur statique propre à la classe, incrémenté à chaque Awake() : distribution
+            // parfaitement round-robin, indépendante de tout detail d'implémentation d'Unity.
+            int perInstanceTieBreak = _spawnCounter++ % 7;
+            _bodyRenderer.sortingOrder = -1 - perInstanceTieBreak;
         }
 
         MeshFilter filter = GetComponent<MeshFilter>();

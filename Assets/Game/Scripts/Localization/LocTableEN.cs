@@ -100,7 +100,7 @@ public static class LocTableEN
         { "Réinitialiser", "Reset" }, { "Page « {0} » réinitialisée.", "\"{0}\" page reset." },
         { "TOUT RÉINITIALISER ?", "RESET EVERYTHING?" }, { "Tous les réglages et toutes les touches reprennent leur valeur d'origine.", "All settings and all keys go back to their default values." },
         { "Tout réinitialiser", "Reset everything" }, { "Tous les paramètres ont été réinitialisés.", "All settings have been reset." },
-        { "QUITTER LE JEU ?", "QUIT THE GAME?" }, { "La partie en cours de préparation sera fermée. Tes réglages sont enregistrés.", "The game will close. Your settings are saved." },
+        { "QUITTER LE JEU ?", "QUIT THE GAME?" }, { "Le jeu va se fermer. Tes réglages sont enregistrés.", "The game will close. Your settings are saved." },
         { "Quitter", "Quit" },
         { "Disposition « {0} » appliquée.", "\"{0}\" layout applied." },
         { "OUI", "ON" }, { "NON", "OFF" },
@@ -118,7 +118,7 @@ public static class LocTableEN
         { "Tu as tout donné à cette branche. Littéralement.", "You gave everything to this branch. Literally." },
         { "Plus rien à débloquer ici — change de personnage pour la suite.", "Nothing left to unlock here — switch heroes to keep going." },
         { "Cette branche n'a plus de secret pour toi.", "This branch holds no more secrets for you." },
-        { "Arbre et Réputation à fond. Change de perso si tu veux du neuf.", "Skill tree and Reputation maxed out. Switch heroes if you want something new." },
+        { "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.", "Skill tree and Reputation maxed out. Switch heroes if you want something new." },
         { "Or", "Gold" }, { "Éclats", "Shards" },
         { "Encore {0} {1} pour débloquer {2}", "{0} more {1} to unlock {2}" }, { "De quoi débloquer {0} dès maintenant !", "You can unlock {0} right now!" },
         { "Tentative n°{0}", "Attempt #{0}" },
@@ -144,7 +144,7 @@ public static class LocTableEN
         { "Pas eu le temps de récupérer la moindre compétence.", "No time to pick up a single skill." },
         { "Aucune compétence récupérée cette fois.", "No skills picked up this time." },
         { "VICTOIRE !", "VICTORY!" }, { "FIN DE PARTIE", "GAME OVER" }, { "DÉFAITE", "DEFEAT" },
-        { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nGold : {3}", "Time: {0:00}:{1:00}\nEnemies killed: {2}\nGold: {3}" },
+        { "Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", "Time: {0:00}:{1:00}\nEnemies killed: {2}\nGold: {3}" },
         { "Or : {0}", "Gold: {0}" }, { "Éliminations : {0}", "Kills: {0}" }, { "Niv. {0}", "Lv. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI) - fait
@@ -156,7 +156,7 @@ public static class LocTableEN
         { "Double Chasse", "Double Hunt" }, { "Vaincre 2 boss dans la même partie", "Defeat 2 bosses in one run" },
         { "Ascension Rapide", "Fast Ascent" }, { "Niveau 20 avant la 10e minute", "Level 20 before minute 10" },
         { "Sans Cristal", "Crystal-Free" }, { "Sans Ultime jusqu'au boss 2", "No Ultimate until boss 2" },
-        { "Sans-Faute", "Flawless" }, { "Aucun dégât jusqu'au boss 1", "Take no damage until boss 1" },
+        { "Résilience", "Resilience" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Keep above 50% health until boss 1" },
         { "Éclair", "Lightning Fast" }, { "Vaincre un boss en moins de 30s", "Defeat a boss in under 30s" },
         { "Fortune", "Fortune" }, { "Avec au moins 3000 Or ramassé", "Collect at least 3000 gold" },
         { "Puissance Absolue", "Absolute Power" }, { "Niveau 30 dans la même partie", "Reach level 30 in one run" },
@@ -182,9 +182,9 @@ public static class LocTableEN
         { "Bouclier de Mana", "Mana Shield" }, { "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes", "Automatically absorbs 1 enemy projectile every 8 seconds" },
         { "Impulsion Nova", "Nova Impulse" }, { "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé", "If the Nova triggered by an absorb kills at least one enemy, your dash cooldown is instantly reset" },
         { "Dash Amélioré", "Improved Dash" }, { "Réduit le temps de recharge du dash", "Reduces the dash cooldown" },
-        { "Maîtrise du Cristal", "Crystal Mastery" }, { "Réduit le nombre de charges nécessaires pour l'ultime", "Reduces the number of charges needed for your Ultimate" },
+        { "Maîtrise du Cristal", "Crystal Mastery" }, { "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)", "Reduces the number of Nova charges needed for your Ultimate by 1 (6 to 5)" },
         { "Nova Étendue", "Wide Nova" }, { "Augmente le rayon de la Nova de Cristal", "Increases the radius of the Crystal Nova" },
-        { "Dash Fantôme", "Phantom Dash" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes", "Unlocks a Spectral Clone, triggered with a dedicated key: it draws nearby enemies to it for 2 seconds" },
+        { "Clone Spectral", "Spectral Clone" }, { "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes", "Unlocks a Spectral Clone, triggered with a dedicated key: it draws nearby enemies to it for 2 seconds" },
         { "TALENT UNIQUE", "UNIQUE TALENT" }, { "NIVEAU {0} / {1}", "LEVEL {0} / {1}" }, { "débloqué", "unlocked" }, { "niveau 1", "level 1" },
         { "NIV {0}", "LV {0}" }, { "ACQUIS", "OWNED" }, { "NIVEAU MAX", "MAX LEVEL" },
         { "Ce talent est actif.", "This talent is active." }, { "Cette compétence est au maximum.", "This skill is maxed out." },
@@ -218,7 +218,7 @@ public static class LocTableEN
         { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact", "FUSION — Orbitals + Lightning: your orbiting shards now unleash chain lightning on every hit" },
         { "Sillage Boueux", "Muddy Wake" },
         { "FUSION — Orbe rebondissant + Boue : tes orbes laissent désormais derrière eux un sillage de flaques boueuses qui ralentissent et blessent tout ce qu'elles touchent", "FUSION — Bouncing Orb + Mud: your orbs now leave a trail of muddy puddles behind them, slowing and hurting everything they touch" },
-        { "Aura", "Aura" }, { "Zone Aura", "Aura zone" },
+        { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Creates a permanent field around you that damages and slows nearby enemies" },
         { "Orbe Rebondissant", "Bouncing Orb" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Launches orbs that bounce endlessly around the arena, hurting every enemy they hit" },
         { "Dégâts +", "Damage +" }, { "+20% aux dégâts", "+20% damage" },
         { "Double Tir", "Double Shot" }, { "Tire 2 projectiles en rafale", "Fires 2 projectiles in a burst" },
@@ -310,7 +310,7 @@ public static class LocTableEN
         // ======================================================== Messages de Game Over (GameOverMessagePool) - fait
         { "La prochaine sera la bonne.", "Next time's the one." },
         { "Une défaite de plus vers la victoire.", "One more defeat on the road to victory." },
-        { "Retour au combat. C'est comme ça qu'on progresse.", "Back into the fight. That's how you get better." },
+        { "Retourne au combat. C'est comme ça qu'on progresse.", "Back into the fight. That's how you get better." },
         { "Relève-toi, c'est pas fini.", "Get up, it's not over." },
         { "Tu as le niveau pour la suivante.", "You've got what it takes for the next one." },
         { "Tu sais déjà ce qui a coincé. Corrige-le.", "You already know what went wrong. Fix it." },
@@ -353,9 +353,15 @@ public static class LocTableEN
         // suivre la procédure "ajouter un texte traduit" (Tools/loc, voir NOTES.md) quand une vraie passe de traduction est faite.
         { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss", "Never drop below 30% health, from the start of the run until the 2nd boss dies" },
         { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Don't use the Ultimate (F key) before defeating the 2nd boss" },
-        { "Ne subir aucun dégât avant d'avoir vaincu le 1er boss", "Take no damage before defeating the 1st boss" },
+        { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss", "Never drop below 50% health, from the start of the run until the 1st boss is defeated" },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Defeat any boss within 30 seconds of its appearance" },
         { "Ramasser au moins 3000 Or au total durant la partie", "Collect at least 3000 Gold in total during the run" },
+
+        // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
+        { "MODÉRÉ", "MODERATE" }, { "VIOLENT", "SEVERE" }, { "APOCALYPTIQUE", "APOCALYPTIC" },
+        { "L'expérience Classique telle qu'elle a toujours été", "The Classic experience exactly as it has always been" },
+        { "Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux", "Bigger map, tougher and more dangerous enemies, but more generous Gold and Shards" },
+        { "Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum", "Much bigger map, noticeably tougher and more dangerous enemies, maximum Gold and Shards" },
 
         // ==== SECTIONS SUIVANTES ====
     };
