@@ -40,15 +40,15 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `SkinCatalog.cs` | ScriptableObject : catalogue des skins de personnage (Classique=Or / Prestige=Éclats), un skin = une ligne éditable dans l'Inspector, aucun code à toucher pour en ajouter un. |
 | `WaveManager.cs` | Singleton pilotant l'apparition des 3 boss classiques (ou la logique Sans fin/Ruée de boss/Titans selon le mode courant). La densité d'ennemis est réglée par les phases de l'`EnemySpawner` ; `WaveManager` n'y ajoute que la montée du mode Sans fin après 15 min (cadence jusqu'à 0,3 s, plafond 160 → 200). |
 | `XPGem.cs` | Gemme d'XP ramassable poolée (3 tailles), attirée vers le joueur une fois dans son rayon d'attraction. |
-| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère le rayon d'attraction global (débloqué niveau 3). La gerbe de gemmes (`SpawnBossGemBurst`) ne sert plus qu'aux mini-boss invoqués depuis le 2026-10-19 (un vrai boss fait apparaître un `BossChest`, voir Weapons). |
-| `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau^1.5`), déclenche les montées de niveau. |
+| `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère le rayon d'attraction global (débloqué niveau 3). Atterrissage toujours aplati au sol (`GemLandY=0`, 2026-10-23) plutôt que sur la position racine de l'ennemi mort - certains ennemis ont une racine haute (pose VAT), leurs gemmes flottaient sinon. La gerbe de gemmes (`SpawnBossGemBurst`) ne sert plus qu'aux mini-boss invoqués depuis le 2026-10-19 (un vrai boss fait apparaître un `BossChest`, voir Weapons). |
+| `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau²`, baseXP=70 depuis le 2026-10-21 - était `55 × niveau^1,5`), déclenche les montées de niveau. |
 
 ## Player (`Assets/Game/Scripts/Player`)
 
 | Script | Rôle |
 |---|---|
 | `CharacterIdentity.cs` | Composant minimal qui tague un prefab joueur avec son `CharacterType` (Aether/Kael/Lyra). |
-| `CrystalSystem.cs` | Charges d'Ultime, absorption au Dash, Nova (dégâts + ralentissement de zone), scaling de l'Ulti dans le temps, soin de "Récupération" à l'absorption. |
+| `CrystalSystem.cs` | Charges d'Ultime, absorption au Dash, Nova (dégâts + ralentissement de zone), scaling de l'Ulti dans le temps, soin de "Récupération" à l'absorption. `OverpowerBuff()` : Surpuissance dure **10 s** (5 s jusqu'au 2026-10-23). |
 | `HealthSystem.cs` | PV du joueur, invincibilité (dash + externe), régénération/armure méta, retient la cause de mort pour le message de Game Over. |
 | `ManaShield.cs` | Nœud capstone Gardien : bouclier à charges qui annule totalement un projectile ennemi et alimente le Cristal comme une absorption ; verrouillage temporaire si les charges tombent à 0. |
 | `PlayerBuffs.cs` | Multiplicateur STATIQUE de dégâts sortants du joueur (`OutgoingDamageMultiplier` = Concentration × Surpuissance), lu par TOUTES les armes au moment des dégâts. Concentration est gérée ici ; Surpuissance est activée par `CrystalSystem` via `SetOverpowerActive`. |
@@ -91,7 +91,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `WeaponFusionManaVortex.cs` | Fusion "Vortex de Mana" (Aura + Orbitaux, Kael) : champ de l'Aura + éclats en orbite des Orbitaux réunis, plus forts que la somme des deux. |
 | `WeaponFusionMudOrb.cs` | Fusion "Sillage Boueux" (Orbe rebondissant + Boue, universelle, créée le 2026-10-18 en remplacement d'"Orbes Jumeaux") : les orbes rebondissants laissent derrière eux un sillage continu de flaques de Boue (déposées à la position réelle de chaque orbe, jamais à distance fixe du joueur). |
 | `WeaponFusionRicochetBlades.cs` | Fusion "Lames Ricochet" (Couteaux + Orbe rebondissant, Lyra) : salve en éventail dont les lames ricochent vers l'ennemi non touché le plus proche une fois leur perforation épuisée. |
-| `WeaponFusionScorchedEarth.cs` | Première fusion créée : "Terre Calcinée" (Boule de feu + Boue, universelle) : zones au sol façon Boue avec dégâts hérités des deux armes sources. |
+| `WeaponFusionScorchedEarth.cs` | Fusion "Terre Calcinée" (Boule de feu + Boue, universelle, refondue le 2026-10-23 — n'est plus un simple reskin de la Boue) : bombardement de météorites, jusqu'à 3 simultanées par salve (nombre ADAPTATIF selon le nombre d'ennemis/boss distincts trouvés sur toute la carte, jamais 2 météores sur le même ennemi, dégât total de la salve réparti entre elles) — télégraphe au sol + chute visible (`GroundTelegraphFX`/`MeteorFallVFX`) puis déflagration (`FireExplosionVFX`) et cratère de lave résiduel (`MudPuddleZone`, teinte marron boueux). |
 | `WeaponFusionThunderingOrbs.cs` | Fusion "Orbes Foudroyants" (Orbitaux + Foudre, universelle) : orbes en orbite qui déclenchent une chaîne de foudre à chaque impact. |
 | `WeaponLightningChain.cs` | Chaîne de Foudre : tir qui saute d'ennemi en ennemi (dégâts dégressifs par saut), utilise `LightningChainUtility`/`LightningBoltVFX` pour le rendu. |
 | `WeaponMudPuddle.cs` | Boue : fait apparaître des flaques (`MudPuddleZone`) en anneau autour du joueur à intervalle régulier. |
@@ -108,7 +108,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 
 | Script | Rôle |
 |---|---|
-| `ChallengeDatabase.cs` | Classe statique : liste des 12 défis (4 par palier Facile/Moyen/Difficile), chacun avec id, nom, description, difficulté. |
+| `ChallengeDatabase.cs` | Classe statique : liste des 12 défis (4 Facile / 3 Moyen / 5 Difficile - "Sans Cristal" reclassé Moyen → Difficile le 2026-10-21, jugé trop punitif pour son palier), chacun avec id, nom, description, difficulté. |
 | `ChallengeManager.cs` | Singleton (scène Game) : tire le défi de l'heure (UTC, anti-répétition), suit sa progression/échec en temps réel, calcule et applique la récompense en or. |
 
 ## Settings (`Assets/Game/Scripts/Settings`)
@@ -217,10 +217,12 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `ChargeLaneFX.cs` | Couloir de charge d'un boss construit en code : couloir entier visible, remplissage selon le windup, chevrons qui défilent. |
 | `EndScreenIntro.cs` | Animation d'arrivée des panneaux Victoire/Défaite (fondu, carte qui monte, éléments en cascade). |
 | `EnemyDeathFX.cs` | Petit éclat (flash + 5 étincelles, ~0,3 s) à la mort d'un ennemi normal. |
+| `FireExplosionVFX.cs` | Déflagration enflammée poolée en plusieurs couches (flash, 2 `FlameBurst` superposés, braises qui jaillissent/montent, fumée qui traîne) : impact de la Boule de feu, réutilisée telle quelle pour l'impact de la fusion "Terre Calcinée" (météorites). |
 | `FXSprites.cs` | Bibliothèque partagée des effets de combat : sprites générés en code (blancs, teintés par le `SpriteRenderer`), matériau commun, courbes d'animation. |
-| `GroundTelegraphFX.cs` | Signal de danger au sol construit en code (zone à rayon fixe qui se remplit, ou onde), utilisé par toutes les attaques télégraphiées des boss. |
+| `GroundTelegraphFX.cs` | Signal de danger au sol construit en code (zone à rayon fixe qui se remplit, ou onde), utilisé par toutes les attaques télégraphiées des boss et par la fusion "Terre Calcinée". |
 | `ImpactSparkVFX.cs` | Éclat d'impact générique poolé (4 traits, 0,18 s) à la couleur de l'arme qui frappe ; compteur remis à zéro à chaque scène. |
 | `ExpandingRingVFX.cs` | Fonction statique : anneau procédural (`LineRenderer`) qui s'agrandit puis s'estompe — utilisé par la Nova, le souffle de départ du Dash, etc. |
+| `MeteorFallVFX.cs` | Objet qui tombe du ciel pendant la fenêtre de télégraphe (billboard caméra, pool statique de Runner réutilisés), utilisé uniquement par la fusion "Terre Calcinée" — `UpdateLandPosition` permet de recaler la chute en vol tant que l'ennemi ciblé reste vivant. |
 | `MusicStarter.cs` | Singleton : lance/change la musique avec fondus courts, attend que les volumes sauvegardés soient appliqués avant de démarrer. |
 | `XPGemCollectFX.cs` | Petit éclat (~0,22 s) au ramassage d'une gemme d'XP. |
 

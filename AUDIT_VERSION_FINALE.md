@@ -20,6 +20,14 @@ Ce document ne change rien au code : c'est une liste de travail. Chaque point do
 > **Non traité dans cette passe** : 2.4 (déjà confirmé non-bug), 2.6 (en réalité déjà corrigé le 2026-10-18 via `LevelUpManager.CancelForGameEnd`, voir `NOTES.md`), 2.13 (fusion des gemmes XP lointaines), §5/§8 (manette, profilage - "étape 4 niveau pro", hors périmètre de cette passe).
 >
 > Reste à faire : fin de l'étape 3 (nom de société, IL2CPP, Steam Cloud) et étape 4.
+>
+> ### Note du 2026-10-23 : valeurs de cet audit depuis changées par des retours utilisateur ultérieurs (détail `NOTES.md`)
+> Les chiffres ci-dessous datent de cet audit (2026-10-15/19) et ne sont plus les valeurs actuelles pour ces points précis :
+> - **1.1** : les 90 000 PV du Cerf (mesurés après correction de ce point) ont depuis été baissés à **63 000** (-30%, retour utilisateur "le boss 2 a toujours trop de vie") - réduction du PV de BASE dans `BossDeer.prefab`, donc identique sur les 3 paliers de difficulté.
+> - **1.5** : `XPSystem._baseXP` est passé de 55 à **70**, et l'exposant de la courbe de 1,5 à **2** (2026-10-21, `70 × niveau²`). La récompense d'XP par kill, qui avait été amortie à ×3 maximum en fin de partie (2026-10-11) pour compenser, a ensuite été ramenée à sa pleine croissance (×5) le 2026-10-23 - l'amortissement empilait mal avec la nouvelle courbe et affaiblissait trop les gemmes de fin de partie.
+> - **1.10** : Surpuissance dure maintenant **10 s** (était 5 s, jugé trop court par l'utilisateur, 2026-10-23) ; le multiplicateur reste ×2 sur toutes les armes.
+> - Les 12 défis horaires sont maintenant répartis **4 Faciles / 3 Moyens / 5 Difficiles** ("Sans Cristal" reclassé Moyen → Difficile le 2026-10-21) et le défi temporel "Ascension Rapide" (niveau 20 avant 10 min) peut enfin échouer réellement (`ChallengeManager.Update`, manquait toute réévaluation hors évènement de jeu, 2026-10-23).
+> - La fusion **Terre Calcinée** (citée dans plusieurs sections comme simple zone de Boue reteintée) a été entièrement refondue le 2026-10-23 en bombardement de météorites multi-cibles (voir `AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V16.md` §2 et `SCRIPTS_INDEX.md`).
 
 Légende :
 - 🔴 **Bug confirmé** : vérifié dans le code (et en jeu quand c'était possible). Effet visible pour le joueur.

@@ -1,6 +1,6 @@
 # AETHER STORM SURVIVOR — Documentation projet (V16)
 
-> **Mise à jour : 2026-10-19** (diagnostic complet avant sortie : corrections de l'audit, coffre de boss à la place de l'XP, Choc des titans retiré de la sélection, 3 niveaux de difficulté en Classique - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
+> **Mise à jour : 2026-10-23** (retours utilisateur traités en lot : gemmes d'XP qui flottaient, défi "Niveau 20 avant la 10e minute" qui ne pouvait jamais échouer, PV du boss 2 -30%, pleine croissance de l'XP par kill restaurée, Surpuissance 5 s → 10 s, fusion "Terre Calcinée" entièrement refondue en bombardement de météorites multi-cibles - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -47,7 +47,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 - Clone spectral (Lyra uniquement, nœud « Clone Spectral », renommé le 2026-10-19 - ne correspondait plus à l'effet depuis que ce n'est plus un dash) : touche dédiée, attire les ennemis 2 s, invincibilité, boost de fuite, recharge 8 s.
 
 ### Arbre de compétences (payé en Or, une branche par personnage)
-- **Guerrier (Aether)** : Concentration, Cadence → Fragmentation, Dégâts Cristal → Surpuissance (dégâts ×2 pendant 5 s après l'Ultime, sur toutes les armes depuis le 2026-10-16).
+- **Guerrier (Aether)** : Concentration, Cadence → Fragmentation, Dégâts Cristal → Surpuissance (dégâts ×2 pendant 10 s après l'Ultime - 5 s jusqu'au 2026-10-23, jugé trop court -, sur toutes les armes depuis le 2026-10-16).
 - **Gardien (Kael)** : Vitalité, Récupération → Second Souffle, Armure → Bouclier de Mana.
 - **Fantôme (Lyra)** : Impulsion Nova, Dash Amélioré → Maîtrise du Cristal (réduit de 1 le nombre de charges de Nova pour l'Ultime, 6 à 5), Nova Étendue → Clone Spectral.
 - Coûts par palier : 100 / 300 / 700 ; nœuds uniques 500 à 1200.
@@ -58,7 +58,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 
 - **Armes** : tir de base, Boule de feu (Aether), Aura (Kael), Couteaux (Lyra), Orbitaux, Chaîne de foudre, Boue, Orbe rebondissant, Double tir.
 - **Améliorations universelles** : Dégâts+ et Cadence+ (+20 % par prise, 5 prises), Soin. Depuis le 2026-10-16, elles sont **additives et identiques sur toutes les armes** (5 × 20 % = ×2) et s'appliquent aussi aux armes obtenues plus tard.
-- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Sillage Boueux (Orbe rebondissant + Boue). Proposées en Classique et Sans fin uniquement. (Remplace depuis le 2026-10-18 l'ancienne fusion "Orbes Jumeaux", Double tir + Orbe, jugée incohérente et retirée.)
+- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue - refondue le 2026-10-23 en bombardement de météorites, jusqu'à 3 simultanées ciblant chacune un ennemi différent, nombre adaptatif selon les ennemis distincts trouvés), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Sillage Boueux (Orbe rebondissant + Boue). Proposées en Classique et Sans fin uniquement. (Remplace depuis le 2026-10-18 l'ancienne fusion "Orbes Jumeaux", Double tir + Orbe, jugée incohérente et retirée.)
 - **Dash / Absorption / Nova / Ultime** : le Dash (invincible) absorbe un projectile → Nova (dégâts + ralentissement) + charge de Cristal. Cristal plein = 1 Ultime stocké (max 2, la 2e charge donne un Ultime renforcé). Dégâts de l'Ultime ×1 → ×4 sur 15 min.
 - Bonus de dégâts dynamiques centralisés dans `PlayerBuffs.OutgoingDamageMultiplier` (Concentration × Surpuissance), lu par toutes les armes.
 
@@ -70,11 +70,11 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 - **Apparition** (`EnemySpawner`, seule référence depuis le 2026-10-16) : 6 phases, plafond d'ennemis simultanés 20 → 45 → 75 → 120 → 105 → **160** (dès 12 min), cadence 2 s → 0,6 s. Mode Sans fin après 15 min : jusqu'à 200 ennemis, cadence 0,3 s. Paliers de composition (types d'ennemis + PV ×1 à ×5) toutes les 2-4 minutes. Réglable dans l'Inspector de l'objet EnemySpawner (scène Game). **À tester en jeu** : la fin de partie est nettement plus dense qu'avant.
 - **Boss** (un toutes les 5 min, le chrono s'arrête pendant le combat) :
   1. **Dragon de Mana** : 20 000 PV, charge télégraphiée, tir radial.
-  2. **Cerf Ancestral** : 90 000 PV (enfin appliqués depuis le 2026-10-16), saut, spirale de projectiles, rage sous 30 %.
+  2. **Cerf Ancestral** : 63 000 PV (90 000 jusqu'au 2026-10-23, baissés de 30% sur retour utilisateur "toujours trop de vie" - réduction du PV de BASE, donc appliquée identiquement aux 3 paliers de difficulté), saut, spirale de projectiles, rage sous 30 %.
   3. **Source Corrompue** (serpent ancré à une faille) : 180 000 PV, Pulse de cristaux, Frappe, Onde de corruption, Invocation de mini-boss, Implosion.
 - Les boss 1 et 2 soignent le joueur de 50 % à leur mort. Les 3 boss utilisent pour l'instant **la même musique**.
 - **Récompense de mort de boss** (changé le 2026-10-19) : un vrai boss ne donne plus de burst d'XP, il fait apparaître un **coffre** (`BossChest`) à ramasser qui accorde directement **2 tirages de carte complets** (3 choix à chaque fois), sans jamais donner d'XP - récompense fixe et lisible plutôt qu'une XP qui pouvait être gâchée ou déclencher une cascade illisible. Un mini-boss invoqué (Source Corrompue) garde le burst de gemmes classique.
-- **XP** (hors mort de boss) : gemmes 10/20/50, reste reporté sur la mort suivante (aucune XP perdue), courbe `55 × niveau^1,5` (allégée le 2026-10-16). Rayon d'attraction débloqué au niveau 3.
+- **XP** (hors mort de boss) : gemmes 10/20/50, reste reporté sur la mort suivante (aucune XP perdue), courbe `70 × niveau²` (relevée le 2026-10-21, pèse surtout sur les hauts niveaux). La récompense d'XP par kill suit la pleine croissance des PV des ennemis au fil de la partie (jusqu'à ×5 en fin de partie) - un amortissement à ×3 introduit le 2026-10-11 pour ralentir la montée en XP a été retiré le 2026-10-23 (il empilait mal avec la courbe ci-dessus, plus assez de grosses gemmes dorées en fin de partie). Rayon d'attraction débloqué au niveau 3.
 - **Difficulté du Classique** (nouveau, 2026-10-19) : 3 paliers **Modéré / Violent / Apocalyptique**, sélectionnables dans l'onglet Jouer sous le sélecteur de mode (toujours réversible, aucun palier verrouillé). Modéré = comportement actuel inchangé. Violent/Apocalyptique agrandissent la carte jouable (110×110 → 140×140 → 180×180), augmentent les PV/dégâts des ennemis et boss, le nombre d'ennemis simultanés et l'Or/les Éclats de fin de partie, et régénèrent le décor de bordure à la nouvelle taille. Multiplicateurs posés comme premiers jets, non encore playtestés.
 
 ---
@@ -105,7 +105,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ## 6. Défis horaires
 
 - Un défi tiré **par heure réelle (UTC)**, identique pour toutes les parties de l'heure ; récompense accordée une seule fois par heure. Classique uniquement.
-- 12 défis (4 Faciles, 4 Moyens, 4 Difficiles), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
+- 12 défis (4 Faciles, 3 Moyens, 5 Difficiles - "Sans Cristal" reclassé Moyen → Difficile le 2026-10-21, jugé trop punitif pour son palier), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
+- Les défis liés au TEMPS (ex. "Ascension Rapide" : niveau 20 avant la 10e minute) sont réévalués en continu (`ChallengeManager.Update`, 2026-10-23) et pas seulement sur un évènement de jeu - sinon un défi purement temporel ne passait jamais en Échoué.
 - Récompense : multiplicateur de l'or ramassé, **Or ×1,2 / ×1,5 / ×2** selon le palier.
 - Les défis « endurance » (Sang-Froid, Sans Cristal, Sans-Faute) ne sont validés qu'au jalon de boss prévu.
 - Suivi dans le HUD et détail dans le menu Pause.
@@ -160,6 +161,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ---
 
 ## 10. Principaux bugs corrigés récemment
+
+**2026-10-23** (grosse liste de retours utilisateur traitée en un lot, capture à l'appui) : gemmes d'XP qui flottaient en l'air pour certains ennemis (atterrissage calé sur la racine de l'ennemi mort au lieu d'être aplati au sol) · défi "Niveau 20 avant la 10e minute" qui ne pouvait jamais passer en Échoué (aucune réévaluation en dehors d'un évènement de jeu pour un défi purement temporel) · PV du boss 2 (Cerf Ancestral) baissés de 30% sur les 3 paliers de difficulté (90 000 → 63 000) · amortissement de l'XP par kill (plafonné à ×3 en fin de partie) retiré, pleine croissance restaurée (jusqu'à ×5) · Surpuissance 5 s → 10 s · fusion "Terre Calcinée" entièrement refondue : d'un simple reskin orange de la Boue à un vrai bombardement de météorites (télégraphe + chute visible + déflagration + cratère résiduel), avec un ciblage qui vise vraiment les ennemis les plus proches (et non plus une zone aléatoire à 6 unités autour du joueur) et jusqu'à 3 météores simultanés sur des cibles différentes contre une horde (1 seul contre un boss, sans rien gaspiller).
 
 **2026-10-19** (diagnostic complet) : l'Ultime n'avait aucun retour visuel à l'écran · boss pouvant apparaître sur le joueur près d'un bord de carte · fuite de Material TMP à chaque ouverture de carte/menu · course sur le volume de musique si 2 morceaux s'enchaînaient vite · NullReference en lançant la scène Game directement dans l'éditeur · 2 boutons de debug restaient visibles et cliquables en version release (Réputation donnait 20 000 Éclats gratuits, Personnages déverrouillait Kael/Lyra) · `MapBoundaryUtils` existait en double (classe autonome + copie imbriquée dans WaveManager, 3 sites d'appel oubliés lors d'un premier passage, trouvés par une vraie erreur de compilation) · caractère "→" ajouté à des traductions mais absent de toutes les polices du jeu (Bangers et les 3 polices CJK réduites), trouvé en testant en direct dans Unity.
 
