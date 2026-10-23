@@ -115,33 +115,33 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Orbital:
                 return nextLevel == 1
-                    ? Loc.T("Débloque 2 orbitaux tournants qui frappent au contact.")
-                    : Loc.T("+1 orbital supplémentaire.");
+                    ? Loc.T("Débloque 2 orbitaux tournants qui frappent au contact")
+                    : Loc.T("+1 orbital supplémentaire");
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
-                    ? Loc.T("Débloque la foudre en chaîne.")
-                    : Loc.T("+1 rebond de foudre supplémentaire.");
+                    ? Loc.T("Débloque la foudre en chaîne")
+                    : Loc.T("+1 rebond de foudre supplémentaire");
 
             case UpgradeType.MudPuddle:
                 return nextLevel == 1
-                    ? Loc.T("Débloque 3 flaques de boue ralentissante autour de toi.")
-                    : Loc.T("+1 flaque de boue supplémentaire.");
+                    ? Loc.T("Débloque 3 flaques de boue ralentissante autour de toi")
+                    : Loc.T("+1 flaque de boue supplémentaire");
 
             case UpgradeType.BouncingOrb:
                 return FormatBouncingOrbDescription(nextLevel);
 
             case UpgradeType.Damage:
-                return Loc.F("+{0}% dégâts sur toutes tes armes actives.", PercentOf(value));
+                return Loc.F("+{0}% dégâts sur toutes tes armes actives", PercentOf(value));
 
             case UpgradeType.FireRate:
-                return Loc.F("+{0}% vitesse de tir sur toutes tes armes actives.", PercentOf(value));
+                return Loc.F("+{0}% vitesse de tir sur toutes tes armes actives", PercentOf(value));
 
             case UpgradeType.Heal:
-                return Loc.F("Restaure {0}% de tes PV max.", PercentOf(value));
+                return Loc.F("Restaure {0}% de tes PV max", PercentOf(value));
 
             case UpgradeType.DoubleShot:
-                return Loc.T("Débloque un second tir simultané.");
+                return Loc.T("Débloque un second tir simultané");
 
             default:
                 return Description;
@@ -163,24 +163,29 @@ public class UpgradeData : ScriptableObject
     // par rapport a avant, tier = level-1).
     // AJOUTÉ (2026-10-20, retour utilisateur : "le +1 au rayon de veut rien dire pour le joueur, il ne sait pas ce
     // que représente 1") - "+1" (mètres) était une unité abstraite sans repère pour le joueur, contrairement à un
-    // "+1 orbital"/"+1 rebond" ailleurs dans ce fichier qui désigne un OBJET concret et comptable. Le rayon n'a pas
-    // cet avantage : exprimé en pourcentage du rayon de BASE de l'arme (`WeaponFireball._fragmentRadius`, 2,25 -
-    // dupliqué ici en dur plutôt que lu dynamiquement, cette upgrade n'étant prenable qu'une seule fois par
-    // personnage donc toujours calculée depuis la même base), même registre que "+X% dégâts" juste en dessous.
+    // "+1 orbital"/"+1 rebond" ailleurs dans ce fichier qui désigne un OBJET concret et comptable.
+    // MODIFIÉ (2026-10-21, retour utilisateur : "+44% c'est pas assez, mets à la place qu'il est 2 fois plus grand,
+    // comme ça on voit une vraie différence en jeu, et c'est plus clair à l'écrit") - le passage en pourcentage
+    // (+44%) réglait le problème de lisibilité mais pas celui de puissance ressentie. `_levelValues[0]` dans l'asset
+    // Fireball est passé de 1 (mètre) à 2,25 (= `FireballBaseFragmentRadius` ci-dessous, l'incrément EXACT du
+    // rayon de base) : `WeaponFireball.AddFragmentRadius` étant additif, ce pick double maintenant VRAIMENT le
+    // rayon (2,25 -> 4,5), pas juste "+44%". Texte figé ("doublé"), plus besoin de calcul dynamique puisque la
+    // VALEUR elle-même est conçue pour toujours représenter un doublement exact depuis cette base, même registre
+    // que "Débloque la Brûlure" juste en dessous (effet décrit en mots, pas en chiffre).
     private const float FireballBaseFragmentRadius = 2.25f;
 
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque Boule de feu : équipe l'arme exclusive d'Aether.");
+            return Loc.T("Débloque Boule de feu : équipe l'arme exclusive d'Aether");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% de rayon d'explosion.", PercentOf(v / FireballBaseFragmentRadius));
-            case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
-            case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée.");
+            case 1: return Loc.T("Le rayon d'explosion est 2 fois plus grand");
+            case 2: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée");
             default: return Description;
         }
     }
@@ -189,15 +194,15 @@ public class UpgradeData : ScriptableObject
     private string FormatAuraDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque l'Aura : équipe l'arme exclusive de Kael.");
+            return Loc.T("Débloque l'Aura : équipe l'arme exclusive de Kael");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% dégâts.", PercentOf(v));
-            case 2: return Loc.F("+{0}% rayon.", PercentOf(v));
-            case 3: return Loc.F("+{0}% ralentissement.", PercentOf(v));
+            case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 2: return Loc.F("+{0}% rayon", PercentOf(v));
+            case 3: return Loc.F("+{0}% ralentissement", PercentOf(v));
             default: return Description;
         }
     }
@@ -215,15 +220,15 @@ public class UpgradeData : ScriptableObject
     private string FormatKnivesDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra.");
+            return Loc.T("Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve.");
-            case 2: return Loc.F("+{0}% dégâts.", PercentOf(v));
-            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? Loc.F("+{0} ennemis perforés en plus.", pierce) : Loc.F("+{0} ennemi perforé en plus.", pierce); }
+            case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve");
+            case 2: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? Loc.F("+{0} ennemis perforés en plus", pierce) : Loc.F("+{0} ennemi perforé en plus", pierce); }
             default: return Description;
         }
     }
@@ -241,15 +246,15 @@ public class UpgradeData : ScriptableObject
     private string FormatBouncingOrbDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque un orbe rebondissant qui traverse les ennemis.");
+            return Loc.T("Débloque un orbe rebondissant qui traverse les ennemis");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% dégâts.", PercentOf(v));
-            case 2: return Loc.F("+{0}% vitesse.", PercentOf(v));
-            case 3: return Loc.T("+1 orbe rebondissant supplémentaire.");
+            case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 2: return Loc.F("+{0}% vitesse", PercentOf(v));
+            case 3: return Loc.T("+1 orbe rebondissant supplémentaire");
             default: return Description;
         }
     }

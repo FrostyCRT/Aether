@@ -553,8 +553,8 @@ public class CharacterSelectUI : MonoBehaviour
     {
         switch (index)
         {
-            case 1: return Loc.T("Atteins le Boss 2 dans une partie pour débloquer Kael.");
-            case 2: return Loc.T("Termine une partie (bats le Boss 3) pour débloquer Lyra.");
+            case 1: return Loc.T("Atteins le Boss 2 dans une partie pour débloquer Kael");
+            case 2: return Loc.T("Termine une partie (bats le Boss 3) pour débloquer Lyra");
             default: return "";
         }
     }

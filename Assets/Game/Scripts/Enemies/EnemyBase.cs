@@ -17,6 +17,15 @@ public class EnemyBase : MonoBehaviour
     [SerializeField] private bool _isFlying = false;
     public bool IsFlying => _isFlying;
 
+    // CORRIGÉ (2026-10-21, retour utilisateur : "comme tu as recentré le corbeau, il est maintenant à la même
+    // hauteur que les autres ennemis, sauf que le corbeau est un oiseau volant donc il doit être en l'air") - le
+    // correctif de spawn au sol (suite 28, voir EnemySpawner.FindFreeSpawnPosition) force Y=0 pour TOUS les
+    // ennemis, y compris les volants, qui n'ont jamais eu d'altitude propre. Ajouté UNIQUEMENT pour les ennemis
+    // _isFlying (0 = aucun effet pour tous les ennemis au sol existants) - EnemySpawner ajoute cette valeur à la
+    // position Y après le spawn au sol habituel.
+    [SerializeField] private float _flightAltitude = 0f;
+    public float FlightAltitude => _flightAltitude;
+
     [Header("Drops")]
     [SerializeField] private float _xpValue = 10f;
     [SerializeField] private int _goldValue = 2;
@@ -48,6 +57,15 @@ public class EnemyBase : MonoBehaviour
     // _healthMultiplier en entier, comportement d'avant ce correctif.
     private float _xpHealthMultiplier = -1f;
     public void SetXpHealthMultiplier(float multiplier) => _xpHealthMultiplier = multiplier;
+
+    // AJOUTÉ (2026-10-21, retour utilisateur : "je suis niveau 16 alors qu'on est qu'à 5 min [...] c'est pas
+    // normal") - multiplicateur DIRECT sur l'XP finale, appliqué APRÈS la formule amortie de Die() (ci-dessous),
+    // jamais mélangé à _xpHealthMultiplier qui passe par "1+(x-1)*0,5" - y injecter une correction l'aurait réduite
+    // de moitié par erreur. Compense le surplus de kills/minute d'un palier de difficulté qui fait spawner plus
+    // d'ennemis (voir EnemySpawner.SpawnEnemy), sans quoi "plus difficile" finit aussi par vouloir dire "on monte
+    // plus vite" - jamais l'intention. 1 = pas de correction (comportement par défaut, chemins hors EnemySpawner).
+    private float _xpPacingMultiplier = 1f;
+    public void SetXpPacingMultiplier(float multiplier) => _xpPacingMultiplier = multiplier;
 
     // AJOUTE - systeme de Brulure (palier 3 Fireball). Un seul stack actif a la
     // fois : reapplique = redemarre la duree plutot que d'additionner plusieurs
@@ -687,13 +705,30 @@ public class EnemyBase : MonoBehaviour
         // un peu le scale d'xp") - le correctif ci-dessus cumulait avec la hausse du NOMBRE d'ennemis tués par
         // seconde en fin de partie (plafond d'ennemis simultanés et cadence de spawn qui montent aussi avec le
         // temps, voir EnemySpawner._phasesDeJeu) : les deux ensemble faisaient grimper l'XP/seconde bien plus vite
-        // que prévu. L'XP suit maintenant la MOITIÉ de la croissance des PV au lieu de la totalité (reste à 1x au
+        // que prévu. L'XP suit alors la MOITIÉ de la croissance des PV au lieu de la totalité (resté à 1x au
         // palier 0, seulement 3x au lieu de 5x au dernier palier) - toujours croissant (pas de retour au problème
-        // de 2026-10-07), mais la pente est allégée.
+        // de 2026-10-07), mais la pente allégée.
+        // RETIRÉ (2026-10-22, retour utilisateur : "avant ils donnaient des xp doré, maintenant même en fin de
+        // partie ça donne du vert [...] remette ce qu'il y avait avant") - cet amortissement empilé SUR le coût de
+        // niveau déjà rallongé (voir XPSystem._baseXP/XPToNextLevel, suite 2026-10-21 juste en dessous) faisait que
+        // les kills tardifs plafonnaient trop bas (3x) pour suivre la pente du coût (qui, lui, suit une vraie
+        // exponentielle) : plus assez de grosses gemmes dorées en fin de partie. Pleine croissance restaurée (1x
+        // au palier 0, jusqu'à 5x au dernier palier, comme "avant") - le ralentissement global reste porté par le
+        // coût de niveau SEUL, pas cumulé une 2e fois ici.
         float xpBaseMultiplier = _xpHealthMultiplier >= 0f ? _xpHealthMultiplier : _healthMultiplier;
-        float xpHealthMultiplier = 1f + (xpBaseMultiplier - 1f) * 0.5f;
+        float xpHealthMultiplier = xpBaseMultiplier;
+        // RETIRÉ (2026-10-21, retour utilisateur : "tu as réduit l'xp que donnait les ennemis, mais [...] au début
+        // de partie quand on tue un ennemi il ne donne pas dans tous les cas de l'xp, ce qui n'est pas normal dans
+        // un survivor [...] on devrait rallonger l'xp qu'il faut selon le niveau de la barre, surtout dans les
+        // hauts niveaux") - un multiplicateur global (jusqu'à x0,27, suites 17/19/20) faisait passer l'XP de
+        // beaucoup de kills SOUS le seuil d'une gemme visible (10, voir XPGemSpawner.CalculateGems) : le kill ne
+        // perdait rien en vrai (le reste était reporté via XPGemSpawner._xpCarry), mais AUCUNE gemme n'apparaissait
+        // au sol la plupart du temps - cassait le geste de base d'un survivor. Le même ralentissement global est
+        // désormais obtenu en rallongeant le COÛT d'un niveau plutôt que la RÉCOMPENSE d'un kill (voir
+        // XPSystem._baseXP/XPToNextLevel) : chaque ennemi redonne sa pleine valeur, au moins 1 gemme visible par
+        // kill la plupart du temps, ramasser de l'XP au sol reste aussi satisfaisant qu'avant.
         if (XPGemSpawner.Instance != null)
-            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * xpHealthMultiplier);
+            XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * xpHealthMultiplier * _xpPacingMultiplier);
 
         GameManager.Instance.AddKill();
         MetaProgressionManager.Instance.AddRunGold(_goldValue);

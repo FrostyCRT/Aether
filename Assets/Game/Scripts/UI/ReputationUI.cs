@@ -308,7 +308,7 @@ public class ReputationUI : MonoBehaviour
             ReputationStyle.FitPortrait(_preview.portraitImage, pm != null ? pm.rect.width * 0.92f : 380f);
         }
         if (_preview.lockGroup != null) _preview.lockGroup.SetActive(locked);
-        if (_preview.lockText != null) _preview.lockText.text = Loc.F("{0} EST VERROUILLÉ", SkinCatalog.CharacterNames[_char]) + "\n<size=70%><color=#" + ReputationStyle.Hex(ReputationStyle.Muted) + ">" + Loc.T("Débloque-le dans l'onglet Personnages\npour accéder à ses skins.") + "</color></size>";
+        if (_preview.lockText != null) _preview.lockText.text = Loc.F("{0} EST VERROUILLÉ", SkinCatalog.CharacterNames[_char]) + "\n<size=70%><color=#" + ReputationStyle.Hex(ReputationStyle.Muted) + ">" + Loc.T("Débloque-le dans l'onglet Personnages\npour accéder à ses skins") + "</color></size>";
 
         if (_preview.tierChip != null) _preview.tierChip.color = new Color(tierColor.r, tierColor.g, tierColor.b, 0.2f);
         if (_preview.tierText != null)
@@ -409,7 +409,7 @@ public class ReputationUI : MonoBehaviour
 
         if (!meta.IsCharacterUnlocked(skin.characterIndex))
         {
-            Toast(Loc.F("{0} est verrouillé.", SkinCatalog.CharacterNames[skin.characterIndex]));
+            Toast(Loc.F("{0} est verrouillé", SkinCatalog.CharacterNames[skin.characterIndex]));
             return;
         }
 
@@ -417,7 +417,7 @@ public class ReputationUI : MonoBehaviour
         {
             if (meta.EquipSkin(skin.id))
             {
-                Toast(Loc.F("{0} équipé pour {1}.", Loc.T(skin.displayName), SkinCatalog.CharacterNames[skin.characterIndex]));
+                Toast(Loc.F("{0} équipé pour {1}", Loc.T(skin.displayName), SkinCatalog.CharacterNames[skin.characterIndex]));
                 RebuildRows();
                 RefreshPreview();
                 PunchPreview();
@@ -446,11 +446,11 @@ public class ReputationUI : MonoBehaviour
                 PunchPill(skin.tier == SkinTier.Prestige ? _eclatsPill : _goldPill);
                 break;
             case MetaProgressionManager.SkinBuyResult.NotEnoughCurrency:
-                Toast(skin.tier == SkinTier.Prestige ? Loc.T("Il te manque des Éclats.") : Loc.T("Il te manque de l'or."));
+                Toast(skin.tier == SkinTier.Prestige ? Loc.T("Il te manque des Éclats") : Loc.T("Il te manque de l'or"));
                 RefreshPreview();
                 break;
             case MetaProgressionManager.SkinBuyResult.CharacterLocked:
-                Toast(Loc.F("{0} est verrouillé.", SkinCatalog.CharacterNames[skin.characterIndex]));
+                Toast(Loc.F("{0} est verrouillé", SkinCatalog.CharacterNames[skin.characterIndex]));
                 RefreshPreview();
                 break;
             default:

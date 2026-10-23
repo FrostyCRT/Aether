@@ -175,6 +175,25 @@ public class BossBase : MonoBehaviour
     private float _difficultyHealthMultiplier = 1f;
     public void SetDifficultyHealthMultiplier(float multiplier) { _difficultyHealthMultiplier = Mathf.Max(1f, multiplier); }
 
+    // AJOUTÉ (2026-10-21, retour utilisateur : "rendre les boss plus fort aussi dans leur vitesse de déplacement
+    // et le délai entre chaque attaques") - même principe que _difficultyHealthMultiplier ci-dessus, mais SÉPARÉ de
+    // _speedMultiplier (déjà utilisé par les effets de ralentissement temporaires du joueur - Boue/Aura/Vortex -
+    // qui l'écrasent à `_slowFactor` puis le remettent à 1 une fois le ralentissement terminé : y mélanger un
+    // bonus de difficulté PERMANENT aurait fait disparaître ce bonus dès le premier ralentissement subi). Les 2
+    // se multiplient ensemble au moment du calcul de vitesse réelle (voir HandleMovement). Chaque boss applique
+    // _difficultyAttackSpeedMultiplier à SA PROPRE notion de cadence (très différente d'un boss à l'autre) :
+    // BossBase l'applique ici à _fireRate/_chargeCooldown (Boss 1), BossDeer à son saut/sa spirale (Boss 2),
+    // BossCorruptedSource à sa fenêtre de récupération entre attaques (Boss 3).
+    protected float _difficultySpeedMultiplier = 1f;
+    public void SetDifficultySpeedMultiplier(float multiplier) { _difficultySpeedMultiplier = Mathf.Max(1f, multiplier); }
+
+    protected float _difficultyAttackSpeedMultiplier = 1f;
+    public void SetDifficultyAttackSpeedMultiplier(float multiplier) { _difficultyAttackSpeedMultiplier = Mathf.Max(1f, multiplier); }
+
+    // Délai réel entre 2 charges, après application du bonus de difficulté - utilisé partout où _chargeCooldown
+    // était comparé à _chargeTimer, pour ne jamais avoir deux calculs différents du même "temps restant".
+    protected float EffectiveChargeCooldown => _chargeCooldown / _difficultyAttackSpeedMultiplier;
+
     private IEnumerator InitUI()
     {
         yield return null;
@@ -226,7 +245,7 @@ public class BossBase : MonoBehaviour
             transform.position = pos;
         }
 
-        _isWindingUp = !_isCharging && !_isRecovering && (_chargeCooldown - _chargeTimer) <= _chargeWindupDuration;
+        _isWindingUp = !_isCharging && !_isRecovering && (EffectiveChargeCooldown - _chargeTimer) <= _chargeWindupDuration;
 
         HandleMovement();
         HandleShooting();
@@ -255,7 +274,7 @@ public class BossBase : MonoBehaviour
         }
 
         Vector3 direction = (AimTarget.position - transform.position).normalized;
-        Vector3 nextPosition = transform.position + direction * _moveSpeed * _speedMultiplier * Time.deltaTime;
+        Vector3 nextPosition = transform.position + direction * _moveSpeed * _speedMultiplier * _difficultySpeedMultiplier * Time.deltaTime;
         transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
         RotateTowards(direction);
     }
@@ -264,11 +283,11 @@ public class BossBase : MonoBehaviour
     {
         if (_isCharging || _isRecovering) return;
 
-        float timeUntilCharge = _chargeCooldown - _chargeTimer;
+        float timeUntilCharge = EffectiveChargeCooldown - _chargeTimer;
         if (timeUntilCharge <= _chargeWindupDuration) return;
 
         _fireTimer += Time.deltaTime;
-        if (_fireTimer >= 1f / _fireRate)
+        if (_fireTimer >= 1f / (_fireRate * _difficultyAttackSpeedMultiplier))
         {
             ShootRadial();
             _fireTimer = 0f;
@@ -305,7 +324,7 @@ public class BossBase : MonoBehaviour
 
         _chargeTimer += Time.deltaTime;
 
-        if (_chargeTimer >= _chargeCooldown && !_isCharging)
+        if (_chargeTimer >= EffectiveChargeCooldown && !_isCharging)
         {
             // CORRIGE (2026-09-24) - avant, la charge ne partait que si le joueur était à _minChargeDistance ou plus :
             // collé au boss, la charge n'était jamais lancée, _isWindingUp restait vrai (le boss ne bougeait ni ne tirait plus)
@@ -394,7 +413,7 @@ public class BossBase : MonoBehaviour
         {
             if (_animator != null) _animator.speed = _windupAnimSpeed;
 
-            float progress = 1f - Mathf.Clamp01((_chargeCooldown - _chargeTimer) / _chargeWindupDuration);
+            float progress = 1f - Mathf.Clamp01((EffectiveChargeCooldown - _chargeTimer) / _chargeWindupDuration);
             UpdateGlowEffect(progress);
             UpdateTelegraphZone(progress);
         }
@@ -577,6 +596,12 @@ public class BossBase : MonoBehaviour
                 // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
                 if (_xpBarFraction > 0f && XPSystem.Instance != null)
                     xpReward = XPSystem.Instance.XPToNextLevel * _xpBarFraction;
+
+                // RETIRÉ (2026-10-21, retour utilisateur : voir le commentaire détaillé dans EnemyBase.Die()) - le
+                // ralentissement global passe maintenant par le coût des niveaux (XPSystem._baseXP/XPToNextLevel),
+                // plus par une réduction de la récompense elle-même - d'autant que `xpReward` ici est DÉJÀ calculée
+                // à partir de `XPToNextLevel` (ligne au-dessus), donc elle suit automatiquement la nouvelle courbe
+                // sans rien y ajouter.
                 XPGemSpawner.Instance.SpawnGems(gemSpawnPos, xpReward);
             }
         }

@@ -32,6 +32,12 @@ public static class HudSprites
     public static Sprite RingFlat    { get { if (_ringFlat == null)    _ringFlat    = MakeRingFlat();  return _ringFlat; } }
     public static Sprite Diamond     { get { if (_diamond == null)     _diamond     = MakeDiamond();   return _diamond; } }
     public static Sprite Crystal{ get { if (_crystal == null)_crystal= MakeCrystal();   return _crystal; } }
+    // AJOUTÉ (2026-10-21, retour utilisateur : "il faut mettre un indicateur de puissance pour le nœud
+    // Surpuissance de Aether, genre un effet rouge aura autour de l'écran") - vignette radiale (transparente au
+    // centre, opaque vers les coins) étirée en plein écran par GameUI, teintée en rouge par l'Image qui l'affiche -
+    // même pattern que les disques/anneaux ci-dessus (une seule texture neutre, générée une fois).
+    public static Sprite Vignette { get { if (_vignette == null) _vignette = MakeVignette(); return _vignette; } }
+    private static Sprite _vignette;
 
     private static Texture2D NewTex(int w, int h)
     {
@@ -190,6 +196,28 @@ public static class HudSprites
                     c = Mathf.Clamp01(1f - rim * 0.30f + hi * hi * 0.18f);
                 }
                 px[y * n + x] = new Color(c, c, c, mask);
+            }
+        return Finish(t, px, Vector4.zero);
+    }
+
+    // ---------- vignette plein écran (radiale, transparente au centre) ----------
+    // AJOUTÉ (2026-10-21) - étirée en Image.Type.Simple sur tout l'écran (pas 9 tranches comme les cadres
+    // ci-dessus) : la distance au centre est normalisée par demi-largeur/demi-hauteur pour rester correcte quel
+    // que soit le ratio d'écran, donc le résultat est un halo qui suit les 4 bords, pas un cercle décentré.
+    private static Sprite MakeVignette()
+    {
+        const int n = 256;
+        Texture2D t = NewTex(n, n);
+        Color[] px = new Color[n * n];
+        float c0 = n * 0.5f;
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float dx = (x + 0.5f - c0) / c0;
+                float dy = (y + 0.5f - c0) / c0;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy); // 0 au centre, ~1.41 aux coins
+                float a = Smooth(0.45f, 1.15f, dist);
+                px[y * n + x] = new Color(1f, 1f, 1f, a);
             }
         return Finish(t, px, Vector4.zero);
     }

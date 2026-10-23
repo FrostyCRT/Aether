@@ -262,7 +262,7 @@ public class SkillDetailPanel : MonoBehaviour
         if (maxed)
         {
             label = data.isUnique ? Loc.T("ACQUIS") : Loc.T("NIVEAU MAX");
-            status = data.isUnique ? Loc.T("Ce talent est actif.") : Loc.T("Cette compétence est au maximum.");
+            status = data.isUnique ? Loc.T("Ce talent est actif") : Loc.T("Cette compétence est au maximum");
             // CORRIGÉ (2026-10-18, retour utilisateur : trop de doré sur la page) - l'or reste réservé à la puce
             // "NIVEAU 3/3" juste au-dessus (voir SetChip) ; cette phrase descriptive repasse en gris neutre.
             statusColor = SkillTreeStyle.Muted;
@@ -270,18 +270,18 @@ public class SkillDetailPanel : MonoBehaviour
         else if (!activeBranch)
         {
             label = Loc.T("INDISPONIBLE");
-            status = Loc.F("Sélectionne {0} dans l'onglet Personnages pour acheter.", owner);
+            status = Loc.F("Sélectionne {0} dans l'onglet Personnages pour acheter", owner);
         }
         else if (!unlockable)
         {
             label = Loc.T("VERROUILLÉ");
-            status = Loc.T("Débloque d'abord les prérequis ci-dessus.");
+            status = Loc.T("Débloque d'abord les prérequis ci-dessus");
             statusColor = SkillTreeStyle.Warn;
         }
         else if (gold < cost)
         {
             label = Loc.T("OR INSUFFISANT");
-            status = Loc.F("Il te manque {0} or.", cost - gold);
+            status = Loc.F("Il te manque {0} or", cost - gold);
             statusColor = SkillTreeStyle.Warn;
         }
         else

@@ -22,6 +22,16 @@ public class ProjectileBasic : MonoBehaviour
     private float _fragmentChance = 0f;
     private float _fragmentDamage = 0f;
     private float _fragmentRadius = 2f;
+    // AJOUTÉ (2026-10-21, retour utilisateur : "revoir la forme de l'explosion [...] ça doit être très
+    // reconnaissable [que c'est une déflagration de boule de feu]") - ce script est PARTAGÉ par le tir de base
+    // (dont le nœud Réputation "Fragmentation" peut AUSSI déclencher une explosion, voir WeaponBase.FireProjectile)
+    // ET la Boule de feu : sans ce drapeau, donner à l'explosion générique l'allure "feu" de FireExplosionVFX
+    // aurait aussi fait flamber les explosions du tir de base de Kael/Lyra, qui n'ont rien de thématiquement
+    // "feu". Seul WeaponFireball le met à true (voir FireProjectile) ; remis à false à chaque Init() comme tous
+    // les autres drapeaux de ce fichier, pour qu'un projectile recyclé par le pool ne garde jamais l'effet visuel
+    // d'un tir précédent tiré par une autre arme.
+    private bool _useFireExplosionVisual = false;
+    public void SetFireExplosionVisual(bool enabled) => _useFireExplosionVisual = enabled;
     private static readonly Collider[] _overlapBuffer = new Collider[32];
     // Piercing (Shuriken)
     private bool _hasPiercing = false;
@@ -73,6 +83,7 @@ public class ProjectileBasic : MonoBehaviour
         _damage = damage;
         _damageColor = color ?? DamageNumberSpawner.ColorProjectile;
         _fragmentChance = 0f;
+        _useFireExplosionVisual = false;
         _hasPiercing = false;
         _currentPierceHits = 0;
         // AJOUTE - reset systematique, meme raison que _fragmentChance juste au-dessus :
@@ -140,7 +151,14 @@ public class ProjectileBasic : MonoBehaviour
             // se declenche - sans ca, l'explosion n'a jamais eu la moindre existence
             // visuelle, seuls les chiffres de degats des cibles secondaires trahissaient
             // qu'il s'etait passe quelque chose.
-            ExpandingRingVFX.Spawn(transform.position, _fragmentRadius, new Color(1f, 0.5f, 0.15f, 0.85f), 0.35f);
+            // MODIFIÉ (2026-10-21, retour utilisateur : "revoir la forme de l'explosion [...] très reconnaissable")
+            // - la Boule de feu (seule arme à mettre _useFireExplosionVisual à true, voir WeaponFireball) utilise
+            // désormais une vraie déflagration enflammée (FireExplosionVFX) à la place du simple anneau générique,
+            // qui reste inchangé pour le nœud Réputation "Fragmentation" du tir de base (aucun rapport avec le feu).
+            if (_useFireExplosionVisual)
+                FireExplosionVFX.Spawn(transform.position, _fragmentRadius);
+            else
+                ExpandingRingVFX.Spawn(transform.position, _fragmentRadius, new Color(1f, 0.5f, 0.15f, 0.85f), 0.35f);
             // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences".
             // L'anneau seul marque bien la LIMITE de la zone, mais manquait de "punch" au centre, au moment pile
             // de l'explosion. Éclat agrandi (même composant que les impacts normaux, juste plus gros).

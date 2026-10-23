@@ -275,7 +275,10 @@ public class WaveManager : MonoBehaviour
         towardCenter.y = 0f;
         if (towardCenter.sqrMagnitude < 0.01f) towardCenter = Vector3.right;
         towardCenter.Normalize();
+        // CORRIGÉ (2026-10-21) - même bug que EnemySpawner.FindFreeSpawnPosition (voir son commentaire) : reprendre
+        // player.transform.position tel quel donnait un boss à Y=1,5 (hauteur de torse du joueur) au lieu du sol.
         Vector3 spawnPos = player.transform.position + towardCenter * 10f;
+        spawnPos.y = 0f;
         spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
 
         GameObject bossPrefab = bossNumber == 1 ? _bossPrefab1 :
@@ -324,7 +327,37 @@ public class WaveManager : MonoBehaviour
             // multiplicateur/valeur imposée (voir BossBase.InitUI, qui les cumule maintenant au lieu de les
             // traiter comme mutuellement exclusifs).
             if (bossScript != null && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
-                bossScript.SetDifficultyHealthMultiplier(DifficultyTiers.BossHealthMultiplier(DifficultyTiers.Current));
+            {
+                // MODIFIÉ (2026-10-21, retour utilisateur : "le boss 2 a trop de vie dans apocalyptique") - le Boss 2
+                // (BossDeer, PV de base 90000 à l'époque, bien au-dessus du Boss 1 à 20000) devenait disproportionné
+                // une fois multiplié par le x2 partagé avec les 2 autres boss (180000, presque autant que le Boss 3
+                // À SA BASE NON multipliée, 180000 lui aussi) - nerf spécifique à ce boss précis, uniquement à
+                // l'Apocalyptique (Violent jamais signalé comme trop faible, reste sur la valeur partagée).
+                // MODIFIÉ ENCORE (2026-10-22, retour utilisateur : "le boss 2 à toujours trop de vie, baisse la de
+                // 30% dans chaque niveau de difficulté") - cette fois le PV DE BASE lui-même (BossDeer._maxHealth,
+                // 90000 -> 63000, voir BossDeer.prefab), pas un multiplicateur de palier : s'applique donc déjà
+                // identiquement aux 3 paliers (Modéré x1, Violent x1,25, Apocalyptique x1,5 via le nerf ci-dessus),
+                // aucun changement nécessaire ici.
+                float bossHealthMult = DifficultyTiers.BossHealthMultiplier(DifficultyTiers.Current);
+                if (bossNumber == 2 && DifficultyTiers.Current == DifficultyTier.Apocalyptic)
+                    bossHealthMult = 1.5f;
+                bossScript.SetDifficultyHealthMultiplier(bossHealthMult);
+
+                // AJOUTÉ (2026-10-21, retour utilisateur : "rendre les boss plus fort aussi dans leur vitesse de
+                // déplacement et le délai entre chaque attaques [...] pour le boss 2, mettre plus de projectiles
+                // dans ce même scale") - voir BossBase/BossDeer/BossCorruptedSource pour le détail de ce que chaque
+                // boss fait de ces 2 multiplicateurs (très différent d'un boss à l'autre).
+                bossScript.SetDifficultySpeedMultiplier(DifficultyTiers.BossSpeedMultiplier(DifficultyTiers.Current));
+                bossScript.SetDifficultyAttackSpeedMultiplier(DifficultyTiers.BossAttackSpeedMultiplier(DifficultyTiers.Current));
+
+                if (bossNumber == 2 && bossScript is BossDeer deer)
+                {
+                    int extraArms = DifficultyTiers.Current == DifficultyTier.Apocalyptic ? 2
+                                  : DifficultyTiers.Current == DifficultyTier.Violent ? 1
+                                  : 0;
+                    deer.SetDifficultyExtraSpiralArms(extraArms);
+                }
+            }
 
             if (bossScript != null && BossCameraZoom.Instance != null)
                 BossCameraZoom.Instance.SetBossZoom(bossScript.CameraZoomMargin);

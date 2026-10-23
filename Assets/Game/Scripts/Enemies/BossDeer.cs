@@ -135,7 +135,10 @@ public class BossDeer : BossBase
         _isBiting = false;
 
         Vector3 direction = (AimTarget.position - transform.position).normalized;
-        float speed = _moveSpeed * (_isPhase2 ? _phase2SpeedMultiplier : 1f) * _speedMultiplier;
+        // MODIFIÉ (2026-10-21, retour utilisateur : "rendre les boss plus fort aussi dans leur vitesse de
+        // déplacement") - _difficultySpeedMultiplier (BossBase), séparé de _speedMultiplier (ralentissements
+        // temporaires du joueur) pour la même raison que BossBase.HandleMovement.
+        float speed = _moveSpeed * (_isPhase2 ? _phase2SpeedMultiplier : 1f) * _speedMultiplier * _difficultySpeedMultiplier;
         Vector3 nextPosition = transform.position + direction * speed * Time.deltaTime;
         transform.position = MapBoundaryUtils.ClampToZone(nextPosition);
         RotateTowards(direction);
@@ -159,7 +162,12 @@ public class BossDeer : BossBase
         if (_jumpState == JumpState.None)
         {
             _jumpTimer += Time.deltaTime;
-            if (_jumpTimer >= _jumpCooldown && !IsInForbiddenJumpZone())
+            // MODIFIÉ (2026-10-21, retour utilisateur : "le délai entre chaque attaques") - cooldown du saut
+            // raccourci par _difficultyAttackSpeedMultiplier (BossBase), même principe que EffectiveChargeCooldown
+            // sur le Boss 1 - le Cerf n'utilise pas _chargeCooldown (HandleCharge est vidée, voir plus haut), donc
+            // le même calcul est refait ici localement sur sa propre notion de cooldown (_jumpCooldown).
+            float effectiveJumpCooldown = _jumpCooldown / _difficultyAttackSpeedMultiplier;
+            if (_jumpTimer >= effectiveJumpCooldown && !IsInForbiddenJumpZone())
             {
                 _jumpTimer = 0f;
                 StartJumpWindup();
@@ -244,43 +252,50 @@ public class BossDeer : BossBase
         _jumpStateTimer = 0f;
     }
 
+    // AJOUTÉ (2026-10-21, retour utilisateur : "pour le boss 2, mettre plus de projectiles dans ce même scale lié
+    // à la difficulté") - bras supplémentaires de la spirale (au-delà des 2 bras opposés de _doubleSpiral),
+    // posés par WaveManager.SpawnBoss comme les autres multiplicateurs de difficulté. 0 par défaut = comportement
+    // inchangé (2 bras, comme avant ce correctif).
+    private int _difficultyExtraSpiralArms = 0;
+    public void SetDifficultyExtraSpiralArms(int extraArms) { _difficultyExtraSpiralArms = Mathf.Max(0, extraArms); }
+
     private void HandleSpiral()
     {
         if (_jumpState != JumpState.None) return;
         if (_isBiting) return;
 
         _spiralTimer += Time.deltaTime;
-        if (_spiralTimer >= _spiralFireRate)
+        // MODIFIÉ (2026-10-21) - cadence de la spirale accélérée par _difficultyAttackSpeedMultiplier (BossBase),
+        // même principe que le cooldown du saut ci-dessus.
+        float effectiveSpiralFireRate = _spiralFireRate / _difficultyAttackSpeedMultiplier;
+        if (_spiralTimer >= effectiveSpiralFireRate)
         {
             _spiralTimer = 0f;
             ShootSpiralProjectile();
         }
     }
 
+    private void FireSpiralArm(float angleDeg)
+    {
+        Vector3 direction = Quaternion.Euler(0, angleDeg, 0) * Vector3.forward;
+        GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
+        if (projectileGO == null) return;
+        EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+        if (projectile != null) projectile.Init(direction, "boss");
+    }
+
     private void ShootSpiralProjectile()
     {
         float angleStep = 360f / _spiralBurstCount;
-        Vector3 direction = Quaternion.Euler(0, _spiralAngle, 0) * Vector3.forward;
 
-        GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
-        if (projectileGO != null)
-        {
-            EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
-            if (projectile != null)
-                projectile.Init(direction, "boss");
-        }
-
-        if (_doubleSpiral)
-        {
-            Vector3 direction2 = Quaternion.Euler(0, _spiralAngle + 180f, 0) * Vector3.forward;
-            GameObject projectileGO2 = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
-            if (projectileGO2 != null)
-            {
-                EnemyProjectile projectile2 = projectileGO2.GetComponent<EnemyProjectile>();
-                if (projectile2 != null)
-                    projectile2.Init(direction2, "boss");
-            }
-        }
+        // MODIFIÉ (2026-10-21) - _doubleSpiral (2 bras fixes, opposés à 180°) remplacé par un nombre de bras
+        // RÉPARTIS UNIFORMÉMENT (toujours 2 à la base, +1 bras par palier de difficulté au-dessus de Modéré) -
+        // refactorisé en boucle (voir FireSpiralArm ci-dessus) plutôt que de dupliquer le bloc Get/Init une 3e/4e
+        // fois à la main.
+        int totalArms = (_doubleSpiral ? 2 : 1) + _difficultyExtraSpiralArms;
+        float armAngleStep = 360f / totalArms;
+        for (int arm = 0; arm < totalArms; arm++)
+            FireSpiralArm(_spiralAngle + armAngleStep * arm);
 
         _spiralAngle += angleStep;
     }

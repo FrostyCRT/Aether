@@ -89,6 +89,20 @@ public class ChallengeManager : MonoBehaviour
         Instance = this;
     }
 
+    // AJOUTÉ (2026-10-22, retour utilisateur : "le défi, niveau 20 avant la 10eme minute ne fonctionne pas, j'ai
+    // dépassé les 10 min sans être niveau 20, et le statut n'est pas en échoué") - CheckFailureConditions() n'était
+    // JAMAIS appelée pour ce défi : les 3 seuls appelants (NotifyUltimateUsed/NotifyHealthChanged) ne couvrent que
+    // les défis "endurance" (hp30never/noUltimate/hp50boss1), ce défi est un jalon TEMPOREL (dépend juste de
+    // l'horloge qui avance, aucun évènement de jeu à écouter) - rien ne vérifiait jamais, après coup, s'il était
+    // devenu impossible. IsFailed restait donc bloqué à false pour toujours, GetProgressText() continuait d'afficher
+    // "Niv. X/20" au lieu de "Échoué" même bien après la 10e minute. CheckFailureConditions() appelée chaque frame
+    // (switch déjà filtré par CurrentChallenge.id, négligeable) pour que ce cas temporel soit réévalué sans attendre
+    // un évènement.
+    private void Update()
+    {
+        CheckFailureConditions();
+    }
+
     private void Start()
     {
         // MODES DE JEU (2026-09-26) - les défis n'existent qu'en partie Classique : ni tirage, ni suivi, ni récompense,
@@ -295,6 +309,10 @@ public class ChallengeManager : MonoBehaviour
                 break;
             case "hp30never":
                 failed = _minHealthPercent < 0.30f;
+                break;
+            case "level20in10min":
+                failed = !_level20ReachedInTime && GameManager.Instance != null && GameManager.Instance.RunTimer > 600f
+                    && XPSystem.Instance != null && XPSystem.Instance.CurrentLevel < 20;
                 break;
         }
 

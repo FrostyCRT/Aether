@@ -80,7 +80,7 @@ public class SkinCatalog : ScriptableObject
             {
                 id = id, characterIndex = c, isDefault = true, tier = SkinTier.Classic, cost = 0,
                 displayName = "Tenue d'origine",
-                description = "La tenue avec laquelle " + CharacterNames[c][0] + CharacterNames[c].Substring(1).ToLowerInvariant() + " part au combat."
+                description = "La tenue avec laquelle " + CharacterNames[c][0] + CharacterNames[c].Substring(1).ToLowerInvariant() + " part au combat"
             });
         }
     }
@@ -93,7 +93,7 @@ public class SkinCatalog : ScriptableObject
         if (skin.isDefault && skin.characterIndex >= 0 && skin.characterIndex < CharacterNames.Length)
         {
             string n = CharacterNames[skin.characterIndex];
-            return Loc.F("La tenue avec laquelle {0} part au combat.", n[0] + n.Substring(1).ToLowerInvariant());
+            return Loc.F("La tenue avec laquelle {0} part au combat", n[0] + n.Substring(1).ToLowerInvariant());
         }
         return Loc.T(skin.description);
     }

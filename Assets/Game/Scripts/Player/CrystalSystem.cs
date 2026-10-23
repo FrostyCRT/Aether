@@ -21,8 +21,8 @@ public class CrystalSystem : MonoBehaviour
     [SerializeField] private float _novaDamage = 100f;
     [SerializeField] private float _novaRadius = 3f;
     [SerializeField] private GameObject _novaVFXPrefab;
-    [Tooltip("Durée de l'expansion visuelle de la Nova (0 -> rayon max). Retour utilisateur : 0,3s d'origine était trop rapide, 0,7s presque parfait mais un chouïa trop lent.")]
-    [SerializeField] private float _novaVFXDuration = 0.55f;
+    [Tooltip("Durée de l'expansion visuelle de la Nova (0 -> rayon max). Historique : 0,3s d'origine jugé trop rapide, 0,7s presque parfait mais un chouïa trop lent, stabilisé à 0,5s. Redescendu à 0,35s (2026-10-21) sur retour utilisateur : \"rend la nova plus rapide au déclenchement, genre elle arrive à sa taille max en moins longtemps.\"")]
+    [SerializeField] private float _novaVFXDuration = 0.35f;
     [Tooltip("Hauteur Y à laquelle le VFX de la Nova est instancié - même logique que WeaponMudPuddle._groundY : le pivot du joueur (transform.position) est à hauteur de torse (~1,5), pas au sol, donc un VFX plaqué au sol comme une onde de choc doit utiliser sa propre hauteur au lieu de suivre le pivot.")]
     [SerializeField] private float _novaGroundY = 0.2f;
 
@@ -164,7 +164,9 @@ public class CrystalSystem : MonoBehaviour
     private void TriggerEmpoweredUlt()
     {
         float scale = GetUltDamageScale();
-        float empoweredDamage = _ultDamage * 5f * scale;
+        // CORRIGÉ (2026-10-21) - même oubli que DamageAllEnemies ci-dessus (voir son commentaire) : l'Ultime
+        // empouvoiré (2 charges) ne lisait pas non plus PlayerBuffs.OutgoingDamageMultiplier.
+        float empoweredDamage = _ultDamage * 5f * scale * PlayerBuffs.OutgoingDamageMultiplier;
 
         EnemyBase[] allEnemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         foreach (EnemyBase enemy in allEnemies)
@@ -177,7 +179,7 @@ public class CrystalSystem : MonoBehaviour
         foreach (Collider hit in hits)
         {
             BossBase boss = hit.GetComponent<BossBase>();
-            if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale, DamageNumberSpawner.ColorUltimate);
+            if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorUltimate);
         }
 
         StartCoroutine(SlowAllEnemies());
@@ -188,16 +190,24 @@ public class CrystalSystem : MonoBehaviour
 
     private void DamageAllEnemies(float multiplier = 1f)
     {
+        // CORRIGÉ (2026-10-21, retour utilisateur : "la nova ne prend pas les bonus de dégâts, c'est pas normal")
+        // - en auditant toutes les sources de dégâts (2026-10-16), CHAQUE arme (WeaponBase, WeaponAura,
+        // WeaponFireball, les Orbitaux, la Boue, la Foudre, toutes les fusions...) avait été corrigée pour lire
+        // PlayerBuffs.OutgoingDamageMultiplier (Concentration + Surpuissance) à l'impact - sauf l'Ultime et la Nova
+        // (CrystalSystem), oubliés de cet audit car ils ne passent pas par WeaponBase. Concrètement : le nœud
+        // "Surpuissance" ("après l'ultime, tes dégâts sont doublés pendant 5 secondes") ne doublait donc JAMAIS les
+        // dégâts de l'Ultime lui-même ni de la Nova, seulement ceux des autres armes.
+        float buffMultiplier = multiplier * PlayerBuffs.OutgoingDamageMultiplier;
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_ultDamage * multiplier, DamageNumberSpawner.ColorUltimate);
+                if (eb != null) eb.TakeDamage(_ultDamage * buffMultiplier, DamageNumberSpawner.ColorUltimate);
 
                 BossBase boss = hit.GetComponent<BossBase>();
-                if (boss != null) boss.TakeDamage(_ultDamage * multiplier, DamageNumberSpawner.ColorUltimate);
+                if (boss != null) boss.TakeDamage(_ultDamage * buffMultiplier, DamageNumberSpawner.ColorUltimate);
             }
         }
     }
@@ -234,6 +244,10 @@ public class CrystalSystem : MonoBehaviour
 
     private void ApplyNovaDamage(float radius, HashSet<Collider> alreadyHit)
     {
+        // CORRIGÉ (2026-10-21, retour utilisateur : "la nova ne prend pas les bonus de dégâts, c'est pas normal") -
+        // voir le commentaire détaillé de DamageAllEnemies plus haut : même oubli, la Nova ne lisait jamais
+        // PlayerBuffs.OutgoingDamageMultiplier (Concentration + Surpuissance).
+        float novaDamage = _novaDamage * PlayerBuffs.OutgoingDamageMultiplier;
         Collider[] hits = Physics.OverlapSphere(transform.position, radius, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
@@ -242,10 +256,10 @@ public class CrystalSystem : MonoBehaviour
             if (hit.CompareTag("Enemy"))
             {
                 EnemyBase eb = hit.GetComponent<EnemyBase>();
-                if (eb != null) eb.TakeDamage(_novaDamage, DamageNumberSpawner.ColorNova, true);
+                if (eb != null) eb.TakeDamage(novaDamage, DamageNumberSpawner.ColorNova, true);
 
                 BossBase boss = hit.GetComponent<BossBase>();
-                if (boss != null) boss.TakeDamage(_novaDamage, DamageNumberSpawner.ColorNova);
+                if (boss != null) boss.TakeDamage(novaDamage, DamageNumberSpawner.ColorNova);
             }
         }
     }
@@ -339,10 +353,17 @@ public class CrystalSystem : MonoBehaviour
     {
         // MODIFIÉ (2026-10-16, audit) - passe par le multiplicateur global (PlayerBuffs) au lieu de
         // WeaponBase.SetDamageMultiplier : double TOUTES les armes, pas seulement le tir de base.
+        // AJOUTÉ (2026-10-21, retour utilisateur : "il faut mettre un indicateur de puissance pour le nœud
+        // Surpuissance de Aether") - GameUI.SetOverpowerVisualActive suit EXACTEMENT la même durée que le
+        // vrai multiplicateur (PlayerBuffs.SetOverpowerActive), jamais sa propre temporisation séparée.
+        // MODIFIÉ (2026-10-22, retour utilisateur : "ça dure que 5 secondes, met 10 au lieu de 5, parce que 5
+        // c'est vraiment pas assez") - 5s -> 10s.
         _overpowerActive = true;
         PlayerBuffs.SetOverpowerActive(true);
-        yield return new WaitForSeconds(5f);
+        if (GameUI.Instance != null) GameUI.Instance.SetOverpowerVisualActive(true);
+        yield return new WaitForSeconds(10f);
         PlayerBuffs.SetOverpowerActive(false);
+        if (GameUI.Instance != null) GameUI.Instance.SetOverpowerVisualActive(false);
         _overpowerActive = false;
     }
 
@@ -352,6 +373,7 @@ public class CrystalSystem : MonoBehaviour
         if (_overpowerActive)
         {
             PlayerBuffs.SetOverpowerActive(false);
+            if (GameUI.Instance != null) GameUI.Instance.SetOverpowerVisualActive(false);
             _overpowerActive = false;
         }
     }

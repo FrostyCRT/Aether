@@ -82,6 +82,20 @@ public class XPGem : MonoBehaviour
 
     private const float CollectDistSqr = 0.4f * 0.4f;
 
+    // AJOUTÉ (2026-10-22, retour utilisateur : "ça les prend pas, le point pour le prendre n'est pas là où le
+    // dessin est") - le ramassage "marche dessus" reposait jusqu'ici UNIQUEMENT sur le SphereCollider trigger
+    // (OnTriggerEnter) : un vrai contact physique 3D avec le CapsuleCollider du joueur. Mesuré en Play : ce
+    // CapsuleCollider a son bas à Y=0,5 (center local Y=1,5 ADDITIONNÉ à un pivot racine déjà à hauteur de torse,
+    // Y=1,5 - voir [[player-pivot-is-torso-height-not-ground]]) alors que la gemme atterrit au Y RÉEL du sol (0 à
+    // ~0,3 avec le bob) - les deux volumes ne se touchent quasiment jamais, d'où "le point n'est pas là où le
+    // dessin est" (il fallait un hasard d'alignement vertical pour que ça morde - un bug préexistant, pas introduit
+    // par le correctif de clipping ci-dessus). Rayon de contact HORIZONTAL (XZ uniquement, comme le reste du
+    // projet flatten Y pour les tests de proximité au sol - voir EnemyBase.ApplyKnockback/Move) ajouté en PLUS du
+    // trigger physique existant (gardé, inoffensif) : ramasse dès que le joueur marche sur l'empreinte au sol
+    // visible de la gemme, peu importe l'écart de hauteur des 2 colliders.
+    private const float ContactRadiusXZ = 0.7f;
+    private const float ContactRadiusXZSqr = ContactRadiusXZ * ContactRadiusXZ;
+
     private MeshRenderer _bodyRenderer;
     private TrailRenderer _trail;
     private MaterialPropertyBlock _propBlock;
@@ -104,16 +118,27 @@ public class XPGem : MonoBehaviour
     private const float HalfWidth = 0.534f;
     private const float HalfHeight = 0.484f;
 
+    // CORRIGÉ (2026-10-22, retour utilisateur : "certains xp passent sous le sol") - le quad était centré sur son
+    // pivot (-HalfHeight à +HalfHeight), et la gemme atterrit au Y RÉEL du sol (0 à ~0,3 avec le bob) : la moitié
+    // basse du losange se retrouvait sous le niveau du sol, coupée par le décor - plus visible sur les grosses
+    // gemmes (Large, échelle 0,8) que les petites. 1ère tentative (remonter directement `landPosition.y`, donc
+    // `transform.position`, donc le `SphereCollider` de ramassage sur le MÊME transform) réglait le clipping mais
+    // déplaçait aussi le point de collision loin du dessin vu par la caméra en angle (retour utilisateur suivant :
+    // "le point pour le prendre n'est pas là où le dessin est") - abandonnée. Corrigé ICI à la place : seul le
+    // MESH est ancré par son bord BAS à l'origine locale (0 à 2*HalfHeight) au lieu d'être centré dessus - le quad
+    // grandit visuellement DEPUIS le sol vers le haut, jamais sous terre, SANS déplacer transform.position/le
+    // point de collision (voir aussi ContactRadiusXZ plus bas, qui compense le fait que ce point de collision
+    // réel reste bas alors que le CapsuleCollider du joueur ne descend pas jusque-là).
     private static Mesh BuildGemQuadMesh()
     {
         if (_gemQuadMesh != null) return _gemQuadMesh;
 
         var vertices = new List<Vector3>
         {
-            new Vector3(-HalfWidth, -HalfHeight, 0f),
-            new Vector3(HalfWidth, -HalfHeight, 0f),
-            new Vector3(HalfWidth, HalfHeight, 0f),
-            new Vector3(-HalfWidth, HalfHeight, 0f),
+            new Vector3(-HalfWidth, 0f, 0f),
+            new Vector3(HalfWidth, 0f, 0f),
+            new Vector3(HalfWidth, HalfHeight * 2f, 0f),
+            new Vector3(-HalfWidth, HalfHeight * 2f, 0f),
         };
         var uvs = new List<Vector2> { new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 1f) };
         var triangles = new List<int> { 0, 1, 2, 0, 2, 3 };
@@ -295,6 +320,28 @@ public class XPGem : MonoBehaviour
 
         _timeAlive += Time.deltaTime;
 
+        // CORRIGÉ (2026-10-22, retour utilisateur : "des fois quand je tue un ennemi elle n'apparait même pas" +
+        // "le comportement de la gemme quand elle tombe au sol [...] c'est bizarre") - ce contact tournait pour
+        // N'IMPORTE QUEL état sauf Attracted, y COMPRIS Popping (juste après Init(), avant même la 1ère frame
+        // affichée). Preuve en Play : `XPGemSpawner.SpawnGems` appelé à la position du joueur -> XP bien crédité
+        // (+10) dès la frame 1, mais AUCUNE gemme jamais vue active - ramassée instantanément, avant même le petit
+        // saut de "popping". N'importe quel kill au contact (mêlée, Nova, Aura...) ou juste un ennemi tué à moins
+        // de 0,7 unité du joueur fait donc disparaître la gemme avant qu'elle soit visible - exactement le "elle
+        // n'apparait même pas" rapporté. Restreint à Idle UNIQUEMENT : la gemme termine TOUJOURS son animation de
+        // jaillissement (garantie visible, "tombe au sol" proprement) avant de pouvoir être ramassée par simple
+        // proximité - le ramassage généreux (marcher sur une gemme déjà posée, peu importe l'écart de hauteur des
+        // colliders) reste intact, seul le ramassage AVANT même l'apparition est supprimé.
+        if (_state == GemState.Idle)
+        {
+            Vector3 flatDelta = transform.position - _playerTransform.position;
+            flatDelta.y = 0f;
+            if (flatDelta.sqrMagnitude <= ContactRadiusXZSqr)
+            {
+                Collect();
+                return;
+            }
+        }
+
         switch (_state)
         {
             case GemState.Popping: UpdatePopping(); break;
@@ -382,6 +429,11 @@ public class XPGem : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        // CORRIGÉ (2026-10-22) - même garde-fou que le contact horizontal de Update() : ce trigger physique ne
+        // vérifiait aucun état non plus, donc pouvait AUSSI ramasser une gemme en Popping (collider du joueur qui
+        // chevauche la toute jeune gemme pile à son point de spawn, cas fréquent sur un kill au contact/mêlée) avant
+        // même que le petit saut de "jaillissement" soit visible.
+        if (_state == GemState.Popping) return;
         if (other.CompareTag("Player"))
             Collect();
     }

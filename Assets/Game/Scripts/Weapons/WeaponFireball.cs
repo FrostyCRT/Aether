@@ -69,6 +69,20 @@ public class WeaponFireball : MonoBehaviour
             {
                 Vector3 direction = target.position - transform.position;
                 direction.y = 0f;
+
+                // AJOUTÉ (2026-10-21, retour utilisateur : "si on est collé dans un angle de 2 murs invisible, et
+                // qu'on tire une boule de feu, la boule de feu reste coincé dans l'angle, et ne se casse pas") -
+                // root cause : aucune garde ici contre un vecteur direction quasi nul. Dans un coin de carte, les
+                // ennemis s'entassent contre le joueur (ils ne peuvent pas le contourner) - si le plus proche se
+                // retrouve à une distance quasi nulle, `direction.Normalize()` d'un vecteur (quasi) nul renvoie
+                // silencieusement (0,0,0) (aucune erreur Unity) : le projectile tiré avec cette direction ne bouge
+                // ensuite plus jamais (`transform.position += direction * speed * dt` ne fait rien à chaque frame),
+                // ET ne peut jamais atteindre `_maxRange` pour se désactiver tout seul - visuellement "coincé pour
+                // toujours". Si la cible est trop proche pour donner une direction fiable, on saute ce tir (sans
+                // consommer le temps de recharge, donc réessayé dès la frame suivante) plutôt que d'en tirer un qui
+                // ne pourra jamais se résoudre.
+                if (direction.sqrMagnitude < 0.01f) return;
+
                 direction.Normalize();
                 FireProjectile(direction);
                 _cooldownTimer = 0f;
@@ -112,6 +126,11 @@ public class WeaponFireball : MonoBehaviour
 
             // MODIFIE - explosion toujours a 100%, plus de chance meta/carte a combiner.
             projectile.SetFragmentation(1f, dmg * _fragmentDamageRatio, _fragmentRadius);
+
+            // AJOUTÉ (2026-10-21, retour utilisateur : "revoir la forme de l'explosion [...] très reconnaissable
+            // [comme une déflagration de boule de feu]") - voir ProjectileBasic._useFireExplosionVisual : remplace
+            // l'anneau générique par FireExplosionVFX (flammes + braises + fumée), réservé à cette arme.
+            projectile.SetFireExplosionVisual(true);
 
             // AJOUTE - perforation : traverse les ennemis au lieu de s'arreter au premier (voir commentaire sur
             // _maxPierceTargets plus haut).

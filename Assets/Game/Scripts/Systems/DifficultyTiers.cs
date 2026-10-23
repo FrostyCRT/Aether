@@ -159,6 +159,32 @@ public static class DifficultyTiers
         }
     }
 
+    // AJOUTÉ (2026-10-21, retour utilisateur : "dans les difficultés 2 et 3, pour le boss 1 et 2 et 3, rendre les
+    // boss plus fort aussi dans leur vitesse de déplacement et le délai entre chaque attaques") - jusqu'ici, seuls
+    // les PV des boss montaient avec le palier de difficulté ; leur comportement (vitesse, cadence) restait
+    // identique quel que soit le palier. 2 nouveaux multiplicateurs génériques, posés par WaveManager.SpawnBoss
+    // comme BossHealthMultiplier - chaque boss les applique à SA PROPRE notion de "vitesse"/"cadence" (très
+    // différente d'un boss à l'autre, voir BossBase/BossDeer/BossCorruptedSource).
+    public static float BossSpeedMultiplier(DifficultyTier tier)
+    {
+        switch (tier)
+        {
+            case DifficultyTier.Violent: return 1.15f;
+            case DifficultyTier.Apocalyptic: return 1.3f;
+            default: return 1f;
+        }
+    }
+
+    public static float BossAttackSpeedMultiplier(DifficultyTier tier)
+    {
+        switch (tier)
+        {
+            case DifficultyTier.Violent: return 1.15f;
+            case DifficultyTier.Apocalyptic: return 1.3f;
+            default: return 1f;
+        }
+    }
+
     // Multiplie les dégâts infligés AU JOUEUR par les ennemis/boss (GameModes.EnemyDamageScale, via UpdateScaling) -
     // monte moins vite que les PV, même philosophie que GameModes.EndlessDamageScale ("pour rester jouable").
     // RÉDUIT (2026-10-19, même retour utilisateur que ci-dessus) - dans une boîte fermée resserrée, un joueur

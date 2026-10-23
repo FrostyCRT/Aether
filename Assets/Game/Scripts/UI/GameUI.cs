@@ -955,6 +955,15 @@ public class GameUI : MonoBehaviour
         public float best;
         public string newRecordMessage;
         public string nearRecordMessage;
+        // AJOUTÉ (2026-10-21, retour utilisateur : "j'étais à deux doigts de mon record de survie, ba en fait non,
+        // parce que j'ai pas de record vu que j'ai déjà réussi une partie de 15min, donc 15 min n'est plus un
+        // record si on ne peut pas faire plus") - le temps de survie en Classique a un plafond dur : le chrono se
+        // FIGE dès l'apparition du boss 3 (BossSpawnInterval × 3 = 900s, voir WaveManager), donc 900s EST le
+        // maximum humainement atteignable, pas juste "la meilleure valeur vue jusqu'ici". Une fois `best` déjà à
+        // ce plafond, aucun run futur ne peut JAMAIS le dépasser (seulement l'égaler) - annoncer "à deux doigts de
+        // ton record" est donc une promesse qui ne pourra jamais se réaliser. 0 = pas de plafond (kills/niveau/or
+        // n'en ont pas, ils continuent de monter indéfiniment).
+        public float hardCap;
     }
 
     private void PopulateGameOverMessage(float runTime, int killCount, int levelReached, int goldThisRun, string deathCause, int bossKillCount = 0)
@@ -996,7 +1005,7 @@ public class GameUI : MonoBehaviour
                 // uniquement : un temps qui s'affiche pareil que le record compte comme égalé, pas "presque".
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current)), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie...") },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current)), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie..."), hardCap = WaveManager.Instance != null ? WaveManager.Instance.BossSpawnInterval * 3f : 900f },
                     new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount), nearRecordMessage = Loc.T("Si proche de ton record d'éliminations...") },
                     new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached), nearRecordMessage = Loc.T("Un cheveu de ton meilleur niveau...") },
                     new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun), nearRecordMessage = Loc.T("Tout près de ton record d'Or...") },
@@ -1016,6 +1025,11 @@ public class GameUI : MonoBehaviour
                 {
                     foreach (RecordCheck check in checks)
                     {
+                        // AJOUTÉ (2026-10-21) - voir le commentaire sur RecordCheck.hardCap : si le record est déjà
+                        // au plafond dur (survie = 900s, le chrono se fige au boss 3), "presque un nouveau record"
+                        // serait une promesse qui ne pourra jamais se réaliser - on l'exclut de cette 2e boucle.
+                        if (check.hardCap > 0f && check.best >= check.hardCap) continue;
+
                         if (check.best > 0f && check.current >= check.best * 0.9f)
                         {
                             message = check.nearRecordMessage;
@@ -1920,10 +1934,10 @@ public class GameUI : MonoBehaviour
     // retiree sur demande utilisateur.
     private static readonly string[] _gameOverMaxedOutLines =
     {
-        "Tu as tout donné à cette branche. Littéralement.",
-        "Plus rien à débloquer ici — change de personnage pour la suite.",
-        "Cette branche n'a plus de secret pour toi.",
-        "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.",
+        "Tu as tout donné à cette branche. Littéralement",
+        "Plus rien à débloquer ici — change de personnage pour la suite",
+        "Cette branche n'a plus de secret pour toi",
+        "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose",
     };
 
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
@@ -2032,9 +2046,9 @@ public class GameUI : MonoBehaviour
     // registre prefere a un ton plus generique/sportif ("zero pitie", etc.).
     private static readonly string[] _victoryClosers =
     {
-        "La Source Corrompue n'a pas tenu la distance.",
-        "Elle ne se relèvera pas.",
-        "La corruption s'éteint ici.",
+        "La Source Corrompue n'a pas tenu la distance",
+        "Elle ne se relèvera pas",
+        "La corruption s'éteint ici",
     };
 
     // AJOUTE - pool pour PopulateEmptyBuildState côté Victoire (0 upgrade
@@ -2042,9 +2056,9 @@ public class GameUI : MonoBehaviour
     // run très rapide/chanceux avant le boss 3).
     private static readonly string[] _victoryEmptyBuildLines =
     {
-        "Une victoire sans la moindre compétence. Chapeau.",
-        "Aucune compétence récupérée. Le style, ça compte double.",
-        "Rien pris en cours de route, et pourtant tu es là.",
+        "Une victoire sans la moindre compétence. Chapeau",
+        "Aucune compétence récupérée. Le style, ça compte double",
+        "Rien pris en cours de route, et pourtant tu es là",
     };
 
     // AJOUTE - pool pour PopulateEmptyBuildState côté Game Over (mort très
@@ -2052,8 +2066,8 @@ public class GameUI : MonoBehaviour
     // pas juste théorique).
     private static readonly string[] _gameOverEmptyBuildLines =
     {
-        "Pas eu le temps de récupérer la moindre compétence.",
-        "Aucune compétence récupérée cette fois.",
+        "Pas eu le temps de récupérer la moindre compétence",
+        "Aucune compétence récupérée cette fois",
     };
 
     // AJOUTE - pool dédié à PopulateVictoryQuietLine (voir plus bas). Sujet
@@ -2065,9 +2079,9 @@ public class GameUI : MonoBehaviour
     // (relecture "jeu serieux / Steam").
     private static readonly string[] _victoryQuietLines =
     {
-        "Pas de record aujourd'hui, mais la victoire est bien réelle.",
-        "Rien d'exceptionnel à signaler, à part la victoire elle-même.",
-        "Aucun exploit cette fois — juste une victoire de plus.",
+        "Pas de record aujourd'hui, mais la victoire est bien réelle",
+        "Rien d'exceptionnel à signaler, à part la victoire elle-même",
+        "Aucun exploit cette fois — juste une victoire de plus",
     };
 
     // AJOUTE - récap avec du ton (temps 1), remplace l'ancien SubtitleText statique.
@@ -2158,9 +2172,9 @@ public class GameUI : MonoBehaviour
 
     private static readonly string[] _endlessEndLines =
     {
-        "{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps.",
-        "Tu as tenu {t} face à des boss de plus en plus féroces.",
-        "{b} boss vaincus avant la chute. Le prochain record est à portée.",
+        "{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps",
+        "Tu as tenu {t} face à des boss de plus en plus féroces",
+        "{b} boss vaincus avant la chute. Le prochain record est à portée",
     };
 
     private string BuildModeGameOverMessage(float runTime, int bossKillCount)
@@ -2168,14 +2182,14 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            return Loc.F("{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", bossKillCount, total);
+            return Loc.F("{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort", bossKillCount, total);
         }
         if (GameModes.IsTitans)
         {
             string killed = bossKillCount <= 0 ? Loc.T("Aucun titan abattu")
                 : bossKillCount == 1 ? Loc.T("1 titan abattu")
                 : Loc.F("{0} titans abattus", bossKillCount);
-            return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.", killed);
+            return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort", killed);
         }
 
         string line = Loc.T(_endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)]);
@@ -2189,12 +2203,12 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            _victoryRecapText.text = Loc.F("{0} boss abattus en {1}. La ruée est à toi.", total, FormatTime(runTime));
+            _victoryRecapText.text = Loc.F("{0} boss abattus en {1}. La ruée est à toi", total, FormatTime(runTime));
             return;
         }
         if (GameModes.IsTitans)
         {
-            _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête.", FormatTime(runTime));
+            _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête", FormatTime(runTime));
             return;
         }
 
@@ -2591,6 +2605,191 @@ public class GameUI : MonoBehaviour
     private void SetDamageVfxAlpha(float a)
     {
         if (_damageVfxImage != null) _damageVfxImage.color = new Color(DamageVfxColor.r, DamageVfxColor.g, DamageVfxColor.b, a);
+    }
+
+    // AJOUTÉ (2026-10-21, retour utilisateur : "il faut mettre un indicateur de puissance pour le nœud
+    // Surpuissance de Aether, genre un effet rouge aura autour de l'écran") - avant ce correctif, le x2 de dégâts
+    // de 5s après l'Ultime (nœud "Surpuissance") n'avait AUCUN retour visuel.
+    // REFONTE (2026-10-22, retour utilisateur : "cette couleur est mélangée au bleu de l'ult, et en plus c'est du
+    // rouge, donc ça met en confusion avec l'indicateur où le player se prend des dégâts [...] tu pourrais faire
+    // quelque chose d'aussi précis graphiquement [que FireExplosionVFX] ? [...] l'entièreté de l'écran doit rester
+    // visible, et qu'on doit reconnaître ce que c'est, sans que le joueur pourrait penser que c'est un bug") -
+    // l'aplat rouge uniforme (0.85, 0.08, 0.08) entrait en collision avec 2 couleurs déjà prises : quasi identique
+    // à DamageVfxColor (flash de dégâts, 0.75, 0.05, 0.05) et visuellement mélangée au bleu de UltVfxColor pendant
+    // les 3 premières secondes (les 2 effets tournent en même temps à l'activation de l'Ultime). Remplacé par une
+    // identité OR/CRISTAL (même or canonique utilisé partout ailleurs dans le jeu pour "palier max"/puissance -
+    // UpgradeUI._dotColorMax, GameUI._maxTierColor - jamais pris par un autre effet plein écran), construite comme
+    // FireExplosionVFX : des formes procédurales en couches (FXSprites.CrystalShard, pointes de cristal
+    // irrégulières à facettes, pas un disque/aplat) plutôt qu'une simple teinte. 4 foyers d'éclats aux COINS de
+    // l'écran (2 couches qui tournent chacune à sa propre vitesse/sens, pulsent en léger déphasage par coin) + un
+    // halo ambré très discret en bordure (même Vignette transparente au centre qu'avant, mais peak alpha divisé
+    // par ~2,7 - simple renfort d'ambiance, plus le porteur principal du message). Le CENTRE de l'écran reste
+    // intégralement dégagé (demande explicite), et la forme aux coins + la couleur dorée (jamais utilisée pour les
+    // dégâts ni l'Ultime) rendent l'effet reconnaissable comme un buff de puissance, pas un bug ni une alerte.
+    private RectTransform _overpowerVfxRoot;
+    private Image _overpowerGlowImage;
+    private readonly Image[] _overpowerShardImages = new Image[8]; // 2 couches (intérieure/extérieure) x 4 coins
+    private Coroutine _overpowerVfxRoutine;
+    private float _overpowerShardAlphaScale;
+
+    private static readonly Color OverpowerGlowColor = new Color(1f, 0.79f, 0.30f); // or canonique du jeu
+    private static readonly Color OverpowerShardMidColor = new Color(1f, 0.79f, 0.30f);
+    private static readonly Color OverpowerShardHotColor = new Color(1f, 0.92f, 0.62f);
+    private static readonly Color OverpowerShardEdgeColor = new Color(0.68f, 0.40f, 0.07f);
+
+    private const float OverpowerGlowPeakAlpha = 0.20f;
+    private const float OverpowerShardPeakAlpha = 0.62f;
+    private const float OverpowerShardBaseSize = 280f;
+
+    private static readonly Vector2[] OverpowerCornerAnchors =
+    {
+        new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 0f),
+    };
+    // Direction DEPUIS chaque coin VERS le centre de l'écran - décale chaque foyer d'éclats légèrement à
+    // l'intérieur du coin plutôt que pile sur le bord coupé par l'écran.
+    private static readonly Vector2[] OverpowerCornerInward =
+    {
+        new Vector2(1f, -1f), new Vector2(-1f, -1f), new Vector2(-1f, 1f), new Vector2(1f, 1f),
+    };
+
+    private void EnsureOverpowerVFXBuilt()
+    {
+        if (_overpowerVfxRoot != null) return;
+        if (_hudPanel == null) return;
+        RectTransform hudRect = _hudPanel.GetComponent<RectTransform>();
+        if (hudRect == null || !(hudRect.parent is RectTransform canvasRoot)) return;
+
+        GameObject rootGO = new GameObject("OverpowerVFX", typeof(RectTransform));
+        _overpowerVfxRoot = (RectTransform)rootGO.transform;
+        _overpowerVfxRoot.SetParent(canvasRoot, false);
+        _overpowerVfxRoot.anchorMin = Vector2.zero;
+        _overpowerVfxRoot.anchorMax = Vector2.one;
+        _overpowerVfxRoot.offsetMin = _overpowerVfxRoot.offsetMax = Vector2.zero;
+        _overpowerVfxRoot.SetAsLastSibling();
+
+        GameObject glowGO = new GameObject("Glow", typeof(RectTransform), typeof(Image));
+        RectTransform glowRect = (RectTransform)glowGO.transform;
+        glowRect.SetParent(_overpowerVfxRoot, false);
+        glowRect.anchorMin = Vector2.zero;
+        glowRect.anchorMax = Vector2.one;
+        glowRect.offsetMin = glowRect.offsetMax = Vector2.zero;
+        _overpowerGlowImage = glowGO.GetComponent<Image>();
+        _overpowerGlowImage.sprite = HudSprites.Vignette;
+        _overpowerGlowImage.type = Image.Type.Simple;
+        _overpowerGlowImage.color = FXSprites.A(OverpowerGlowColor, 0f);
+        _overpowerGlowImage.raycastTarget = false;
+
+        for (int corner = 0; corner < 4; corner++)
+        {
+            for (int layer = 0; layer < 2; layer++)
+            {
+                GameObject shardGO = new GameObject($"Shard_{corner}_{layer}", typeof(RectTransform), typeof(Image));
+                RectTransform shardRect = (RectTransform)shardGO.transform;
+                shardRect.SetParent(_overpowerVfxRoot, false);
+                shardRect.anchorMin = shardRect.anchorMax = OverpowerCornerAnchors[corner];
+                shardRect.pivot = new Vector2(0.5f, 0.5f);
+                float size = OverpowerShardBaseSize * (layer == 0 ? 1f : 1.4f);
+                shardRect.sizeDelta = new Vector2(size, size);
+                shardRect.anchoredPosition = OverpowerCornerInward[corner] * (layer == 0 ? 90f : 70f);
+
+                Image shardImage = shardGO.GetComponent<Image>();
+                shardImage.sprite = FXSprites.CrystalShard();
+                shardImage.type = Image.Type.Simple;
+                shardImage.color = FXSprites.A(OverpowerShardMidColor, 0f);
+                shardImage.raycastTarget = false;
+
+                _overpowerShardImages[corner * 2 + layer] = shardImage;
+            }
+        }
+
+        rootGO.SetActive(false);
+    }
+
+    public void SetOverpowerVisualActive(bool active)
+    {
+        EnsureOverpowerVFXBuilt();
+        if (_overpowerVfxRoot == null) return;
+
+        if (_overpowerVfxRoutine != null) StopCoroutine(_overpowerVfxRoutine);
+        _overpowerVfxRoutine = StartCoroutine(active ? OverpowerVFXInRoutine() : OverpowerVFXOutRoutine());
+    }
+
+    private IEnumerator OverpowerVFXInRoutine()
+    {
+        _overpowerVfxRoot.gameObject.SetActive(true);
+        const float InDuration = 0.18f;
+        float t = 0f;
+        while (t < InDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = t / InDuration;
+            SetOverpowerGlowAlpha(Mathf.Lerp(0f, OverpowerGlowPeakAlpha, p));
+            _overpowerShardAlphaScale = Mathf.Lerp(0f, 1f, p);
+            AnimateOverpowerShards();
+            yield return null;
+        }
+        // Tenue + rotation/pulsation continues (fin pilotée par SetOverpowerVisualActive(false), jamais par ce
+        // minutage interne - voir commentaire plus haut).
+        while (true)
+        {
+            SetOverpowerGlowAlpha(OverpowerGlowPeakAlpha + 0.04f * Mathf.Sin(Time.unscaledTime * 2.2f));
+            _overpowerShardAlphaScale = 1f;
+            AnimateOverpowerShards();
+            yield return null;
+        }
+    }
+
+    private IEnumerator OverpowerVFXOutRoutine()
+    {
+        const float OutDuration = 0.4f;
+        float startGlow = _overpowerGlowImage != null ? _overpowerGlowImage.color.a : 0f;
+        float startShardScale = _overpowerShardAlphaScale;
+        float t = 0f;
+        while (t < OutDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = t / OutDuration;
+            SetOverpowerGlowAlpha(Mathf.Lerp(startGlow, 0f, p));
+            _overpowerShardAlphaScale = Mathf.Lerp(startShardScale, 0f, p);
+            AnimateOverpowerShards();
+            yield return null;
+        }
+        SetOverpowerGlowAlpha(0f);
+        _overpowerShardAlphaScale = 0f;
+        AnimateOverpowerShards();
+        _overpowerVfxRoot.gameObject.SetActive(false);
+        _overpowerVfxRoutine = null;
+    }
+
+    private void SetOverpowerGlowAlpha(float a)
+    {
+        if (_overpowerGlowImage != null) _overpowerGlowImage.color = FXSprites.A(OverpowerGlowColor, a);
+    }
+
+    // Rotation lente continue (sens opposé entre couche intérieure/extérieure - effet de parallaxe), pulsation
+    // d'alpha déphasée par coin (jamais synchronisée - lecture "énergie vivante", pas un clignotement uniforme) et
+    // dégradé chaud/or/ambré entre couches (même principe que FireExplosionVFX.UpdateBurst).
+    private void AnimateOverpowerShards()
+    {
+        float time = Time.unscaledTime;
+        for (int corner = 0; corner < 4; corner++)
+        {
+            float phase = corner * 1.7f; // déphasage fixe par coin, pas aléatoire (forme stable, lecture cohérente)
+            for (int layer = 0; layer < 2; layer++)
+            {
+                Image img = _overpowerShardImages[corner * 2 + layer];
+                if (img == null) continue;
+
+                float spinSpeed = layer == 0 ? 9f : -6f;
+                img.rectTransform.localRotation = Quaternion.Euler(0f, 0f, time * spinSpeed + corner * 37f);
+
+                float pulse = 0.5f + 0.5f * Mathf.Sin(time * 2.6f + phase + layer * 0.8f);
+                Color edgeTint = layer == 0 ? OverpowerShardHotColor : OverpowerShardEdgeColor;
+                Color tinted = Color.Lerp(OverpowerShardMidColor, edgeTint, 0.5f + 0.5f * pulse);
+                float alpha = Mathf.Lerp(OverpowerShardPeakAlpha * 0.5f, OverpowerShardPeakAlpha, pulse) * _overpowerShardAlphaScale;
+                img.color = FXSprites.A(tinted, alpha);
+            }
+        }
     }
 
     public void UpdateDashCooldown(float percent)

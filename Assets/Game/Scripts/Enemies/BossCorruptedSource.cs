@@ -223,7 +223,11 @@ public class BossCorruptedSource : BossBase
 
             yield return StartCoroutine(RunAttack(next));
 
-            float safeWindow = Random.Range(_minSafeWindow, _maxSafeWindow);
+            // MODIFIÉ (2026-10-21, retour utilisateur : "le délai entre chaque attaques") - fenêtre de récupération
+            // raccourcie par _difficultyAttackSpeedMultiplier (BossBase) - le Boss 3 n'a pas de _chargeCooldown
+            // classique (HandleCharge/HandleShooting vidées, sa propre machine à séquence ci-dessus fait office de
+            // cadence), donc appliqué directement ici sur sa fenêtre "safe" entre 2 attaques.
+            float safeWindow = Random.Range(_minSafeWindow, _maxSafeWindow) / _difficultyAttackSpeedMultiplier;
             yield return new WaitForSeconds(safeWindow);
         }
     }
@@ -342,7 +346,10 @@ public class BossCorruptedSource : BossBase
         Vector3 startPos = transform.position;
         Vector3 endPos = new Vector3(impactPos.x, startPos.y, impactPos.z);
         float lungeElapsed = 0f;
-        float lungeDuration = Mathf.Max(0.05f, Vector3.Distance(startPos, endPos) / _strikeLungeSpeed);
+        // MODIFIÉ (2026-10-21, retour utilisateur : "vitesse de déplacement") - le Boss 3 est ancré (_moveSpeed=0,
+        // "ne marche jamais"), sa seule notion de "déplacement" est la ruée de la Frappe : _difficultySpeedMultiplier
+        // (BossBase) y accélère la vitesse de la ruée, équivalent le plus proche pour ce boss.
+        float lungeDuration = Mathf.Max(0.05f, Vector3.Distance(startPos, endPos) / (_strikeLungeSpeed * _difficultySpeedMultiplier));
 
         // MODIFIE (2026-09-16) - retour utilisateur : le corps du boss
         // infligeait aussi des degats de CONTACT generiques tout le long du

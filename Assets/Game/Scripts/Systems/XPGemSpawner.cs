@@ -13,12 +13,16 @@ public class XPGemSpawner : MonoBehaviour
     // OPTIMISATION : Liste réutilisable mise en cache pour éviter le "new List" à chaque mort
     private readonly List<XPGem.GemType> _gemsCalculationCache = new List<XPGem.GemType>();
 
-    // AJOUTÉ (2026-10-16, audit version finale) - les gemmes valent 10/20/50 : le reste < 10 de chaque mort était
-    // jeté (ex. 15 XP -> une gemme de 10, 5 perdus ; jusqu'à ~12-15 % de l'XP entre 2 et 8 min selon les paliers).
-    // Ce reste est maintenant reporté sur la mort suivante : l'XP totale de la partie est exacte, sans créer de
-    // gemme supplémentaire (aucun coût en objets à l'écran). La courbe de niveaux (XPSystem._baseXP) a été
-    // relevée en conséquence.
-    private float _xpCarry = 0f;
+    // AJOUTÉ (2026-10-22, retour utilisateur : "pourquoi il y a des xp au sol et d'autres en hauteur ?") - la
+    // position d'atterrissage reprenait `position.y` (la position RACINE de l'ennemi au moment de sa mort), jamais
+    // flattenée. Comme pour le joueur ([[player-pivot-is-torso-height-not-ground]]), le pivot racine varie selon le
+    // modèle/l'anim (torse, VAT en cours de pose...) et n'est PAS toujours au sol - un ennemi dont la racine est à
+    // hauteur de torse à l'instant de sa mort faisait atterrir sa gemme (et son mesh ancré par le bas, voir
+    // XPGem.BuildGemQuadMesh) en pleine hauteur plutôt qu'au sol. Même convention déjà utilisée ailleurs dans le
+    // projet pour les effets au sol (WeaponMudPuddle._groundY, PlayerController._dashWindGroundY) : un Y de sol FIXE
+    // plutôt que celui, peu fiable, de l'émetteur. Seule la cible d'ATTERRISSAGE est flattenée - le point de spawn
+    // (origine du petit saut depuis le corps, voir XPGem._popOrigin) garde la vraie hauteur de mort, inchangé.
+    private const float GemLandY = 0f;
 
     private void Awake()
     {
@@ -40,43 +44,58 @@ public class XPGemSpawner : MonoBehaviour
             AttractionRadius = 4f; // S'active ou s'agrandit
     }
 
+    // MODIFIÉ (2026-10-22, retour utilisateur : "c'est ce que j'avais dit, je voulais retrouver le nombre d'xp des
+    // ennemis mais juste augmenter le coût pour passer au niveau supérieur [...] mais du coup pour les xp, je veux
+    // qu'ils en donnent tous") - l'ancien système (2026-10-16) reportait le reste < 10 de chaque mort SILENCIEUSEMENT
+    // sur la mort suivante (aucune gemme visible tant que le report n'avait pas franchi 10) : l'XP totale de la
+    // partie restait exacte, mais CERTAINS kills ne donnaient visuellement RIEN - exactement le symptôme déjà
+    // signalé le 2026-10-21 ("il ne donne pas dans tous les cas de l'xp, ce qui n'est pas normal dans un survivor"),
+    // seulement à moitié corrigé à l'époque (la pente avait été allégée via le COÛT d'un niveau, XPSystem._baseXP -
+    // ça reste en place - mais le symptôme "kill sans gemme visible" lui-même n'avait jamais été traité). Chaque
+    // mort représente maintenant SA PROPRE valeur intégralement et IMMÉDIATEMENT : les paliers 50/20/10 habituels,
+    // PLUS une dernière gemme (visuellement Small, valeur réelle exacte via xpOverride) pour le reste < 10 au lieu
+    // de le reporter invisible sur la prochaine mort. Plus aucun kill qui rapporte de l'XP ne reste sans gemme.
     // Appelé à la mort d'un ennemi — calcule et spawne les gemmes via l'ObjectPool
     public void SpawnGems(Vector3 position, float xpValue)
     {
         if (ObjectPool.Instance == null) return;
 
-        _xpCarry = CalculateGems(xpValue + _xpCarry); // Remplit le cache interne, garde le reste pour la prochaine mort
+        float remainder = CalculateGems(xpValue); // remplit le cache interne, renvoie le reste (< 10) de CETTE mort
 
         for (int i = 0; i < _gemsCalculationCache.Count; i++)
-        {
-            XPGem.GemType gemType = _gemsCalculationCache[i];
+            SpawnOneGem(position, _gemsCalculationCache[i], null);
 
-            // Offset aléatoire pour espacer les gemmes au sol
-            Vector3 offset = new Vector3(
-                Random.Range(-0.8f, 0.8f),
-                0f,
-                Random.Range(-0.8f, 0.8f)
-            );
-
-            // MODIFIÉ (2026-10-04) - la gemme spawne maintenant PILE au point de mort (position), pas déjà décalée :
-            // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
-            // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
-            // "pas le côté satisfaisant").
-            GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
-
-            if (gemGO != null)
-            {
-                XPGem gem = gemGO.GetComponent<XPGem>();
-                if (gem != null)
-                {
-                    gem.Init(gemType, _playerTransform, position + offset);
-                }
-            }
-        }
+        if (remainder > 0.001f)
+            SpawnOneGem(position, XPGem.GemType.Small, remainder);
     }
 
-    // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire
-    // Renvoie l'XP non convertie en gemmes (reste < 10), à reporter.
+    private void SpawnOneGem(Vector3 position, XPGem.GemType gemType, float? xpOverride)
+    {
+        // Offset aléatoire pour espacer les gemmes au sol
+        Vector3 offset = new Vector3(
+            Random.Range(-0.8f, 0.8f),
+            0f,
+            Random.Range(-0.8f, 0.8f)
+        );
+
+        // MODIFIÉ (2026-10-04) - la gemme spawne maintenant PILE au point de mort (position), pas déjà décalée :
+        // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
+        // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
+        // "pas le côté satisfaisant").
+        GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
+        if (gemGO == null) return;
+
+        Vector3 landTarget = position + offset;
+        landTarget.y = GemLandY;
+
+        XPGem gem = gemGO.GetComponent<XPGem>();
+        if (gem != null)
+            gem.Init(gemType, _playerTransform, landTarget, xpOverride);
+    }
+
+    // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire.
+    // Renvoie l'XP non convertie en gemmes de 10/20/50 (reste < 10) - à la charge de l'appelant de la représenter
+    // (jamais la jeter ni la reporter silencieusement, voir le commentaire de SpawnGems ci-dessus).
     private float CalculateGems(float xpValue)
     {
         _gemsCalculationCache.Clear(); // On vide le cache de la mort précédente
@@ -121,7 +140,7 @@ public class XPGemSpawner : MonoBehaviour
     {
         ExpandingRingVFX.Spawn(position, 3.5f, new Color(1f, 0.93f, 0.6f), 0.5f);
 
-        _xpCarry = CalculateGems(xpValue + _xpCarry); // remplit _gemsCalculationCache normalement (règle "rendre la monnaie"), reste reporté
+        float remainder = CalculateGems(xpValue); // remplit _gemsCalculationCache (règle "rendre la monnaie")
         // CORRIGE (2026-10-16, audit - erreur relevée en Play) - cette coroutine lit la liste sur plusieurs frames
         // (une gemme toutes les 0,03 s) : un ennemi tué pendant la gerbe appelait SpawnGems(), qui VIDE et remplit ce
         // même cache partagé -> mauvais types de gemmes, ou ArgumentOutOfRangeException qui interrompait la gerbe
@@ -132,27 +151,31 @@ public class XPGemSpawner : MonoBehaviour
         // d'abord) dans UNE seule grosse gemme qui porte leur XP cumulée - jamais de gemme perdue, juste moins
         // d'objets à l'écran.
         int count = gems.Count;
-        float overflowXP = 0f;
-        int burstCount = count;
+        float mergedOverflowXP = 0f;
         int startIndex = 0;
         if (count > MaxBurstGems)
         {
             int overflowCount = count - (MaxBurstGems - 1);
             for (int i = 0; i < overflowCount; i++)
-                overflowXP += GemTypeValue(gems[i]);
+                mergedOverflowXP += GemTypeValue(gems[i]);
             startIndex = overflowCount;
-            burstCount = MaxBurstGems - 1 + 1; // les restantes + la gemme consolidée
         }
 
+        // MODIFIÉ (2026-10-22, même retour utilisateur que SpawnGems ci-dessus) - le reste < 10 rejoint directement
+        // cette gerbe au lieu d'être reporté silencieusement sur la prochaine mort - jamais d'XP de boss invisible.
+        // Visuel Large si un vrai surplus de plafond a été fusionné dedans, sinon Small (juste le petit reste seul).
+        float totalOverflowXP = mergedOverflowXP + remainder;
+        XPGem.GemType overflowVisual = mergedOverflowXP > 0f ? XPGem.GemType.Large : XPGem.GemType.Small;
+
+        int remainingGemCount = count - startIndex;
+        int totalToSpawn = remainingGemCount + (totalOverflowXP > 0.001f ? 1 : 0);
+
         int spawned = 0;
-        int totalToSpawn = burstCount;
-        float angleStep = Mathf.PI * 2f / Mathf.Max(1, totalToSpawn);
-        float angleJitterRange = angleStep * 0.3f;
         float startAngle = Random.Range(0f, Mathf.PI * 2f);
 
-        if (overflowXP > 0f)
+        if (totalOverflowXP > 0.001f)
         {
-            SpawnBurstGem(position, XPGem.GemType.Large, overflowXP, startAngle, spawned, totalToSpawn);
+            SpawnBurstGem(position, overflowVisual, totalOverflowXP, startAngle, spawned, totalToSpawn);
             spawned++;
             yield return new WaitForSeconds(0.03f);
         }
@@ -174,9 +197,12 @@ public class XPGemSpawner : MonoBehaviour
         GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
         if (gemGO == null) return;
 
+        Vector3 landTarget = position + offset;
+        landTarget.y = GemLandY;
+
         XPGem gem = gemGO.GetComponent<XPGem>();
         if (gem != null)
-            gem.Init(type, _playerTransform, position + offset, xpOverride);
+            gem.Init(type, _playerTransform, landTarget, xpOverride);
     }
 
     private static float GemTypeValue(XPGem.GemType type)

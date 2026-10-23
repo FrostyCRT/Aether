@@ -204,6 +204,28 @@ public class EnemySpawner : MonoBehaviour
         // pas vouloir dire plus rentable à tuer, sous peine de vider le sens du palier de difficulté.
         EnemyBase spawnedEnemy = spawned.GetComponent<EnemyBase>();
         if (spawnedEnemy != null) spawnedEnemy.SetXpHealthMultiplier(timeBasedMultiplier);
+
+        // CORRIGÉ (2026-10-21, retour utilisateur : "le corbeau est un oiseau volant donc il doit être en l'air") -
+        // FindFreeSpawnPosition ci-dessus place TOUJOURS Y=0 (sol réel, voir son commentaire) - un ennemi volant
+        // (_isFlying, ex. le Corbeau) ajoute ici sa propre altitude par-dessus, pour flotter réellement au lieu de
+        // rester au sol comme les ennemis terrestres. 0 pour tous les ennemis au sol (aucun effet).
+        if (spawnedEnemy != null && spawnedEnemy.IsFlying && spawnedEnemy.FlightAltitude != 0f)
+            spawned.transform.position += new Vector3(0f, spawnedEnemy.FlightAltitude, 0f);
+
+        // AJOUTÉ (2026-10-21, retour utilisateur : "je suis niveau 16 alors qu'on est qu'à 5 min [...] si on est
+        // déjà à plus de la moitié de ce compte au bout de 5 min, c'est pas normal") - même après avoir retiré le
+        // bonus d'XP lié au palier de difficulté (SetXpHealthMultiplier ci-dessus), l'Apocalyptique restait plus
+        // rapide à monter de niveau que les autres paliers pour une raison différente et jusqu'ici jamais
+        // compensée : ce palier fait aussi spawner ~15% d'ennemis EN PLUS par vague (SpawnScaleMultiplier, voir
+        // plus haut dans ce fichier), donc ~15% de morts en plus par minute à DPS égal - plus de kills, même avec
+        // une XP par kill désormais identique au palier Modéré, veut quand même dire plus d'XP au total par minute.
+        // Multiplicateur DIRECT (pas mélangé à SetXpHealthMultiplier, qui passe par la formule amortie "1+(x-1)*0,5"
+        // de EnemyBase.Die() - y injecter cette correction aurait réduit son effet de moitié par erreur) : chaque
+        // ennemi rapporte l'inverse exact du surplus de densité, pour que le total gagné par minute reste aligné
+        // sur le Modéré malgré le surplus de spawns - "plus difficile" ne doit se traduire ni par plus de PV gagnés
+        // (palier) ni par plus d'XP gagnée (densité), seulement par plus d'ennemis/de dégâts à affronter.
+        if (spawnedEnemy != null && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
+            spawnedEnemy.SetXpPacingMultiplier(1f / Mathf.Max(1f, DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current)));
     }
 
 
@@ -218,10 +240,21 @@ public class EnemySpawner : MonoBehaviour
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             Vector2 randomCircle = Random.insideUnitCircle.normalized;
-            Vector3 candidatePos = _playerTransform.position + new Vector3(
-                randomCircle.x * radius,
+            // CORRIGÉ (2026-10-21, retour utilisateur : "les araignées ne prennent toujours pas les dégâts
+            // d'orbitaux, regarde aussi avec les autres compétences, je ne sais pas si c'est la seule") - cette
+            // position reprenait TOUTE _playerTransform.position, Y compris : le pivot du joueur est à hauteur de
+            // TORSE (~1,5, voir [[player-pivot-is-torso-height-not-ground]]), pas au sol. Tous les ennemis
+            // (Araignée, Loup, Bulbe...) apparaissaient donc avec leur Y figé à 1,5 pour toute leur vie (rien dans
+            // EnemyBase ne corrige jamais Y après le spawn, voir Move()/ApplyKnockback() qui n'altèrent que X/Z) -
+            // vérifié en Play : un Loup venait bien de spawn à Y=1,5. Seul le Bulbe (BoxCollider.size.y=3, centré)
+            // s'étend encore jusqu'au sol malgré ce décalage et passait donc inaperçu ; l'Araignée (size.y=1) et le
+            // Loup (size.y=2) ont leur collider qui flotte entièrement au-dessus de la zone des effets au sol
+            // (Orbitaux/Boue/Nova, tous à _groundY=0,2) - aucun des deux ne peut donc jamais être touché par ces
+            // effets, pas seulement l'Araignée. Y forcé à 0 (sol réel) au lieu d'hériter du joueur.
+            Vector3 candidatePos = new Vector3(
+                _playerTransform.position.x + randomCircle.x * radius,
                 0f,
-                randomCircle.y * radius
+                _playerTransform.position.z + randomCircle.y * radius
             );
             candidatePos = MapBoundaryUtils.ClampToZone(candidatePos);
 

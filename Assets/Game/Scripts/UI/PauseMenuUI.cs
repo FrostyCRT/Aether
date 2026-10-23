@@ -459,7 +459,7 @@ public class PauseMenuUI : MonoBehaviour
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)
         {
             // Les défis n'existent qu'en Classique (voir ChallengeManager.Start).
-            _challengeInfoText.text = GameModes.CountsForProgression ? "" : Loc.T("Pas de défi dans ce mode.");
+            _challengeInfoText.text = GameModes.CountsForProgression ? "" : Loc.T("Pas de défi dans ce mode");
             return;
         }
 
@@ -480,7 +480,7 @@ public class PauseMenuUI : MonoBehaviour
             // chargement de la scene Jeu, jamais un compte a rebours fige et
             // trompeur ("moins d'une minute" pendant potentiellement des heures).
             _challengeInfoText.text = minutes > 0
-                ? Loc.T("Défi déjà réussi cette heure !") + "\n" + Loc.F("Nouveau défi dans {0} min.", minutes)
+                ? Loc.T("Défi déjà réussi cette heure !") + "\n" + Loc.F("Nouveau défi dans {0} min", minutes)
                 : Loc.T("Défi déjà réussi cette heure !") + "\n" + Loc.T("Nouveau défi à ta prochaine partie !");
             return;
         }

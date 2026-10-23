@@ -64,6 +64,13 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
             {
                 Vector3 direction = target.position - transform.position;
                 direction.y = 0f;
+
+                // AJOUTÉ (2026-10-21) - même root cause que WeaponFireball.Update() (voir son commentaire détaillé) :
+                // un ennemi collé au joueur dans un coin de carte donne une direction quasi nulle, et
+                // `.Normalize()` d'un vecteur (quasi) nul renvoie silencieusement (0,0,0) - un projectile tiré
+                // ainsi resterait coincé pour toujours (ne bouge plus, n'atteint jamais sa portée max).
+                if (direction.sqrMagnitude < 0.01f) return;
+
                 direction.Normalize();
                 FireSalvo(direction);
                 _cooldownTimer = 0f;

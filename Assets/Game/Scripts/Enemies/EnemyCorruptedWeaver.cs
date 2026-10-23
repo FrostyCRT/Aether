@@ -72,7 +72,17 @@ public class EnemyCorruptedWeaver : EnemyBase
         _isJumping = true;
         _jumpCooldownTimer = _jumpCooldown;
 
+        // CORRIGÉ (2026-10-21, retour utilisateur : "les araignées ne prennent pas les dégâts des orbitaux [...]
+        // regarde si c'est pas la même raison que pour les bulbes") - même famille de bug que le Bulb (hauteur Y
+        // héritée du mauvais pivot), mais ici le mécanisme est différent : `targetPos` venait de
+        // `CurrentTarget.position` SANS retirer sa composante Y, qui est la hauteur de TORSE du joueur (~1,5, voir
+        // [[player-pivot-is-torso-height-not-ground]]), pas le sol. `transform.position = targetPos;` plus bas
+        // plantait donc l'araignée à Y≈1,5 de façon PERMANENTE après son premier saut (pas seulement pendant l'arc
+        // du saut) - hors de portée de tous les effets au sol (Orbitaux, Aura, Boue, Nova), pas seulement les
+        // Orbitaux. Hauteur Y forcée à celle du sol (sa propre position Y d'avant le saut, jamais celle du joueur).
+        float groundY = transform.position.y;
         Vector3 targetPos = CurrentTarget != null ? CurrentTarget.position : transform.position;
+        targetPos.y = groundY;
 
         yield return new WaitForSeconds(_jumpAnticipationDuration);
 

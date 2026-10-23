@@ -18,7 +18,7 @@ MonoBehaviour:
   upgradeType: 4
   value: 0
   _levelValues:
-  - 1
+  - 2.25
   - 0.35
   - 0.2
   _maxLevel: 3

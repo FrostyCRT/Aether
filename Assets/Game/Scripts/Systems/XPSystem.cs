@@ -6,11 +6,28 @@ public class XPSystem : MonoBehaviour
     // MODIFIÉ (2026-10-16, audit version finale) - 50 -> 55 (valeur de la scène Game aussi) : le reste d'XP < 10 n'est
     // plus perdu à chaque mort (XPGemSpawner._xpCarry, ~+6 % d'XP sur une partie) et les phases de spawn complètes
     // (jusqu'à 160 ennemis) donnent plus de kills - courbe allégée de 10 %, à affiner en playtest.
-    [SerializeField] private float _baseXP = 55f;
+    // MODIFIÉ (2026-10-21, retour utilisateur : "tu as réduit l'xp que donnait les ennemis, mais le problème c'est
+    // que maintenant [...] un ennemi ne donne pas dans tous les cas de l'xp, ce qui n'est pas normal dans un
+    // survivor [...] on devrait plutôt rallonger l'xp qu'il faut selon le niveau de la barre, surtout dans les
+    // hauts niveaux") - les 2 précédents correctifs de rythme (suites 17/19/20) réduisaient directement l'XP
+    // DONNÉE par chaque ennemi (jusqu'à x0,27 au final) : sous le seuil d'une gemme "Small" (10, voir
+    // XPGemSpawner.CalculateGems), une bonne partie des kills ne faisait plus apparaître AUCUNE gemme visible au
+    // sol (juste un report interne invisible, `XPGemSpawner._xpCarry`) - cassait le geste de base d'un survivor
+    // ("ramasser plein d'XP au sol"). Annulé (voir `GlobalXpMultiplier`, retiré de `EnemyBase.Die()`/
+    // `BossBase.Die()` - chaque ennemi redonne sa pleine valeur, donc au moins 1 gemme visible par kill la plupart
+    // du temps) - le même ralentissement global est maintenant obtenu en rallongeant le COÛT d'un niveau plutôt que
+    // la RÉCOMPENSE d'un kill : `_baseXP` monte à 70 (était 55) ET l'exposant de la courbe à 2 (était 1,5, voir
+    // XPToNextLevel ci-dessous) - un exposant plus fort pèse de plus en plus à mesure que le niveau augmente, donc
+    // l'allongement se fait "surtout dans les hauts niveaux" comme demandé, sans trop changer le rythme des tout
+    // premiers niveaux. Calibré sur le même point de mesure réel que les correctifs précédents (niveau 15 à 5 min
+    // en Apocalyptique, avec x0,9 déjà actif à ce moment-là -> total brut extrapolé sans aucune réduction ≈ 19550
+    // XP) : avec ce nouveau barème, ce même total atterrit à peine avant le niveau 10 (cumul pour l'atteindre
+    // ≈ 19950) - cohérent avec la cible "~niveau 9-10 à 5 min" discutée.
+    [SerializeField] private float _baseXP = 70f;
     public int CurrentLevel { get; private set; } = 1;
     public float CurrentXP { get; private set; } = 0f;
-    // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{1.5} \rfloor$
-    public float XPToNextLevel => Mathf.Floor(_baseXP * Mathf.Pow(CurrentLevel, 1.5f));
+    // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{2} \rfloor$
+    public float XPToNextLevel => Mathf.Floor(_baseXP * Mathf.Pow(CurrentLevel, 2f));
     private void Awake()
     {
         if (Instance != null && Instance != this)

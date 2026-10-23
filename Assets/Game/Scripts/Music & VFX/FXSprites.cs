@@ -18,7 +18,7 @@ public static class FXSprites
     // fautif dans les tests. Impact perf negligeable (une poignee de Material par effet, effets courts/transitoires).
     private static readonly System.Collections.Generic.Dictionary<Sprite, Material> _matBySprite = new System.Collections.Generic.Dictionary<Sprite, Material>();
 
-    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar, _gem;
+    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar, _gem, _flameBurst, _crystalShard;
 
     // Un Material par sprite (voir commentaire ci-dessus) : jamais partage entre deux sprites DIFFERENTS.
     public static Material SpriteMaterial(Sprite sprite)
@@ -277,6 +277,99 @@ public static class FXSprites
         tex.Apply();
         _gem = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
         return _gem;
+    }
+
+    // AJOUTÉ (2026-10-21, retour utilisateur sur la refonte de la Boule de feu : "c'est juste un rond [...] ça doit
+    // être très reconnaissable [que c'est une déflagration de boule de feu]") - voir FireExplosionVFX.cs. Forme de
+    // déflagration en POINTES DE FLAMME irrégulières, pas un disque/anneau géométrique : contour défini par une
+    // somme de 3 harmoniques angulaires d'amplitude décroissante et déphasées (jamais de Random ici - la texture
+    // est générée UNE SEULE fois et mise en cache, elle doit toujours ressortir identique ; la variété vient de
+    // FireExplosionVFX qui superpose 2 instances de ce même sprite tournées différemment). Cœur plein commun à
+    // toutes les pointes (coefficient 0,42 du rayon max local), qui s'effile ensuite vers chaque pointe - se lit
+    // comme des langues de flamme qui jaillissent du centre, jamais comme un symbole géométrique régulier (une
+    // étoile à N branches identiques se serait lue comme une icône, pas comme du feu).
+    public static Sprite FlameBurst()
+    {
+        if (_flameBurst != null) return _flameBurst;
+
+        const int n = 256;
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float px = (x + 0.5f) / n * 2f - 1f;
+                float py = (y + 0.5f) / n * 2f - 1f;
+                float r = Mathf.Sqrt(px * px + py * py);
+                float angle = Mathf.Atan2(py, px);
+
+                float lobes = 0.60f
+                    + 0.20f * Mathf.Sin(angle * 5f + 0.6f)
+                    + 0.12f * Mathf.Sin(angle * 8f + 2.4f)
+                    + 0.08f * Mathf.Sin(angle * 13f + 4.0f);
+                float maxR = Mathf.Clamp(lobes, 0.30f, 1f);
+                float hub = maxR * 0.42f;
+
+                float alpha;
+                if (r <= hub) alpha = 1f;
+                else if (r >= maxR) alpha = 0f;
+                else alpha = Smooth(1f - (r - hub) / (maxR - hub));
+
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        tex.Apply();
+        _flameBurst = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _flameBurst;
+    }
+
+    // AJOUTÉ (2026-10-22, aura de Surpuissance de CrystalSystem/GameUI, retour utilisateur : "tu pourrais faire
+    // quelque chose d'aussi précis graphiquement [que la déflagration de Boule de feu] ?") - mêmes principes que
+    // FlameBurst ci-dessus (contour irrégulier par harmoniques angulaires, jamais de Random - texture générée une
+    // seule fois et mise en cache, la variété vient de l'animation qui superpose/tourne plusieurs instances), mais
+    // volontairement DIFFÉRENT en silhouette pour ne jamais se confondre avec une explosion de Boule de feu à
+    // l'écran : hub beaucoup plus petit (0,16 du rayon local contre 0,42 pour FlameBurst) -> pointes plus longues
+    // et plus fines, moins "boule de pétales" ; chute d'alpha en loi de puissance (pas un simple lissage) -> bords
+    // plus nets, lecture "cristal taillé" plutôt que "flamme molle". Facettes à luminosité alternée BAKÉES dans le
+    // RGB (même technique que Gem() plus haut) en plus de l'alpha : donne un vrai scintillement facetté une fois
+    // teinté en or au runtime, pas un aplat uni comme FlameBurst.
+    public static Sprite CrystalShard()
+    {
+        if (_crystalShard != null) return _crystalShard;
+
+        const int n = 256;
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        float[] facetBrightness = { 0.78f, 1.2f, 0.85f, 1.35f, 0.72f, 1.1f };
+
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float px = (x + 0.5f) / n * 2f - 1f;
+                float py = (y + 0.5f) / n * 2f - 1f;
+                float r = Mathf.Sqrt(px * px + py * py);
+                float angle = Mathf.Atan2(py, px);
+
+                float lobes = 0.42f
+                    + 0.32f * Mathf.Sin(angle * 4f + 1.1f)
+                    + 0.16f * Mathf.Sin(angle * 7f + 3.2f)
+                    + 0.09f * Mathf.Sin(angle * 11f + 0.4f);
+                float maxR = Mathf.Clamp(lobes, 0.12f, 1f);
+                float hub = maxR * 0.16f;
+
+                if (r >= maxR) { tex.SetPixel(x, y, new Color(0f, 0f, 0f, 0f)); continue; }
+
+                float alpha = (r <= hub) ? 1f : Mathf.Pow(Smooth(1f - (r - hub) / (maxR - hub)), 1.4f);
+
+                int segIndex = Mathf.FloorToInt((angle + Mathf.PI) / (2f * Mathf.PI) * facetBrightness.Length) % facetBrightness.Length;
+                float brightness = facetBrightness[segIndex];
+
+                tex.SetPixel(x, y, new Color(brightness, brightness, brightness, alpha));
+            }
+        }
+        tex.Apply();
+        _crystalShard = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _crystalShard;
     }
 
     // Carré blanc de 1 x 1 unité exactement (bandes de la zone de charge : on le met à l'échelle largeur x longueur).

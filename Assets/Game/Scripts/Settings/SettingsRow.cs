@@ -123,7 +123,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             {
                 int preset = p;
                 _presetButtons[p].onClick.RemoveAllListeners();
-                _presetButtons[p].onClick.AddListener(() => { InputBindings.ApplyPreset((InputBindings.Preset)preset); _page.Toast(Loc.F("Disposition « {0} » appliquée.", Loc.T(InputBindings.PresetNames[preset]))); });
+                _presetButtons[p].onClick.AddListener(() => { InputBindings.ApplyPreset((InputBindings.Preset)preset); _page.Toast(Loc.F("Disposition « {0} » appliquée", Loc.T(InputBindings.PresetNames[preset]))); });
             }
         }
 

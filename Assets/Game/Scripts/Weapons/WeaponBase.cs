@@ -74,20 +74,36 @@ public class WeaponBase : MonoBehaviour
 
             Vector3 firingOrigin = _projectileSpawnPoint != null ? _projectileSpawnPoint.position : transform.position;
 
+            // AJOUTÉ (2026-10-21, retour utilisateur sur la Boule de feu : "si on est collé dans un angle de 2 murs
+            // invisible [...] la boule de feu reste coincé dans l'angle, et ne se casse pas" - même root cause ici,
+            // voir WeaponFireball.Update()) - dans un coin de carte, un ennemi peut se retrouver à une distance
+            // quasi nulle du joueur (il ne peut pas le contourner) : `.normalized` d'un vecteur (quasi) nul renvoie
+            // silencieusement (0,0,0) sans erreur, et un projectile tiré avec cette direction ne bouge plus jamais
+            // ni n'atteint sa portée max pour se désactiver tout seul - coincé pour toujours. Seuil minimal avant
+            // `.normalized` dans les 2 branches (visée auto ET souris, cette dernière dégénère si le curseur est
+            // pile sur le joueur).
             if (GameSettings.AutoAimEnabled)
             {
                 Transform nearest = FindNearestEnemy();
                 if (nearest != null)
                 {
-                    fireDirection = (nearest.position - firingOrigin).normalized;
-                    canShoot = true;
+                    Vector3 toNearest = nearest.position - firingOrigin;
+                    if (toNearest.sqrMagnitude >= 0.01f)
+                    {
+                        fireDirection = toNearest.normalized;
+                        canShoot = true;
+                    }
                 }
             }
             else
             {
                 Vector3 mouseWorldPosition = GetMouseWorldPosition();
-                fireDirection = (mouseWorldPosition - firingOrigin).normalized;
-                canShoot = true;
+                Vector3 toMouse = mouseWorldPosition - firingOrigin;
+                if (toMouse.sqrMagnitude >= 0.01f)
+                {
+                    fireDirection = toMouse.normalized;
+                    canShoot = true;
+                }
             }
 
             if (canShoot)

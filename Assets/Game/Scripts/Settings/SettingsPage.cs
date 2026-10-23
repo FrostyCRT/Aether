@@ -440,7 +440,7 @@ public class SettingsPage : MonoBehaviour
         _hasSnapshot = false;
         _revertOpen = false;
         _revertRoot.SetActive(false);
-        Toast(Loc.T("Affichage conservé."));
+        Toast(Loc.T("Affichage conservé"));
     }
 
     private void UndoDisplay()
@@ -452,7 +452,7 @@ public class SettingsPage : MonoBehaviour
             GameSettings.SetInt(GameSettings.DisplayMode, _snapMode);
             GameSettings.SetString(GameSettings.Resolution, _snapResolution);
             _hasSnapshot = false;
-            Toast(Loc.T("Ancien affichage rétabli."));
+            Toast(Loc.T("Ancien affichage rétabli"));
         }
         RefreshRows();
     }
@@ -499,18 +499,18 @@ public class SettingsPage : MonoBehaviour
 
         if (c == GameInput.Capture.Clear && !r.applied)
         {
-            Toast(Loc.F("Impossible : « {0} » doit garder au moins une touche.", GameInput.ActionLabel(action)));
+            Toast(Loc.F("Impossible : « {0} » doit garder au moins une touche", GameInput.ActionLabel(action)));
         }
         else if (r.blocked)
         {
-            Toast(Loc.F("« {0} » est la seule touche de « {1} » : libère-la d'abord.", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
+            Toast(Loc.F("« {0} » est la seule touche de « {1} » : libère-la d'abord", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
         }
         else if (r.hasDisplaced)
         {
             if (previous != KeyCode.None)
-                Toast(Loc.F("« {0} » était utilisée par « {1} » : elles échangent leurs touches (« {2} »).", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced), GameInput.KeyLabel(previous)));
+                Toast(Loc.F("« {0} » était utilisée par « {1} » : elles échangent leurs touches (« {2} »)", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced), GameInput.KeyLabel(previous)));
             else
-                Toast(Loc.F("« {0} » était utilisée par « {1} » : elle lui est retirée.", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
+                Toast(Loc.F("« {0} » était utilisée par « {1} » : elle lui est retirée", GameInput.KeyLabel(key), GameInput.ActionLabel(r.displaced)));
         }
         else if (r.applied && c == GameInput.Capture.Key)
         {
@@ -523,21 +523,21 @@ public class SettingsPage : MonoBehaviour
     private void AskResetPage()
     {
         CategoryDef cat = _cats[_index];
-        Confirm(Loc.F("RÉINITIALISER « {0} » ?", cat.title), Loc.T("Les réglages de cette page reprennent leur valeur d'origine."), Loc.T("Réinitialiser"), () =>
+        Confirm(Loc.F("RÉINITIALISER « {0} » ?", cat.title), Loc.T("Les réglages de cette page reprennent leur valeur d'origine"), Loc.T("Réinitialiser"), () =>
         {
             SettingsSchema.ResetCategory(cat);
             RefreshRows();
-            Toast(Loc.F("Page « {0} » réinitialisée.", cat.title));
+            Toast(Loc.F("Page « {0} » réinitialisée", cat.title));
         });
     }
 
     private void AskResetAll()
     {
-        Confirm(Loc.T("TOUT RÉINITIALISER ?"), Loc.T("Tous les réglages et toutes les touches reprennent leur valeur d'origine."), Loc.T("Tout réinitialiser"), () =>
+        Confirm(Loc.T("TOUT RÉINITIALISER ?"), Loc.T("Tous les réglages et toutes les touches reprennent leur valeur d'origine"), Loc.T("Tout réinitialiser"), () =>
         {
             GameSettings.ResetAll();
             ShowCategory(_index, 0, true);
-            Toast(Loc.T("Tous les paramètres ont été réinitialisés."));
+            Toast(Loc.T("Tous les paramètres ont été réinitialisés"));
         });
     }
 
@@ -547,7 +547,7 @@ public class SettingsPage : MonoBehaviour
         // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "formulation maladroite") - "La partie en cours de
         // préparation sera fermée" était une tournure passive et confuse pour un simple message de confirmation
         // de fermeture du jeu depuis le menu.
-        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
+        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés"), Loc.T("Quitter"), () =>
         {
             GameSettings.Flush();
             InputBindings.Flush();

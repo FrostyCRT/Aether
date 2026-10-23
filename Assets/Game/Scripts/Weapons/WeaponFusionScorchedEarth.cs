@@ -1,56 +1,62 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 // PREMIÈRE FUSION (2026-09-27) : Boule de feu + Boue, toutes les deux au palier max → cette arme les remplace.
-// Réutilise entièrement le prefab poolé "MudPuddleZone" (mêmes zones au sol, même logique de ralentissement/DPS que
-// WeaponMudPuddle) : aucun nouvel asset visuel nécessaire pour ce prototype. Les dégâts de départ sont hérités de la
-// Boule de feu ET de la Boue au moment de la fusion (voir UpgradeData.ApplyFusionResult), puis l'arme continue de
-// profiter des futurs achats de "Dégâts+" comme toute autre arme (voir UpgradeData.Apply, case Damage).
+//
+// REFONTE COMPLÈTE (2026-10-22, retour utilisateur : "il faut revoir cette fusion, il faut trouver une idée
+// originale qui se démarque des autres fusions [...] météorite qui tombe du ciel ? [...] ça doit être plus fort que
+// Boue au max et Boule de feu au max") - jusqu'ici cette fusion réutilisait tel quel le prefab de flaque "Maron" de
+// la Boue (juste teinté orange, déployé en spirale) : visuellement identique à la Boue et à Marécage Maudit (l'autre
+// fusion qui réutilise aussi ce prefab), aucune identité propre malgré 2 passes d'équilibrage. Remplacé par un vrai
+// bombardement de météorites : à intervalle régulier, un point proche du joueur est choisi au hasard, un
+// GroundTelegraphFX prévient le danger au sol (même composant que BossDeer pour ses sauts), un météore visible tombe
+// du ciel en même temps (MeteorFallVFX, nouveau - billboard caméra, aucune autre arme/fusion du jeu n'a d'attaque
+// qui tombe du ciel) ; à l'impact : déflagration (FireExplosionVFX, déjà au niveau de qualité visé pour la Boule de
+// feu), dégât d'IMPACT instantané en zone (identité "burst" de la Boule de feu), PUIS un cratère de lave qui reste
+// au sol et ralentit/brûle en continu (identité "contrôle de zone" de la Boue, même prefab MudPuddleZone que les
+// autres flaques, teinté braises) - les 2 identités sources sont donc toutes les 2 représentées, mais dans une
+// mécanique neuve plutôt qu'un simple reskin d'une des deux.
 public class WeaponFusionScorchedEarth : MonoBehaviour
 {
-    // CORRIGÉ (2026-10-05) - retour utilisateur : "les fusions [...] pas plus puissant que 2 upgrades améliorées
-    // au max". Mesuré en jeu avec des ennemis DISPERSÉS ET MOBILES (pas des mannequins groupés comme la passe du
-    // 2026-09-27) : ×0,46 - plus FAIBLE que les 2 cartes maxées. Cause : _puddleCount=4 était en dessous du max de
-    // la Boue SEULE (6, via ses 3 upgrades +1), et la Boule de feu perd son identité de burst single-target en
-    // se diluant dans un DPS de zone continu sans aucun bonus pour compenser cette perte. Nombre de flaques porté
-    // à 8 (nettement au-dessus du max solo) + bonus de dégâts explicite (voir Init).
-    // CORRIGÉ (2026-10-18, audit complet des fusions demandé par l'utilisateur : "une fusion doit être plus
-    // puissante que ses 2 sous-upgrades améliorées au max") - remesuré avec la méthode [[balance-testing-dummies]]
-    // (ennemis dispersés 3-18 unités, PV x300, 15s) : malgré le ×3 de dégâts de 2026-10-05, la fusion ne faisait
-    // QUE 777 DPS contre 2542 pour Boule de feu + Boue maxées séparément (×0,3, toujours en dessous). Cause RÉELLE
-    // trouvée par instrumentation (compteur de ticks sur MudPuddleZone) : les ennemis chassent le joueur jusqu'au
-    // contact (~1 unité) en 2-3 secondes puis y restent plaqués pour le reste du combat - l'anneau de flaques à
-    // 6,5 unités n'est traversé qu'UNE SEULE FOIS à l'approche, jamais revisité ensuite (41 ticks de dégâts
-    // relevés sur toute la fenêtre de 15s, contre ~390 attendus si les flaques étaient réellement occupées). Le
-    // nombre de flaques/leur dégât n'étaient donc jamais le problème : l'anneau visait une zone que les ennemis ne
-    // fréquentent quasiment pas. _spawnDistance rapproché à 2,8 (couvre la zone de corps-à-corps où les ennemis
-    // s'agglutinent réellement, mesuré à ~1,2 unité du joueur mais avec du jeu - testé à 4 unités d'abord, DPS
-    // retombé à peine au-dessus de la référence, la portée intérieure ne couvrait plus assez souvent le tas
-    // d'ennemis). _puddleRadius réduit (2,4 -> 1,6) à la place pour retrouver de la portée SANS recréer le bloc
-    // continu indifférencié observé à spawnDistance=2,8/radius=2,4 (les 8 flaques fusionnaient visuellement en une
-    // seule masse orange, en contradiction avec la description "des zones [...] apparaissent en cercle").
-    [Header("Stats (zones plus grandes/plus fréquentes/plus fortes qu'une Boue simple)")]
-    [SerializeField] private float _spawnInterval = 2.5f;
-    [SerializeField] private float _puddleDuration = 4f;
-    [SerializeField] private float _puddleRadius = 1.6f;
-    [SerializeField] private float _slowMultiplier = 0.55f;
-    [SerializeField] private int _puddleCount = 8;
-    [SerializeField] private Color _scorchedTint = new Color(0.85f, 0.35f, 0.08f); // braises - cohérent avec ColorFireball
-    // MODIFIÉ (2026-10-20, retour utilisateur : "la fusion boule de feu plus boue fait spawn la boue bien trop
-    // proche du joueur") - à 2,8 avec un rayon de flaque de 1,6, le bord INTÉRIEUR de chaque flaque tombait à
-    // 2,8-1,6 = 1,2 unité du joueur - dans la zone visuelle du personnage lui-même (collision/sprite du joueur),
-    // pas seulement dans la zone de corps-à-corps des ennemis juste à côté. Remonté à 4 : bord intérieur à 2,4
-    // unités, nettement hors du modèle du joueur, tout en gardant le même rayon de flaque (1,6, choisi en
-    // 2026-10-18 pour éviter que les 8 flaques fusionnent visuellement en un seul bloc).
-    [SerializeField] private float _spawnDistance = 4f;
-    [SerializeField] private float _groundY = 0.2f;
-    [SerializeField] private float _rotationPerWave = 25f;
+    [Header("Cadence des météorites")]
+    [SerializeField] private float _strikeInterval = 0.9f;
+    [SerializeField] private float _windupDuration = 0.85f;
+    [SerializeField] private float _meteorStartHeight = 13f;
 
-    private float _damagePerSecond;
+    // AJOUTÉ (2026-10-23, retour utilisateur : "en jeu c'est 6 flaques de boue et une boule de feu qui traverse les
+    // ennemis [...] pour les ennemis je pense que c'est pas assez [une seule météorite] [...] faut pas qu'elles
+    // focus le même ennemi") - une seule météorite par frappe ne couvrait qu'un point contre une horde, alors que
+    // les 2 armes sources (Boue à 6 flaques simultanées, Boule de feu qui perce plusieurs ennemis) couvrent large.
+    // Nombre ADAPTATIF (voir LaunchStrike/FindTargetEnemies) : jusqu'à ce nombre de météorites simultanées, chacune
+    // sur un ennemi DIFFÉRENT, mais jamais plus que le nombre d'ennemis distincts réellement trouvés - contre un
+    // boss seul (1 cible), ça retombe naturellement sur 1 météore qui prend tout le dégât, sans rien gaspiller au
+    // sol pour rien (retour utilisateur : "contre les boss, 1 c'est bien").
+    [SerializeField] private int _maxSimultaneousMeteors = 3;
+
+    // RENOMMÉ (2026-10-23) - ces 2 champs ne servent plus au ciblage lui-même (voir FindTargetEnemy, qui balaie
+    // maintenant toute la scène sans limite de rayon) : uniquement le repli quand AUCUN ennemi n'existe nulle part.
+    [Header("Repli si aucun ennemi sur la carte (zone proche du joueur)")]
+    [SerializeField] private float _minDistance = 1.5f;
+    [SerializeField] private float _maxDistance = 6f;
+
+    [Header("Impact (burst instantané, identité Boule de feu)")]
+    [SerializeField] private float _impactRadius = 2.2f;
+
+    [Header("Cratère résiduel (DPS/ralentissement continu, identité Boue)")]
+    [SerializeField] private float _craterDuration = 2.5f;
+    [SerializeField] private float _craterSlowMultiplier = 0.55f;
+
+    // MODIFIÉ (2026-10-23, retour utilisateur : "ça ressemble trop à une attaque de boss, rend le plus marron
+    // boueux") - la teinte braise (0.85/0.35/0.08, quasi identique aux télégraphes de boss type BossDeer) remplacée
+    // par un marron boueux repris du matériau "Maron" des flaques de Boue (Assets/Game/Materials/Maron.mat).
+    [SerializeField] private Color _scorchedTint = new Color(0.52f, 0.31f, 0.17f);
+
+    private float _burstDamage;
+    private float _craterDps;
     private GameObject _puddlePrefab;
-    private float _waveTimer = 0f;
-    private float _currentWaveRotation = 0f;
-    private readonly List<GameObject> _activePuddles = new List<GameObject>();
+    private float _strikeTimer = 0f;
+    private static readonly Collider[] _overlapBuffer = new Collider[32];
 
     // Appelé une fois par UpgradeData.ApplyFusionResult, juste après AddComponent : startingDamagePerSecond vient
     // de la somme des dégâts hérités des deux armes fusionnées (déjà boostés par la Réputation/les picks précédents,
@@ -58,77 +64,200 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     public void Init(GameObject puddlePrefab, float startingDamagePerSecond)
     {
         _puddlePrefab = puddlePrefab;
-        // CORRIGÉ (2026-10-18) - le ×3 datait d'avant la correction de _spawnDistance ci-dessus (voir commentaire) :
-        // une fois les flaques capables d'atteindre les ennemis, ×3 donnait ~10,8x la référence (2173 DPS mesurés
-        // pour Boule de feu + Boue maxées séparément) - bien au-delà de "très puissant". Après le passage à
-        // _puddleRadius=1,6 (pour ne plus fusionner visuellement en un bloc, voir commentaire plus haut), la
-        // portée perdue a fait retomber la mesure à ×1,4 seulement (trop juste) - remonté à ×1,5 pour compenser,
-        // remesuré à ~6500 DPS (×3 la référence) : net, confortable, sans être absurde.
-        _damagePerSecond = startingDamagePerSecond * 1.5f;
+        // PREMIER JET (2026-10-22, refonte météorites) - non encore mesuré avec [[balance-testing-dummies]] au
+        // moment d'écrire ceci (à retoucher après playtest réel, même traitement que les autres premiers jets du
+        // projet). Répartition : la moitié de la "puissance héritée" en dégât d'impact ponctuel par météore, l'autre
+        // moitié en DPS continu du cratère - un ennemi qui reste dans la zone de bombardement cumule les deux.
+        float power = startingDamagePerSecond * 11f;
+        _burstDamage = power * 0.5f;
+        _craterDps = power * 0.5f;
     }
 
-    public void AddDamage(float value) => _damagePerSecond += _damagePerSecond * value;
+    public void AddDamage(float value)
+    {
+        _burstDamage += _burstDamage * value;
+        _craterDps += _craterDps * value;
+    }
 
     private void Update()
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
 
-        _waveTimer += Time.deltaTime;
-        if (_waveTimer >= _spawnInterval)
+        _strikeTimer += Time.deltaTime;
+        if (_strikeTimer >= _strikeInterval)
         {
-            SpawnWave();
-            _waveTimer = 0f;
+            _strikeTimer = 0f;
+            LaunchStrike();
         }
     }
 
-    private void SpawnWave()
+    // CORRIGÉ (2026-10-23, retour utilisateur : "ça ne focus pas les ennemis le ciblage de la météorite") - la
+    // première version limitait la recherche à Physics.OverlapSphereNonAlloc(_maxDistance=6) autour du joueur, LA
+    // MÊME zone étroite que l'ancien point aléatoire de repli. En jeu réel les ennemis ne sont pas tous groupés à 6
+    // unités du joueur en permanence (vérifié en test : plusieurs ennemis bien présents dans la scène mais à 16-22
+    // unités du joueur au moment de la frappe) - du coup la recherche échouait la plupart du temps et retombait
+    // systématiquement sur le point aléatoire, donnant l'impression que le ciblage ne marche jamais. Remplacé par
+    // un vrai balayage de TOUTE la scène (FindObjectsByType, pas de rayon limitant).
+    //
+    // MODIFIÉ (2026-10-23, retour utilisateur multi-météores : "faut pas qu'elles focus le même ennemi") - renvoie
+    // maintenant jusqu'à maxCount ennemis/boss DISTINCTS triés du plus proche au plus loin du joueur (un seul tri,
+    // pas un appel répété par météore) - chaque météore de la salve prend une entrée différente de cette liste.
+    private List<Transform> FindTargetEnemies(int maxCount)
+    {
+        Vector3 origin = transform.position;
+        List<(Transform t, float distSq)> candidates = new List<(Transform, float)>();
+
+        EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            EnemyBase e = enemies[i];
+            if (e == null || !e.gameObject.activeInHierarchy) continue;
+            candidates.Add((e.transform, (e.transform.position - origin).sqrMagnitude));
+        }
+
+        BossBase[] bosses = FindObjectsByType<BossBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < bosses.Length; i++)
+        {
+            BossBase b = bosses[i];
+            if (b == null || !b.gameObject.activeInHierarchy) continue;
+            candidates.Add((b.transform, (b.transform.position - origin).sqrMagnitude));
+        }
+
+        candidates.Sort((a, b) => a.distSq.CompareTo(b.distSq));
+
+        List<Transform> result = new List<Transform>(maxCount);
+        for (int i = 0; i < candidates.Count && result.Count < maxCount; i++)
+            result.Add(candidates[i].t);
+
+        return result;
+    }
+
+    private Vector3 RandomFallbackPosition()
+    {
+        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        float dist = Random.Range(_minDistance, _maxDistance);
+        Vector3 pos = transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * dist;
+        pos = MapBoundaryUtils.ClampToZone(pos);
+        pos.y = 0f;
+        return pos;
+    }
+
+    // AJOUTÉ (2026-10-23) - dispatcher appelé par Update() à chaque tic de _strikeInterval : décide COMBIEN de
+    // météorites partent cette fois-ci (adaptatif, voir FindTargetEnemies) et lance une coroutine indépendante par
+    // météorite (SingleMeteorRoutine) plutôt qu'une seule coroutine séquentielle - les météorites de la même salve
+    // tombent donc vraiment en même temps, chacune avec son propre télégraphe/suivi de cible.
+    private void LaunchStrike()
+    {
+        List<Transform> targets = FindTargetEnemies(_maxSimultaneousMeteors);
+
+        // Le dégât total de LA SALVE reste le même qu'avant (_burstDamage/_craterDps), simplement réparti entre les
+        // météorites qui partent cette fois : contre un boss seul (1 cible trouvée), ce météore unique touche pour
+        // 100% du dégât prévu, exactement comme avant l'ajout du multi-cible - rien n'est perdu ni gagné en passant
+        // de 1 à plusieurs cibles, seule la COUVERTURE contre une horde augmente.
+        int meteorCount = Mathf.Max(1, targets.Count);
+        float burstShare = _burstDamage / meteorCount;
+        float craterShare = _craterDps / meteorCount;
+
+        if (targets.Count == 0)
+        {
+            StartCoroutine(SingleMeteorRoutine(RandomFallbackPosition(), null, burstShare, craterShare));
+            return;
+        }
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            Vector3 startPos = targets[i].position;
+            startPos.y = 0f;
+            StartCoroutine(SingleMeteorRoutine(startPos, targets[i], burstShare, craterShare));
+        }
+    }
+
+    private IEnumerator SingleMeteorRoutine(Vector3 startPos, Transform targetEnemy, float burstDamage, float craterDps)
+    {
+        Vector3 targetPos = startPos;
+        targetPos.y = 0f;
+
+        GroundTelegraphFX telegraph = GroundTelegraphFX.Spawn(targetPos, _impactRadius, _scorchedTint, GroundTelegraphFX.Style.Zone);
+        MeteorFallRunner meteor = MeteorFallVFX.Spawn(targetPos, _windupDuration, _meteorStartHeight);
+
+        float t = 0f;
+        while (t < _windupDuration)
+        {
+            // Partie en pause/fin de partie en plein windup : le télégraphe s'efface proprement au lieu de rester
+            // figé à l'écran (même garde que les autres coroutines de VFX du projet).
+            if (GameManager.Instance != null && (GameManager.Instance.IsPaused || GameManager.Instance.IsGameOver))
+            {
+                yield return null;
+                continue;
+            }
+
+            // Cible en permanence : tant que l'ennemi verrouillé est vivant, le cercle au sol ET le météore qui
+            // tombe suivent sa position courante (detruit/mort -> Transform Unity "null", on garde alors le
+            // dernier point connu pour la suite de la frappe).
+            if (targetEnemy != null)
+            {
+                targetPos = targetEnemy.position;
+                targetPos.y = 0f;
+                if (telegraph != null) telegraph.transform.position = new Vector3(targetPos.x, telegraph.transform.position.y, targetPos.z);
+                if (meteor != null) meteor.UpdateLandPosition(targetPos);
+            }
+
+            t += Time.deltaTime;
+            if (telegraph != null) telegraph.SetProgress(t / _windupDuration);
+            yield return null;
+        }
+
+        if (this == null || !gameObject.activeInHierarchy) yield break; // arme détruite (fusion suivante) pendant le windup
+
+        if (telegraph != null) telegraph.Impact();
+        FireExplosionVFX.Spawn(targetPos, _impactRadius);
+        CameraShakeFX.Shake(0.25f); // Trauma "au max", pas additif (CameraShakeFX.Shake) - sans danger même si 3 météores impactent la même frame.
+
+        ApplyImpactDamage(targetPos, burstDamage);
+        SpawnCrater(targetPos, craterDps);
+    }
+
+    private void ApplyImpactDamage(Vector3 position, float burstDamage)
+    {
+        int count = Physics.OverlapSphereNonAlloc(position, _impactRadius, _overlapBuffer, EnemyLayers.Mask);
+        var hitBosses = new HashSet<int>();
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider hit = _overlapBuffer[i];
+            if (hit == null) continue;
+
+            EnemyBase enemy = hit.GetComponent<EnemyBase>();
+            if (enemy != null)
+            {
+                // MODIFIÉ (2026-10-23) - cohérent avec la nouvelle teinte marron boueux de cette fusion (ColorMud),
+                // ColorFireball (orange vif) ne correspond plus du tout au visuel une fois la refonte appliquée.
+                enemy.TakeDamage(burstDamage, DamageNumberSpawner.ColorMud);
+                continue;
+            }
+
+            BossBase boss = hit.GetComponentInParent<BossBase>();
+            if (boss != null && hitBosses.Add(boss.GetInstanceID()))
+                boss.TakeDamage(burstDamage, DamageNumberSpawner.ColorMud);
+        }
+    }
+
+    private void SpawnCrater(Vector3 position, float craterDps)
     {
         if (ObjectPool.Instance == null || _puddlePrefab == null) return;
 
-        ForceExpireAllActivePuddles();
+        GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", position, Quaternion.identity);
+        if (puddleGO == null) return;
 
-        int slotCount = Mathf.Max(1, _puddleCount);
-        float angleStep = 360f / slotCount;
-
-        for (int i = 0; i < slotCount; i++)
+        MudPuddleZone zone = puddleGO.GetComponent<MudPuddleZone>();
+        if (zone != null)
         {
-            float angle = _currentWaveRotation + angleStep * i;
-            float rad = angle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * _spawnDistance;
-            Vector3 spawnPos = transform.position + offset;
-            // MODIFIÉ (2026-10-18, diagnostic complet - audit §10) - WaveManager.MapBoundaryUtils (copie imbriquée
-            // en double) a été supprimée ; référence désormais la classe autonome Systems/MapBoundaryUtils.cs.
-            spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);
-            spawnPos.y = _groundY;
-
-            GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", spawnPos, Quaternion.identity);
-            if (puddleGO == null) continue;
-
-            MudPuddleZone zone = puddleGO.GetComponent<MudPuddleZone>();
-            if (zone != null)
-            {
-                zone.Init(_puddleDuration, _puddleRadius, _slowMultiplier, _damagePerSecond);
-                // AJOUTÉ (2026-10-05) - retour utilisateur : sans ça, cette fusion (Boule de feu + Boue) affichait
-                // des flaques en tout point identiques à la Boue normale - aucun moyen de la reconnaître à l'œil.
-                // Teinte "braises" (orange/rouge, cohérent avec ColorFireball) pour un vrai look "terre calcinée".
-                zone.SetColorTint(_scorchedTint);
-            }
-
-            _activePuddles.Add(puddleGO);
+            zone.Init(_craterDuration, _impactRadius * 0.85f, _craterSlowMultiplier, craterDps);
+            // Retour utilisateur d'origine (2026-10-05) : sans teinte, cette fusion affichait des flaques en tout
+            // point identiques à la Boue normale - teinte distincte conservée (voir _scorchedTint, marron boueux
+            // depuis le 2026-10-23).
+            zone.SetColorTint(_scorchedTint);
         }
-
-        _currentWaveRotation = (_currentWaveRotation + _rotationPerWave) % 360f;
-    }
-
-    private void ForceExpireAllActivePuddles()
-    {
-        for (int i = 0; i < _activePuddles.Count; i++)
-        {
-            if (_activePuddles[i] == null) continue;
-            MudPuddleZone zone = _activePuddles[i].GetComponent<MudPuddleZone>();
-            if (zone != null) zone.ForceExpire();
-        }
-        _activePuddles.Clear();
     }
 }
