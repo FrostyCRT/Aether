@@ -73,7 +73,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
             go.transform.SetParent(transform);
             _orbitals.Add(go);
             _nextShockTime.Add(0f);
-            OrbitalProjectile proj = go.GetComponent<OrbitalProjectile>();
+            go.TryGetComponent(out OrbitalProjectile proj);
             if (proj != null) { proj.SetDamage(_orbitalDamage); _orbitalScripts.Add(proj); }
         }
     }

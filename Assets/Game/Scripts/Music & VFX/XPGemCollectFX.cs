@@ -24,13 +24,36 @@ public class XPGemCollectFX : MonoBehaviour
     private float _t;
     private Transform _cam;
 
+    // AJOUTÉ (2026-10-24, session FPS) - réserve d'instances réutilisées : chaque appel créait puis détruisait
+    // un XPGemCollectFX complet (racine + 4 SpriteRenderer enfants), des centaines de fois par minute en fin de partie (allocations
+    // mémoire + créations d'objets, source d'à-coups). Une instance terminée est désactivée et rangée ici au lieu
+    // d'être détruite ; une instance détruite avec sa scène (changement de scène) est simplement ignorée au tirage
+    // (test `== null` d'Unity).
     // color : couleur de la gemme ramassée. scale : taille de la gemme (Small/Medium/Large) pour proportionner l'éclat.
     public static void Play(Vector3 position, Color color, float scale)
     {
-        GameObject go = new GameObject("XPGemCollectFX");
-        go.transform.position = position;
-        XPGemCollectFX fx = go.AddComponent<XPGemCollectFX>();
+        XPGemCollectFX fx = null;
+        while (fx == null && _pool.Count > 0) fx = _pool.Pop();
+        if (fx == null)
+        {
+            GameObject go = new GameObject("XPGemCollectFX");
+            fx = go.AddComponent<XPGemCollectFX>();
+            fx.Build();
+        }
+        fx.transform.position = position;
         fx.Init(color, scale);
+        fx.gameObject.SetActive(true);
+    }
+
+    private static readonly System.Collections.Generic.Stack<XPGemCollectFX> _pool = new System.Collections.Generic.Stack<XPGemCollectFX>();
+
+    // Renderers créés une seule fois par instance (voir la réserve _pool).
+    private void Build()
+    {
+        _flash = FXSprites.MakeRenderer(transform, "Flash", FXSprites.Glow(), 22, 0.15f);
+        _sparks = new Spark[SparkCount];
+        for (int i = 0; i < SparkCount; i++)
+            _sparks[i] = new Spark { sr = FXSprites.MakeRenderer(transform, "Spark", FXSprites.Glow(), 23, 0.12f) };
     }
 
     private void Init(Color color, float scale)
@@ -38,22 +61,21 @@ public class XPGemCollectFX : MonoBehaviour
         _hot = Color.Lerp(color, Color.white, 0.5f);
         _cam = Camera.main != null ? Camera.main.transform : null;
 
-        _flash = FXSprites.MakeRenderer(transform, "Flash", FXSprites.Glow(), 22, 0.15f);
+        _t = 0f;
         if (_cam != null) _flash.transform.rotation = _cam.rotation;
         FXSprites.SetFlat(_flash, 0.05f, 0f);
         // Plage recalibrée (2026-10-04, suite 3) sur les nouvelles tailles de gemmes (0,46 a 0,8, au lieu de 0,3 a 0,6).
         _flashBaseSize = Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0.46f, 0.8f, scale));
 
-        _sparks = new Spark[SparkCount];
         for (int i = 0; i < SparkCount; i++)
         {
-            Spark s = new Spark();
-            s.sr = FXSprites.MakeRenderer(transform, "Spark", FXSprites.Glow(), 23, 0.12f);
+            Spark s = _sparks[i];
+            s.sr.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            s.sr.color = Color.clear;
             float angle = (i / (float)SparkCount) * Mathf.PI * 2f + Random.Range(-0.4f, 0.4f);
             float speed = Random.Range(1.6f, 2.6f) * Mathf.Lerp(0.8f, 1.3f, Mathf.InverseLerp(0.46f, 0.8f, scale));
             s.vel = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * speed;
             s.size = Random.Range(0.1f, 0.16f);
-            _sparks[i] = s;
         }
     }
 
@@ -83,6 +105,10 @@ public class XPGemCollectFX : MonoBehaviour
             sp.sr.color = FXSprites.A(_hot, inv);
         }
 
-        if (q >= 1f) Destroy(gameObject);
+        if (q >= 1f)
+        {
+            gameObject.SetActive(false);
+            _pool.Push(this);
+        }
     }
 }

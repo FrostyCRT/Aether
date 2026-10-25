@@ -183,7 +183,7 @@ public class ObjectPool : MonoBehaviour
         obj.transform.position = position;
         obj.transform.rotation = rotation;
 
-        EnemyBase eb = obj.GetComponent<EnemyBase>();
+        obj.TryGetComponent(out EnemyBase eb);
         if (eb != null) eb.SetHealthMultiplier(healthMultiplier);
 
         obj.SetActive(true);

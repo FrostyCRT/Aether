@@ -22,7 +22,31 @@ public class XPGemSpawner : MonoBehaviour
     // projet pour les effets au sol (WeaponMudPuddle._groundY, PlayerController._dashWindGroundY) : un Y de sol FIXE
     // plutôt que celui, peu fiable, de l'émetteur. Seule la cible d'ATTERRISSAGE est flattenée - le point de spawn
     // (origine du petit saut depuis le corps, voir XPGem._popOrigin) garde la vraie hauteur de mort, inchangé.
-    private const float GemLandY = 0f;
+    // MODIFIÉ (2026-10-24, retour utilisateur : "les xp sont trop bas en Y, donc ils passent sous la boue ou nova, ils
+    // devraient être plus haut pour les voir en permanence") - 0 -> 0,3 : la flaque de Boue (MudPuddleZone) et la
+    // Nova (CrystalSystem._novaVFXPrefab) sont des cylindres OPAQUES posés à Y=0,2 et épais de 0,1 (dessus à Y=0,25,
+    // mesuré sur les prefabs) - une gemme posée à 0 était entièrement cachée dessous (vérifié par capture en Play).
+    // Toujours un Y FIXE, identique pour toutes les gemmes (le problème du 2026-10-22 ne revient pas). Sans effet
+    // sur le ramassage : contact HORIZONTAL (XPGem.ContactRadiusXZ, Y ignoré). Essai abandonné le même jour :
+    // remonter seulement le mesh de la gemme - face caméra quasi verticale, il "remontait" vers l'avant (Z) et pas
+    // en hauteur (Y), gemmes toujours cachées.
+    private const float GemLandY = 0.3f;
+
+    // AJOUTÉ (2026-10-24, session FPS - voir le commentaire du registre dans XPGem) - nombre maximum de gemmes
+    // actives en même temps. Au-delà, chaque nouvelle gemme fait d'abord fusionner la gemme posée la plus éloignée du
+    // joueur dans sa voisine (XPGem.MergeFarthestIdleGem) : l'XP totale ne change jamais, seul le nombre d'objets est
+    // borné. Mesuré : ~120 fps vers 130 gemmes, ~100 fps vers 400 - 250 laisse largement de quoi joncher l'écran.
+    private const int MaxGemsOnGround = 250;
+
+    private void MakeRoomForOneGem()
+    {
+        if (_playerTransform == null) return;
+        int guard = 8;
+        while (XPGem.ActiveCount >= MaxGemsOnGround && guard-- > 0)
+        {
+            if (!XPGem.MergeFarthestIdleGem(_playerTransform.position)) return;
+        }
+    }
 
     private void Awake()
     {
@@ -82,13 +106,14 @@ public class XPGemSpawner : MonoBehaviour
         // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
         // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
         // "pas le côté satisfaisant").
+        MakeRoomForOneGem();
         GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
         if (gemGO == null) return;
 
         Vector3 landTarget = position + offset;
         landTarget.y = GemLandY;
 
-        XPGem gem = gemGO.GetComponent<XPGem>();
+        gemGO.TryGetComponent(out XPGem gem);
         if (gem != null)
             gem.Init(gemType, _playerTransform, landTarget, xpOverride);
     }
@@ -194,13 +219,14 @@ public class XPGemSpawner : MonoBehaviour
         float burstRadius = Random.Range(1.8f, 3.2f);
         Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * burstRadius;
 
+        MakeRoomForOneGem();
         GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
         if (gemGO == null) return;
 
         Vector3 landTarget = position + offset;
         landTarget.y = GemLandY;
 
-        XPGem gem = gemGO.GetComponent<XPGem>();
+        gemGO.TryGetComponent(out XPGem gem);
         if (gem != null)
             gem.Init(type, _playerTransform, landTarget, xpOverride);
     }

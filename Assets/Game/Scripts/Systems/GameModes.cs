@@ -54,6 +54,13 @@ public static class GameModes
     // GrantFullBuild) et ne passent jamais par le tirage de cartes normal.
     public static bool FusionsEnabled => IsClassic || IsEndless;
 
+    // AJOUTÉ (2026-10-23, demande utilisateur : "la fusion de 2 compétences doit être débloquable que à partir de 10
+    // minutes de jeu") - avant ce temps de partie (GameManager.RunTimer), aucune carte de fusion n'est proposée, même
+    // si les 2 armes sources sont déjà au max. La carte apparaît au premier tirage qui suit (level-up ou coffre de boss).
+    public const float FusionUnlockTime = 600f;
+    public static bool FusionsUnlockedNow =>
+        FusionsEnabled && GameManager.Instance != null && GameManager.Instance.RunTimer >= FusionUnlockTime;
+
     // Accord singulier / pluriel pour les textes affichés (jamais de "(s)").
     public static string Plural(int count, string singular, string plural)
     {

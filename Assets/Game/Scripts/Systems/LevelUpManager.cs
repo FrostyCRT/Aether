@@ -324,7 +324,7 @@ public class LevelUpManager : MonoBehaviour
         GameObject playerGO = GameObject.FindWithTag("Player");
         if (playerGO != null)
         {
-            HealthSystem health = playerGO.GetComponent<HealthSystem>();
+            playerGO.TryGetComponent(out HealthSystem health);
             if (health != null) health.SetInvincible();
         }
 
@@ -396,7 +396,7 @@ public class LevelUpManager : MonoBehaviour
         GameObject player = GameObject.FindWithTag("Player");
         if (player == null) return null;
 
-        CharacterIdentity identity = player.GetComponent<CharacterIdentity>();
+        player.TryGetComponent(out CharacterIdentity identity);
         if (identity == null) return null;
 
         UpgradeType targetType;

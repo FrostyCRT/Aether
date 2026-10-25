@@ -76,7 +76,7 @@ public class WeaponFusionMudOrb : MonoBehaviour
         for (int i = 0; i < _orbs.Count; i++)
         {
             if (_orbs[i] == null) continue;
-            BouncingOrbProjectile proj = _orbs[i].GetComponent<BouncingOrbProjectile>();
+            _orbs[i].TryGetComponent(out BouncingOrbProjectile proj);
             if (proj != null) proj.SetStats(_orbDamage, _orbSpeed);
         }
     }
@@ -88,7 +88,7 @@ public class WeaponFusionMudOrb : MonoBehaviour
         {
             GameObject orbGO = ObjectPool.Instance.Get("BouncingOrbProjectile", transform.position, Quaternion.identity);
             if (orbGO == null) continue;
-            BouncingOrbProjectile proj = orbGO.GetComponent<BouncingOrbProjectile>();
+            orbGO.TryGetComponent(out BouncingOrbProjectile proj);
             if (proj != null)
             {
                 Vector2 randomDir = Random.insideUnitCircle.normalized;
@@ -129,7 +129,7 @@ public class WeaponFusionMudOrb : MonoBehaviour
             GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", spawnPos, Quaternion.identity);
             if (puddleGO == null) continue;
 
-            MudPuddleZone zone = puddleGO.GetComponent<MudPuddleZone>();
+            puddleGO.TryGetComponent(out MudPuddleZone zone);
             if (zone != null)
             {
                 zone.Init(_puddleDuration, _puddleRadius, _slowMultiplier, _puddleDamagePerSecond);
@@ -151,7 +151,7 @@ public class WeaponFusionMudOrb : MonoBehaviour
         foreach (GameObject puddle in _trailPuddles)
         {
             if (puddle == null) continue;
-            MudPuddleZone zone = puddle.GetComponent<MudPuddleZone>();
+            puddle.TryGetComponent(out MudPuddleZone zone);
             if (zone != null) zone.ForceExpire();
         }
     }

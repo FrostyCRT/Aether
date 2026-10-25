@@ -274,7 +274,7 @@
 258| Podwójne łowy
 259| Pokonaj 2 bossów w jednej rozgrywce
 260| Szybki awans
-261| 20. poziom przed 10. minutą
+261| 18. poziom przed 10. minutą
 262| Bez kryształu
 263| Bez supermocy do bossa 2
 264| Bez skazy
@@ -374,8 +374,8 @@
 352| FUZJA — Aura + Satelity: wokół ciebie krąży teraz wir odłamków many, znacznie szerszy i znacznie potężniejszy.
 353| Ostrza rykoszetu
 354| FUZJA — Noże + Sprężysta kula: twoja salwa przebija teraz wrogów I odbija się od jednego do drugiego.
-355| Spalona ziemia
-356| FUZJA — Kula ognia + Błoto: wokół ciebie pojawiają się w kręgu strefy rozżarzonego popiołu, znacznie większe i dużo groźniejsze.
+355| Deszcz meteorów
+356| FUZJA — Kula ognia + Błoto: meteory spadają na wrogów, wybuchają przy uderzeniu i zostawiają krater płonącego błota, który ich spowalnia.
 357| Gromowe kule
 358| FUZJA — Satelity + Łańcuch błyskawic: twoje krążące odłamki przy każdym trafieniu wyzwalają łańcuch błyskawic.
 359| Bliźniacze kule
@@ -413,7 +413,7 @@
 391| Przywraca {0}% twoich maksymalnych PŻ.
 392| Odblokowuje drugi, jednoczesny strzał.
 393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera.
-394| +{0} do promienia wybuchu.
+394| Promień wybuchu jest dwa razy większy.
 395| +{0}% obrażeń.
 396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę.
 397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela.
@@ -618,3 +618,14 @@
 
 ## Formes propres au polonais (3e forme du pluriel : 2-4, sauf 12-14)
 + victoires#few| wygrane
+580| Nie schodź poniżej 30% zdrowia od początku rozgrywki aż do śmierci 2. bossa
+581| Nie używaj supermocy (klawisz F) przed pokonaniem 2. bossa
+582| Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa
+583| Pokonaj dowolnego bossa w ciągu 30 sekund od jego pojawienia się
+584| Zbierz łącznie co najmniej 3000 złota w trakcie rozgrywki
+585| UMIARKOWANY
+586| BRUTALNY
+587| APOKALIPTYCZNY
+588| Klasyczna rozgrywka, taka jak zawsze
+589| Większa mapa, wytrzymalsi i groźniejsi wrogowie, ale więcej złota i odłamków
+590| Znacznie większa mapa, dużo wytrzymalsi i groźniejsi wrogowie, maksimum złota i odłamków

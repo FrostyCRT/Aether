@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using System.Collections;
 
 public class EnemyBase : MonoBehaviour
@@ -306,12 +307,25 @@ public class EnemyBase : MonoBehaviour
 
         _currentTarget = _playerTransform;
 
-        PlayerController.OnPhantomDestroyed += HandlePhantomDestroyed;
+        // AJOUTÉ (2026-10-24, retour utilisateur : "les golem [...] quand ils spawn ils font un 360 degré pour trouver
+        // le joueur [...] il faudrait qu'ils soient déjà tourné dans la bonne direction") - un ennemi qui sortait du
+        // pool gardait la rotation ET le _smoothedMoveDirection de sa vie précédente (ou Vector3.forward au tout
+        // premier spawn) : Update() le faisait ensuite pivoter à 720°/s vers le joueur, bien visible quand toute une
+        // vague apparaît en même temps. ObjectPool.Get pose la position AVANT SetActive(true), donc elle est déjà
+        // la bonne ici : l'ennemi naît directement face à sa cible.
+        FaceCurrentTargetInstantly();
+
+        // MODIFIÉ (2026-10-24, session FPS) - chaque ennemi s'abonnait ici à PlayerController.OnPhantomDestroyed et
+        // GameManager.OnGameEnded (et s'en désabonnait dans OnDisable) : en C#, chaque += / -= recopie TOUTE la liste
+        // des abonnés dans un nouveau tableau - avec 150 ennemis qui apparaissent/disparaissent en continu, une
+        // allocation mémoire qui grossit avec le nombre d'ennemis à chaque spawn et à chaque mort (relevé au
+        // profileur). Remplacé par UN SEUL abonnement statique pour toute la classe + un registre des ennemis actifs
+        // (voir RegisterActive / OnGameEndedStatic) : même comportement, plus aucune allocation par ennemi.
+        RegisterActive();
 
         // AJOUTE - un ennemi qui revient du pool doit repartir avec son Animator a
         // vitesse normale, au cas ou il aurait ete fige (speed = 0) a la fin de sa
         // vie precedente via HandleGameEnded ci-dessous.
-        GameManager.OnGameEnded += HandleGameEnded;
         if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
         if (_animatorController != null) _animatorController.SetAnimatorPaused(false);
 
@@ -321,14 +335,24 @@ public class EnemyBase : MonoBehaviour
         StopBurnAndResetTint();
     }
 
+    private void FaceCurrentTargetInstantly()
+    {
+        if (_currentTarget == null) return;
+        Vector3 toTarget = _currentTarget.position - transform.position;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude < 0.0001f) return;
+        toTarget.Normalize();
+        _smoothedMoveDirection = toTarget;
+        transform.rotation = Quaternion.LookRotation(toTarget);
+    }
+
     private void OnDisable()
     {
         EnemySpatialGrid.Unregister(this);
 
         if (IsRangedAttacker) ActiveRangedCount = Mathf.Max(0, ActiveRangedCount - 1);
 
-        PlayerController.OnPhantomDestroyed -= HandlePhantomDestroyed;
-        GameManager.OnGameEnded -= HandleGameEnded;
+        UnregisterActive();
 
         // AJOUTE - coupe la coroutine de brulure si l'ennemi est desactive/retourne
         // au pool en pleine brulure (ex: tue par une autre source de degats pendant
@@ -342,6 +366,51 @@ public class EnemyBase : MonoBehaviour
     // rester figes a mi-boucle : Update() (et donc UpdateBehaviour) s'arrete net a
     // IsGameOver, donc plus rien n'appelait jamais SetAttacking(false) ou
     // n'indiquait a l'Animator qu'il fallait s'arreter.
+    // Registre des ennemis actifs (ajout/retrait en O(1) par échange avec le dernier) et abonnement unique aux 2
+    // événements statiques - voir le commentaire dans OnEnable.
+    private static readonly List<EnemyBase> _activeEnemies = new List<EnemyBase>(256);
+    private int _activeIndex = -1;
+    private static bool _staticHandlersHooked;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetActiveRegistry() => _activeEnemies.Clear();
+
+    private void RegisterActive()
+    {
+        if (!_staticHandlersHooked)
+        {
+            _staticHandlersHooked = true;
+            PlayerController.OnPhantomDestroyed += OnPhantomDestroyedStatic;
+            GameManager.OnGameEnded += OnGameEndedStatic;
+        }
+        if (_activeIndex >= 0) return;
+        _activeIndex = _activeEnemies.Count;
+        _activeEnemies.Add(this);
+    }
+
+    private void UnregisterActive()
+    {
+        if (_activeIndex < 0) return;
+        int last = _activeEnemies.Count - 1;
+        EnemyBase moved = _activeEnemies[last];
+        _activeEnemies[_activeIndex] = moved;
+        moved._activeIndex = _activeIndex;
+        _activeEnemies.RemoveAt(last);
+        _activeIndex = -1;
+    }
+
+    private static void OnPhantomDestroyedStatic()
+    {
+        for (int i = _activeEnemies.Count - 1; i >= 0; i--)
+            if (_activeEnemies[i] != null) _activeEnemies[i].HandlePhantomDestroyed();
+    }
+
+    private static void OnGameEndedStatic()
+    {
+        for (int i = _activeEnemies.Count - 1; i >= 0; i--)
+            if (_activeEnemies[i] != null) _activeEnemies[i].HandleGameEnded();
+    }
+
     private void HandleGameEnded()
     {
         if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
@@ -475,7 +544,7 @@ public class EnemyBase : MonoBehaviour
 
             if (target == _playerTransform)
             {
-                HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+                _playerTransform.TryGetComponent(out HealthSystem playerHealth);
                 if (playerHealth != null)
                     playerHealth.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown);
             }
@@ -744,7 +813,7 @@ public class EnemyBase : MonoBehaviour
         {
             if (_playerTransform != null)
             {
-                PlayerController pc = _playerTransform.GetComponent<PlayerController>();
+                _playerTransform.TryGetComponent(out PlayerController pc);
                 if (pc != null) pc.ResetDashCooldown();
             }
         }

@@ -133,7 +133,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
         if (ObjectPool.Instance == null) return;
         GameObject projectileGO = ObjectPool.Instance.Get("ProjectileShuriken", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
-        ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
+        projectileGO.TryGetComponent(out ProjectileBasic projectile);
         if (projectile != null)
         {
             projectile.Init(direction, _damage * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorKnives); // + Concentration / Surpuissance (2026-10-16, audit)

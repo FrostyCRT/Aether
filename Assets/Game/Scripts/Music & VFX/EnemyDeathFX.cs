@@ -24,13 +24,36 @@ public class EnemyDeathFX : MonoBehaviour
     private float _t;
     private Transform _cam;
 
+    // AJOUTÉ (2026-10-24, session FPS) - réserve d'instances réutilisées : chaque appel créait puis détruisait
+    // un EnemyDeathFX complet (racine + 6 SpriteRenderer enfants), des centaines de fois par minute en fin de partie (allocations
+    // mémoire + créations d'objets, source d'à-coups). Une instance terminée est désactivée et rangée ici au lieu
+    // d'être détruite ; une instance détruite avec sa scène (changement de scène) est simplement ignorée au tirage
+    // (test `== null` d'Unity).
     // color : couleur dominante de l'ennemi (reprend sa teinte de sprite si connue, sinon un blanc chaud neutre).
     public static void Play(Vector3 position, Color color)
     {
-        GameObject go = new GameObject("EnemyDeathFX");
-        go.transform.position = position;
-        EnemyDeathFX fx = go.AddComponent<EnemyDeathFX>();
+        EnemyDeathFX fx = null;
+        while (fx == null && _pool.Count > 0) fx = _pool.Pop();
+        if (fx == null)
+        {
+            GameObject go = new GameObject("EnemyDeathFX");
+            fx = go.AddComponent<EnemyDeathFX>();
+            fx.Build();
+        }
+        fx.transform.position = position;
         fx.Init(color);
+        fx.gameObject.SetActive(true);
+    }
+
+    private static readonly System.Collections.Generic.Stack<EnemyDeathFX> _pool = new System.Collections.Generic.Stack<EnemyDeathFX>();
+
+    // Renderers créés une seule fois par instance (voir la réserve _pool).
+    private void Build()
+    {
+        _flash = FXSprites.MakeRenderer(transform, "Flash", FXSprites.Glow(), 20, 0.15f);
+        _sparks = new Spark[SparkCount];
+        for (int i = 0; i < SparkCount; i++)
+            _sparks[i] = new Spark { sr = FXSprites.MakeRenderer(transform, "Spark", FXSprites.Glow(), 21, 0.12f) };
     }
 
     private void Init(Color color)
@@ -38,20 +61,19 @@ public class EnemyDeathFX : MonoBehaviour
         _hot = Color.Lerp(color, Color.white, 0.6f);
         _cam = Camera.main != null ? Camera.main.transform : null;
 
-        _flash = FXSprites.MakeRenderer(transform, "Flash", FXSprites.Glow(), 20, 0.15f);
+        _t = 0f;
         if (_cam != null) _flash.transform.rotation = _cam.rotation;
         FXSprites.SetFlat(_flash, 0.05f, 0f);
 
-        _sparks = new Spark[SparkCount];
         for (int i = 0; i < SparkCount; i++)
         {
-            Spark s = new Spark();
-            s.sr = FXSprites.MakeRenderer(transform, "Spark", FXSprites.Glow(), 21, 0.12f);
+            Spark s = _sparks[i];
+            s.sr.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            s.sr.color = Color.clear;
             float angle = (i / (float)SparkCount) * Mathf.PI * 2f + Random.Range(-0.3f, 0.3f);
             float speed = Random.Range(2.2f, 3.6f);
             s.vel = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * speed;
             s.size = Random.Range(0.16f, 0.26f);
-            _sparks[i] = s;
         }
     }
 
@@ -81,6 +103,10 @@ public class EnemyDeathFX : MonoBehaviour
             sp.sr.color = FXSprites.A(_hot, inv * inv);
         }
 
-        if (q >= 1f) Destroy(gameObject);
+        if (q >= 1f)
+        {
+            gameObject.SetActive(false);
+            _pool.Push(this);
+        }
     }
 }

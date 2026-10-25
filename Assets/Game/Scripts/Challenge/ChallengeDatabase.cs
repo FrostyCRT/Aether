@@ -46,7 +46,7 @@ public static class ChallengeDatabase
         // description de defi porte deja implicitement sur la partie entiere).
         new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", longDescription = "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "boss2", displayName = "Double Chasse", description = "Vaincre 2 boss dans la même partie", difficulty = ChallengeDifficulty.Medium },
-        new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 20 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 18 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
 
         // CORRIGÉ (2026-10-21, retour utilisateur : "le défi sans ult jusqu'au boss 2 est presque impossible, ça
         // veut dire qu'il faut jamais ult pendant 10min c'est énorme") - BossSpawnInterval=300s (voir WaveManager) :

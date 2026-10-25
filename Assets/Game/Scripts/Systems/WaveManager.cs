@@ -98,7 +98,7 @@ public class WaveManager : MonoBehaviour
             Vector2 o = GameModes.TitansSpawnOffset(number);
             Vector3 pos = MapBoundaryUtils.ClampToZone(origin + new Vector3(o.x, 0f, o.y));
             GameObject go = Instantiate(prefab, pos, Quaternion.identity);
-            BossBase boss = go.GetComponent<BossBase>();
+            go.TryGetComponent(out BossBase boss);
             if (boss == null) continue;
 
             float hp = GameModes.TitansBossHealth(number);
@@ -299,7 +299,7 @@ public class WaveManager : MonoBehaviour
             CameraShakeFX.Shake(0.55f);
 
             // AJOUTÉ — applique le zoom propre à CE boss, lu directement sur son prefab
-            BossBase bossScript = bossInstance.GetComponent<BossBase>();
+            bossInstance.TryGetComponent(out BossBase bossScript);
 
             // Mode sans fin : chaque nouvelle série de boss (boucle) a plus de PV. Appliqué par le boss lui-même
             // une fois son Start() passé (voir BossBase.InitUI), car certains boss fixent leurs PV dans Start().
@@ -386,7 +386,7 @@ public class WaveManager : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies)
         {
-            EnemyBase eb = enemy.GetComponent<EnemyBase>();
+            enemy.TryGetComponent(out EnemyBase eb);
             if (eb != null)
                 ObjectPool.Instance.ReturnToPool(GetPoolTag(enemy), enemy);
             else
@@ -396,7 +396,7 @@ public class WaveManager : MonoBehaviour
 
     private string GetPoolTag(GameObject enemy)
     {
-        EnemyBase eb = enemy.GetComponent<EnemyBase>();
+        enemy.TryGetComponent(out EnemyBase eb);
         return eb != null ? eb.PoolTag : "Enemy"; // MODIFIÉ — lit le tag configuré sur le prefab au lieu de deviner via une chaîne de GetComponent<X>()
     }
 

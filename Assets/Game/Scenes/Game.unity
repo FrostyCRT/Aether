@@ -7084,6 +7084,7 @@ MonoBehaviour:
   _timeText: {fileID: 41970564}
   _killsText: {fileID: 460701582}
   _goldText: {fileID: 1430114757}
+  _statsBarMinGap: 32
   _challengeInfoText: {fileID: 1243156443}
   _challengeStatusText: {fileID: 1011603677}
   _challengeSeparator: {fileID: 1869175826}
@@ -16680,6 +16681,11 @@ MonoBehaviour:
     maxEnemiesSurMap: 105
     ennemisParVague: 6
     intervalleSpawn: 1.5
+  - nomPhase: 05b_La_Reprise
+    tempsDebutMinutes: 10
+    maxEnemiesSurMap: 140
+    ennemisParVague: 10
+    intervalleSpawn: 1
   - nomPhase: 06_L_Apocalypse_Finale
     tempsDebutMinutes: 12
     maxEnemiesSurMap: 160
@@ -25106,7 +25112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b62dc5b1e60fe44a8db70e5805592de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseXP: 70
+  _baseXP: 80
 --- !u!4 &2119087373
 Transform:
   m_ObjectHideFlags: 0

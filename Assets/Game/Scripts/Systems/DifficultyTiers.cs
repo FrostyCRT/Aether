@@ -124,6 +124,27 @@ public static class DifficultyTiers
         }
     }
 
+    // AJOUTÉ (2026-10-24, retour utilisateur : "dans la difficulté 3, je trouve qu'il n'y a pas assez d'ennemis du
+    // début à environ 12 min, vers la fin il y en a assez, mais pas du début au milieu") - multiplicateur
+    // SUPPLÉMENTAIRE (par-dessus SpawnScaleMultiplier) appliqué par EnemySpawner.AppliquerPhase aux plafonds/tailles
+    // de vague des phases qui commencent AVANT EarlySpawnBoostEndMinutes - la phase finale (12 min,
+    // "06_L_Apocalypse_Finale", jugée correcte) n'est pas touchée. Apocalyptique seulement : x1,15 x 1,3 = x1,5 en
+    // début/milieu de partie (max simultanés 0-1 min 23 -> 30, 1-3 min 52 -> 67, 3-5 min 86 -> 112, 5-9 min
+    // 138 -> 179, 9-10 min 121 -> 157, 10-12 min 184 [nouvelle phase du 2026-10-24, plafonnée à la finale par
+    // EnemySpawner.AppliquerPhase]) - plafonné à 1,3 pour que la phase 5-9 min reste SOUS la finale
+    // (160 x 1,15 = 184), qui doit rester le pic de la partie. Le plafond de tireurs simultanés (EnemySpawner._maxSimultaneousRanged) reste le
+    // même : le surplus est surtout de la mêlée, pas les tireurs "inesquivables" signalés le 2026-10-19.
+    public const float EarlySpawnBoostEndMinutes = 12f;
+
+    public static float EarlySpawnBoost(DifficultyTier tier)
+    {
+        switch (tier)
+        {
+            case DifficultyTier.Apocalyptic: return 1.3f;
+            default: return 1f;
+        }
+    }
+
     // Multiplie les PV des ennemis normaux (EnemySpawner.SpawnEnemy, aux côtés du palier et de GameModes.EndlessHealthScale)
     // et des boss (WaveManager.SpawnBoss, aux côtés de SetEndlessHealthMultiplier/SetHealthOverride).
     // RÉDUIT (2026-10-19, même retour utilisateur que SpawnScaleMultiplier ci-dessus) - en plus du problème de

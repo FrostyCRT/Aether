@@ -110,7 +110,7 @@ public class WeaponOrbital : MonoBehaviour
                 orbital.transform.SetParent(transform);
                 _orbitals.Add(orbital);
 
-                OrbitalProjectile projScript = orbital.GetComponent<OrbitalProjectile>();
+                orbital.TryGetComponent(out OrbitalProjectile projScript);
                 if (projScript != null)
                 {
                     _orbitalScriptsCache.Add(projScript);

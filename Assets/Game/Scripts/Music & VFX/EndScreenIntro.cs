@@ -162,7 +162,7 @@ public class EndScreenIntro : MonoBehaviour
 
     private void AddTarget(RectTransform rt, float delay, float duration, float slide, float startScale)
     {
-        CanvasGroup group = rt.GetComponent<CanvasGroup>();
+        rt.TryGetComponent(out CanvasGroup group);
         if (group == null) group = rt.gameObject.AddComponent<CanvasGroup>();
 
         _targets.Add(new IntroTarget

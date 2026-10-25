@@ -134,7 +134,7 @@ public class DamageNumberSpawner : MonoBehaviour
         GameObject go = ObjectPool.Instance.Get("DamageNumber", spawnPos, Quaternion.identity);
         if (go == null) return;
 
-        DamageNumber dn = go.GetComponent<DamageNumber>();
+        go.TryGetComponent(out DamageNumber dn);
         if (dn != null)
         {
             dn.Init(damage, color, target, isCritical);

@@ -682,9 +682,14 @@ public class HudStyler : MonoBehaviour
     }
 
     // ---------------------------------------------------------------------------------------------------------------
+    // MODIFIÉ (2026-10-24, session FPS) - `Safe(PlaceBottom)` convertissait la méthode en un NOUVEAU délégué à
+    // chaque frame (allocation mémoire visible au profileur) : délégué créé une seule fois.
+    private System.Action _placeBottomAction;
+
     private void LateUpdate()
     {
-        Safe(PlaceBottom);
+        if (_placeBottomAction == null) _placeBottomAction = PlaceBottom;
+        Safe(_placeBottomAction);
     }
 
     private void Update()

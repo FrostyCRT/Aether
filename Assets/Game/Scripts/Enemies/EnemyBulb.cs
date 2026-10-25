@@ -100,7 +100,7 @@ public class EnemyBulb : EnemyBase
             GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", origin, Quaternion.identity);
             if (projectileGO == null) continue;
 
-            EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+            projectileGO.TryGetComponent(out EnemyProjectile projectile);
             if (projectile != null) projectile.Init(direction, "horde", _projectileSpeed);
         }
     }

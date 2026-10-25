@@ -140,6 +140,7 @@ C'est le placeholder **le plus visible du jeu** : des sphères unies partout, to
 | **Orbitaux** | `Resources/OrbitalProjectile` | Petites sphères cyan (`MAT_Orbital`) | **Éclats de mana / cristaux** qui tournent. Également utilisés par les fusions **Vortex de Mana** et **Orbes Foudroyants**. |
 | **Orbe rebondissant** | `Resources/BouncingOrbProjectile` | Grosse sphère jaune unie (`MAT_PulseAOE`) | **Orbe de cristal** avec halo intérieur. La fusion **Sillage Boueux** (remplace "Orbes Jumeaux", retirée le 2026-10-18) réutilise le même orbe tel quel, sans lien visuel entre orbes ; voir plutôt la flaque de boue qu'il laisse derrière lui, ligne "Fusion Sillage Boueux" ci-dessous (§5). |
 | **Éclair en chaîne** | `LightningBoltVFX` (LineRenderer procédural) | Fonctionnel | 🟡 Texture d'éclair animée + flash d'impact. |
+| **Météorite** (fusion **Pluie de Météores**, Boule de feu + Boue — ajoutée le 2026-10-24 à la demande) | `MeteorFallVFX` (construit en code, pas de prefab) | Sprite **billboard** tourné vers la caméra qui tombe du ciel pendant le signal au sol | **Vrai modèle 3D de météorite** : roche irrégulière à fissures incandescentes (émissif orange), traînée de feu et de fumée derrière elle. L'impact garde `FireExplosionVFX`, déjà validé. |
 
 ### 4.2 Projectiles ennemis
 | Source | Aujourd'hui | À produire |
@@ -156,7 +157,7 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 | Zone | Prefab | Aujourd'hui | À produire |
 |---|---|---|---|
 | **Flaques de boue** | `Resources/MudPuddleZone` | Cylindres plats **marron** (`Maron.mat`) | **Décal** ou maillage plat avec texture de boue animée (bulles, reflets), bord irrégulier. |
-| Fusion **Terre Calcinée** (refondue le 2026-10-23) | même prefab, pour le cratère résiduel seulement | Cylindres marron boueux (même teinte que la Boue normale, avant c'était orange) | Sol brûlé : braises, fissures incandescentes, petites flammes. **Le visuel principal de cette fusion n'est plus ce cratère** mais le météore qui tombe du ciel (`MeteorFallVFX`) - entièrement procédural (sprites générés en code, aucun modèle/texture requis), donc rien à produire pour cette partie. |
+| Fusion **Pluie de Météores** (ex-« Terre Calcinée », refondue le 2026-10-23, renommée le 2026-10-24) | même prefab, pour le cratère résiduel seulement | Cylindres marron boueux (même teinte que la Boue normale, avant c'était orange) | Sol brûlé : braises, fissures incandescentes, petites flammes. **Le visuel principal de cette fusion n'est plus ce cratère** mais le météore qui tombe du ciel (`MeteorFallVFX`) - entièrement procédural (sprites générés en code, aucun modèle/texture requis), donc rien à produire pour cette partie. |
 | Fusion **Marécage Maudit** | même prefab | Cylindres verts | Marécage toxique : eau verte, bulles, brume. |
 | Fusion **Sillage Boueux** (nouvelle, 2026-10-18) | même prefab | Cylindres bleu-gris délavé (teinte « boue limoneuse ») | Même traitement que les 2 fusions ci-dessus : sillage continu de petites flaques déposées par les orbes en mouvement plutôt qu'un anneau fixe. |
 | **Aura de Kael** | LineRenderer + disque | Fonctionnel mais générique | 🟡 Cercle runique au sol qui tourne, particules vertes. |

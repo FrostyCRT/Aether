@@ -178,7 +178,7 @@ public class CrystalSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
-            BossBase boss = hit.GetComponent<BossBase>();
+            hit.TryGetComponent(out BossBase boss);
             if (boss != null) boss.TakeDamage(_ultDamage * 2f * scale * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorUltimate);
         }
 
@@ -203,10 +203,10 @@ public class CrystalSystem : MonoBehaviour
         {
             if (hit.CompareTag("Enemy"))
             {
-                EnemyBase eb = hit.GetComponent<EnemyBase>();
+                hit.TryGetComponent(out EnemyBase eb);
                 if (eb != null) eb.TakeDamage(_ultDamage * buffMultiplier, DamageNumberSpawner.ColorUltimate);
 
-                BossBase boss = hit.GetComponent<BossBase>();
+                hit.TryGetComponent(out BossBase boss);
                 if (boss != null) boss.TakeDamage(_ultDamage * buffMultiplier, DamageNumberSpawner.ColorUltimate);
             }
         }
@@ -255,10 +255,10 @@ public class CrystalSystem : MonoBehaviour
 
             if (hit.CompareTag("Enemy"))
             {
-                EnemyBase eb = hit.GetComponent<EnemyBase>();
+                hit.TryGetComponent(out EnemyBase eb);
                 if (eb != null) eb.TakeDamage(novaDamage, DamageNumberSpawner.ColorNova, true);
 
-                BossBase boss = hit.GetComponent<BossBase>();
+                hit.TryGetComponent(out BossBase boss);
                 if (boss != null) boss.TakeDamage(novaDamage, DamageNumberSpawner.ColorNova);
             }
         }
@@ -325,10 +325,10 @@ public class CrystalSystem : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, _ultRange, EnemyLayers.Mask);
         foreach (Collider hit in hits)
         {
-            EnemyBase eb = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase eb);
             if (eb != null) eb.SetSpeedMultiplier(_slowFactor);
 
-            BossBase boss = hit.GetComponent<BossBase>();
+            hit.TryGetComponent(out BossBase boss);
             if (boss != null) boss.SetSpeedMultiplier(_slowFactor);
         }
 
@@ -339,10 +339,10 @@ public class CrystalSystem : MonoBehaviour
         {
             if (hit == null) continue;
 
-            EnemyBase eb = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase eb);
             if (eb != null) eb.SetSpeedMultiplier(1f);
 
-            BossBase boss = hit.GetComponent<BossBase>();
+            hit.TryGetComponent(out BossBase boss);
             if (boss != null) boss.SetSpeedMultiplier(1f);
         }
 

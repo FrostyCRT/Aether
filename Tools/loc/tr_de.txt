@@ -272,7 +272,7 @@
 258| Doppeljagd
 259| Besiege 2 Bosse in einem Run
 260| Blitzaufstieg
-261| Level 20 vor Minute 10
+261| Level 18 vor Minute 10
 262| Kristallfrei
 263| Keine Ultimate bis Boss 2
 264| Makellos
@@ -372,8 +372,8 @@
 352| FUSION – Aura + Trabanten: Ein viel größerer und viel stärkerer Wirbel aus Manasplittern kreist jetzt um dich.
 353| Abprallklingen
 354| FUSION – Messer + Prallkugel: Deine Salve durchbohrt Gegner jetzt UND prallt von einem zum nächsten ab.
-355| Verbrannte Erde
-356| FUSION – Feuerball + Schlamm: Viel größere und viel verheerendere Zonen aus glühender Asche entstehen im Kreis um dich.
+355| Meteorschauer
+356| FUSION – Feuerball + Schlamm: Meteore stürzen auf die Gegner, explodieren beim Aufprall und hinterlassen einen Krater aus brennendem Schlamm, der sie verlangsamt.
 357| Blitzkugeln
 358| FUSION – Trabanten + Kettenblitz: Deine kreisenden Splitter entfesseln jetzt bei jedem Treffer einen Kettenblitz.
 359| Zwillingskugeln
@@ -411,7 +411,7 @@
 391| Stellt {0} % deiner maximalen LP wieder her.
 392| Schaltet einen zweiten, gleichzeitigen Schuss frei.
 393| Schaltet den Feuerball frei: Aethers exklusive Waffe.
-394| +{0} Explosionsradius.
+394| Der Explosionsradius ist doppelt so groß.
 395| +{0} % Schaden.
 396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach.
 397| Schaltet die Aura frei: Kaels exklusive Waffe.
@@ -613,3 +613,14 @@
 ## Ajouts (fin de table)
 578| FUSION
 579| Splitter
+580| Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses
+581| Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast
+582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses
+583| Besiege einen beliebigen Boss innerhalb von 30 Sekunden nach seinem Erscheinen
+584| Sammle im Laufe des Runs insgesamt mindestens 3000 Gold
+585| MÄSSIG
+586| HEFTIG
+587| APOKALYPTISCH
+588| Das klassische Erlebnis, so wie es immer war
+589| Größere Karte, zähere und gefährlichere Gegner, dafür mehr Gold und Splitter
+590| Viel größere Karte, deutlich zähere und gefährlichere Gegner, Gold und Splitter maximal

@@ -3036,9 +3036,17 @@ public class GameUI : MonoBehaviour
             _hpFillImage.color = new Color(0.85f, 0.1f, 0.1f);
     }
 
+    // MODIFIÉ (2026-10-24, session FPS) - appelé CHAQUE frame par WaveManager : reformatait une nouvelle chaîne
+    // "mm:ss" à chaque frame (allocation mémoire + reconstruction du texte TMP) alors que l'affichage ne change
+    // qu'une fois par seconde. Ne réécrit plus le texte que quand la seconde affichée change.
+    private int _lastTimerSecond = -1;
+
     public void UpdateTimer(float seconds)
     {
         if (_timerText == null) return;
+        int total = Mathf.FloorToInt(seconds);
+        if (total == _lastTimerSecond) return;
+        _lastTimerSecond = total;
         int mins = Mathf.FloorToInt(seconds / 60f);
         int secs = Mathf.FloorToInt(seconds % 60f);
         _timerText.text = $"{mins:00}:{secs:00}";

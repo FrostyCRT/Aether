@@ -272,7 +272,7 @@
 258| Caçada Dupla
 259| Derrote 2 chefes na mesma partida
 260| Ascensão Rápida
-261| Nível 20 antes do minuto 10
+261| Nível 18 antes do minuto 10
 262| Sem Cristal
 263| Sem suprema até o chefe 2
 264| Impecável
@@ -372,8 +372,8 @@
 352| FUSÃO — Aura + Orbitais: um redemoinho de fragmentos de mana, muito mais largo e muito mais forte, agora gira ao seu redor.
 353| Lâminas Ricocheteantes
 354| FUSÃO — Facas + Orbe Quicante: sua rajada agora perfura E ricocheteia de inimigo em inimigo.
-355| Terra Arrasada
-356| FUSÃO — Bola de Fogo + Lama: zonas de cinzas ardentes, muito maiores e muito mais devastadoras, surgem em círculo ao seu redor.
+355| Chuva de Meteoros
+356| FUSÃO — Bola de Fogo + Lama: meteoros caem sobre os inimigos, explodem no impacto e deixam uma cratera de lama ardente que os deixa mais lentos.
 357| Orbes Fulminantes
 358| FUSÃO — Orbitais + Raio em Cadeia: seus fragmentos em órbita agora soltam raios em cadeia a cada contato.
 359| Orbes Gêmeos
@@ -411,7 +411,7 @@
 391| Restaura {0}% da sua vida máxima.
 392| Desbloqueia um segundo tiro simultâneo.
 393| Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether.
-394| +{0} de raio de explosão.
+394| O raio de explosão fica duas vezes maior.
 395| +{0}% de dano.
 396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo.
 397| Desbloqueia a Aura: equipa a arma exclusiva de Kael.
@@ -613,3 +613,14 @@
 ## Ajouts (fin de table)
 578| FUSÃO
 579| fragmento
+580| Nunca fique abaixo de 30% de vida, do início da partida até a morte do 2º chefe
+581| Não use a suprema (tecla F) antes de derrotar o 2º chefe
+582| Nunca fique abaixo de 50% de vida, do início da partida até a morte do 1º chefe
+583| Derrote qualquer chefe em menos de 30 segundos após o seu surgimento
+584| Colete pelo menos 3000 de ouro no total durante a partida
+585| MODERADO
+586| VIOLENTO
+587| APOCALÍPTICO
+588| A experiência Clássica de sempre
+589| Mapa maior, inimigos mais resistentes e perigosos, mas mais ouro e fragmentos
+590| Mapa muito maior, inimigos bem mais resistentes e perigosos, ouro e fragmentos no máximo

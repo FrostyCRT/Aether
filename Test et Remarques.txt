@@ -17,25 +17,6 @@ Mode coop ? deux joueurs dans la partie.
 petite explosion pouvoir de l'arbre de compétence de Aether
 
 
--Pour terre calciné(fusion boue + Fireball)
-faire des coulées de lave sur des endroits aléatoires de la map ? Météorite qui tombe du ciel sinon ? Il faut revoir cette fusion, il faut trouver une idée original qui se démarque des autres fusions, tout en gardant à l'idée que ça doit être plus fort que Boue au max et Boule de feu au max.
-
--revoir si tout les défis marchent bien. 
-le défi, niveau 20 avant la 10eme minute ne fonctionne pas, j'ai dépassé les 10 min sans être niveau 20, et le statut n'est pas en échoué
-
--le boss 2 à toujours trop de vie, baisse la de 30% dans chaque niveau de difficulté.
-
--j'ai l'impression que la boue n'est pas centré de la même façon que les orbitaux par rapport au joueur.
-
--pour te donner un ordre d'idée je suis niveau 15 à la 12eme minute en moyenne, alors que pour tout avoir il faut être niveau 27, donc il y a un problème d'xp encore.
-avec 6000 élimination je ne suis que niveau 18, les ennemis donnent beaucoup moins d'xp c'est pas normal. Avant ils donnaient des xp doré, maintenant même en fin de partie ça donne du vert. C'est pas normal, quand on avait retravaillé sur les xp, tu avais baissé la valeur d'xp que donnait les ennemis à leur mort, et je t'avais dis que c'était pas la bonne démarche à suivre et qu'il fallait plutôt adapter l'écart de scale avec l'xp qu'il faut entre chaque niveau, mais du coup j'imagine que tu n'a pas remis ce que donnait les xp comme avant, parce que là les ennemis donnent vraiment rien, et je te rappel que c'est beaucoup plus satisfaisant de voir des xp doré tomber en fin de partie, donc pour ces données, j'aimerai que tu remette ce qu'il y avait avant.
-
--Pour Surpuissance de Aether, ça dure que 5 secondes, met 10 au lieu de 5, parce que 5 c'est vraiment pas assez.
-
-
-
-
-
 
 
 

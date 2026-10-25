@@ -127,7 +127,7 @@ public class GameManager : MonoBehaviour
         // s'étire pour couvrir un plan plus grand. Il faut aussi multiplier le Tiling par le même ratio, pour que
         // la texture d'herbe garde exactement la même taille apparente au sol qu'avant, quel que soit le palier.
         // .material (pas .sharedMaterial) : instancie une copie à l'exécution, ne touche jamais l'asset du projet.
-        Renderer groundRenderer = ground.GetComponent<Renderer>();
+        ground.TryGetComponent(out Renderer groundRenderer);
         if (groundRenderer != null)
         {
             Vector2 baseTiling = groundRenderer.sharedMaterial.mainTextureScale;

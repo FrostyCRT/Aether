@@ -97,7 +97,7 @@ public class WeaponMudPuddle : MonoBehaviour
             GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", spawnPos, Quaternion.identity);
             if (puddleGO == null) continue;
 
-            MudPuddleZone zone = puddleGO.GetComponent<MudPuddleZone>();
+            puddleGO.TryGetComponent(out MudPuddleZone zone);
             if (zone != null)
                 zone.Init(_puddleDuration, _puddleRadius, _slowMultiplier, _damagePerSecond);
 
@@ -112,7 +112,7 @@ public class WeaponMudPuddle : MonoBehaviour
         for (int i = 0; i < _activePuddles.Count; i++)
         {
             if (_activePuddles[i] == null) continue;
-            MudPuddleZone zone = _activePuddles[i].GetComponent<MudPuddleZone>();
+            _activePuddles[i].TryGetComponent(out MudPuddleZone zone);
             if (zone != null) zone.ForceExpire();
         }
         _activePuddles.Clear();

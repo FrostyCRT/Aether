@@ -148,7 +148,7 @@ public class MudPuddleZone : MonoBehaviour
             if (_inRangeThisTick.Contains(enemyId)) continue;
             _inRangeThisTick.Add(enemyId);
 
-            EnemyBase enemy = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase enemy);
             if (enemy != null)
             {
                 // AJOUTE - immunite totale des ennemis volants (Corbeau) : ni degats,

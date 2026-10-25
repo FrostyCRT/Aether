@@ -194,7 +194,7 @@ public class WeaponAura : MonoBehaviour
             int enemyId = hit.GetInstanceID();
             if (_inRangeThisTick.Contains(enemyId)) continue;
             _inRangeThisTick.Add(enemyId);
-            EnemyBase enemy = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase enemy);
             if (enemy != null)
             {
                 enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorAOE);

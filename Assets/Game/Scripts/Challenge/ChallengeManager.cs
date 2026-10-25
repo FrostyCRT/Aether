@@ -74,6 +74,10 @@ public class ChallengeManager : MonoBehaviour
     private float _minHealthPercent = 1f;
     private bool _level20ReachedInTime = false;
 
+    // AJOUTÉ (2026-10-24, retour utilisateur : "le défi niveau 20 avant la 10eme minute, change en niveau 18") - niveau
+    // visé par "Ascension Rapide". L'id "level20in10min" est gardé tel quel (il peut être enregistré dans la sauvegarde).
+    private const int FastAscentLevel = 18;
+
     // Time.time plutot que GameManager.RunTimer pour la duree du combat de boss :
     // RunTimer NE PROGRESSE PAS pendant qu'un boss est vivant (bloque explicitement
     // dans GameManager.Update()), l'utiliser ici aurait rendu ce defi trivial.
@@ -241,7 +245,7 @@ public class ChallengeManager : MonoBehaviour
     public void NotifyLevelChanged(int newLevel)
     {
         if (CurrentChallenge != null && CurrentChallenge.id == "level20in10min"
-            && newLevel >= 20 && GameManager.Instance != null && GameManager.Instance.RunTimer <= 600f)
+            && newLevel >= FastAscentLevel && GameManager.Instance != null && GameManager.Instance.RunTimer <= 600f)
         {
             _level20ReachedInTime = true;
         }
@@ -312,7 +316,7 @@ public class ChallengeManager : MonoBehaviour
                 break;
             case "level20in10min":
                 failed = !_level20ReachedInTime && GameManager.Instance != null && GameManager.Instance.RunTimer > 600f
-                    && XPSystem.Instance != null && XPSystem.Instance.CurrentLevel < 20;
+                    && XPSystem.Instance != null && XPSystem.Instance.CurrentLevel < FastAscentLevel;
                 break;
         }
 
@@ -397,7 +401,7 @@ public class ChallengeManager : MonoBehaviour
             case "dash20": return $"{Mathf.Min(_dashUsedCount, 20)}/20";
             case "hp30never": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
             case "boss2": return $"{Mathf.Min(bossKills, 2)}/2";
-            case "level20in10min": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 20), 20);
+            case "level20in10min": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, FastAscentLevel), FastAscentLevel);
             case "noUltimate": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
             case "hp50boss1": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
             case "bossUnder30s": return Loc.T("En cours");

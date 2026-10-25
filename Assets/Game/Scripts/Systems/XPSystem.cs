@@ -23,7 +23,10 @@ public class XPSystem : MonoBehaviour
     // en Apocalyptique, avec x0,9 déjà actif à ce moment-là -> total brut extrapolé sans aucune réduction ≈ 19550
     // XP) : avec ce nouveau barème, ce même total atterrit à peine avant le niveau 10 (cumul pour l'atteindre
     // ≈ 19950) - cohérent avec la cible "~niveau 9-10 à 5 min" discutée.
-    [SerializeField] private float _baseXP = 70f;
+    // MODIFIÉ (2026-10-24, retour utilisateur : "augmente l'xp qu'il faut pour passer d'un niveau à un autre dans la
+    // globalité des difficultés, augmente un peu pour avoir une différence, mais pas trop") - 70 -> 80 (+14 % sur
+    // CHAQUE niveau, même exposant 2, valeur de la scène Game aussi) : ~niveau 9 au lieu de ~10 au même total d'XP.
+    [SerializeField] private float _baseXP = 80f;
     public int CurrentLevel { get; private set; } = 1;
     public float CurrentXP { get; private set; } = 0f;
     // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{2} \rfloor$
@@ -70,7 +73,7 @@ public class XPSystem : MonoBehaviour
         CurrentLevel++;
 
         // AJOUTE - notifie le systeme de defis a chaque montee de niveau (defi
-        // "Ascension Rapide" = atteindre le niveau 20 avant la 10e minute).
+        // "Ascension Rapide" = atteindre le niveau 18 avant la 10e minute, voir ChallengeManager.FastAscentLevel).
         // Doit etre verifie ICI, au moment exact ou le niveau est atteint, pas en
         // fin de run - un joueur qui atteint le niveau 20 tot puis continue la run
         // plus longtemps doit quand meme valider le defi.

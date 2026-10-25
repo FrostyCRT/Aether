@@ -228,7 +228,7 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
             Collider hit = _overlapBuffer[i];
             if (hit == null) continue;
 
-            EnemyBase enemy = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase enemy);
             if (enemy != null)
             {
                 // MODIFIÉ (2026-10-23) - cohérent avec la nouvelle teinte marron boueux de cette fusion (ColorMud),
@@ -250,7 +250,7 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
         GameObject puddleGO = ObjectPool.Instance.Get("MudPuddleZone", position, Quaternion.identity);
         if (puddleGO == null) return;
 
-        MudPuddleZone zone = puddleGO.GetComponent<MudPuddleZone>();
+        puddleGO.TryGetComponent(out MudPuddleZone zone);
         if (zone != null)
         {
             zone.Init(_craterDuration, _impactRadius * 0.85f, _craterSlowMultiplier, craterDps);

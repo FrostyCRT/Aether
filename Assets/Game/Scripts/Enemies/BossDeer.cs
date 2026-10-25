@@ -242,7 +242,7 @@ public class BossDeer : BossBase
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
         if (distanceToPlayer <= effectiveRadius)
         {
-            HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+            _playerTransform.TryGetComponent(out HealthSystem playerHealth);
             if (playerHealth != null)
                 playerHealth.TakeDamage(_jumpDamage * GameModes.EnemyDamageScale, "boss"); // cause "boss" (2026-10-16, audit)
         }
@@ -280,7 +280,7 @@ public class BossDeer : BossBase
         Vector3 direction = Quaternion.Euler(0, angleDeg, 0) * Vector3.forward;
         GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
-        EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+        projectileGO.TryGetComponent(out EnemyProjectile projectile);
         if (projectile != null) projectile.Init(direction, "boss");
     }
 

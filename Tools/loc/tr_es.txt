@@ -273,7 +273,7 @@
 258| Doble cacería
 259| Derrota a 2 jefes en la misma partida
 260| Ascenso rápido
-261| Nivel 20 antes del minuto 10
+261| Nivel 18 antes del minuto 10
 262| Sin cristal
 263| Sin definitiva hasta el jefe 2
 264| Impecable
@@ -373,8 +373,8 @@
 352| FUSIÓN — Aura + Orbitales: un torbellino de fragmentos de maná, mucho más amplio y potente, gira ahora a tu alrededor.
 353| Cuchillas de rebote
 354| FUSIÓN — Cuchillos + Orbe rebotador: tu ráfaga ahora perfora Y rebota de un enemigo a otro.
-355| Tierra calcinada
-356| FUSIÓN — Bola de fuego + Barro: zonas de ceniza ardiente, mucho más grandes y devastadoras, aparecen en círculo a tu alrededor.
+355| Lluvia de meteoros
+356| FUSIÓN — Bola de fuego + Barro: caen meteoritos sobre los enemigos, explotan al impactar y dejan un cráter de barro ardiente que los ralentiza.
 357| Orbes fulminantes
 358| FUSIÓN — Orbitales + Rayo en cadena: tus fragmentos en órbita desatan ahora un rayo en cadena con cada impacto.
 359| Orbes gemelos
@@ -412,7 +412,7 @@
 391| Restaura el {0}% de tu vida máxima.
 392| Desbloquea un segundo disparo simultáneo.
 393| Desbloquea Bola de fuego: equipa el arma exclusiva de Aether.
-394| +{0} de radio de explosión.
+394| El radio de explosión es el doble de grande.
 395| +{0}% de daño.
 396| Desbloquea Quemadura: los enemigos alcanzados siguen ardiendo un tiempo.
 397| Desbloquea el Aura: equipa el arma exclusiva de Kael.
@@ -614,3 +614,14 @@
 ## Ajouts (fin de table)
 578| FUSIÓN
 579| fragmento
+580| No bajes nunca del 30% de vida, desde el inicio de la partida hasta la muerte del 2.º jefe
+581| No uses la definitiva (tecla F) antes de derrotar al 2.º jefe
+582| No bajes nunca del 50% de vida, desde el inicio de la partida hasta la muerte del 1.er jefe
+583| Derrota a cualquier jefe en menos de 30 segundos desde su aparición
+584| Recoge al menos 3000 de oro en total durante la partida
+585| MODERADO
+586| VIOLENTO
+587| APOCALÍPTICO
+588| La experiencia Clásica de siempre
+589| Mapa más grande, enemigos más resistentes y peligrosos, pero más oro y fragmentos
+590| Mapa mucho más grande, enemigos mucho más resistentes y peligrosos, oro y fragmentos al máximo

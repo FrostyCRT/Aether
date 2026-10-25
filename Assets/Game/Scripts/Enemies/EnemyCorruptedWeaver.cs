@@ -120,10 +120,10 @@ public class EnemyCorruptedWeaver : EnemyBase
             {
                 hitPlayer = true;
 
-                HealthSystem health = hit.GetComponent<HealthSystem>();
+                hit.TryGetComponent(out HealthSystem health);
                 if (health != null) health.TakeDamage(_jumpDamage);
 
-                PlayerController player = hit.GetComponent<PlayerController>();
+                hit.TryGetComponent(out PlayerController player);
                 if (player != null) player.ApplyTemporarySlow(_jumpSlowMultiplier, _jumpSlowDuration);
             }
         }

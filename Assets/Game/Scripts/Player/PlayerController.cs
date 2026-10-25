@@ -473,7 +473,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator FadeAndDestroyGhost(GameObject ghost, Mesh bakedMesh)
     {
-        MeshRenderer mr = ghost.GetComponent<MeshRenderer>();
+        ghost.TryGetComponent(out MeshRenderer mr);
         // .materials (et non .sharedMaterials) : instancie des copies propres à CE fantôme, pour faire varier leur
         // alpha sans toucher au modèle partagé _ghostDashMaterials (qui ferait clignoter tous les fantômes ensemble).
         Material[] mats = mr.materials;
@@ -640,7 +640,7 @@ public class PlayerController : MonoBehaviour
         PhantomMaxAttracted = _phantomMaxAttracted;
         PhantomAttractedCount = 0;
 
-        MeshRenderer cloneMainRenderer = clone.GetComponent<MeshRenderer>();
+        clone.TryGetComponent(out MeshRenderer cloneMainRenderer);
         if (cloneMainRenderer != null && _ghostCloneMaterials.Length > 0)
             cloneMainRenderer.sharedMaterials = _ghostCloneMaterials[0];
 

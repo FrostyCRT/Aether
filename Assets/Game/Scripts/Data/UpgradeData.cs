@@ -335,8 +335,9 @@ public class UpgradeData : ScriptableObject
             // Fusion : proposée une seule fois (GetCurrentLevel jamais > 1, maxLevel = 1), seulement en Classique/Sans fin
             // (voir GameModes.FusionsEnabled — pas en Ruée de boss/Choc des titans, trop courts pour y prétendre), et
             // seulement quand les 2 armes sources sont TOUTES LES DEUX au palier max.
+            // MODIFIÉ (2026-10-23) - et seulement à partir de 10 min de partie (voir GameModes.FusionsUnlockedNow).
             case UpgradeType.Fusion:
-                return GameModes.FusionsEnabled && GetCurrentLevel() == 0 && BothFusionSourcesMaxed();
+                return GameModes.FusionsUnlockedNow && GetCurrentLevel() == 0 && BothFusionSourcesMaxed();
 
             default:
                 return true;

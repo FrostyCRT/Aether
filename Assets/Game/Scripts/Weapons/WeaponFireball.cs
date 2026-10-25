@@ -35,8 +35,20 @@ public class WeaponFireball : MonoBehaviour
     [SerializeField] private float _burnDamagePerSecondRatio = 0.15f;
     [SerializeField] private float _burnDuration = 3f;
 
+    // AJOUTÉ (2026-10-24, retour utilisateur : "son ciblage c'est comme le tir de base, et du coup c'est répétitif
+    // [...] que ça focus là où il y a le plus d'ennemis à chaque fois, dans une certaine range autour du joueur") -
+    // la Boule de feu ne vise plus l'ennemi le plus proche mais le centre du plus gros groupe dans _detectionRange
+    // (voir FindDensestClusterPoint). Ce rayon définit ce qu'est "un groupe" : les ennemis à moins de cette distance
+    // d'un ennemi candidat comptent avec lui. Proche du rayon d'explosion de base (2,25) pour que le groupe visé
+    // soit à peu près celui que la déflagration peut toucher.
+    [Header("Ciblage (plus gros groupe d'ennemis)")]
+    [SerializeField] private float _clusterRadius = 3f;
+
     private float _cooldownTimer = 0f;
-    private static readonly Collider[] _detectionBuffer = new Collider[50];
+    // MODIFIÉ (2026-10-24) - 50 -> 128 : le ciblage par groupe doit voir toute la foule à portée (jusqu'à ~180
+    // ennemis sur la carte en fin de partie), pas seulement les 50 premiers colliders renvoyés.
+    private static readonly Collider[] _detectionBuffer = new Collider[128];
+    private static readonly Vector3[] _candidatePositions = new Vector3[128];
 
     // AJOUTE - Fireball n'appliquait jamais le bonus de Reputation Degats,
     // contrairement a WeaponBase qui le fait deja dans son propre Start().
@@ -64,10 +76,9 @@ public class WeaponFireball : MonoBehaviour
         float cooldownDuration = _fireRate > 0f ? (1f / _fireRate) : 9999f;
         if (_cooldownTimer >= cooldownDuration)
         {
-            Transform target = FindNearestEnemy();
-            if (target != null)
+            if (FindDensestClusterPoint(out Vector3 aimPoint))
             {
-                Vector3 direction = target.position - transform.position;
+                Vector3 direction = aimPoint - transform.position;
                 direction.y = 0f;
 
                 // AJOUTÉ (2026-10-21, retour utilisateur : "si on est collé dans un angle de 2 murs invisible, et
@@ -90,23 +101,58 @@ public class WeaponFireball : MonoBehaviour
         }
     }
 
-    private Transform FindNearestEnemy()
+    // Pour chaque ennemi à portée, compte les ennemis à moins de _clusterRadius de lui ; le plus gros compte gagne
+    // (à égalité, le plus proche du joueur, pour ne pas viser un groupe lointain quand un aussi gros est tout près).
+    // Le point visé est le CENTRE de ce groupe (moyenne des positions), pas l'ennemi candidat lui-même : la boule
+    // perforante traverse alors le cœur de la masse. Un seul ennemi isolé à portée = visé directement, comme avant.
+    // Coût : au plus 128² comparaisons de distances, une fois par tir (toutes les ~2 s), négligeable.
+    private bool FindDensestClusterPoint(out Vector3 aimPoint)
     {
+        aimPoint = Vector3.zero;
         int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
-        Transform nearest = null;
-        float minDistSqr = _detectionRange * _detectionRange;
+        int n = 0;
         for (int i = 0; i < count; i++)
         {
             Collider col = _detectionBuffer[i];
             if (col == null || !col.CompareTag("Enemy")) continue;
-            float distSqr = (col.transform.position - transform.position).sqrMagnitude;
-            if (distSqr < minDistSqr)
+            Vector3 pos = col.transform.position;
+            pos.y = 0f;
+            _candidatePositions[n++] = pos;
+        }
+        if (n == 0) return false;
+
+        Vector3 origin = transform.position;
+        origin.y = 0f;
+        float clusterRadiusSqr = _clusterRadius * _clusterRadius;
+        int bestCount = -1;
+        float bestDistSqr = float.MaxValue;
+        Vector3 bestCenter = Vector3.zero;
+        Vector3 bestCandidate = Vector3.zero;
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 candidate = _candidatePositions[i];
+            Vector3 sum = Vector3.zero;
+            int neighbours = 0;
+            for (int j = 0; j < n; j++)
             {
-                minDistSqr = distSqr;
-                nearest = col.transform;
+                if ((_candidatePositions[j] - candidate).sqrMagnitude > clusterRadiusSqr) continue;
+                sum += _candidatePositions[j];
+                neighbours++;
+            }
+            float distSqr = (candidate - origin).sqrMagnitude;
+            if (neighbours > bestCount || (neighbours == bestCount && distSqr < bestDistSqr))
+            {
+                bestCount = neighbours;
+                bestDistSqr = distSqr;
+                bestCenter = sum / neighbours;
+                bestCandidate = candidate;
             }
         }
-        return nearest;
+        // Groupe qui entoure le joueur : son centre peut tomber sur le joueur lui-même (direction indéfinie, voir la
+        // garde dans Update) - on vise alors l'ennemi qui définit le groupe.
+        aimPoint = (bestCenter - origin).sqrMagnitude < 1f ? bestCandidate : bestCenter;
+        aimPoint.y = transform.position.y;
+        return true;
     }
     private void FireProjectile(Vector3 direction)
     {
@@ -114,7 +160,7 @@ public class WeaponFireball : MonoBehaviour
 
         GameObject projectileGO = ObjectPool.Instance.Get("ProjectileFireball", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
-        ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
+        projectileGO.TryGetComponent(out ProjectileBasic projectile);
         if (projectile != null)
         {
             // Buffs dynamiques (Concentration) : appliqués à l'impact direct, à

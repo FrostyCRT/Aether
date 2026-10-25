@@ -51,6 +51,7 @@ public class EnemySpawner : MonoBehaviour
     // agrandie (DifficultyTiers.ZoneHalfSize, voir MapBoundaryUtils) a plus de place, donc plus d'ennemis doivent
     // pouvoir y tenir en même temps pour rester aussi dense qu'au palier Modéré. 1 si hors Classique ou palier Modéré.
     private float _spawnCountMultiplier = 1f;
+    private bool _tierScalingActive = false;
 
     private float _spawnTimer = 0f;
     private float _gameTimer = 0f;
@@ -74,7 +75,8 @@ public class EnemySpawner : MonoBehaviour
         // FindFreeSpawnPosition ci-dessous) confine naturellement chaque candidat à la forme réelle de la carte -
         // un ennemi qui "déborderait" du tunnel ou de la boîte est simplement ramené sur le mur le plus proche.
         // ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée de boss.
-        _spawnCountMultiplier = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+        _tierScalingActive = GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush;
+        _spawnCountMultiplier = _tierScalingActive
             ? DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current) : 1f;
 
         // Initialisation de la première phase si elle existe
@@ -126,9 +128,26 @@ public class EnemySpawner : MonoBehaviour
         // MODIFIÉ (2026-10-18, diagnostic complet - système de difficulté) - plafond et taille de vague mis à
         // l'échelle du palier de difficulté (_spawnCountMultiplier, voir Start()) ; la cadence (intervalleSpawn)
         // reste inchangée pour ne pas cumuler 3 leviers de difficulté à la fois sur un système jamais playtesté.
-        _maxEnemies = Mathf.RoundToInt(phase.maxEnemiesSurMap * _spawnCountMultiplier);
-        _enemiesPerWave = Mathf.Max(1, Mathf.RoundToInt(phase.ennemisParVague * _spawnCountMultiplier));
+        // MODIFIÉ (2026-10-24) - + renfort de début/milieu de partie (DifficultyTiers.EarlySpawnBoost, Apocalyptique
+        // seulement) pour les phases qui commencent avant 12 min ; la phase finale garde le multiplicateur normal.
+        float countMultiplier = _spawnCountMultiplier;
+        if (_tierScalingActive && phase.tempsDebutMinutes < DifficultyTiers.EarlySpawnBoostEndMinutes)
+            countMultiplier *= DifficultyTiers.EarlySpawnBoost(DifficultyTiers.Current);
+
+        _maxEnemies = Mathf.RoundToInt(phase.maxEnemiesSurMap * countMultiplier);
+        _enemiesPerWave = Mathf.Max(1, Mathf.RoundToInt(phase.ennemisParVague * countMultiplier));
         _spawnInterval = phase.intervalleSpawn;
+
+        // AJOUTÉ (2026-10-24, nouvelle phase "05b_La_Reprise" à 10 min, retour utilisateur : "entre 10 et 12 minutes
+        // il n'y a pas assez d'ennemis") - avec le renfort Apocalyptique, cette phase (140 x 1,15 x 1,3 = 209)
+        // dépasserait la finale (160 x 1,15 = 184). Le renfort ne doit jamais rendre une phase plus chargée que la
+        // finale : plafond = valeurs de la dernière phase avec le multiplicateur normal du palier.
+        if (_phasesDeJeu.Count > 0)
+        {
+            SpawnPhase finale = _phasesDeJeu[_phasesDeJeu.Count - 1];
+            _maxEnemies = Mathf.Min(_maxEnemies, Mathf.RoundToInt(finale.maxEnemiesSurMap * _spawnCountMultiplier));
+            _enemiesPerWave = Mathf.Min(_enemiesPerWave, Mathf.Max(1, Mathf.RoundToInt(finale.ennemisParVague * _spawnCountMultiplier)));
+        }
     }
 
     private void SpawnWave()
@@ -202,7 +221,7 @@ public class EnemySpawner : MonoBehaviour
         // AJOUTÉ (2026-10-20, retour utilisateur : "trop d'xp en difficulté 3") - l'XP à la mort (EnemyBase.Die)
         // suit la partie TEMPORELLE de ce multiplicateur, jamais le palier de difficulté : plus dur à tuer ne doit
         // pas vouloir dire plus rentable à tuer, sous peine de vider le sens du palier de difficulté.
-        EnemyBase spawnedEnemy = spawned.GetComponent<EnemyBase>();
+        spawned.TryGetComponent(out EnemyBase spawnedEnemy);
         if (spawnedEnemy != null) spawnedEnemy.SetXpHealthMultiplier(timeBasedMultiplier);
 
         // CORRIGÉ (2026-10-21, retour utilisateur : "le corbeau est un oiseau volant donc il doit être en l'air") -
@@ -224,7 +243,11 @@ public class EnemySpawner : MonoBehaviour
         // ennemi rapporte l'inverse exact du surplus de densité, pour que le total gagné par minute reste aligné
         // sur le Modéré malgré le surplus de spawns - "plus difficile" ne doit se traduire ni par plus de PV gagnés
         // (palier) ni par plus d'XP gagnée (densité), seulement par plus d'ennemis/de dégâts à affronter.
-        if (spawnedEnemy != null && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
+        // VOLONTAIREMENT PAS étendu au renfort de début de partie (2026-10-24, DifficultyTiers.EarlySpawnBoost) :
+        // l'utilisateur a demandé le 2026-10-22 que les ennemis gardent leur XP et que le rythme se règle par le COÛT
+        // des niveaux (XPSystem._baseXP, relevé le même jour) - les ennemis en plus avant 12 min donnent donc plus
+        // d'XP au total en Apocalyptique, à surveiller en playtest.
+        if (spawnedEnemy != null && _tierScalingActive)
             spawnedEnemy.SetXpPacingMultiplier(1f / Mathf.Max(1f, DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current)));
     }
 

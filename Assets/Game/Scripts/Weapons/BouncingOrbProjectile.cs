@@ -199,7 +199,7 @@ public class BouncingOrbProjectile : MonoBehaviour
     // mur : sa vitesse (_speed) n'est jamais touchée.
     private void TryBounceOffOrb(Collider other)
     {
-        BouncingOrbProjectile otherOrb = other.GetComponent<BouncingOrbProjectile>();
+        other.TryGetComponent(out BouncingOrbProjectile otherOrb);
         if (otherOrb == null || otherOrb == this) return;
 
         // Une seule des 2 orbes traite la collision (celle avec le plus petit InstanceID) - sinon les 2
@@ -264,14 +264,14 @@ public class BouncingOrbProjectile : MonoBehaviour
         // Buffs dynamiques du joueur (Concentration) lus à l'impact. 1f si inactif.
         float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
 
-        EnemyBase enemy = other.GetComponent<EnemyBase>();
+        other.TryGetComponent(out EnemyBase enemy);
         if (enemy != null)
         {
             enemy.TakeDamage(dmg, DamageNumberSpawner.ColorBouncingOrb);
             ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorBouncingOrb);
             return;
         }
-        BossBase boss = other.GetComponent<BossBase>();
+        other.TryGetComponent(out BossBase boss);
         if (boss != null)
         {
             boss.TakeDamage(dmg, DamageNumberSpawner.ColorBouncingOrb);

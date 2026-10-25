@@ -152,6 +152,9 @@ public class BossCorruptedSource : BossBase
         // écrasait le prefab et donnait au boss final MOINS de PV que le boss 1
         // (20000) ou le boss 2 (50000). _currentHealth est déjà initialisé à
         // _maxHealth par base.Start(), pas besoin de le refaire ici.
+        // MODIFIÉ (2026-10-24, retour utilisateur : "le boss 3 n'a pas assez de vie") - prefab 180000 -> 250000
+        // (+39 %, tous paliers ; x2 en Apocalyptique via DifficultyTiers.BossHealthMultiplier = 500000). Les
+        // échos invoqués gardent leurs propres PV (prefabs des Boss 1/2), ils ne dépendent pas de cette valeur.
         _moveSpeed = 0f; // ancrée au rift — ne "marche" jamais (override volontaire du prefab, qui porte 4)
 
         if (_playerTransform != null)
@@ -293,7 +296,7 @@ public class BossCorruptedSource : BossBase
                     GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", crystal.transform.position, Quaternion.identity);
                     if (projectileGO == null) continue;
 
-                    EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+                    projectileGO.TryGetComponent(out EnemyProjectile projectile);
                     if (projectile != null) projectile.Init(dirToPlayer, "boss");
                 }
             }
@@ -377,7 +380,7 @@ public class BossCorruptedSource : BossBase
         {
             if (hit.CompareTag("Player"))
             {
-                HealthSystem health = hit.GetComponent<HealthSystem>();
+                hit.TryGetComponent(out HealthSystem health);
                 if (health != null) health.TakeDamage(_strikeDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : multiplicateur sans fin + cause "boss"
             }
         }
@@ -486,7 +489,7 @@ public class BossCorruptedSource : BossBase
         {
             if (hit.CompareTag("Player"))
             {
-                HealthSystem health = hit.GetComponent<HealthSystem>();
+                hit.TryGetComponent(out HealthSystem health);
                 if (health != null) health.TakeDamage(_resurfaceBurstDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : idem
             }
         }
@@ -550,7 +553,7 @@ public class BossCorruptedSource : BossBase
         GameObject mini = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
         _activeMiniBossInstance = mini;
 
-        BossBase boss = mini.GetComponent<BossBase>();
+        mini.TryGetComponent(out BossBase boss);
         if (boss != null)
         {
             boss.IsSummoned = true;
@@ -698,7 +701,7 @@ public class BossCorruptedSource : BossBase
         {
             if (hit.CompareTag("Player"))
             {
-                HealthSystem health = hit.GetComponent<HealthSystem>();
+                hit.TryGetComponent(out HealthSystem health);
                 if (health != null) health.TakeDamage(_implosionDamage * GameModes.EnemyDamageScale, "boss"); // CORRIGE (2026-10-16, audit) : idem
             }
         }
@@ -771,7 +774,7 @@ public class BossCorruptedSource : BossBase
     {
         if (MiniBossAlive)
         {
-            BossBase mini = _activeMiniBossInstance.GetComponent<BossBase>();
+            _activeMiniBossInstance.TryGetComponent(out BossBase mini);
             if (mini != null) mini.ForceKill();
             _activeMiniBossInstance = null;
         }

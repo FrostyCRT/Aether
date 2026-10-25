@@ -66,8 +66,8 @@ public class EnemyProjectile : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
-            PlayerController player = other.GetComponent<PlayerController>();
-            HealthSystem playerHealthCheck = other.GetComponent<HealthSystem>();
+            other.TryGetComponent(out PlayerController player);
+            other.TryGetComponent(out HealthSystem playerHealthCheck);
             // CORRIGÉ (2026-10-07, retour utilisateur : "quand Lyra met son clone et qu'elle est invisible/invincible,
             // elle peut toujours se prendre des projectiles, même si elle ne se prend pas les dégâts") - ce bloc lisait
             // player.IsInvincible (PlayerController), qui ne vaut vrai QUE pendant le Dash (StartDash) ; l'invincibilité
@@ -79,7 +79,7 @@ public class EnemyProjectile : MonoBehaviour
             {
                 if (player != null && player.CanAbsorb)
                 {
-                    CrystalSystem crystal = other.GetComponent<CrystalSystem>();
+                    other.TryGetComponent(out CrystalSystem crystal);
                     if (crystal != null) crystal.AbsorbProjectile();
 
                     // AJOUTÉ (2026-10-03) - absorption par le Dash/Cristal : jusqu'ici muette, comme tout impact de ce
@@ -95,7 +95,7 @@ public class EnemyProjectile : MonoBehaviour
             // AJOUTE - nœud capstone Gardien "Bouclier de Mana" : si le joueur n'est
             // pas déjà invincible et qu'une charge de bouclier est disponible, le
             // projectile est absorbé (0 dégât) et alimente le Cristal.
-            ManaShield shield = other.GetComponent<ManaShield>();
+            other.TryGetComponent(out ManaShield shield);
             if (shield != null && shield.TryAbsorb())
             {
                 // AJOUTÉ (2026-10-03) - absorption par le Bouclier de Mana : même vert que la bulle (#36D936).

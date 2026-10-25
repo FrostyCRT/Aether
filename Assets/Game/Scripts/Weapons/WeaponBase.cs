@@ -170,7 +170,7 @@ public class WeaponBase : MonoBehaviour
         GameObject projectileGO = ObjectPool.Instance.Get("Projectile", spawnPosition, Quaternion.identity);
         if (projectileGO == null) return;
 
-        ProjectileBasic projectile = projectileGO.GetComponent<ProjectileBasic>();
+        projectileGO.TryGetComponent(out ProjectileBasic projectile);
         if (projectile != null)
         {
             // PlayerBuffs.OutgoingDamageMultiplier = buffs dynamiques du joueur

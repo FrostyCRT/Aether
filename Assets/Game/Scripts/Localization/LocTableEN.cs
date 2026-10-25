@@ -154,7 +154,7 @@ public static class LocTableEN
         { "Toujours en Mouvement", "Always Moving" }, { "Utiliser le Dash 20 fois", "Dash 20 times" },
         { "Sang-Froid", "Cool Head" }, { "Garder 30% de vie jusqu'au boss 2", "Stay above 30% HP until boss 2" },
         { "Double Chasse", "Double Hunt" }, { "Vaincre 2 boss dans la même partie", "Defeat 2 bosses in one run" },
-        { "Ascension Rapide", "Fast Ascent" }, { "Niveau 20 avant la 10e minute", "Level 20 before minute 10" },
+        { "Ascension Rapide", "Fast Ascent" }, { "Niveau 18 avant la 10e minute", "Level 18 before minute 10" },
         { "Sans Cristal", "Crystal-Free" }, { "Sans Ultime jusqu'au boss 2", "No Ultimate until boss 2" },
         { "Résilience", "Resilience" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Keep above 50% health until boss 1" },
         { "Éclair", "Lightning Fast" }, { "Vaincre un boss en moins de 30s", "Defeat a boss in under 30s" },
@@ -212,8 +212,8 @@ public static class LocTableEN
         { "FUSION — Aura + Orbitaux : un tourbillon d'éclats de mana, bien plus large et bien plus puissant, tourne désormais autour de toi", "FUSION — Aura + Orbitals: a far wider, far stronger whirlwind of mana shards now spins around you" },
         { "Lames Ricochet", "Ricochet Blades" },
         { "FUSION — Couteaux + Orbe rebondissant : ta salve perfore ET ricoche désormais d'ennemi en ennemi", "FUSION — Knives + Bouncing Orb: your volley now pierces AND ricochets from enemy to enemy" },
-        { "Terre Calcinée", "Scorched Earth" },
-        { "FUSION — Boule de feu + Boue : des zones de cendres brûlantes bien plus grandes et bien plus dévastatrices apparaissent en cercle autour de toi", "FUSION — Fireball + Mud: far bigger, far deadlier zones of burning ash appear in a circle around you" },
+        { "Pluie de Météores", "Meteor Shower" },
+        { "FUSION — Boule de feu + Boue : des météorites s'abattent sur les ennemis, explosent à l'impact et laissent un cratère de boue brûlante qui les ralentit.", "FUSION — Fireball + Mud: meteors crash down on enemies, explode on impact and leave a crater of burning mud that slows them down." },
         { "Orbes Foudroyants", "Thundering Orbs" },
         { "FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact", "FUSION — Orbitals + Lightning: your orbiting shards now unleash chain lightning on every hit" },
         { "Sillage Boueux", "Muddy Wake" },
@@ -349,8 +349,7 @@ public static class LocTableEN
         { "Éclat", "Shard" },   // singulier de "Éclats" dans "Encore {0} {1} pour débloquer {2}" (GameUI, Loc.PluralWord)
 
         // AJOUTÉ (2026-10-16) - descriptions longues de défi (annonce de lancement uniquement, voir ChallengeDatabase.longDescription).
-        // ⚠️ Pas encore propagé aux 9 autres langues (allemand/espagnol/portugais/italien/polonais/russe/chinois/japonais/coréen) :
-        // suivre la procédure "ajouter un texte traduit" (Tools/loc, voir NOTES.md) quand une vraie passe de traduction est faite.
+        // Propagé aux 9 autres langues le 2026-10-24 (Tools/loc/tr_xx.txt, ids 580-590).
         { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss", "Never drop below 30% health, from the start of the run until the 2nd boss dies" },
         { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Don't use the Ultimate (F key) before defeating the 2nd boss" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss", "Never drop below 50% health, from the start of the run until the 1st boss is defeated" },

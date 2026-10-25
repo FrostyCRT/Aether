@@ -189,7 +189,7 @@ public class ManaShield : MonoBehaviour
         _bubble = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         _bubble.name = "ManaShieldBubble";
 
-        Collider col = _bubble.GetComponent<Collider>();
+        _bubble.TryGetComponent(out Collider col);
         if (col != null) Destroy(col);
 
         _bubbleRenderer = _bubble.GetComponent<Renderer>();

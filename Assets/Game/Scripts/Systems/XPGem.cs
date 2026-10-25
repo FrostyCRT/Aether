@@ -179,6 +179,95 @@ public class XPGem : MonoBehaviour
     // la gemme au lieu de la recycler, à CHAQUE ramassage d'XP de toute la partie, depuis le début.
     private const string PoolTag = "XPGem";
 
+    // AJOUTÉ (2026-10-24, session FPS - retour utilisateur : "ça diminue et ça ne remonte pas. Quand j'arrive au boss
+    // 3 je suis à 30 fps [...] alors que j'étais en illimité") - CAUSE TROUVÉE PAR MESURE : rien ne limitait le nombre
+    // de gemmes au sol. Toute gemme laissée derrière soi restait active jusqu'à la fin de la partie (Update chaque
+    // frame : billboard + respiration + SetPropertyBlock, un draw call chacune) - partie mesurée en Apocalyptique,
+    // ennemis stables (~20 à l'écran) : 135 gemmes -> 123 fps, 892 -> 70 fps, 1776 -> 44 fps, 2570 -> 32 fps.
+    // Registre des gemmes actives (ajout/retrait en O(1) par échange avec la dernière) : sert à XPGemSpawner pour
+    // plafonner leur nombre (voir XPGemSpawner.MaxGemsOnGround / MergeFarthestIdleGem).
+    private static readonly List<XPGem> _activeGems = new List<XPGem>();
+    private int _activeIndex = -1;
+    public static int ActiveCount => _activeGems.Count;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRegistry() => _activeGems.Clear();
+
+    private void Register()
+    {
+        if (_activeIndex >= 0) return;
+        _activeIndex = _activeGems.Count;
+        _activeGems.Add(this);
+    }
+
+    private void Unregister()
+    {
+        if (_activeIndex < 0) return;
+        int last = _activeGems.Count - 1;
+        XPGem moved = _activeGems[last];
+        _activeGems[_activeIndex] = moved;
+        moved._activeIndex = _activeIndex;
+        _activeGems.RemoveAt(last);
+        _activeIndex = -1;
+    }
+
+    private void OnDisable() => Unregister();
+
+    // Fusionne la gemme posée la plus éloignée du joueur dans sa voisine posée la plus proche (qui récupère toute son
+    // XP et grossit si besoin, voir AbsorbXP) : jamais d'XP perdue, et elle reste là où elle est tombée - le joueur
+    // la retrouve en revenant, simplement en moins d'objets. Seules les gemmes Idle (posées) sont concernées : jamais
+    // une gemme en plein saut d'apparition ni une gemme déjà aimantée vers le joueur. Renvoie false si aucune paire
+    // n'est disponible (l'appelant laisse alors simplement le plafond être dépassé).
+    public static bool MergeFarthestIdleGem(Vector3 playerPosition)
+    {
+        XPGem farthest = null;
+        float farthestSqr = -1f;
+        for (int i = 0; i < _activeGems.Count; i++)
+        {
+            XPGem gem = _activeGems[i];
+            if (gem._state != GemState.Idle) continue;
+            Vector3 d = gem._popTarget - playerPosition;
+            d.y = 0f;
+            float sqr = d.sqrMagnitude;
+            if (sqr > farthestSqr) { farthestSqr = sqr; farthest = gem; }
+        }
+        if (farthest == null) return false;
+
+        XPGem nearest = null;
+        float nearestSqr = float.MaxValue;
+        for (int i = 0; i < _activeGems.Count; i++)
+        {
+            XPGem gem = _activeGems[i];
+            if (gem == farthest || gem._state != GemState.Idle) continue;
+            float sqr = (gem._popTarget - farthest._popTarget).sqrMagnitude;
+            if (sqr < nearestSqr) { nearestSqr = sqr; nearest = gem; }
+        }
+        if (nearest == null) return false;
+
+        nearest.AbsorbXP(farthest._xpValue);
+        farthest.DespawnSilently();
+        return true;
+    }
+
+    private void AbsorbXP(float xp)
+    {
+        _xpValue += xp;
+        GemType visual = _xpValue >= 50f ? GemType.Large : _xpValue >= 20f ? GemType.Medium : GemType.Small;
+        if (visual > _gemType)
+        {
+            ApplyVisual(visual);
+            if (_state == GemState.Idle) transform.localScale = Vector3.one * _gemScale;
+        }
+    }
+
+    // Retour au pool sans éclat ni XP : son XP a déjà été transférée (voir MergeFarthestIdleGem).
+    private void DespawnSilently()
+    {
+        if (_trail != null) { _trail.emitting = false; _trail.Clear(); }
+        gameObject.SetActive(false);
+        if (ObjectPool.Instance != null) ObjectPool.Instance.ReturnToPool(_poolKey, gameObject);
+    }
+
     private void Awake()
     {
         _poolKey = PoolTag;
@@ -246,39 +335,53 @@ public class XPGem : MonoBehaviour
 
         if (_trail != null) { _trail.emitting = false; _trail.Clear(); }
 
+        switch (type)
+        {
+            case GemType.Small: _xpValue = 10f; break;
+            case GemType.Medium: _xpValue = 20f; break;
+            case GemType.Large: _xpValue = 50f; break;
+        }
+
+        if (xpOverride.HasValue) _xpValue = xpOverride.Value;
+
+        ApplyVisual(type);
+
+        transform.localScale = Vector3.zero; // popping fera grandir depuis 0 (rebond EaseOutBack)
+        transform.rotation = GetBillboardRotation(); // face caméra dès l'apparition
+
+        ApplyGlow(MinGlow);
+        Register();
+    }
+
+    // Apparence d'un palier (taille, couleur, texture, traînée) - séparée de Init() le 2026-10-24 pour qu'une gemme
+    // qui absorbe l'XP d'une autre (AbsorbXP) puisse changer de palier sans repasser par son animation d'apparition.
+    private void ApplyVisual(GemType type)
+    {
+        _gemType = type;
+
         // Palette calquée sur la référence Survivor.io (vert/bleu/or).
         switch (type)
         {
             case GemType.Small:
-                _xpValue = 10f;
                 _gemScale = 0.46f;
                 _gemColor = new Color(0.25f, 0.95f, 0.35f); // vert
                 break;
 
             case GemType.Medium:
-                _xpValue = 20f;
                 _gemScale = 0.6f;
                 _gemColor = new Color(0.2f, 0.6f, 1f); // bleu
                 break;
 
             case GemType.Large:
-                _xpValue = 50f;
                 _gemScale = 0.8f;
                 _gemColor = new Color(1f, 0.8f, 0.15f); // or
                 break;
         }
 
-        if (xpOverride.HasValue) _xpValue = xpOverride.Value;
-
         if (_bodyRenderer != null) _bodyRenderer.sharedMaterial = BuildGemMaterial(type);
-
-        transform.localScale = Vector3.zero; // popping fera grandir depuis 0 (rebond EaseOutBack)
-        transform.rotation = GetBillboardRotation(); // face caméra dès l'apparition
 
         if (_trail != null) _trail.startColor = FXSprites.A(_gemColor, 0.55f);
         if (_trail != null) _trail.endColor = FXSprites.A(_gemColor, 0f);
-
-        ApplyGlow(MinGlow);
     }
 
     // La couleur finale (dégradé radial + liseré) est BAKÉE DIRECTEMENT dans la texture (voir BuildGemMaterial,

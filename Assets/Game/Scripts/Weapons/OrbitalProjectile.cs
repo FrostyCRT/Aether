@@ -60,7 +60,7 @@ public class OrbitalProjectile : MonoBehaviour
         float dmg = _damage * PlayerBuffs.OutgoingDamageMultiplier;
 
         // On cherche d'abord la base commune d'ennemi normal
-        EnemyBase enemy = other.GetComponent<EnemyBase>();
+        other.TryGetComponent(out EnemyBase enemy);
         if (enemy != null)
         {
             enemy.TakeDamage(dmg, DamageNumberSpawner.ColorOrbital);
@@ -80,7 +80,7 @@ public class OrbitalProjectile : MonoBehaviour
         }
 
         // Si ce n'est pas un ennemi basique, on check le Boss
-        BossBase boss = other.GetComponent<BossBase>();
+        other.TryGetComponent(out BossBase boss);
         if (boss != null)
         {
             boss.TakeDamage(dmg, DamageNumberSpawner.ColorOrbital);

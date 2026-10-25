@@ -107,7 +107,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
             if (go == null) continue;
             go.transform.SetParent(transform);
             _orbitals.Add(go);
-            OrbitalProjectile proj = go.GetComponent<OrbitalProjectile>();
+            go.TryGetComponent(out OrbitalProjectile proj);
             if (proj != null)
             {
                 proj.SetDamage(_orbitalDamage);
@@ -164,7 +164,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
             if (_inRangeThisTick.Contains(enemyId)) continue;
             _inRangeThisTick.Add(enemyId);
 
-            EnemyBase enemy = hit.GetComponent<EnemyBase>();
+            hit.TryGetComponent(out EnemyBase enemy);
             if (enemy != null)
             {
                 enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorManaVortex);

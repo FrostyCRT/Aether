@@ -79,9 +79,9 @@ public class WeaponLightningChain : MonoBehaviour
         {
             if (current == null) break;
             float damage = buffedBase * Mathf.Pow(0.7f, i);
-            EnemyBase eb = current.GetComponent<EnemyBase>();
+            current.TryGetComponent(out EnemyBase eb);
             if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
-            BossBase boss = current.GetComponent<BossBase>();
+            current.TryGetComponent(out BossBase boss);
             if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
             hit.Add(current.gameObject);
             // MODIFIE (2026-09-27, retour utilisateur : "un effet... qu'on voit quand la foudre frappe, et

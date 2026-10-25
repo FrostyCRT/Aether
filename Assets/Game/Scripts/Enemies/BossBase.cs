@@ -140,6 +140,21 @@ public class BossBase : MonoBehaviour
     protected virtual void Awake()
     {
         _currentHealth = _maxHealth;
+
+        // AJOUTÉ (2026-10-24, retour utilisateur : "les boss quand ils spawn [...] font un 360 degré pour trouver le
+        // joueur [...] c'est pas beau") - instanciés avec Quaternion.identity (WaveManager, invocations du Boss 3),
+        // ils pivotaient ensuite vers le joueur à _rotationSpeed pendant leurs premières frames. Awake() s'exécute
+        // pendant Instantiate(), position déjà posée et avant le premier rendu : le boss apparaît déjà tourné vers
+        // le joueur (ou son clone spectral).
+        GameObject player = GameObject.FindWithTag("Player");
+        Transform aim = PlayerController.ActivePhantomClone != null ? PlayerController.ActivePhantomClone
+                      : player != null ? player.transform : null;
+        if (aim != null)
+        {
+            Vector3 toAim = aim.position - transform.position;
+            toAim.y = 0f;
+            if (toAim.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(toAim.normalized);
+        }
     }
 
     protected virtual void Start()
@@ -306,7 +321,7 @@ public class BossBase : MonoBehaviour
             GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
             if (projectileGO == null) continue;
 
-            EnemyProjectile projectile = projectileGO.GetComponent<EnemyProjectile>();
+            projectileGO.TryGetComponent(out EnemyProjectile projectile);
             if (projectile != null)
                 projectile.Init(direction, "boss");
         }
@@ -360,7 +375,7 @@ public class BossBase : MonoBehaviour
                 float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
                 if (distanceToPlayer <= _chargeHitRadius)
                 {
-                    HealthSystem playerHealth = _playerTransform.GetComponent<HealthSystem>();
+                    _playerTransform.TryGetComponent(out HealthSystem playerHealth);
                     // MODIFIE - meme source "boss" pour les degats de charge.
                     if (playerHealth != null)
                         playerHealth.TryTakeContactDamage(_chargeDamage * GameModes.EnemyDamageScale, _contactDamageCooldown, "boss");
@@ -734,7 +749,7 @@ public class BossBase : MonoBehaviour
         if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
-            HealthSystem health = other.GetComponent<HealthSystem>();
+            other.TryGetComponent(out HealthSystem health);
             // MODIFIE - precise "boss" comme source du degat, pour le message
             // d'ambiance contextuel du Game Over.
             if (health != null)
@@ -747,7 +762,7 @@ public class BossBase : MonoBehaviour
         if (_contactDamageSuppressed) return;
         if (other.CompareTag("Player"))
         {
-            HealthSystem health = other.GetComponent<HealthSystem>();
+            other.TryGetComponent(out HealthSystem health);
             if (health != null)
                 health.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown, "boss");
         }

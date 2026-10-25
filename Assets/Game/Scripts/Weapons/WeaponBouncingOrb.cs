@@ -76,7 +76,7 @@ public class WeaponBouncingOrb : MonoBehaviour
         for (int i = 0; i < _orbs.Count; i++)
         {
             if (_orbs[i] == null) continue;
-            BouncingOrbProjectile proj = _orbs[i].GetComponent<BouncingOrbProjectile>();
+            _orbs[i].TryGetComponent(out BouncingOrbProjectile proj);
             if (proj != null) proj.SetStats(_damage, _speed);
         }
     }
@@ -91,7 +91,7 @@ public class WeaponBouncingOrb : MonoBehaviour
         {
             GameObject orbGO = ObjectPool.Instance.Get("BouncingOrbProjectile", transform.position, Quaternion.identity);
             if (orbGO == null) break;
-            BouncingOrbProjectile proj = orbGO.GetComponent<BouncingOrbProjectile>();
+            orbGO.TryGetComponent(out BouncingOrbProjectile proj);
             if (proj != null)
             {
                 Vector2 randomDir = Random.insideUnitCircle.normalized;

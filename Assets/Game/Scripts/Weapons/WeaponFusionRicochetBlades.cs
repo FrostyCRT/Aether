@@ -107,7 +107,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         if (ObjectPool.Instance == null) return;
         GameObject go = ObjectPool.Instance.Get("ProjectileShuriken", transform.position, Quaternion.identity);
         if (go == null) return;
-        ProjectileBasic projectile = go.GetComponent<ProjectileBasic>();
+        go.TryGetComponent(out ProjectileBasic projectile);
         if (projectile == null) return;
         projectile.Init(direction, _damage * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorKnives); // + Concentration / Surpuissance (2026-10-16, audit)
         projectile.SetPiercing(true, _pierceCount);

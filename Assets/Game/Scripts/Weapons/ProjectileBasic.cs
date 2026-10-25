@@ -239,13 +239,13 @@ public class ProjectileBasic : MonoBehaviour
     private void ApplyBurnIfNeeded(Collider target)
     {
         if (_burnDamagePerSecond <= 0f) return;
-        EnemyBase enemy = target.GetComponent<EnemyBase>();
+        target.TryGetComponent(out EnemyBase enemy);
         if (enemy != null) enemy.ApplyBurn(_burnDamagePerSecond, _burnDuration);
     }
 
     private void ApplyDamage(Collider target, float damage, Color numberColor, bool isAOE)
     {
-        EnemyBase enemy = target.GetComponent<EnemyBase>();
+        target.TryGetComponent(out EnemyBase enemy);
         if (enemy != null)
         {
             enemy.TakeDamage(damage, numberColor);
@@ -257,7 +257,7 @@ public class ProjectileBasic : MonoBehaviour
         // ennemi normal) - cette branche boss l'ignorait et retombait toujours sur la couleur par défaut de
         // `BossBase.TakeDamage` (orange, critique). Résultat : tous les coups de CES armes sur un boss fusionnaient
         // ensemble sous la même couleur/clé, au lieu de rester séparés par arme comme sur un ennemi normal.
-        BossBase boss = target.GetComponent<BossBase>();
+        target.TryGetComponent(out BossBase boss);
         if (boss != null)
         {
             boss.TakeDamage(damage, numberColor);

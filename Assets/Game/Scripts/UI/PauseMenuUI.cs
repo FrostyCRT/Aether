@@ -43,6 +43,10 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _timeText;
     [SerializeField] private TextMeshProUGUI _killsText;
     [SerializeField] private TextMeshProUGUI _goldText;
+    [Tooltip("Écart minimum entre la barre de stats et le bloc Défi à sa gauche (voir FitStatsBar).")]
+    [SerializeField] private float _statsBarMinGap = 32f;
+    private float _statsBarRightEdge = float.NaN;
+    private int _statsBarFitFrames = 0;
 
     [Header("Défi (Header)")]
     // AJOUTE - affichage detaille du defi de la partie dans le menu pause : nom,
@@ -145,6 +149,11 @@ public class PauseMenuUI : MonoBehaviour
         PopulateGrid();
         PullLiveStats();
         PullChallengeInfo();
+        // CORRIGÉ (2026-10-24, retour utilisateur avec capture : nombres toujours collés aux icônes) - appelé ici
+        // directement, FitStatsBar mesurait des textes pas encore initialisés : OnEnable de ce script (sur PausePanel)
+        // passe AVANT celui des TextMeshPro enfants, donc largeurs fausses figées pour toute la pause. Refait dans
+        // LateUpdate des 2 premières frames, quand tous les textes sont prêts (voir _statsBarFitFrames).
+        _statsBarFitFrames = 2;
 
         if (_openAnimCoroutine != null)
             StopCoroutine(_openAnimCoroutine);
@@ -386,6 +395,12 @@ public class PauseMenuUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_statsBarFitFrames > 0)
+        {
+            _statsBarFitFrames--;
+            FitStatsBar();
+        }
+
         if (_descriptionTooltip == null || !_descriptionTooltip.gameObject.activeSelf)
         {
             _tooltipJustUpdatedThisFrame = false;
@@ -433,10 +448,63 @@ public class PauseMenuUI : MonoBehaviour
         }
 
         if (_killsText != null)
-            _killsText.text = kills.ToString();
+            _killsText.text = Loc.Int(kills); // MODIFIÉ (2026-10-23) - séparateur de milliers, comme l'or juste en dessous
 
         if (_goldText != null)
             _goldText.text = Loc.Int(gold); // MODIFIÉ (2026-10-18, diagnostic complet - audit §9, séparateur de milliers)
+
+        FitStatsBar();
+    }
+
+    // AJOUTÉ (2026-10-23, retour utilisateur : "les nombres rentrent dans les icones quand ils sont trop élevé, il
+    // faut mettre un décalage automatique selon les nombres") - StatsBar (HorizontalLayoutGroup qui contrôle la
+    // largeur de ses 3 blocs icône+nombre) avait une largeur FIXE de 396 px, calibrée pour des petits nombres : dès
+    // que la somme des largeurs voulues la dépassait (ex. 2988 kills / 11 294 or), le layout comprimait les blocs
+    // jusqu'à leur largeur MINIMUM (icône seule, le texte TMP n'a pas de minimum) et chaque nombre débordait sur
+    // l'icône du bloc suivant. La barre prend maintenant la largeur réelle de son contenu, en gardant son bord DROIT
+    // fixe (elle s'étend vers la gauche, côté bloc Défi) ; si elle devait toucher la colonne Statut du défi, elle est
+    // réduite proportionnellement (échelle) plutôt que de chevaucher quoi que ce soit.
+    private void FitStatsBar()
+    {
+        if (_killsText == null) return;
+        RectTransform bar = _killsText.transform.parent != null ? _killsText.transform.parent.parent as RectTransform : null;
+        RectTransform header = bar != null ? bar.parent as RectTransform : null;
+        if (bar == null || header == null || !bar.gameObject.activeInHierarchy) return;
+
+        // Bord droit tel que réglé dans la scène, mémorisé une seule fois (repère : ancrage de la barre).
+        if (float.IsNaN(_statsBarRightEdge))
+            _statsBarRightEdge = bar.anchoredPosition.x + bar.sizeDelta.x * (1f - bar.pivot.x);
+
+        bar.pivot = new Vector2(1f, bar.pivot.y);
+        bar.anchoredPosition = new Vector2(_statsBarRightEdge, bar.anchoredPosition.y);
+        bar.localScale = Vector3.one;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(bar); // calcule la largeur voulue de chaque bloc avec les nouveaux nombres
+        float width = LayoutUtility.GetPreferredWidth(bar);
+        bar.sizeDelta = new Vector2(width, bar.sizeDelta.y);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(bar);
+
+        // Limite gauche : fin réelle du texte de la colonne Statut si elle est affichée, sinon du texte de défi.
+        // Mesurée sur le texte AFFICHÉ (textBounds) et pas sur sa boîte : « En cours », centré dans une boîte de
+        // 70 px, déborde de chaque côté (constaté en test, l'horloge venait le toucher).
+        TextMeshProUGUI obstacle = null;
+        if (_challengeStatusText != null && _challengeStatusText.gameObject.activeInHierarchy && !string.IsNullOrEmpty(_challengeStatusText.text))
+            obstacle = _challengeStatusText;
+        else if (_challengeInfoText != null && _challengeInfoText.gameObject.activeInHierarchy && !string.IsNullOrEmpty(_challengeInfoText.text))
+            obstacle = _challengeInfoText;
+        if (obstacle == null) return;
+
+        obstacle.ForceMeshUpdate();
+        Vector3 inkRight = obstacle.rectTransform.TransformPoint(new Vector3(obstacle.textBounds.max.x, 0f, 0f));
+        // header local (relatif à son pivot) -> repère de l'ancrage de la barre (centre du header)
+        float obstacleRight = header.InverseTransformPoint(inkRight).x
+                              - Mathf.Lerp(header.rect.xMin, header.rect.xMax, bar.anchorMin.x);
+        float available = _statsBarRightEdge - (obstacleRight + _statsBarMinGap);
+        if (available > 0f && width > available)
+        {
+            float s = available / width;
+            bar.localScale = new Vector3(s, s, 1f);
+        }
     }
 
     // ------------------------------------------------------------------

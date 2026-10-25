@@ -164,7 +164,7 @@ public class DebugCheats : MonoBehaviour
             return;
         }
 
-        HealthSystem health = player.GetComponent<HealthSystem>();
+        player.TryGetComponent(out HealthSystem health);
         if (health == null)
         {
             Debug.LogWarning("[DebugCheats] HealthSystem introuvable sur le joueur.");
@@ -215,7 +215,7 @@ public class DebugCheats : MonoBehaviour
             return;
         }
 
-        XPGem gem = gemGO.GetComponent<XPGem>();
+        gemGO.TryGetComponent(out XPGem gem);
         if (gem != null)
             gem.Init(type, player.transform, spawnPos);
 
