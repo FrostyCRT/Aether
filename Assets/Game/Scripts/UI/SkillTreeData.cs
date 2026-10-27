@@ -68,11 +68,13 @@ public static class SkillTreeData
         AddNode("concentration", new NodeData
         {
             displayName = "Concentration",
-            description = "Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu",
+            // CORRIGÉ (2026-10-25, relecture des descriptions) - le texte annonçait +8 %/s à tous les paliers, alors que
+            // la montée réelle est de 2/3/5 %/s depuis le 2026-09-16 (MetaProgressionManager.GetConcentrationRampPerSecond).
+            description = "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.",
             isUnique = false,
-            level1Desc = "+8% / sec, plafond +15%",
-            level2Desc = "+8% / sec, plafond +30%",
-            level3Desc = "+8% / sec, plafond +50%",
+            level1Desc = "+2% / s, plafond +15%",
+            level2Desc = "+3% / s, plafond +30%",
+            level3Desc = "+5% / s, plafond +50%",
             costLevel1 = 100,
             costLevel2 = 300,
             costLevel3 = 700,
@@ -83,7 +85,8 @@ public static class SkillTreeData
         AddNode("cadence", new NodeData
         {
             displayName = "Cadence",
-            description = "Augmente la vitesse de tir de toutes tes armes",
+            // CORRIGÉ (2026-10-25) - le bonus n'est lu que par WeaponBase (tir de base), pas par les autres armes.
+            description = "Augmente la cadence de ton tir de base.",
             isUnique = false,
             level1Desc = "+10%",
             level2Desc = "+20%",
@@ -98,7 +101,10 @@ public static class SkillTreeData
         AddNode("fragmentation", new NodeData
         {
             displayName = "Fragmentation",
-            description = "Les projectiles ont 15% de chance d'exploser à l'impact",
+            // CORRIGÉ (2026-10-25) - seuls les projectiles du tir de base (WeaponBase.FireProjectile) peuvent exploser.
+            // MODIFIÉ (2026-10-27, retour utilisateur : "très peu efficace en jeu") - 1 projectile sur 4, dégâts complets,
+            // grand rayon (au lieu de 15 % de chance, 50 % des dégâts, rayon 2). Voir WeaponBase.FireProjectile.
+            description = "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "concentration" }, // MODIFIÉ — était "damage"
@@ -108,7 +114,7 @@ public static class SkillTreeData
         AddNode("crystalDamage", new NodeData
         {
             displayName = "Dégâts Cristal",
-            description = "Augmente les dégâts de l'ultime et de la Nova",
+            description = "Augmente les dégâts de l'ultime et de la Nova.",
             isUnique = false,
             level1Desc = "+25%",
             level2Desc = "+50%",
@@ -123,7 +129,8 @@ public static class SkillTreeData
         AddNode("overpower", new NodeData
         {
             displayName = "Surpuissance",
-            description = "Après l'ultime, tes dégâts sont doublés pendant 5 secondes",
+            // CORRIGÉ (2026-10-25) - la durée réelle est de 10 s depuis le 2026-10-22 (CrystalSystem.OverpowerBuff).
+            description = "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.",
             isUnique = true,
             costLevel1 = 1000,
             prerequisites = new[] { "fragmentation", "crystalDamage" },
@@ -135,7 +142,7 @@ public static class SkillTreeData
         AddNode("vitality", new NodeData
         {
             displayName = "Vitalité",
-            description = "Augmente tes points de vie maximum",
+            description = "Augmente tes points de vie maximum.",
             isUnique = false,
             level1Desc = "+15%",
             level2Desc = "+30%",
@@ -151,7 +158,8 @@ public static class SkillTreeData
         AddNode("recuperation", new NodeData
         {
             displayName = "Récupération",
-            description = "Chaque projectile absorbé par le dash restaure des PV",
+            // CORRIGÉ (2026-10-25) - le Bouclier de Mana passe aussi par CrystalSystem.AbsorbProjectile, donc soigne aussi.
+            description = "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.",
             isUnique = false,
             level1Desc = "+20 PV par absorption",
             level2Desc = "+50 PV par absorption",
@@ -166,7 +174,8 @@ public static class SkillTreeData
         AddNode("secondWind", new NodeData
         {
             displayName = "Second Souffle",
-            description = "Une fois par partie, survit à un coup fatal avec 1 PV",
+            // CORRIGÉ (2026-10-25) - ajoute les 3 s d'invincibilité de HealthSystem.TriggerSecondWind, jamais mentionnées.
+            description = "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = new[] { "vitality" },
@@ -176,7 +185,7 @@ public static class SkillTreeData
         AddNode("armor", new NodeData
         {
             displayName = "Armure",
-            description = "Réduit les dégâts reçus de tous les ennemis",
+            description = "Réduit les dégâts reçus de tous les ennemis.",
             isUnique = false,
             level1Desc = "-8%",
             level2Desc = "-15%",
@@ -191,7 +200,9 @@ public static class SkillTreeData
         AddNode("manaShield", new NodeData
         {
             displayName = "Bouclier de Mana",
-            description = "Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes",
+            // CORRIGÉ (2026-10-25) - l'ancien texte décrivait une version abandonnée (1 projectile toutes les 8 s). Valeurs
+            // réelles : ManaShield._maxCharges / _rechargeInterval / _breakLockoutDuration.
+            description = "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.",
             isUnique = true,
             costLevel1 = 900,
             prerequisites = new[] { "secondWind", "armor" },
@@ -204,7 +215,7 @@ public static class SkillTreeData
         AddNode("impulsionNova", new NodeData
         {
             displayName = "Impulsion Nova",
-            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé",
+            description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.",
             isUnique = true,
             costLevel1 = 500,
             prerequisites = System.Array.Empty<string>(),
@@ -214,11 +225,11 @@ public static class SkillTreeData
         AddNode("dash", new NodeData
         {
             displayName = "Dash Amélioré",
-            description = "Réduit le temps de recharge du dash",
+            description = "Réduit le temps de recharge du dash.",
             isUnique = false,
-            level1Desc = "-0.3s",
-            level2Desc = "-0.6s",
-            level3Desc = "-1.0s",
+            level1Desc = "Recharge -0,3 s",
+            level2Desc = "Recharge -0,6 s",
+            level3Desc = "Recharge -1 s",
             costLevel1 = 100,
             costLevel2 = 300,
             costLevel3 = 700,
@@ -234,7 +245,7 @@ public static class SkillTreeData
             // CORRIGÉ (2026-10-18, Unity reconnecté en cours de session - vérifié en direct) : "→" (U+2192) n'est
             // couvert ni par Bangers (langues latines) ni par les polices CJK réduites du jeu (zh/ja/ko) - glyphe
             // manquant détecté par Tools/build_language_fonts.py après reconnexion d'Unity. Remplacé par "à".
-            description = "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)",
+            description = "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5).",
             isUnique = true,
             costLevel1 = 600,
             prerequisites = new[] { "impulsionNova" }, // MODIFIÉ — était "agility"
@@ -244,7 +255,7 @@ public static class SkillTreeData
         AddNode("novaRadius", new NodeData
         {
             displayName = "Nova Étendue",
-            description = "Augmente le rayon de la Nova de Cristal",
+            description = "Augmente le rayon de la Nova de Cristal.",
             isUnique = false,
             level1Desc = "+30%",
             level2Desc = "+60%",
@@ -266,7 +277,9 @@ public static class SkillTreeData
             // declenchement automatique via le dash, qui ne correspond plus a
             // l'implementation actuelle (touche dediee, independante du dash).
             // Pas de nom de touche ici : depend des futurs parametres de remapping.
-            description = "Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes",
+            // CORRIGÉ (2026-10-25) - valeurs réelles du prefab de Lyra : 3 s (et non 2), recharge 8 s, TOUS les ennemis
+            // ciblent le clone (PlayerController.TryAttractToPhantom, sans rayon) et le joueur est invincible pendant ce temps.
+            description = "Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible. Recharge : 8 secondes.",
             isUnique = true,
             costLevel1 = 1200,
             prerequisites = new[] { "crystalMastery", "novaRadius" },

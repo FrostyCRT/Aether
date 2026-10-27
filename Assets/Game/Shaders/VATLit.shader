@@ -118,6 +118,30 @@ Shader "Aether/VATLit"
             ENDHLSL
         }
 
+        // AJOUTÉ (2026-10-25) - ombre portée des ennemis VAT, animée (voir VATShadowCasterPass.hlsl).
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode" = "ShadowCaster" }
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+            Cull[_Cull]
+
+            HLSLPROGRAM
+            #pragma target 3.0
+            #pragma vertex ShadowPassVertex
+            #pragma fragment ShadowPassFragment
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #pragma multi_compile_instancing
+
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "Assets/Game/Shaders/Include/VATShadowCasterPass.hlsl"
+            ENDHLSL
+        }
+
         // OBLIGATOIRE (pas une passe de confort) : voir VATDepthOnlyPass.hlsl - sans elle (ou sans
         // VATDepthNormalsPass ci-dessous), l'objet est invisible en silence a cause du Depth Priming + SSAO
         // "Source: DepthNormals" de ce projet. Bug trouve par bisection le 2026-10-05 (voir NOTES.md).

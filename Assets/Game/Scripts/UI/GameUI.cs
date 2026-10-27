@@ -93,10 +93,17 @@ public class GameUI : MonoBehaviour
     [Tooltip("Échelle de la carte à son point de départ/arrivée (position réelle du widget HUD, bien plus petit que la carte centrale).")]
     [SerializeField] private float _challengeIntroOriginScale = 0.22f;
     [SerializeField] private float _challengeIntroFlyInDuration = 0.6f;
-    [SerializeField] private float _challengeIntroHoldDuration = 2.6f;
+    // MODIFIÉ (2026-10-25, retour utilisateur : "rallonge le temps d'affichage du début de quelques secondes") - 2,6 -> 5,5 s
+    // (valeur aussi réécrite dans Game.unity, le champ y est sérialisé). Le joueur pressé passe d'une touche (voir
+    // ChallengeIntroSkipRequested), l'invite en bas à droite le lui dit (voir EnsureSkipPromptBuilt).
+    [SerializeField] private float _challengeIntroHoldDuration = 5.5f;
     [SerializeField] private float _challengeIntroFlyOutDuration = 0.6f;
 
     private bool _challengeIntroPlayed = false;
+    private RectTransform _skipPrompt;            // invite "Appuie sur une touche pour passer", sœur de _challengeIntroRoot
+    private CanvasGroup _skipPromptGroup;
+    private RectTransform _skipPromptKey;
+    private RectTransform _skipPromptProgress;
     private RectTransform _challengeIntroRoot;     // racine plein écran (toujours visible, c'est la Card ci-dessous qui bouge/zoome)
     private CanvasGroup _challengeIntroCanvasGroup;
     private RectTransform _challengeIntroCard;
@@ -345,6 +352,7 @@ public class GameUI : MonoBehaviour
         UpdateKillCount(0);
         ApplyUserSettings();
         RefreshCloneKey();
+        StyleEndScreenTexts();
         FitStatStrips();
 
         if (_pauseSettingsButton != null) _pauseSettingsButton.onClick.AddListener(OpenSettings);
@@ -523,9 +531,12 @@ public class GameUI : MonoBehaviour
     // HardColor, GetDifficultyLabel) : petite duplication assumée, chaque script UI reste autonome (convention
     // déjà suivie partout ailleurs dans ce fichier), mais la palette DOIT rester identique à l'œil entre l'annonce
     // de lancement et le détail du menu Pause.
-    private static readonly Color DifficultyEasyColor = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54
-    private static readonly Color DifficultyMediumColor = new Color(0.910f, 0.639f, 0.239f);  // #E8A33D
-    private static readonly Color DifficultyHardColor = new Color(0.710f, 0.325f, 0.243f);    // #B5533E
+    // MODIFIÉ (2026-10-25, analyse de lisibilité) - l'annonce s'affiche sur le parchemin clair (#ECDDBB), pas sur le
+    // fond sombre du menu Pause : le vert/ambre d'origine y tombaient à 1,7:1 et 1,6:1 de contraste (mesuré sur
+    // capture). Mêmes teintes, assombries pour l'encre sur parchemin (4,7 à 5,4:1) ; le menu Pause garde les siennes.
+    private static readonly Color DifficultyEasyColor = new Color32(0x2F, 0x6B, 0x1E, 0xFF);    // vert (était #6FBF54)
+    private static readonly Color DifficultyMediumColor = new Color32(0x8E, 0x52, 0x08, 0xFF);  // ambre (était #E8A33D)
+    private static readonly Color DifficultyHardColor = new Color32(0x9A, 0x33, 0x22, 0xFF);    // rouge (était #B5533E)
 
     private static Color GetDifficultyColor(ChallengeDifficulty difficulty)
     {
@@ -702,7 +713,7 @@ public class GameUI : MonoBehaviour
         _challengeIntroDescText.enableAutoSizing = true;
         _challengeIntroDescText.fontSizeMin = 18f;
         _challengeIntroDescText.fontSizeMax = _challengeIntroDescFontSize;
-        if (_challengeText != null) _challengeIntroDescText.font = _challengeText.font;
+        GameFonts.ToBody(_challengeIntroDescText);   // MODIFIÉ (2026-10-25) - phrase : police de lecture (le titre reste en Bangers)
         // Pas de LayoutElement : TextMeshProUGUI fournit déjà sa propre hauteur préférée (ILayoutElement), recalculée
         // automatiquement par le VerticalLayoutGroup à chaque fois que PlayChallengeIntroRoutine change .text plus
         // bas - c'est ce qui permet au bloc de rester centré que la description tienne sur 1, 2 ou 3 lignes.
@@ -796,12 +807,18 @@ public class GameUI : MonoBehaviour
         // veut skip cette affichage [...] ça raccourcit juste le délai [...] donc on garde quand même les
         // animations") - seul CE délai de lecture est écourté ; le vol aller déjà joué et le vol retour ci-dessous
         // restent intégralement joués dans les 2 cas.
+        // MODIFIÉ (2026-10-25) - invite de passage en bas à droite pendant ce maintien (voir EnsureSkipPromptBuilt), avec
+        // une jauge qui se vide sur la durée restante : le joueur voit à la fois qu'il peut passer et quand ça
+        // repartira tout seul.
+        EnsureSkipPromptBuilt();
         float holdT = 0f;
         while (holdT < _challengeIntroHoldDuration && !ChallengeIntroSkipRequested())
         {
             holdT += Time.unscaledDeltaTime;
+            UpdateSkipPrompt(holdT, Mathf.Clamp01(holdT / 0.35f));
             yield return null;
         }
+        float promptAlphaAtExit = _skipPromptGroup != null ? _skipPromptGroup.alpha : 0f;
 
         // 3) Vol retour : du centre vers la place réelle dans le HUD, avec fondu croisé dans la 2e moitié
         t = 0f;
@@ -809,6 +826,7 @@ public class GameUI : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float p = Mathf.Clamp01(t / _challengeIntroFlyOutDuration);
+            if (_skipPromptGroup != null) _skipPromptGroup.alpha = promptAlphaAtExit * (1f - Mathf.Clamp01(p / 0.35f));
             float eased = EaseInOutCubic(p);
             _challengeIntroCard.position = Vector3.Lerp(centerWorldPos, originWorldPos, eased);
             _challengeIntroCard.localScale = Vector3.Lerp(Vector3.one, Vector3.one * _challengeIntroOriginScale, eased);
@@ -818,6 +836,7 @@ public class GameUI : MonoBehaviour
         }
 
         _challengeIntroCanvasGroup.alpha = 0f;
+        if (_skipPrompt != null) _skipPrompt.gameObject.SetActive(false);
         if (realGroupFade != null) realGroupFade.alpha = 1f;
         _challengeIntroCard.localScale = Vector3.one;
         _challengeIntroCard.position = originWorldPos;
@@ -829,10 +848,128 @@ public class GameUI : MonoBehaviour
     // AJOUTÉ (2026-10-18, retour utilisateur : "touche Echap, entrer ou espace, ou clique gauche") - Échap est
     // déjà avalée par GameManager pendant SetIntroLock (voir _introLockActive, GameManager.cs) : aucun conflit
     // avec la Pause normale, qui ne redevient disponible qu'une fois cette coroutine terminée.
+    // MODIFIÉ (2026-10-25) - n'importe quelle touche (clavier, souris, manette) au lieu de 4 touches précises : c'est
+    // ce que promet l'invite affichée en bas à droite.
     private static bool ChallengeIntroSkipRequested()
     {
-        return Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-            || Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
+        return Input.anyKeyDown;
+    }
+
+    // AJOUTÉ (2026-10-25, retour utilisateur : "en bas à droite pendant cette animation tu mets un message qui dit
+    // d'appuyer sur une touche pour passer, ne mets pas du simple texte dans le vide, fais quelque chose de propre") -
+    // pastille sombre à liseré doré (mêmes sprites HudSprites.Pill/PillOutline que les pastilles du HUD) : une
+    // touche stylisée « » » qui pulse doucement, le texte en police de lecture, et une fine jauge dorée en pied de
+    // pastille qui se vide sur le temps de lecture restant. Construite en code comme le reste de l'annonce, sœur de
+    // _challengeIntroRoot (pas un enfant : son fondu reste indépendant de celui de la carte) et hors du HUD (taille
+    // constante, insensible à l'échelle HUD des Paramètres).
+    private void EnsureSkipPromptBuilt()
+    {
+        if (_skipPrompt != null) { _skipPrompt.gameObject.SetActive(true); return; }
+        if (_challengeIntroRoot == null || !(_challengeIntroRoot.parent is RectTransform canvasRoot)) return;
+
+        // MODIFIÉ (2026-10-26, retour utilisateur : "la barre en dessous est trop proche du texte et de l'icone en Y, donc
+        // agrandis un peu le tout en Y") - pastille 54 -> 64 de haut, touche et texte remontés de contentLift : la jauge
+        // garde sa place en pied de pastille, avec un vrai espace au-dessus d'elle.
+        const float height = 64f, padLeft = 12f, padRight = 22f, keyW = 44f, keyH = 32f, gap = 12f, contentLift = 5f;
+        Color gold = new Color32(0xE8, 0xC7, 0x7A, 0xFF);
+
+        GameObject root = new GameObject("SkipPrompt", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+        _skipPrompt = (RectTransform)root.transform;
+        _skipPrompt.SetParent(canvasRoot, false);
+        _skipPrompt.anchorMin = _skipPrompt.anchorMax = _skipPrompt.pivot = new Vector2(1f, 0f);
+        _skipPrompt.SetAsLastSibling();
+        _skipPromptGroup = root.GetComponent<CanvasGroup>();
+        _skipPromptGroup.alpha = 0f;
+        _skipPromptGroup.interactable = false;
+        _skipPromptGroup.blocksRaycasts = false;
+        Image bg = root.GetComponent<Image>();
+        bg.sprite = HudSprites.Pill;
+        bg.type = Image.Type.Sliced;
+        bg.color = new Color(0.06f, 0.05f, 0.08f, 0.85f);
+        bg.raycastTarget = false;
+
+        Image outline = NewPromptImage("Outline", _skipPrompt, HudSprites.PillOutline, new Color(gold.r, gold.g, gold.b, 0.55f));
+        outline.type = Image.Type.Sliced;
+        RectTransform outlineRt = outline.rectTransform;
+        outlineRt.anchorMin = Vector2.zero; outlineRt.anchorMax = Vector2.one;
+        outlineRt.offsetMin = outlineRt.offsetMax = Vector2.zero;
+
+        // Touche stylisée : petite pastille claire, liseré doré, « » » en encre sombre.
+        Image key = NewPromptImage("Key", _skipPrompt, HudSprites.Pill, new Color32(0xEC, 0xDD, 0xBB, 0xFF));
+        key.type = Image.Type.Sliced;
+        _skipPromptKey = key.rectTransform;
+        _skipPromptKey.anchorMin = _skipPromptKey.anchorMax = new Vector2(0f, 0.5f);
+        _skipPromptKey.pivot = new Vector2(0.5f, 0.5f);
+        _skipPromptKey.sizeDelta = new Vector2(keyW, keyH);
+        _skipPromptKey.anchoredPosition = new Vector2(padLeft + keyW * 0.5f, contentLift);
+        Image keyRim = NewPromptImage("Rim", _skipPromptKey, HudSprites.PillOutline, gold);
+        keyRim.type = Image.Type.Sliced;
+        keyRim.rectTransform.anchorMin = Vector2.zero; keyRim.rectTransform.anchorMax = Vector2.one;
+        keyRim.rectTransform.offsetMin = keyRim.rectTransform.offsetMax = Vector2.zero;
+        TextMeshProUGUI keyText = NewPromptText("Glyph", _skipPromptKey, "»", 28f, ParchmentInkColor);
+        keyText.rectTransform.anchorMin = Vector2.zero; keyText.rectTransform.anchorMax = Vector2.one;
+        keyText.rectTransform.offsetMin = Vector2.zero; keyText.rectTransform.offsetMax = new Vector2(0f, 3f);   // « » » est dessiné bas dans la police
+
+        TextMeshProUGUI label = NewPromptText("Label", _skipPrompt, Loc.T("Appuie sur une touche pour passer"), 22f, new Color32(0xEE, 0xE6, 0xD6, 0xFF));
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        float labelW = Mathf.Ceil(label.GetPreferredValues(label.text).x);
+        RectTransform labelRt = label.rectTransform;
+        labelRt.anchorMin = new Vector2(0f, 0f); labelRt.anchorMax = new Vector2(0f, 1f);
+        labelRt.pivot = new Vector2(0f, 0.5f);
+        labelRt.sizeDelta = new Vector2(labelW, 0f);
+        labelRt.anchoredPosition = new Vector2(padLeft + keyW + gap, contentLift);
+
+        float width = padLeft + keyW + gap + labelW + padRight;
+        _skipPrompt.sizeDelta = new Vector2(width, height);
+
+        // Jauge : un rail sombre et sa partie dorée, dont l'ancre droite suit le temps restant (UpdateSkipPrompt).
+        Image rail = NewPromptImage("ProgressRail", _skipPrompt, null, new Color(1f, 1f, 1f, 0.10f));
+        RectTransform railRt = rail.rectTransform;
+        railRt.anchorMin = new Vector2(0f, 0f); railRt.anchorMax = new Vector2(1f, 0f);
+        railRt.pivot = new Vector2(0.5f, 0f);
+        railRt.offsetMin = new Vector2(height * 0.5f, 7f); railRt.offsetMax = new Vector2(-height * 0.5f, 10f);
+        Image fill = NewPromptImage("Fill", railRt, null, gold);
+        _skipPromptProgress = fill.rectTransform;
+        _skipPromptProgress.anchorMin = Vector2.zero; _skipPromptProgress.anchorMax = Vector2.one;
+        _skipPromptProgress.offsetMin = _skipPromptProgress.offsetMax = Vector2.zero;
+    }
+
+    private static Image NewPromptImage(string name, RectTransform parent, Sprite sprite, Color color)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        Image img = go.GetComponent<Image>();
+        img.sprite = sprite;
+        img.color = color;
+        img.raycastTarget = false;
+        return img;
+    }
+
+    private TextMeshProUGUI NewPromptText(string name, RectTransform parent, string text, float size, Color color)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        TextMeshProUGUI tmp = go.GetComponent<TextMeshProUGUI>();
+        GameFonts.ToBody(tmp);
+        tmp.text = text;
+        tmp.fontSize = size;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
+        tmp.raycastTarget = false;
+        return tmp;
+    }
+
+    // fadeIn : 0 -> 1 au début du maintien (apparition en fondu + légère montée), puis jauge et pulsation de la touche.
+    private void UpdateSkipPrompt(float holdT, float fadeIn)
+    {
+        if (_skipPrompt == null) return;
+        float eased = 1f - (1f - fadeIn) * (1f - fadeIn);
+        _skipPromptGroup.alpha = eased;
+        _skipPrompt.anchoredPosition = new Vector2(-36f, 32f - 14f * (1f - eased));
+        float remaining = 1f - Mathf.Clamp01(holdT / Mathf.Max(0.01f, _challengeIntroHoldDuration));
+        _skipPromptProgress.anchorMax = new Vector2(remaining, 1f);
+        _skipPromptKey.localScale = Vector3.one * (1f + 0.06f * (0.5f + 0.5f * Mathf.Sin(holdT * 4.2f)));
     }
 
     // =====================
@@ -885,15 +1022,9 @@ public class GameUI : MonoBehaviour
         // reussi). On cache/affiche desormais le PARENT quand il porte une Image
         // (le chip complet), avec repli sur le texte seul si ce parent n'existe
         // pas (cas Game Over, chip pas encore mis en place).
-        GameObject chipRoot = null;
-        if (challengeText != null)
-        {
-            Image parentImage = challengeText.transform.parent != null ? challengeText.transform.parent.GetComponent<Image>() : null;
-            chipRoot = parentImage != null ? challengeText.transform.parent.gameObject : challengeText.gameObject;
-        }
-
-        if (chipRoot != null)
-            chipRoot.SetActive(false);
+        // MODIFIÉ (2026-10-26) - le chip est désormais préparé (actif, transparent, texte posé) par PrepareChallengeChip à
+        // l'ouverture de l'écran, dans le cadre d'infos : il n'est plus que révélé ici, sans faire bouger la mise en page.
+        GameObject chipRoot = ChallengeChipRoot(challengeText);
 
         yield return StartCoroutine(CountUpNumber(goldText, 0, baseGold, _goldCountUpDuration));
 
@@ -903,6 +1034,8 @@ public class GameUI : MonoBehaviour
 
             if (chipRoot != null)
             {
+                CanvasGroup chipGroup = chipRoot.GetComponent<CanvasGroup>();
+                if (chipGroup != null) chipGroup.alpha = 1f;
                 chipRoot.SetActive(true);
                 // MODIFIE - challengeText.color = _challengeSuccessColor (#FFC94D)
                 // retire : c'est EXACTEMENT la meme teinte que le fond du chip
@@ -1005,15 +1138,15 @@ public class GameUI : MonoBehaviour
                 // uniquement : un temps qui s'affiche pareil que le record compte comme égalé, pas "presque".
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current)), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("À deux doigts de ton record de survie..."), hardCap = WaveManager.Instance != null ? WaveManager.Instance.BossSpawnInterval * 3f : 900f },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount), nearRecordMessage = Loc.T("Si proche de ton record d'éliminations...") },
-                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached), nearRecordMessage = Loc.T("Un cheveu de ton meilleur niveau...") },
-                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun), nearRecordMessage = Loc.T("Tout près de ton record d'Or...") },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.PreviousBestTime), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)), nearRecordMessage = Loc.T("Ton record de survie était à portée"), hardCap = WaveManager.Instance != null ? WaveManager.Instance.BossSpawnInterval * 3f : 900f },
+                    new RecordCheck { current = killCount, best = MetaProgressionManager.Instance.PreviousBestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount), nearRecordMessage = Loc.T("Ton record d'éliminations était à portée") },
+                    new RecordCheck { current = levelReached, best = MetaProgressionManager.Instance.PreviousBestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached), nearRecordMessage = Loc.T("Ton meilleur niveau était à portée") },
+                    new RecordCheck { current = goldThisRun, best = MetaProgressionManager.Instance.PreviousBestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun), nearRecordMessage = Loc.T("Ton record d'Or était à portée") },
                 };
 
                 foreach (RecordCheck check in checks)
                 {
-                    if (check.best > 0f && check.current >= check.best)
+                    if (check.best > 0f && check.current > check.best)   // égalité : pas un record (voir PreviousBestTime)
                     {
                         message = check.newRecordMessage;
                         isRecordHighlight = true;
@@ -1085,7 +1218,31 @@ public class GameUI : MonoBehaviour
 
     private int PopulateBuildGrid(Transform gridContent)
     {
-        return PopulateBuildGrid(gridContent, _buildGridSlotPrefab, _spawnedBuildGridSlots, _arsenalCellSize, _arsenalSpacing, false, null, null, null, null);
+        // MODIFIÉ (2026-10-26, retour utilisateur : "je t'avais dis d'agrandir les cases, ça doit presque remplir tout le
+        // fond, il faut qu'il y ait le même écart entre le bord, et l'écart qu'il y a entre chaques cases") - la taille
+        // des cases se déduit du cadre gris de l'arsenal (BackgroundBuild, frère de la grille) : 3 cases et 4 écarts
+        // _arsenalSpacing (bord, entre les cases, bord) remplissent sa largeur, et la grille est posée à un écart de son
+        // coin haut-gauche. Le contenu des cases grandit d'autant (_endTileScale, voir ConfigureBuildGridSlot), comme
+        // l'agrandissement proportionnel du menu Pause ; pastilles et losanges gardent leur taille.
+        Vector2 cellSize = _arsenalCellSize;
+        Vector2? origin = null;
+        _endTileScale = 1f;
+        RectTransform content = gridContent as RectTransform;
+        RectTransform frame = content != null && content.parent != null ? content.parent.Find("BackgroundBuild") as RectTransform : null;
+        if (frame != null)
+        {
+            if (content.parent.parent is RectTransform column) LayoutRebuilder.ForceRebuildLayoutImmediate(column);
+            Vector3[] corners = new Vector3[4];
+            frame.GetWorldCorners(corners);
+            Vector3 topLeft = content.InverseTransformPoint(corners[1]);
+            Vector3 bottomRight = content.InverseTransformPoint(corners[3]);
+            float side = Mathf.Min(bottomRight.x - topLeft.x, topLeft.y - bottomRight.y);
+            float cell = (side - 4f * _arsenalSpacing.x) / 3f;
+            cellSize = new Vector2(cell, cell);
+            origin = new Vector2(topLeft.x - content.rect.xMin + _arsenalSpacing.x, content.rect.yMax - topLeft.y + _arsenalSpacing.y);
+            _endTileScale = cell / _arsenalCellSize.x;
+        }
+        return PopulateBuildGrid(gridContent, _buildGridSlotPrefab, _spawnedBuildGridSlots, cellSize, _arsenalSpacing, false, null, null, null, null, null, origin);
     }
 
     // Version générique (cellule/espacement/style paramétrables) : réutilisée telle quelle par PauseMenuUI.PopulateGrid()
@@ -1094,7 +1251,7 @@ public class GameUI : MonoBehaviour
     // (même sprite sobre pour toutes les cartes) ; laissé à null pour garder le style "tuile teintée" par défaut
     // de cet écran (Victoire/Défaite).
     public int PopulateBuildGrid(Transform gridContent, GameObject slotPrefab, List<GameObject> spawnedSlots, Vector2 cellSize, Vector2 spacing, bool showNames,
-        Sprite parchmentSober, Color? dotEmpty, Color? dotFilled, Color? dotMax, System.Action<UpgradeData> onSlotClicked = null)
+        Sprite parchmentSober, Color? dotEmpty, Color? dotFilled, Color? dotMax, System.Action<UpgradeData> onSlotClicked = null, Vector2? gridOrigin = null)
     {
         foreach (GameObject old in spawnedSlots)
             if (old != null) Destroy(old);
@@ -1122,7 +1279,8 @@ public class GameUI : MonoBehaviour
         {
             GameObject slotGO = Instantiate(slotPrefab, gridContent);
             ConfigureBuildGridSlot(slotGO, upgrade, showNames, parchmentSober, dotEmpty, dotFilled, dotMax, cellSize, onSlotClicked);
-            PositionArsenalSlot(slotGO, row, col, colSpan, cellSize, spacing, originX);
+            if (gridOrigin.HasValue) PositionArsenalSlot(slotGO, row, col, colSpan, cellSize, spacing, gridOrigin.Value.x, gridOrigin.Value.y);
+            else PositionArsenalSlot(slotGO, row, col, colSpan, cellSize, spacing, originX);
             spawnedSlots.Add(slotGO);
             count++;
         }
@@ -1177,6 +1335,25 @@ public class GameUI : MonoBehaviour
 
     private static readonly Vector2 _arsenalCellSize = new Vector2(125f, 125f);
     private static readonly Vector2 _arsenalSpacing = new Vector2(20f, 20f);
+
+    // Compteur "×N" de la tuile Soin (Victoire/Défaite) : écart avec le bas et la droite de la tuile (le même que celui du
+    // losange de déblocage avec son coin), et corrections mesurées sur capture pour que cet écart soit celui des chiffres
+    // visibles : TextMeshPro laisse un vide sous les chiffres (place des jambages) et Bangers, penchée, dépasse à droite.
+    private const float HealCountMargin = 10f;
+    private const float HealCountSize = 24f;
+    private const float HealCountBaselineInset = -2.8f;
+    private const float HealCountSlantInset = 3.7f;
+
+    // Agrandissement des cases de Victoire/Défaite par rapport au prefab (125 px), calculé par PopulateBuildGrid : leur
+    // contenu (icônes) grandit d'autant, les pastilles et losanges gardent leur taille.
+    private float _endTileScale = 1f;
+
+    // Double Tir (Victoire/Défaite) : descendue sous le centre de sa case, pour que ses gouttes (dessinées en diagonale
+    // vers le haut à droite) ne touchent pas le losange du coin (retour utilisateur 2026-10-26 : "baisse un peu l'icone").
+    // MODIFIÉ (2026-10-26, même retour : "un tout petit peu vers le bas et la gauche, mais vraiment peu") : 7 -> 10 vers
+    // le bas, 3 vers la gauche.
+    private const float DoubleShotEndDrop = 10f;
+    private const float DoubleShotEndShiftLeft = 3f;
 
     // Les 6 armes disponibles CETTE partie (la carte spéciale du perso + les 5 universelles), groupées par paire de
     // fusion quand une paire a une fusion définie et que les 2 armes sont encore libres — la fusion du personnage
@@ -1514,7 +1691,23 @@ public class GameUI : MonoBehaviour
                 // MODIFIE (2026-09-30, retour utilisateur : "sur Victoire/Défaite, l'icône de Double Tir est
                 // trop haute, baisse-la") - même icône (les 2 gouttes) visuellement plus haute que les autres
                 // dans son cadre sur CETTE tuile aussi (repère différent du menu Pause, valeur absolue distincte).
-                iconRt.anchoredPosition = parchmentSober != null ? new Vector2(-47f, -18f) : new Vector2(iconRt.anchoredPosition.x, 26f);
+                // Victoire/Défaite : placée par le bloc d'agrandissement juste en dessous.
+                if (parchmentSober != null) iconRt.anchoredPosition = new Vector2(-47f, -18f);
+            }
+
+            // AJOUTÉ (2026-10-26, retour utilisateur : "agrandis un peu toutes les icones, comme avec la méthode où tu as
+            // agrandi le pause panel, donc après l'avoir fait, recentre l'icone de double tir, ne change pas la taille des
+            // dots") puis (précisé : "je t'avais dis d'agrandir les cases") - Victoire/Défaite : l'icône grandit comme sa
+            // case (_endTileScale, taille et position depuis le centre), les pastilles gardent leur taille. Double Tir
+            // (sans pastilles) : centrée dans sa case. Remplace le X absolu -8 de Double Tir (même jour) : recentrée.
+            if (parchmentSober == null && !isFusion)
+            {
+                RectTransform iconRt = (RectTransform)refs.icon.transform;
+                Vector2 size = iconRt.sizeDelta * _endTileScale;
+                iconRt.sizeDelta = size;
+                iconRt.anchoredPosition = upgrade.upgradeType == UpgradeType.DoubleShot
+                    ? new Vector2(-DoubleShotEndShiftLeft, size.y * 0.5f - DoubleShotEndDrop)  // pivot en haut : un peu plus bas et à gauche
+                    : iconRt.anchoredPosition * _endTileScale;
             }
         }
 
@@ -1562,11 +1755,19 @@ public class GameUI : MonoBehaviour
             if (refs.fusionPlusText != null) refs.fusionPlusText.gameObject.SetActive(false);
         }
 
+        if (isFusion && parchmentSober == null)
+            LayoutEndScreenFusionTile(refs, upgrade, owned);
+
         // Une tuile de fusion n'affiche jamais de pastilles de palier, sur AUCUN écran (une fusion n'a qu'un
         // seul palier - les pastilles n'y ont jamais rien apporté) : basé sur isFusion, pas showFusionVisual, pour
         // rester vrai sur Victoire/Défaite même sans le visuel dédié (icône simple + fond violet) ci-dessus.
+        // (2026-10-26 : une pastille dorée a été essayée sous la fusion de Victoire/Défaite, puis retirée à la demande de
+        // l'utilisateur, la tuile montrant désormais l'icône de fusion et ses 2 armes sources.)
+        // Soin (2026-10-26, même retour : "enlève les dots [...] et tu met à la place un indicateur chiffré en bas à
+        // droite") : un compteur "×N" (nombre de Soins pris) remplace ses pastilles, voir plus bas.
+        bool healCount = upgrade.upgradeType == UpgradeType.Heal && parchmentSober == null && refs.stackCountText != null;
         if (refs.tierDotsRow != null)
-            refs.tierDotsRow.gameObject.SetActive(!isFusion);
+            refs.tierDotsRow.gameObject.SetActive(!healCount && !isFusion);
 
         if (refs.nameText != null)
         {
@@ -1587,7 +1788,28 @@ public class GameUI : MonoBehaviour
             }
         }
         if (refs.stackCountText != null)
-            refs.stackCountText.gameObject.SetActive(false);
+        {
+            refs.stackCountText.gameObject.SetActive(healCount);
+            if (healCount)
+            {
+                // Coin bas-droit, même écart (HealCountMargin) avec le bas et la droite de la tuile.
+                TextMeshProUGUI count = refs.stackCountText;
+                RectTransform countRt = count.rectTransform;
+                countRt.anchorMin = countRt.anchorMax = countRt.pivot = new Vector2(1f, 0f);
+                countRt.sizeDelta = new Vector2(80f, 30f);
+                countRt.anchoredPosition = new Vector2(-HealCountMargin, HealCountMargin);
+                count.alignment = TextAlignmentOptions.BottomRight;
+                count.enableAutoSizing = false;
+                count.fontSize = HealCountSize;
+                count.margin = new Vector4(0f, 0f, HealCountSlantInset, HealCountBaselineInset);
+                count.text = "×" + currentLevel;
+                // MODIFIÉ (2026-10-26, retour utilisateur : "met le en couleur blanc, et rapetisse le un peu") - blanc au
+                // contour sombre, comme les montants Or / Éclats.
+                TextMeshProUGUI amountStyle = _gameOverGoldText != null ? _gameOverGoldText : _victoryGoldText;
+                if (amountStyle != null) count.fontSharedMaterial = amountStyle.fontSharedMaterial;
+                count.color = owned ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+            }
+        }
 
         // Pastilles : une par palier (1 pour Double tir/Fusion, 3 pour les armes, 5 pour Dégâts / Cadence / Soin).
         int dotCount = Mathf.Clamp(maxLevel, 1, 5);
@@ -1851,6 +2073,85 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-10-26, retour utilisateur : "je trouve ça dommage d'utiliser la place de carte pour juste mettre
+    // l'icone de la fusion au milieu avec une dot en dessous") - tuile de fusion de Victoire/Défaite (2 colonnes) :
+    // MODIFIÉ (2026-10-26, même jour : "ne met pas leur noms à côté, parce que c'est bizarre c'est les seul qui ont du
+    // texte [...] laisse l'icone de fusion à gauche, et à droite, tu met l'icones des 2 sous fusions cote à cote en
+    // légèrement plus petit, avec la barre verticale entre les 2 parties. Il doit y avoir le même écart entre le bord
+    // droit du cadre, le côté droit de l'icone le plus à droite, par rapport au bord gauche de la case, et du bord gauche
+    // de l'icone de la fusion") - icône de fusion à gauche (taille et hauteur des icônes des autres tuiles, pastille dorée
+    // dessous), les 2 armes sources côte à côte à droite, un filet vertical à mi-chemin entre les deux parties, et le
+    // même écart FusionTileInset avec le bord gauche et le bord droit de la tuile.
+    // Positions relatives aux bords de la tuile : elle n'a pas encore sa taille finale ici (PositionArsenalSlot après).
+    // MODIFIÉ (2026-10-26, retour utilisateur : "enlève la dot qu'il y a sous l'icone de fusion, et je veux que tu
+    // recentre l'icone de fusion pour qu'il y ait le même écart entre la barre de séparation et le bord gauche de la
+    // case. Aussi, tu peux donc agrandir l'icone de fusion") - plus de pastille : tout est centré en hauteur dans la
+    // tuile ; l'icône de fusion, plus grande (FusionTileIconGrow), est centrée entre le bord gauche et le filet.
+    // Tout est placé depuis le bord droit (armes sources, filet) : la tuile n'a pas encore sa largeur finale ici.
+    private const float FusionTileInset = 14f;          // bord droit de la tuile -> bord droit de la dernière arme source
+    private const float FusionTileSourceScale = 0.8f;   // armes sources un peu plus petites qu'une icône de case simple
+    private const float FusionTileSourceGap = 8f;
+    private const float FusionTileRuleGap = 16f;        // 1re arme source -> filet
+    private const float FusionTileIconGrow = 1.3f;      // icône de fusion par rapport à une icône de case simple
+    private const float FusionTileRuleHeight = 70f;
+
+    private void LayoutEndScreenFusionTile(UpgradeSlotRefs refs, UpgradeData upgrade, bool owned)
+    {
+        RectTransform iconRt = refs.icon != null ? refs.icon.rectTransform : null;
+        if (iconRt == null) return;
+
+        float baseIcon = iconRt.sizeDelta.y * _endTileScale;      // icône d'une case simple, à l'échelle des cases
+        float sourceSize = baseIcon * FusionTileSourceScale;
+        float ruleFromRight = FusionTileInset + 2f * sourceSize + FusionTileSourceGap + FusionTileRuleGap;
+
+        // Icône de fusion : centrée entre le bord gauche et le filet (ancrée au centre : -ruleFromRight / 2).
+        float iconSize = baseIcon * FusionTileIconGrow;
+        iconRt.anchorMin = iconRt.anchorMax = iconRt.pivot = new Vector2(0.5f, 0.5f);
+        iconRt.sizeDelta = new Vector2(iconSize, iconSize);
+        iconRt.anchoredPosition = new Vector2(-ruleFromRight * 0.5f, 0f);
+
+        // Armes sources : côte à côte, calées à droite. Leur rangée (pile horizontale du prefab) couvre toute la tuile,
+        // positions posées ici.
+        Image[] sources = { refs.sourceIconTop, refs.sourceIconBottom };
+        UpgradeData[] sourceData = { FindUpgradeByType(upgrade.FusionSource1), FindUpgradeByType(upgrade.FusionSource2) };
+        Color sourceColor = owned ? Color.white : new Color(0.5f, 0.5f, 0.5f, 0.75f);
+        RectTransform row = refs.sourceIconTop != null ? refs.sourceIconTop.rectTransform.parent as RectTransform : null;
+        if (row != null)
+        {
+            HorizontalLayoutGroup rowLayout = row.GetComponent<HorizontalLayoutGroup>();
+            if (rowLayout != null) rowLayout.enabled = false;
+            row.anchorMin = Vector2.zero;
+            row.anchorMax = Vector2.one;
+            row.offsetMin = row.offsetMax = Vector2.zero;
+        }
+        for (int i = 0; i < sources.Length; i++)
+        {
+            if (sources[i] == null) continue;
+            sources[i].gameObject.SetActive(true);
+            sources[i].sprite = sourceData[i] != null ? sourceData[i].icon : null;
+            sources[i].color = sources[i].sprite != null ? sourceColor : new Color(0f, 0f, 0f, 0f);
+            sources[i].preserveAspect = true;
+            RectTransform rt = sources[i].rectTransform;
+            rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(sourceSize, sourceSize);
+            float fromRight = FusionTileInset + sourceSize * 0.5f + (i == 0 ? sourceSize + FusionTileSourceGap : 0f);
+            rt.anchoredPosition = new Vector2(-fromRight, 0f);
+        }
+        if (refs.fusionPlusText != null) refs.fusionPlusText.gameObject.SetActive(false);
+
+        if (refs.fusionDivider != null)
+        {
+            refs.fusionDivider.gameObject.SetActive(true);
+            RectTransform rule = refs.fusionDivider.rectTransform;
+            rule.anchorMin = rule.anchorMax = new Vector2(1f, 0.5f);
+            rule.pivot = new Vector2(0.5f, 0.5f);
+            rule.sizeDelta = new Vector2(FusionTileRuleHeight, rule.sizeDelta.y);   // filet couché tourné de 90° : x = longueur
+            rule.anchoredPosition = new Vector2(-ruleFromRight, 0f);
+            if (rule.GetComponent<PixelSnapRule>() == null) rule.gameObject.AddComponent<PixelSnapRule>();
+        }
+    }
+
     private UpgradeData FindUpgradeByType(UpgradeType type)
     {
         if (LevelUpManager.Instance == null || LevelUpManager.Instance.AllUpgrades == null) return null;
@@ -1878,7 +2179,12 @@ public class GameUI : MonoBehaviour
     // - variante plus claire/douce de ParchmentInkColor (même teinte sépia, luminosité remontée) réservée aux petits
     // textes descriptifs secondaires (ex: description de défi sous le titre) pour les distinguer visuellement des
     // titres/noms, qui gardent l'encre pleine ParchmentInkColor.
-    public static readonly Color ParchmentInkColorLight = new Color32(0x9C, 0x7A, 0x5E, 0xFF);
+    // MODIFIÉ (2026-10-25, retour utilisateur : "la description du défi n'est pas de la bonne couleur par rapport à
+    // la couleur du fond") - l'ancienne encre claire #9C7A5E ne donnait que 2,9:1 de contraste sur le parchemin
+    // (#ECDDBB), délavée sous son contour sombre. 4 teintes comparées sur capture en jeu : brun rouille #7A3B1C retenu
+    // (6,3:1, aussi lisible que le titre), qui reste distinct du titre par la teinte plutôt que par la clarté et
+    // s'accorde au sceau de cire du parchemin.
+    public static readonly Color ParchmentInkColorLight = new Color32(0x7A, 0x3B, 0x1C, 0xFF);
 
     // MODIFIÉ (2026-10-18, retour utilisateur, capture à l'appui : "le texte est trop gros, et j'ai l'impression
     // qu'il est en gras, donc les lettres se chevauchent en gros blanc") - `outlineWidth` est une fraction FIXE de
@@ -1934,10 +2240,10 @@ public class GameUI : MonoBehaviour
     // retiree sur demande utilisateur.
     private static readonly string[] _gameOverMaxedOutLines =
     {
-        "Tu as tout donné à cette branche. Littéralement",
+        "Tu as tout débloqué dans cette branche",
         "Plus rien à débloquer ici — change de personnage pour la suite",
         "Cette branche n'a plus de secret pour toi",
-        "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose",
+        "Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.",
     };
 
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
@@ -1966,9 +2272,29 @@ public class GameUI : MonoBehaviour
     // palier - montrer "encore X Or pour debloquer Y" juste apres avoir
     // debloque quelqu'un serait anticlimatique. Voir NOTES.md / V13 §"Systeme
     // de deblocage des personnages" - c'etait deja prevu, jamais cable.
+    // MODIFIÉ (2026-10-26) - texte calculé et posé (transparent) dès l'ouverture par PrepareNextUnlockText : le cadre
+    // d'infos connaît ainsi sa hauteur finale tout de suite, la coroutine ne fait plus que le fondu d'apparition.
     private IEnumerator PlayNextUnlockPreview()
     {
         if (_gameOverNextUnlockText == null) yield break;
+
+        CanvasGroup cg = _gameOverNextUnlockText.GetComponent<CanvasGroup>();
+        if (cg == null) cg = _gameOverNextUnlockText.gameObject.AddComponent<CanvasGroup>();
+        _gameOverNextUnlockText.gameObject.SetActive(true);
+
+        float elapsed = 0f;
+        while (elapsed < _nextUnlockFadeInDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            cg.alpha = Mathf.Clamp01(elapsed / _nextUnlockFadeInDuration);
+            yield return null;
+        }
+        cg.alpha = 1f;
+    }
+
+    private void PrepareNextUnlockText()
+    {
+        if (_gameOverNextUnlockText == null) return;
 
         string unlockedCharacter = MetaProgressionManager.Instance != null
             ? MetaProgressionManager.Instance.ConsumePendingUnlockNotification()
@@ -2016,23 +2342,15 @@ public class GameUI : MonoBehaviour
         // sombre que celui de la Victoire, le texte doit compenser en contraste,
         // pas juste reprendre la même nuance "discrète" qui marchait sur un fond
         // plus clair.
+        // MODIFIÉ (2026-10-26) - dans le cadre d'infos (fond clair des cartes Or / Éclats), le doré _challengeSuccessColor
+        // ne se lirait plus : l'annonce d'un nouveau personnage passe à l'encre rouille ParchmentInkColorLight.
         _gameOverNextUnlockText.text = text;
-        _gameOverNextUnlockText.color = highlight ? _challengeSuccessColor : new Color32(0x33, 0x27, 0x1A, 0xFF);
+        _gameOverNextUnlockText.color = highlight ? ParchmentInkColorLight : new Color32(0x33, 0x27, 0x1A, 0xFF);
 
         CanvasGroup cg = _gameOverNextUnlockText.GetComponent<CanvasGroup>();
         if (cg == null) cg = _gameOverNextUnlockText.gameObject.AddComponent<CanvasGroup>();
-
         cg.alpha = 0f;
         _gameOverNextUnlockText.gameObject.SetActive(true);
-
-        float elapsed = 0f;
-        while (elapsed < _nextUnlockFadeInDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            cg.alpha = Mathf.Clamp01(elapsed / _nextUnlockFadeInDuration);
-            yield return null;
-        }
-        cg.alpha = 1f;
     }
 
     // AJOUTE - phrases de clôture du récap de victoire (temps 3 de la refonte
@@ -2056,9 +2374,9 @@ public class GameUI : MonoBehaviour
     // run très rapide/chanceux avant le boss 3).
     private static readonly string[] _victoryEmptyBuildLines =
     {
-        "Une victoire sans la moindre compétence. Chapeau",
-        "Aucune compétence récupérée. Le style, ça compte double",
-        "Rien pris en cours de route, et pourtant tu es là",
+        "Une victoire sans la moindre compétence. Remarquable.",
+        "Aucune compétence récupérée, et la victoire malgré tout.",
+        "Rien pris en cours de route, et pourtant tu es là.",
     };
 
     // AJOUTE - pool pour PopulateEmptyBuildState côté Game Over (mort très
@@ -2066,7 +2384,7 @@ public class GameUI : MonoBehaviour
     // pas juste théorique).
     private static readonly string[] _gameOverEmptyBuildLines =
     {
-        "Pas eu le temps de récupérer la moindre compétence",
+        "Tu n'as pas eu le temps de récupérer la moindre compétence",
         "Aucune compétence récupérée cette fois",
     };
 
@@ -2079,8 +2397,8 @@ public class GameUI : MonoBehaviour
     // (relecture "jeu serieux / Steam").
     private static readonly string[] _victoryQuietLines =
     {
-        "Pas de record aujourd'hui, mais la victoire est bien réelle",
-        "Rien d'exceptionnel à signaler, à part la victoire elle-même",
+        "Pas de record aujourd'hui, mais la victoire est bien réelle.",
+        "Rien d'exceptionnel à signaler, à part la victoire elle-même.",
         "Aucun exploit cette fois — juste une victoire de plus",
     };
 
@@ -2172,9 +2490,9 @@ public class GameUI : MonoBehaviour
 
     private static readonly string[] _endlessEndLines =
     {
-        "{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps",
+        "{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps.",
         "Tu as tenu {t} face à des boss de plus en plus féroces",
-        "{b} boss vaincus avant la chute. Le prochain record est à portée",
+        "{b} boss vaincus avant la chute. Le prochain record est à portée.",
     };
 
     private string BuildModeGameOverMessage(float runTime, int bossKillCount)
@@ -2182,14 +2500,14 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
-            return Loc.F("{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort", bossKillCount, total);
+            return Loc.F("{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.", bossKillCount, total);
         }
         if (GameModes.IsTitans)
         {
             string killed = bossKillCount <= 0 ? Loc.T("Aucun titan abattu")
                 : bossKillCount == 1 ? Loc.T("1 titan abattu")
                 : Loc.F("{0} titans abattus", bossKillCount);
-            return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort", killed);
+            return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.", killed);
         }
 
         string line = Loc.T(_endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)]);
@@ -2208,12 +2526,12 @@ public class GameUI : MonoBehaviour
         }
         if (GameModes.IsTitans)
         {
-            _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête", FormatTime(runTime));
+            _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête.", FormatTime(runTime));
             return;
         }
 
         string closer = Loc.T(_victoryClosers[UnityEngine.Random.Range(0, _victoryClosers.Length)]);
-        _victoryRecapText.text = Loc.F("{0} au compteur, {1} ennemis au tapis. {2}", FormatTime(runTime), killCount, closer);
+        _victoryRecapText.text = Loc.F("{0} de combat, {1} ennemis vaincus. {2}", FormatTime(runTime), killCount, closer);
     }
 
     // AJOUTE - highlight d'un record BATTU cette partie (temps 1). Volontairement
@@ -2250,15 +2568,15 @@ public class GameUI : MonoBehaviour
             {
                 RecordCheck[] checks =
                 {
-                    new RecordCheck { current = runTime, best = MetaProgressionManager.Instance.GetBestTime(DifficultyTiers.Current), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)) },
-                    new RecordCheck { current = killCount, best = data.bestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount) },
-                    new RecordCheck { current = levelReached, best = data.bestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached) },
-                    new RecordCheck { current = goldThisRun, best = data.bestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun) },
+                    new RecordCheck { current = Mathf.Floor(runTime), best = Mathf.Floor(MetaProgressionManager.Instance.PreviousBestTime), newRecordMessage = Loc.F("Nouveau record de survie : {0} !", FormatTime(runTime)) },
+                    new RecordCheck { current = killCount, best = MetaProgressionManager.Instance.PreviousBestKills, newRecordMessage = Loc.F("Nouveau record d'éliminations : {0} !", killCount) },
+                    new RecordCheck { current = levelReached, best = MetaProgressionManager.Instance.PreviousBestLevel, newRecordMessage = Loc.F("Nouveau record de niveau : {0} !", levelReached) },
+                    new RecordCheck { current = goldThisRun, best = MetaProgressionManager.Instance.PreviousBestGoldInRun, newRecordMessage = Loc.F("Nouveau record d'Or en une partie : {0} !", goldThisRun) },
                 };
 
                 foreach (RecordCheck check in checks)
                 {
-                    if (check.best > 0f && check.current >= check.best)
+                    if (check.best > 0f && check.current > check.best)   // égalité : pas un record (voir PreviousBestTime)
                     {
                         message = check.newRecordMessage;
                         break;
@@ -2326,7 +2644,14 @@ public class GameUI : MonoBehaviour
         PopulateVictoryRecap(runTimer, killCount);
         FitSeparatorToText(_victoryRecapText);
         bool recordShown = PopulateVictoryRecordHighlight(runTimer, killCount, level, totalGold);
-        PopulateVictoryQuietLine(recordShown, challengeCompleted);
+        // MODIFIÉ (2026-10-26) - le chip ne s'affiche qu'avec un vrai bonus d'Or (même condition que PlayGoldSequence) :
+        // défi réussi sans bonus = phrase de repli, sinon le cadre d'infos n'aurait aucun message.
+        bool chipShown = challengeCompleted && totalGold > baseGold;
+        PopulateVictoryQuietLine(recordShown, chipShown);
+        EndInfoBox victoryInfo = EnsureEndInfoBox(_victoryPanel, _victoryStatsText, _victoryChallengeText, _victoryRecordHighlightText, _victoryQuietLineText);
+        FillEndInfoStats(victoryInfo, mins, secs, killCount, level, victoryBossKills);
+        PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardPercent);
+        LayoutEndInfoBox(_victoryPanel, victoryInfo);
         PopulateVictoryPortrait();
         int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
         PopulateEmptyBuildState(_victoryEmptyBuildText, victoryTileCount, _victoryEmptyBuildLines);
@@ -2805,6 +3130,50 @@ public class GameUI : MonoBehaviour
         if (action == GameAction.PhantomClone) RefreshCloneKey();
     }
 
+    // AJOUTÉ (2026-10-25, audit de lisibilité) - plusieurs textes des écrans de fin étaient en LiberationSans (police type
+    // Arial, étrangère au reste du jeu) et se lisaient mal : Or et Éclats gagnés en jaune / cyan sur les cases beige (1,5:1),
+    // « Tentative n°X » à 60 % d'opacité. Ils passent en Bangers comme le reste de l'écran, avec un contour sombre (même
+    // rendu que l'Or du HUD).
+    private static readonly Color32 EndScreenOutlineColor = new Color32(0x2A, 0x1A, 0x08, 0xFF);
+
+    private void StyleEndScreenTexts()
+    {
+        TextMeshProUGUI reference = _gameOverMessageText;              // titre du Game Over, déjà en Bangers
+        if (reference == null) return;
+
+        foreach (TextMeshProUGUI t in new[] { _gameOverGoldText, _gameOverEclatsText, _victoryGoldText, _victoryEclatsText })
+            ToEndScreenFont(t, reference, 1.15f, 0.24f);
+
+        foreach (TextMeshProUGUI t in new[] { _gameOverAttemptText, _victoryAttemptText })
+        {
+            if (!ToEndScreenFont(t, reference, 1.15f, 0.2f)) continue;
+            Color c = t.color;
+            t.color = new Color(c.r, c.g, c.b, 1f);
+        }
+
+        // Les lignes d'informations du bas (bandeau du défi, statistiques, prochain palier, phrase calme) restent dans leur
+        // police d'origine : essayées en Bangers, refusées par l'utilisateur (moins belles).
+
+        // Phrase sous « Défaite » (beige clair sur parchemin, 3:1) : déjà en Bangers, elle prend le contour sombre de
+        // « Tentative n°X ». En dernier : elle sert de référence aux textes ci-dessus.
+        Material outlinedMessage = HudBar.OutlinedMaterial(reference.fontSharedMaterial, 0.2f, EndScreenOutlineColor);
+        if (outlinedMessage != null) reference.fontSharedMaterial = outlinedMessage;
+    }
+
+    // Passe un texte en Bangers (avec ou sans contour sombre) et agrandit sa police : Bangers est plus serrée que
+    // LiberationSans à taille égale. Sans effet si le texte est déjà en Bangers.
+    private static bool ToEndScreenFont(TextMeshProUGUI t, TextMeshProUGUI reference, float sizeScale, float outline)
+    {
+        if (t == null || t.font == reference.font) return false;
+        t.font = reference.font;
+        t.fontSharedMaterial = outline > 0f
+            ? HudBar.OutlinedMaterial(reference.fontSharedMaterial, outline, EndScreenOutlineColor)
+            : reference.fontSharedMaterial;
+        t.fontStyle &= ~FontStyles.Italic;                            // Bangers est déjà penchée
+        t.fontSize *= sizeScale;
+        return true;
+    }
+
     // « Éliminations » est plus long que « Kills » : les bandeaux de stats (Game Over / Victoire) réduisent leur police
     // au besoin plutôt que de déborder de leur cadre.
     private void FitStatStrips()
@@ -2819,6 +3188,277 @@ public class GameUI : MonoBehaviour
             // Une seule ligne : sans ça TMP coupe la ligne au lieu de réduire la police (italien, espagnol...).
             t.textWrappingMode = TextWrappingModes.NoWrap;
         }
+    }
+
+    // ---- Cadre d'infos des écrans de fin (Victoire / Défaite) ------------------------------------------------------------
+    // AJOUTÉ (2026-10-26, retour utilisateur : "les informations qu'on voit en bas à gauche, c'est écrit petit, et c'est
+    // espacé beaucoup en Y entre les 2 textes [...] Tu pourrait faire un petit cadre [...] il y a des messages qui ne sont
+    // pas tout le temps ici [...] faire en sorte que ça ne soit jamais vide et tout petit") - la ligne de stats et les
+    // messages variables (défi, aperçu du prochain déblocage, record, phrase de repli) quittent la pile verticale, qui
+    // les étirait sur toute la hauteur restante, pour un cadre du même style que les cartes Or / Éclats : une rangée de
+    // stats (gros chiffre + intitulé, une case par stat), un filet, puis les messages présents. La colonne de gauche suit
+    // la grille de l'arsenal : titres alignés, cartes Or / Éclats calées sur le haut du cadre gris de l'arsenal, cadre
+    // d'infos calé sur son bas. Le cadre garde au moins sa hauteur de base (jamais un petit bandeau) et grandit, au
+    // détriment des cartes Or / Éclats, quand les messages prennent plus de place.
+    // Essai écarté : la même ligne de stats en plus gros dans le cadre (beaucoup de vide, et trop juste en largeur pour
+    // les langues longues).
+    private sealed class EndInfoBox
+    {
+        public RectTransform root;
+        public TextMeshProUGUI[] values = new TextMeshProUGUI[4];
+        public TextMeshProUGUI[] labels = new TextMeshProUGUI[4];
+        public GameObject[] dividers = new GameObject[3];
+    }
+
+    private readonly Dictionary<GameObject, EndInfoBox> _endInfoBoxes = new Dictionary<GameObject, EndInfoBox>();
+
+    private const float EndInfoKeepHeight = 250f;      // cartes Or / Éclats quand les messages tiennent dans la hauteur de base
+    private const float EndInfoKeepMinHeight = 200f;
+    private const float EndInfoGap = 16f;              // même écart que entre les cartes Or et Éclats
+    private const float EndInfoStatsHeight = 80f;
+    private static readonly Color32 EndInfoLabelColor = new Color32(0x6B, 0x55, 0x3C, 0xFF);
+    private static readonly Color32 EndInfoRuleColor = new Color32(0x33, 0x27, 0x1A, 0x40);
+
+    // Construit le cadre une fois par écran et y range les textes variables (dans l'ordre d'affichage).
+    private EndInfoBox EnsureEndInfoBox(GameObject panel, TextMeshProUGUI oldStatLine, params TextMeshProUGUI[] messages)
+    {
+        if (panel == null) return null;
+        if (_endInfoBoxes.TryGetValue(panel, out EndInfoBox existing) && existing.root != null) return existing;
+
+        RectTransform leftCol = panel.transform.Find("CenterCard/Body/LeftCol") as RectTransform;
+        Transform goldRow = leftCol != null ? leftCol.Find("KeepSection/GoldRow") : null;
+        TextMeshProUGUI goldText = goldRow != null ? goldRow.Find("GoldText")?.GetComponent<TextMeshProUGUI>() : null;
+        if (leftCol == null || goldRow == null || goldText == null) return null;
+
+        // Positions posées à la main par LayoutEndInfoBox (voir plus haut) : la pile verticale ne les recalcule plus.
+        VerticalLayoutGroup column = leftCol.GetComponent<VerticalLayoutGroup>();
+        if (column != null) column.enabled = false;
+
+        EndInfoBox box = new EndInfoBox();
+        GameObject rootGo = new GameObject("RunInfoBox", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+        box.root = (RectTransform)rootGo.transform;
+        box.root.SetParent(leftCol, false);
+        box.root.anchorMin = box.root.anchorMax = box.root.pivot = new Vector2(0.5f, 0.5f);
+        Image frame = rootGo.GetComponent<Image>();
+        Image goldFrame = goldRow.GetComponent<Image>();
+        frame.sprite = goldFrame.sprite;
+        frame.type = goldFrame.type;
+        frame.color = goldFrame.color;
+        frame.raycastTarget = false;
+        VerticalLayoutGroup stack = rootGo.GetComponent<VerticalLayoutGroup>();
+        stack.childAlignment = TextAnchor.MiddleCenter;
+        stack.childControlWidth = stack.childControlHeight = true;
+        stack.childForceExpandWidth = true;
+        stack.childForceExpandHeight = false;
+        stack.padding = new RectOffset(24, 24, 14, 16);
+        stack.spacing = 10f;
+
+        // Rangée de stats : 4 cases de même largeur séparées par un filet vertical.
+        GameObject row = new GameObject("Stats", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        row.transform.SetParent(box.root, false);
+        row.GetComponent<LayoutElement>().preferredHeight = EndInfoStatsHeight;
+        HorizontalLayoutGroup cells = row.GetComponent<HorizontalLayoutGroup>();
+        cells.childControlWidth = cells.childControlHeight = true;
+        cells.childForceExpandWidth = false;
+        cells.childForceExpandHeight = true;
+        for (int i = 0; i < 4; i++)
+        {
+            if (i > 0)
+            {
+                GameObject divider = NewInfoRule("Divider", row.transform);
+                LayoutElement dividerLe = divider.AddComponent<LayoutElement>();
+                dividerLe.minWidth = dividerLe.preferredWidth = 2f;
+                box.dividers[i - 1] = divider;
+            }
+            GameObject cell = new GameObject("Cell", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
+            cell.transform.SetParent(row.transform, false);
+            LayoutElement cellLe = cell.GetComponent<LayoutElement>();
+            cellLe.minWidth = cellLe.preferredWidth = 0f;                  // cases de même largeur, quel que soit le texte
+            cellLe.flexibleWidth = 1f;
+            VerticalLayoutGroup cellStack = cell.GetComponent<VerticalLayoutGroup>();
+            cellStack.childAlignment = TextAnchor.MiddleCenter;
+            cellStack.childControlWidth = cellStack.childControlHeight = true;
+            cellStack.childForceExpandHeight = false;
+            cellStack.padding = new RectOffset(6, 6, 0, 0);
+            cellStack.spacing = -2f;
+
+            // MODIFIÉ (2026-10-26, retour utilisateur : "pourquoi le marron en couleur ? je pense que c'est mieux en blanc") -
+            // chiffre blanc au contour sombre, même matériau que les montants Or / Éclats juste au-dessus.
+            TextMeshProUGUI value = NewInfoText("Value", cell.transform, goldText.font, 44f, Color.white);
+            value.fontSharedMaterial = goldText.fontSharedMaterial;
+            value.enableAutoSizing = true;
+            value.fontSizeMin = 28f;
+            value.fontSizeMax = 44f;
+            TextMeshProUGUI label = NewInfoText("Label", cell.transform, GameFonts.Body, 17f, EndInfoLabelColor);
+            label.fontSharedMaterial = GameFonts.Body.material;
+            label.fontStyle = FontStyles.UpperCase;
+            label.characterSpacing = 3f;
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 12f;
+            label.fontSizeMax = 17f;
+            box.values[i] = value;
+            box.labels[i] = label;
+        }
+
+        GameObject rule = NewInfoRule("Rule", box.root);
+        rule.AddComponent<LayoutElement>().preferredHeight = 2f;
+
+        // Textes variables : rangés dans le cadre (le chip de défi y entre avec son fond doré).
+        foreach (TextMeshProUGUI message in messages)
+        {
+            if (message == null) continue;
+            Transform item = message.transform.parent != null && message.transform.parent.GetComponent<Image>() != null && message.transform.parent != leftCol
+                ? message.transform.parent : message.transform;
+            item.SetParent(box.root, false);
+            LayoutElement le = item.GetComponent<LayoutElement>();
+            if (item == message.transform)
+            {
+                // Phrase : sa vraie hauteur (1 ou 2 lignes), plus lisible qu'avant.
+                if (le != null) le.preferredHeight = -1f;
+                message.enableAutoSizing = false;
+                message.fontSize = 24f;
+                message.textWrappingMode = TextWrappingModes.Normal;
+                message.alignment = TextAlignmentOptions.Center;
+            }
+            else if (le != null)
+            {
+                le.preferredHeight = 46f;   // chip de défi : hauteur de son fond
+            }
+        }
+
+        if (oldStatLine != null) oldStatLine.gameObject.SetActive(false);   // remplacée par la rangée de stats
+
+        _endInfoBoxes[panel] = box;
+        return box;
+    }
+
+    private static GameObject NewInfoRule(string name, Transform parent)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        Image img = go.GetComponent<Image>();
+        img.color = EndInfoRuleColor;
+        img.raycastTarget = false;
+        go.AddComponent<PixelSnapRule>();   // même épaisseur à l'écran pour tous les filets
+        return go;
+    }
+
+    private static TextMeshProUGUI NewInfoText(string name, Transform parent, TMP_FontAsset font, float size, Color color)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        TextMeshProUGUI tmp = go.GetComponent<TextMeshProUGUI>();
+        tmp.font = font;
+        tmp.fontSize = size;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
+        tmp.raycastTarget = false;
+        return tmp;
+    }
+
+    // Stats de la partie, une case chacune (mêmes règles par mode que BuildStatLine).
+    private void FillEndInfoStats(EndInfoBox box, int mins, int secs, int killCount, int level, int bossKills)
+    {
+        if (box == null) return;
+        // Temps : un petit espace de chaque côté des deux-points (retour utilisateur 2026-10-26 : "un peu trop collé vu la
+        // taille des chiffres").
+        List<(string value, string label)> stats = new List<(string, string)> { ($"{mins:00}<space=0.08em>:<space=0.08em>{secs:00}", Loc.T("Survie")) };
+        if (GameModes.IsTitans)
+        {
+            stats.Add(($"{bossKills}/3", Loc.T("Titans")));
+        }
+        else
+        {
+            stats.Add((Loc.Int(killCount), Loc.T("Éliminations")));
+            stats.Add((level.ToString(), Loc.T("Niveau")));
+            string boss;
+            if (GameModes.IsEndless) boss = bossKills.ToString();
+            else if (GameModes.IsBossRush) boss = $"{bossKills}/{GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null)}";
+            else boss = $"{bossKills}/3";
+            stats.Add((boss, Loc.T("Boss")));
+        }
+
+        for (int i = 0; i < box.values.Length; i++)
+        {
+            bool used = i < stats.Count;
+            box.values[i].transform.parent.gameObject.SetActive(used);
+            if (i > 0) box.dividers[i - 1].SetActive(used);
+            if (!used) continue;
+            box.values[i].text = stats[i].value;
+            box.labels[i].text = stats[i].label;
+        }
+    }
+
+    // Place titre, cartes Or / Éclats et cadre d'infos sur la grille de la colonne de droite (titre, cadre de l'arsenal).
+    // Appelée à chaque affichage, une fois les textes du cadre posés (leur hauteur décide de celle du cadre).
+    private void LayoutEndInfoBox(GameObject panel, EndInfoBox box)
+    {
+        if (panel == null || box == null) return;
+        RectTransform body = panel.transform.Find("CenterCard/Body") as RectTransform;
+        RectTransform leftCol = body != null ? body.Find("LeftCol") as RectTransform : null;
+        RectTransform title = leftCol != null ? leftCol.Find("KeepSectionTitle") as RectTransform : null;
+        RectTransform keep = leftCol != null ? leftCol.Find("KeepSection") as RectTransform : null;
+        RectTransform rightTitle = body != null ? body.Find("RightCol/BuildTitleText") as RectTransform : null;
+        RectTransform arsenal = body != null ? body.Find("RightCol/ArsenalRow/BackgroundBuild") as RectTransform : null;
+        if (title == null || keep == null || rightTitle == null || arsenal == null) return;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(body);   // colonne de droite (pile verticale) en place avant de s'y caler
+
+        Vector3[] corners = new Vector3[4];
+        // Les deux titres alignés sur leur zone de texte (cadre moins marges haut/bas), pas sur leur cadre : celui de
+        // droite a une marge basse sur la Victoire, qui remonte son texte.
+        rightTitle.GetWorldCorners(corners);
+        float titleY = leftCol.InverseTransformPoint((corners[0] + corners[2]) * 0.5f).y
+            + TextAreaOffset(rightTitle.GetComponent<TextMeshProUGUI>()) - TextAreaOffset(title.GetComponent<TextMeshProUGUI>());
+        arsenal.GetWorldCorners(corners);
+        float top = leftCol.InverseTransformPoint(corners[1]).y;
+        float bottom = leftCol.InverseTransformPoint(corners[0]).y;
+        float width = leftCol.rect.width;
+
+        box.root.sizeDelta = new Vector2(width, 0f);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(box.root);
+        float available = top - bottom - EndInfoGap;
+        float boxHeight = Mathf.Max(available - EndInfoKeepHeight, LayoutUtility.GetPreferredHeight(box.root));
+        float keepHeight = Mathf.Max(EndInfoKeepMinHeight, available - boxHeight);
+
+        Place(title, titleY, title.rect.height);
+        Place(keep, top - keepHeight * 0.5f, keepHeight);
+        Place(box.root, bottom + boxHeight * 0.5f, boxHeight);
+
+        void Place(RectTransform rt, float centerY, float height)
+        {
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(width, height);
+            rt.anchoredPosition = new Vector2(0f, centerY);
+        }
+    }
+
+    // Décalage vertical du centre de la zone de texte par rapport au centre du cadre (marges basse - haute).
+    private static float TextAreaOffset(TextMeshProUGUI text)
+    {
+        return text != null ? (text.margin.w - text.margin.y) * 0.5f : 0f;
+    }
+
+    // Chip "Défi réussi" : présent dès l'ouverture (transparent) pour que le cadre ait déjà sa hauteur finale, puis
+    // révélé par PlayGoldSequence au moment du bonus.
+    private static void PrepareChallengeChip(TextMeshProUGUI challengeText, bool show, float rewardPercent)
+    {
+        GameObject chipRoot = ChallengeChipRoot(challengeText);
+        if (chipRoot == null) return;
+        chipRoot.SetActive(show);
+        if (!show) return;
+        challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardMultiplier(rewardPercent));
+        CanvasGroup cg = chipRoot.GetComponent<CanvasGroup>();
+        if (cg == null) cg = chipRoot.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+    }
+
+    private static GameObject ChallengeChipRoot(TextMeshProUGUI challengeText)
+    {
+        if (challengeText == null) return null;
+        Image parentImage = challengeText.transform.parent != null ? challengeText.transform.parent.GetComponent<Image>() : null;
+        return parentImage != null ? challengeText.transform.parent.gameObject : challengeText.gameObject;
     }
 
     private void RefreshCloneKey()
@@ -3250,6 +3890,13 @@ public class GameUI : MonoBehaviour
         // defi inclus) pour couvrir les 4 records au lieu de 2.
         PopulateGameOverMessage(runTimer, killCount, level, totalGold, deathCause, bossKillCount);
         FitSeparatorToText(_gameOverMessageText);
+
+        // AJOUTÉ (2026-10-26) - cadre d'infos : stats, chip de défi, aperçu du prochain déblocage (voir EnsureEndInfoBox).
+        EndInfoBox gameOverInfo = EnsureEndInfoBox(_gameOverPanel, _statsText, _gameOverChallengeText, _gameOverNextUnlockText);
+        FillEndInfoStats(gameOverInfo, mins, secs, killCount, level, bossKillCount);
+        PrepareChallengeChip(_gameOverChallengeText, challengeCompleted && totalGold > baseGold, challengeRewardPercent);
+        PrepareNextUnlockText();
+        LayoutEndInfoBox(_gameOverPanel, gameOverInfo);
 
         // AJOUTE - "Tentative n°X", Data.totalRuns a deja ete incremente par
         // SaveRunResults() avant l'appel a cette methode.

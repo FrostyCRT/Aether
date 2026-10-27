@@ -7,7 +7,7 @@ using UnityEngine;
 // La page (SettingsPage) ne connaît aucun réglage en particulier : elle lit cette liste et construit les lignes
 // (curseur, interrupteur, choix, touche...). Ajouter un réglage = 1 ligne dans GameSettings (clé + défaut) + 1 ligne
 // ici + (si le jeu doit réagir) 1 case dans SettingsApplier / le script concerné.
-public enum RowKind { Header, Note, Slider, Toggle, Choice, Keybind, Presets }
+public enum RowKind { Header, Note, Slider, Toggle, Choice, Keybind, Presets, Swatches }
 
 public class RowDef
 {
@@ -21,6 +21,7 @@ public class RowDef
     public Func<string[]> dynamicOptions;       // Choice : libellés calculés à l'ouverture (résolutions)
     public Func<int> getIndex;                  // Choice : index courant (sinon GetInt(key))
     public Action<int> setIndex;                // Choice : écriture (sinon SetInt(key))
+    public Color[] swatches;                    // Swatches : une pastille par couleur, index enregistré dans key
 
     public Func<bool> isEnabled;                // ligne grisée quand faux
     public string disabledHint;                 // explication affichée à la place de la description
@@ -55,7 +56,7 @@ public static class SettingsSchema
     private static string[] FpsCapNames()
     {
         string[] n = new string[GameSettings.FpsCaps.Length];
-        for (int i = 0; i < n.Length; i++) n[i] = GameSettings.FpsCaps[i] <= 0 ? Loc.T("Illimitée") : GameSettings.FpsCaps[i] + " FPS";
+        for (int i = 0; i < n.Length; i++) n[i] = GameSettings.FpsCaps[i] <= 0 ? Loc.T("Illimitée") : GameSettings.FpsCaps[i] + " " + Loc.T("IPS");
         return n;
     }
 
@@ -134,6 +135,13 @@ public static class SettingsSchema
         });
         display.rows.Add(Slider("Luminosité", "Éclaircit ou assombrit toute l'image, menus compris.", GameSettings.Brightness, 0.50f, 1.20f));
         display.rows.Add(Toggle("Afficher les images par seconde", "Affiche le nombre d'images par seconde en haut à gauche.", GameSettings.ShowFps));
+        display.rows.Add(new RowDef
+        {
+            kind = RowKind.Swatches, label = "Couleur du compteur d'images", key = GameSettings.FpsColor, swatches = GameSettings.FpsColors,
+            description = "Couleur des images par seconde et des millisecondes affichées en haut à gauche.",
+            isEnabled = () => GameSettings.GetBool(GameSettings.ShowFps),
+            disabledHint = "Active d'abord l'affichage des images par seconde."
+        });
         cats.Add(display);
 
         // ---------------------------------------------------------------- GRAPHISMES
@@ -235,11 +243,22 @@ public static class SettingsSchema
                     r.description = Loc.T(r.description);
                 }
                 r.disabledHint = Loc.T(r.disabledHint);
+                // AJOUTÉ (2026-10-25) - pas de point final sous les réglages, dans aucune langue (demande de l'utilisateur).
+                r.description = NoFinalStop(r.description);
+                r.disabledHint = NoFinalStop(r.disabledHint);
+                if (r.kind == RowKind.Note) r.label = NoFinalStop(r.label);
                 if (r.options != null && r.options != LanguageNames)
                     r.options = Array.ConvertAll(r.options, o => Loc.Has(o) ? Loc.T(o) : o);   // "60 FPS" reste tel quel
             }
         }
         return cats;
+    }
+
+    // Point final latin, chinois / japonais (。) ou coréen (．, voir Tools/loc/langs.js) ; les points de suspension restent.
+    private static string NoFinalStop(string s)
+    {
+        if (string.IsNullOrEmpty(s) || s.EndsWith("...") || s.EndsWith("…")) return s;
+        return s.TrimEnd().TrimEnd('.', '。', '．').TrimEnd();
     }
 
     // Noms des langues toujours écrits dans leur propre langue (jamais traduits).

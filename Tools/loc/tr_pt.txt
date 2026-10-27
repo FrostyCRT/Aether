@@ -4,14 +4,14 @@
 # Typo : guillemets “…”.
 
 ## Paramètres : touches
-1| Shift esq.
-2| Shift dir.
-3| Ctrl esq.
-4| Ctrl dir.
-5| Alt esq.
-6| Alt dir.
-7| Cmd esq.
-8| Cmd dir.
+1| Shift esq
+2| Shift dir
+3| Ctrl esq
+4| Ctrl dir
+5| Alt esq
+6| Alt dir
+7| Cmd esq
+8| Cmd dir
 9| Espaço
 10| Enter
 11| Enter (teclado num.)
@@ -40,8 +40,8 @@
 34| Aspas simples
 35| Aspas duplas
 36| Acento grave
-37| Colchete esq.
-38| Colchete dir.
+37| Colchete esq
+38| Colchete dir
 39| Num +
 40| Num −
 41| Num ×
@@ -68,15 +68,15 @@
 62| Órbita: aproximar
 63| Órbita: afastar
 64| Pausa
-65| Dash: deslocamento rápido, invencível por um instante, absorve projéteis.
-66| Ativa a suprema quando o cristal estiver carregado.
-67| Invoca o clone espectral. Exige a habilidade correspondente.
-68| Escolhe a 1ª carta ao subir de nível.
-69| Escolhe a 2ª carta ao subir de nível.
-70| Escolhe a 3ª carta ao subir de nível.
-71| Diminui o raio de giro dos seus orbitais.
-72| Aumenta o raio de giro dos seus orbitais.
-73| Abre / fecha o menu de pausa.
+65| Dash: deslocamento rápido, invencível por um instante, absorve projéteis
+66| Ativa a suprema quando o cristal estiver carregado
+67| Invoca o clone espectral. Exige a habilidade correspondente
+68| Escolhe a 1ª carta ao subir de nível
+69| Escolhe a 2ª carta ao subir de nível
+70| Escolhe a 3ª carta ao subir de nível
+71| Diminui o raio de giro dos seus orbitais
+72| Aumenta o raio de giro dos seus orbitais
+73| Abre / fecha o menu de pausa
 
 ## Paramètres : page
 74| Desempenho
@@ -91,14 +91,14 @@
 83| TELA
 84| Janela, resolução e fluidez da imagem
 85| Modo de exibição
-86| Tela cheia, janela sem bordas ou janela comum.
+86| Tela cheia, janela sem bordas ou janela comum
 87| Resolução
-88| Resolução da imagem em tela cheia e no modo janela.
+88| Resolução da imagem em tela cheia e no modo janela
 89| O modo sem bordas sempre usa a resolução da área de trabalho.
 90| Sincronização vertical
 91| Evita cortes na imagem (tearing). Limita a fluidez à taxa de atualização do monitor.
 92| Limite de FPS
-93| Limita o número de quadros exibidos por segundo.
+93| Limita o número de quadros exibidos por segundo
 94| Sem efeito enquanto a sincronização vertical estiver ativada.
 95| Brilho
 96| Clareia ou escurece toda a imagem, inclusive os menus.
@@ -111,7 +111,7 @@
 103| Sombras
 104| Sombras projetadas pelos personagens e pelos inimigos.
 105| Efeitos de ambiente nos menus
-106| Poeira e brilhos animados nos menus.
+106| Poeira e brilhos animados nos menus
 107| ÁUDIO
 108| Volume e comportamento do som
 109| Volume geral
@@ -125,7 +125,7 @@
 117| JOGO
 118| Mira, pausa e indicadores de combate
 119| Mira
-120| Automática: os disparos miram no inimigo mais próximo. Mouse: você mira.
+120| Automática: os disparos miram no inimigo mais próximo. Mouse: você mira
 121| Com o mouse
 122| Automática
 123| Pausa automática
@@ -156,7 +156,7 @@
 148| Teclado, mouse e controle
 149| Clique em uma tecla para alterá-la.   Esc: cancelar   •   Backspace: apagar.
 150| Layout do teclado
-151| Define as teclas de movimento e de órbita. As outras teclas não mudam.
+151| Define as teclas de movimento e de órbita. As outras teclas não mudam
 152| Movimento
 153| Combate
 154| Subida de nível
@@ -167,33 +167,33 @@
 159| IDIOMA / LANGUAGE
 160| Idioma de todos os textos do jogo
 161| Idioma do jogo
-162| Todos os textos mudam na hora, nos menus e nas partidas.
+162| Todos os textos mudam na hora, nos menus e nas partidas
 
 ## Paramètres : fenêtres et messages
 163| PARTIDA PAUSADA
 164| Voltar
 165| Voltando à exibição anterior em {0} s
-166| Exibição mantida.
-167| Exibição anterior restaurada.
+166| Exibição mantida
+167| Exibição anterior restaurada
 168| Pressione uma tecla, um botão do mouse ou do controle
 169| Esc: cancelar     Backspace: apagar
-170| Impossível: “{0}” precisa manter pelo menos uma tecla.
-171| “{0}” é a única tecla de “{1}”: libere-a primeiro.
-172| “{0}” estava sendo usada por “{1}”: as duas ações trocam de tecla (“{2}”).
-173| “{0}” estava sendo usada por “{1}”: ela foi removida dessa ação.
+170| Impossível: “{0}” precisa manter pelo menos uma tecla
+171| “{0}” é a única tecla de “{1}”: libere-a primeiro
+172| “{0}” estava sendo usada por “{1}”: as duas ações trocam de tecla (“{2}”)
+173| “{0}” estava sendo usada por “{1}”: ela foi removida dessa ação
 174| “{0}”: {1}
 175| REDEFINIR “{0}”?
-176| As configurações desta página voltam aos valores padrão.
+176| As configurações desta página voltam aos valores padrão
 177| Redefinir
-178| Página “{0}” redefinida.
+178| Página “{0}” redefinida
 179| REDEFINIR TUDO?
-180| Todas as configurações e todas as teclas voltam aos valores padrão.
+180| Todas as configurações e todas as teclas voltam aos valores padrão
 181| Redefinir tudo
-182| Todas as configurações foram redefinidas.
+182| Todas as configurações foram redefinidas
 183| SAIR DO JOGO?
 184| O jogo será fechado. Suas configurações estão salvas.
 185| Sair
-186| Layout “{0}” aplicado.
+186| Layout “{0}” aplicado
 187| SIM
 188| NÃO
 189| AZERTY (ZQSD)
@@ -209,17 +209,17 @@
 197| DIFÍCIL
 198| Desafio concluído! {0}
 199| Novo recorde de sobrevivência: {0}!
-200| Quase bateu seu recorde de sobrevivência...
+200| Seu recorde de sobrevivência estava ao alcance
 201| Novo recorde de abates: {0}!
-202| Bem perto do seu recorde de abates...
+202| Seu recorde de abates estava ao alcance
 203| Novo recorde de nível: {0}!
-204| Por um fio de bater seu melhor nível...
+204| Seu melhor nível estava ao alcance
 205| Novo recorde de ouro em uma partida: {0}!
-206| Bem perto do seu recorde de ouro...
+206| Seu recorde de ouro estava ao alcance
 207| Novo personagem desbloqueado: {0}!
-208| Você deu tudo por este ramo. Literalmente.
-209| Não sobrou nada para desbloquear aqui — troque de personagem para continuar.
-210| Este ramo não tem mais segredos para você.
+208| Você desbloqueou tudo neste ramo
+209| Não sobrou nada para desbloquear aqui — troque de personagem para continuar
+210| Este ramo não tem mais segredos para você
 211| Árvore e Reputação no máximo. Troque de personagem se quiser novidade.
 212| de ouro
 213| fragmentos
@@ -234,22 +234,22 @@
 222| {0} de 3 titãs derrotados
 223| {0}. Os três juntos não perdoam — volte mais forte.
 224| {t} de sobrevivência, chefes derrotados: {b}. Dá para aguentar mais.
-225| Você aguentou {t} contra chefes cada vez mais ferozes.
+225| Você aguentou {t} contra chefes cada vez mais ferozes
 226| Chefes derrotados antes da queda: {b}. O próximo recorde está ao seu alcance.
-227| {0} chefes derrotados em {1}. A maratona é sua.
+227| {0} chefes derrotados em {1}. A maratona é sua
 228| Os 3 titãs derrubados em {0}. Nada te para.
-229| A Fonte Corrompida não aguentou o ritmo.
-230| Ela não vai se reerguer.
-231| A corrupção acaba aqui.
-232| {0} no relógio, {1} inimigos no chão. {2}
+229| A Fonte Corrompida não aguentou o ritmo
+230| Ela não vai se reerguer
+231| A corrupção acaba aqui
+232| {0} de combate, {1} inimigos derrotados. {2}
 233| Nenhum recorde hoje, mas a vitória é bem real.
 234| Nada de especial a relatar, além da própria vitória.
-235| Nenhuma façanha desta vez — só mais uma vitória.
-236| Uma vitória sem nenhuma habilidade. Tiro o chapéu.
-237| Nenhuma habilidade coletada. Estilo conta em dobro.
+235| Nenhuma façanha desta vez — só mais uma vitória
+236| Uma vitória sem nenhuma habilidade. Admirável.
+237| Nenhuma habilidade coletada e, mesmo assim, a vitória.
 238| Nada coletado pelo caminho, e mesmo assim aqui está você.
-239| Não deu tempo de coletar nem uma habilidade.
-240| Nenhuma habilidade coletada desta vez.
+239| Não deu tempo de coletar nem uma habilidade
+240| Nenhuma habilidade coletada desta vez
 241| VITÓRIA!
 242| FIM DE JOGO
 243| DERROTA
@@ -287,40 +287,40 @@
 273| Nv. {0}/{1}
 274| Em andamento
 275| {0}/3000 de ouro
-276| Não há desafio neste modo.
+276| Não há desafio neste modo
 277| Desafio já concluído nesta hora!
-278| Novo desafio em {0} min.
+278| Novo desafio em {0} min
 279| Novo desafio na sua próxima partida!
 280| Concluído
 281| Status
 
 ## Arbre de compétences
 282| Foco
-283| Cada segundo sem sofrer dano aumenta seu dano (+8% / s). O bônus zera sempre que você é atingido.
-284| +8% / s, máx. +15%
-285| +8% / s, máx. +30%
-286| +8% / s, máx. +50%
+283| Cada segundo sem sofrer dano aumenta seu dano, até um limite. O bônus zera sempre que você é atingido.
+284| +2% / s, máx. +15%
+285| +3% / s, máx. +30%
+286| +5% / s, máx. +50%
 287| Cadência
-288| Aumenta a cadência de tiro de todas as suas armas.
+288| Aumenta a cadência do seu ataque básico.
 289| Fragmentação
-290| Os projéteis têm 15% de chance de explodir no impacto.
+290| Um a cada 4 projéteis do seu ataque básico explode no impacto e causa todo o seu dano aos inimigos próximos.
 291| Dano de Cristal
 292| Aumenta o dano da suprema e da Nova.
 293| Sobrecarga
-294| Depois da suprema, seu dano dobra por 5 segundos.
+294| Depois da suprema, seu dano dobra por 10 segundos.
 295| Vitalidade
 296| Aumenta seus pontos de vida máximos.
 297| Recuperação
-298| Cada projétil absorvido pelo dash restaura PV.
+298| Cada projétil absorvido pelo dash ou pelo Escudo de Mana restaura PV.
 299| +20 PV por absorção
 300| +50 PV por absorção
 301| +80 PV por absorção
 302| Segundo Fôlego
-303| Uma vez por partida, você sobrevive a um golpe fatal com 1 PV.
+303| Uma vez por partida, você sobrevive a um golpe fatal com 1 PV e fica invencível por 3 segundos.
 304| Armadura
 305| Reduz o dano recebido de todos os inimigos.
 306| Escudo de Mana
-307| Absorve automaticamente 1 projétil inimigo a cada 8 segundos.
+307| Uma bolha de 3 cargas bloqueia os projéteis inimigos e os absorve como o dash. Recarga: 1 carga a cada 3 segundos, pausada por 4 segundos se a bolha se romper.
 308| Impulso Nova
 309| Se a Nova disparada por uma absorção matar pelo menos um inimigo, a recarga do dash zera na hora.
 310| Dash Aprimorado
@@ -330,22 +330,22 @@
 314| Nova Ampliada
 315| Aumenta o raio da Nova de Cristal.
 316| Dash Fantasma
-317| Desbloqueia um clone espectral, ativado por uma tecla própria: ele atrai os inimigos próximos por 2 segundos.
+317| Desbloqueia um clone espectral, ativado por uma tecla própria: por 3 segundos ele atrai todos os inimigos e você fica invencível. Recarga: 8 segundos.
 318| TALENTO ÚNICO
 319| NÍVEL {0} / {1}
 320| desbloqueado
 321| nível 1
 322| NV {0}
 323| ADQUIRIDO
-324| NÍVEL MÁX.
-325| Este talento está ativo.
-326| Esta habilidade está no máximo.
+324| NÍVEL MÁX
+325| Este talento está ativo
+326| Esta habilidade está no máximo
 327| INDISPONÍVEL
-328| Selecione {0} na aba Personagens para comprar.
+328| Selecione {0} na aba Personagens para comprar
 329| BLOQUEADA
-330| Desbloqueie primeiro os pré-requisitos acima.
+330| Desbloqueie primeiro os pré-requisitos acima
 331| OURO INSUFICIENTE
-332| Faltam {0} de ouro.
+332| Faltam {0} de ouro
 333| COMPRAR
 334| vão sobrar {0}
 335| {0} habilidades disponíveis  ·  procure o brilho dourado
@@ -367,63 +367,63 @@
 
 ## Améliorations
 349| Pântano Amaldiçoado
-350| FUSÃO — Lama + Raio em Cadeia: suas zonas viram um pântano eletrificado que eletrocuta tudo o que fica lá dentro.
+350| Suas poças de lama viram um pântano que eletrocuta os inimigos
 351| Vórtice de Mana
-352| FUSÃO — Aura + Orbitais: um redemoinho de fragmentos de mana, muito mais largo e muito mais forte, agora gira ao seu redor.
+352| Um redemoinho de mana, mais largo e mais forte, gira ao seu redor.
 353| Lâminas Ricocheteantes
-354| FUSÃO — Facas + Orbe Quicante: sua rajada agora perfura E ricocheteia de inimigo em inimigo.
+354| Sua rajada de facas perfura e ricocheteia de inimigo em inimigo
 355| Chuva de Meteoros
-356| FUSÃO — Bola de Fogo + Lama: meteoros caem sobre os inimigos, explodem no impacto e deixam uma cratera de lama ardente que os deixa mais lentos.
+356| Meteoros caem sobre os inimigos e deixam lama ardente que os retarda
 357| Orbes Fulminantes
-358| FUSÃO — Orbitais + Raio em Cadeia: seus fragmentos em órbita agora soltam raios em cadeia a cada contato.
+358| Seus orbitais soltam raios em cadeia ao tocar os inimigos
 359| Orbes Gêmeos
-360| FUSÃO — Tiro Duplo + Orbe Quicante: seu tiro básico se divide em duas esferas que quicam sem parar.
+360| Seus orbes deixam um rastro de lama que retarda e fere os inimigos
 361| Aura
 362| Zona de Aura
 363| Orbe Quicante
-364| Lança orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos.
+364| Lança orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
 365| Dano +
-366| +20% de dano
+366| +20% de dano em todas as suas armas
 367| Tiro Duplo
-368| Dispara 2 projéteis em rajada
+368| Seu ataque básico dispara um segundo projétil logo após o primeiro
 369| Bola de Fogo
-370| Lança uma bola de fogo
+370| Lança uma bola de fogo que explode no grupo de inimigos mais denso
 371| Cadência+
-372| +20% de cadência de tiro
+372| +20% de cadência em todas as suas armas de disparo
 373| Cura
-374| Restaura 50% da vida máxima
+374| Restaura 50% dos seus PV máximos
 375| Facas
-376| Lança rajadas de facas
+376| Lança rajadas de facas que atravessam os inimigos
 377| Raio em Cadeia
 378| Descarga elétrica que salta entre os inimigos próximos
 379| Lama
-380| Cria poças de lama que deixam os inimigos lentos e os ferem.
+380| Cria poças de lama que deixam os inimigos lentos e os ferem
 381| Orbitais
-382| Desbloqueia os projéteis orbitais
-383| Desbloqueia 2 orbitais giratórios que atingem ao contato.
-384| +1 orbital extra.
-385| Desbloqueia o raio em cadeia.
-386| +1 salto de raio extra.
-387| Desbloqueia ao seu redor 3 poças de lama que deixam os inimigos lentos.
-388| +1 poça de lama extra.
-389| +{0}% de dano em todas as suas armas ativas.
-390| +{0}% de cadência de tiro em todas as suas armas ativas.
-391| Restaura {0}% da sua vida máxima.
-392| Desbloqueia um segundo tiro simultâneo.
-393| Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether.
-394| O raio de explosão fica duas vezes maior.
-395| +{0}% de dano.
-396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo.
-397| Desbloqueia a Aura: equipa a arma exclusiva de Kael.
-398| +{0}% de raio.
-399| +{0}% de lentidão.
-400| Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra.
-401| Adiciona mais uma faca à rajada.
-402| Perfura mais {0} inimigos.
-403| Perfura mais {0} inimigo.
-404| Desbloqueia um orbe quicante que atravessa os inimigos.
-405| +{0}% de velocidade.
-406| +1 orbe quicante extra.
+382| Fragmentos giram ao seu redor e atingem os inimigos ao contato
+383| Desbloqueia 2 orbitais giratórios que atingem ao contato
+384| +1 orbital extra
+385| Desbloqueia o raio em cadeia: atinge 3 inimigos
+386| +1 salto de raio extra
+387| Desbloqueia 3 poças de lama que desaceleram e ferem
+388| +1 poça de lama extra
+389| +{0}% de dano em todas as suas armas
+390| +{0}% de cadência em todas as suas armas de disparo
+391| Restaura {0}% da sua vida máxima
+392| Desbloqueia o Tiro Duplo: seu ataque básico dispara duas vezes
+393| Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether
+394| O raio de explosão fica duas vezes maior
+395| +{0}% de dano
+396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo
+397| Desbloqueia a Aura: equipa a arma exclusiva de Kael
+398| +{0}% de raio
+399| Lentidão reforçada: {0}% em vez de {1}%
+400| Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra
+401| Adiciona mais uma faca à rajada
+402| Perfura mais {0} inimigos
+403| Perfura mais {0} inimigo
+404| Desbloqueia um orbe quicante que atravessa os inimigos
+405| +{0}% de velocidade dos orbes
+406| +1 orbe quicante extra
 
 ## Personnages
 407| DISTÂNCIA
@@ -435,22 +435,22 @@
 413| PERFURAÇÃO
 414| RAJADA
 415| Bola de Fogo
-416| Bola de fogo que explode no impacto e atinge todos os inimigos próximos.
+416| Bola de fogo que explode no impacto e atinge todos os inimigos próximos
 417| Raio / Dano / Queimadura
 418| GUERREIRO
 419| Poder ofensivo crescente
 420| Aura de Mana
-421| Campo permanente ao seu redor que fere os inimigos ao contato.
+421| Campo permanente ao seu redor que fere e deixa lentos os inimigos próximos
 422| Dano / Raio / Lentidão
 423| GUARDIÃO
 424| Sobrevivência e resistência
 425| Rajada de Facas
-426| Lança uma rajada de facas que atravessam os inimigos.
+426| Lança uma rajada de facas que atravessam os inimigos
 427| Faca extra / Dano / Perfuração
 428| FANTASMA
 429| Mobilidade e dash
-430| Chegue ao chefe 2 em uma partida para desbloquear Kael.
-431| Termine uma partida (derrote o chefe 3) para desbloquear Lyra.
+430| Chegue ao chefe 2 em uma partida para desbloquear Kael
+431| Termine uma partida (derrote o chefe 3) para desbloquear Lyra
 432| Desbloquear — {0} fragmentos
 433| Selecionado
 434| Selecionar
@@ -470,21 +470,21 @@
 
 ## Réputation et skins
 446| {0} INDISPONÍVEL
-447| Desbloqueie este personagem na aba Personagens\npara acessar as skins dele.
+447| Desbloqueie este personagem na aba Personagens\npara acessar as skins dele
 448| PRESTÍGIO  ·  FRAGMENTOS
 449| CLÁSSICA  ·  OURO
 450| Traje Original
-451| O traje com que {0} parte para o combate.
+451| O traje com que {0} parte para o combate
 452| PERSONAGEM BLOQUEADO
 453| EQUIPADA
 454| EQUIPAR
 455| FRAGMENTOS INSUFICIENTES
 456| CONFIRMAR COMPRA?
-457| Personagem bloqueado: {0}.
-458| {0} equipado em {1}.
+457| Personagem bloqueado: {0}
+458| {0} equipado em {1}
 459| Nova skin: {0}!
-460| Você não tem fragmentos suficientes.
-461| Você não tem ouro suficiente.
+460| Você não tem fragmentos suficientes
+461| Você não tem ouro suficiente
 462| EM BREVE
 463| ADQUIRIDA
 464| NÍVEL MÁXIMO
@@ -501,15 +501,15 @@
 473| MARATONA DE CHEFES
 474| FÚRIA DE TITÃS
 475| CLÁSSICO
-476| Vença uma partida no modo Clássico para desbloquear este modo.
-477| Derrote pelo menos o chefe 1 no modo Clássico para desbloquear este modo.
+476| Vença uma partida no modo Clássico para desbloquear este modo
+477| Derrote pelo menos o chefe 1 no modo Clássico para desbloquear este modo
 478| Os chefes voltam sem parar, cada vez mais fortes. Aguente o máximo que puder.
 479| o chefe 1
 480| os chefes 1 e 2
 481| os 3 chefes
-482| Um chefe por minuto: {0}, cada um 3 vezes e cada vez mais forte. {1} chefes, {1} min.
-483| Todas as melhorias no máximo, nenhum inimigo... mas os 3 chefes ao mesmo tempo. Sobreviva e derrube todos.
-484| Derrote os 3 chefes em 15 minutos para vencer a partida.
+482| Um chefe por minuto: {0}, cada um 3 vezes e cada vez mais forte. No total, {1} chefes em {1} minutos.
+483| Todas as melhorias no máximo e nenhum inimigo, mas os 3 chefes ao mesmo tempo. Sobreviva e derrube todos.
+484| Enfrente ondas de inimigos cada vez maiores e derrote os 3 chefes em 15 minutos para vencer a partida
 485| vitória
 486| vitórias
 487| Recorde: {0}  ·  chefes: {1}
@@ -539,15 +539,15 @@
 509| A Fonte Corrompida
 
 ## Messages de Game Over
-510| Na próxima vai dar certo.
-511| Mais uma derrota a caminho da vitória.
+510| Na próxima vai dar certo
+511| Mais uma derrota a caminho da vitória
 512| De volta ao combate. É assim que se evolui.
 513| Levanta, ainda não acabou.
-514| Você tem o que é preciso para a próxima.
+514| Você tem o que é preciso para a próxima
 515| Você já sabe o que deu errado. Corrija.
-516| Foi por muito pouco.
+516| Foi por muito pouco
 517| Você chegou perto. Bora mais uma.
-518| Desta vez ele não te deu nenhuma brecha.
+518| Desta vez ele não te deu nenhuma brecha
 519| Um adversário duro na queda. Vai ser preciso voltar mais forte.
 520| O chefe venceu esta batalha. Não a guerra.
 
@@ -574,7 +574,7 @@
 540| SEU OURO
 541| REPUTAÇÃO
 542| ÁRVORE DE HABILIDADES
-543| Fortaleça seus heróis de vez e mude a aparência deles.
+543| Fortaleça seus heróis de forma permanente e escolha a aparência deles
 544| Compradas com ouro
 545| Compradas com fragmentos
 546| Melhorados com fragmentos
@@ -613,14 +613,37 @@
 ## Ajouts (fin de table)
 578| FUSÃO
 579| fragmento
-580| Nunca fique abaixo de 30% de vida, do início da partida até a morte do 2º chefe
+580| Nunca fique abaixo de 30% de vida, do início da partida até a morte do 2º chefe.
 581| Não use a suprema (tecla F) antes de derrotar o 2º chefe
-582| Nunca fique abaixo de 50% de vida, do início da partida até a morte do 1º chefe
+582| Nunca fique abaixo de 50% de vida, do início da partida até a morte do 1º chefe.
 583| Derrote qualquer chefe em menos de 30 segundos após o seu surgimento
 584| Colete pelo menos 3000 de ouro no total durante a partida
 585| MODERADO
 586| VIOLENTO
 587| APOCALÍPTICO
-588| A experiência Clássica de sempre
-589| Mapa maior, inimigos mais resistentes e perigosos, mas mais ouro e fragmentos
-590| Mapa muito maior, inimigos bem mais resistentes e perigosos, ouro e fragmentos no máximo
+588| Mapa sem limites, a experiência Clássica de sempre.
+589| Mapa em túnel sem limites laterais, inimigos mais resistentes e perigosos, mas mais ouro e fragmentos.
+590| Mapa fechado nos 4 lados, inimigos bem mais resistentes e perigosos, ouro e fragmentos no máximo.
+591| Recarga -0,3 s
+592| Recarga -0,6 s
+593| Recarga -1 s
+594| Cor do contador de FPS
+595| Cor dos quadros por segundo e dos milissegundos exibidos no canto superior esquerdo.
+596| Ative primeiro “Mostrar FPS”.
+597| FPS
+598| ms
+599| Escolha o herói que vai para o combate
+600| Pressione qualquer tecla para pular
+601| Lança um orbe que quica sem parar pela arena e fere todos os inimigos atingidos
+602| Lança {0} orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
+603| {0} fragmentos giram ao seu redor e atingem os inimigos ao contato
+604| Cria {0} poças de lama que deixam os inimigos lentos e os ferem
+605| Lança rajadas de {0} facas que atravessam os inimigos
+606| Descarga elétrica que salta para {0} inimigos próximos
+
+## Écrans de fin : intitulés des cases de stats
+607| Sobrevivência
+608| Abates
+609| Nível
+610| Chefes
+611| Titãs

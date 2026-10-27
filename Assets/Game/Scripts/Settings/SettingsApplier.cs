@@ -159,6 +159,7 @@ public class SettingsApplier : MonoBehaviour
         ApplyAudioVolumes();
         ApplyBrightness();
         ApplyShowFps();
+        ApplyFpsColor();
     }
 
     private void OnSettingChanged(string key)
@@ -181,6 +182,7 @@ public class SettingsApplier : MonoBehaviour
             case GameSettings.Shadows: ApplyShadows(); break;
             case GameSettings.Brightness: ApplyBrightness(); break;
             case GameSettings.ShowFps: ApplyShowFps(); break;
+            case GameSettings.FpsColor: ApplyFpsColor(); break;
         }
     }
 
@@ -188,6 +190,23 @@ public class SettingsApplier : MonoBehaviour
     {
         _duckTarget = 1f;                                        // jamais de son étouffé qui survit à un changement de scène
         ApplyShadows();
+        PlaceFps(scene);
+    }
+
+    // AJOUTÉ (2026-10-25) - dans le menu, la barre d'onglets occupe le haut de l'écran (100 px) et ne laisse que 136 px
+    // libres à gauche de l'onglet « Compétences » (juste en dessous, les titres des pages) : le compteur s'y loge sur
+    // deux lignes, un peu plus petit, centré entre le bord de l'écran et le cadre de l'onglet (même écart des deux
+    // côtés) et à la hauteur de l'onglet. En partie, il reste sur une ligne dans le coin, au-dessus des PV.
+    private bool _fpsCompact;
+
+    private void PlaceFps(Scene scene)
+    {
+        if (_fpsText == null) return;
+        _fpsCompact = scene.name == "MainMenu";
+        _fpsText.fontSize = _fpsCompact ? 20f : 24f;
+        _fpsText.alignment = _fpsCompact ? TextAlignmentOptions.Center : TextAlignmentOptions.TopLeft;
+        _fpsText.rectTransform.sizeDelta = new Vector2(_fpsCompact ? 136f : 420f, _fpsCompact ? 60f : 40f);
+        _fpsText.rectTransform.anchoredPosition = new Vector2(_fpsCompact ? 0f : 14f, _fpsCompact ? -19f : -8f);
     }
 
     // ---- audio ----------------------------------------------------------------------------------------------------
@@ -343,7 +362,7 @@ public class SettingsApplier : MonoBehaviour
         _fpsText = t.GetComponent<TextMeshProUGUI>();
         _fpsText.fontSize = 24;
         _fpsText.alignment = TextAlignmentOptions.TopLeft;
-        _fpsText.color = new Color(0f, 0f, 0f, 1f);          // noir : le vert se perdait sur le sol
+        _fpsText.color = Color.white;                        // MODIFIÉ (2026-10-25) : blanc + contour noir, lisible sur le sol comme sur les menus sombres
         _fpsText.raycastTarget = false;
         _fpsText.textWrappingMode = TextWrappingModes.NoWrap;
         _fpsText.fontStyle = FontStyles.Bold;
@@ -391,6 +410,19 @@ public class SettingsApplier : MonoBehaviour
         _fpsAccum = 0f; _fpsFrames = 0; _fpsTime = 0f;
     }
 
+    // AJOUTÉ (2026-10-25) - couleur choisie dans les Paramètres (GameSettings.FpsColors), toujours sur le contour noir
+    // d'origine : les teintes claires restent lisibles sur le sol clair comme sombre.
+    private void ApplyFpsColor()
+    {
+        Color[] palette = GameSettings.FpsColors;
+        Color c = palette[Mathf.Clamp(GameSettings.GetInt(GameSettings.FpsColor), 0, palette.Length - 1)];
+        _fpsText.color = c;
+        // MODIFIÉ (2026-10-25) - un texte foncé n'a pas de contour : un contour noir le noierait, un blanc l'épaissit trop.
+        bool dark = c.r + c.g + c.b < 0.6f;
+        _fpsText.outlineWidth = dark ? 0f : 0.2f;
+        _fpsText.outlineColor = new Color32(0, 0, 0, 255);
+    }
+
     private void UpdateFps()
     {
         if (!_fpsText.gameObject.activeSelf) return;
@@ -399,7 +431,9 @@ public class SettingsApplier : MonoBehaviour
         _fpsTime += Time.unscaledDeltaTime;
         if (_fpsTime < 0.4f) return;
         float avg = _fpsAccum / Mathf.Max(1, _fpsFrames);
-        _fpsText.text = Mathf.RoundToInt(1f / Mathf.Max(0.0001f, avg)) + " FPS  (" + (avg * 1000f).ToString("0.0") + " ms)";
+        // Unités et virgule selon la langue : « IPS » en français, « FPS » ailleurs, « мс » en russe (Loc).
+        string fps = Mathf.RoundToInt(1f / Mathf.Max(0.0001f, avg)) + " " + Loc.T("IPS"), ms = Loc.Num(avg * 1000f, "0.0") + " " + Loc.T("ms");
+        _fpsText.text = _fpsCompact ? fps + "\n" + ms : fps + "  (" + ms + ")";
         _fpsAccum = 0f; _fpsFrames = 0; _fpsTime = 0f;
     }
 }

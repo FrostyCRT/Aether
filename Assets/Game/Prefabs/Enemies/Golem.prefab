@@ -70,7 +70,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 1.5
-  _maxHealth: 420
+  _maxHealth: 483
   _isFlying: 0
   _flightAltitude: 0
   _xpValue: 30

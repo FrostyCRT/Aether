@@ -118,6 +118,9 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private float _frameFadeDuration = 0.3f;
     [Tooltip("Echelle de depart du MainFrame avant l'animation (1 = taille normale, donc <1 = leger zoom avant a l'ouverture).")]
     [SerializeField] private float _frameStartScale = 0.92f;
+    // AJOUTÉ (2026-10-25, retour utilisateur : "agrandis le pause panel, proportionnellement, juste un peu") - échelle
+    // finale du cadre, tout le contenu grandit d'un bloc. L'ouverture part de _frameStartScale x cette échelle.
+    [SerializeField] private float _frameScale = 1.08f;
 
     [Header("Animation d'ouverture - grille d'upgrades")]
     [Tooltip("Duree du fondu individuel d'un slot.")]
@@ -141,6 +144,15 @@ public class PauseMenuUI : MonoBehaviour
             _mainFrameCanvasGroup = _mainFrame.GetComponent<CanvasGroup>();
             if (_mainFrameCanvasGroup == null)
                 _mainFrameCanvasGroup = _mainFrame.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        // AJOUTÉ (2026-10-25, audit de lisibilité) - les infos du défi (blanc fin, 21 px) se perdaient sur le parchemin
+        // clair de l'en-tête (3,4:1) : même contour sombre que le HUD, comme le temps / les éliminations / l'or voisins.
+        foreach (TextMeshProUGUI t in new[] { _challengeInfoText, _challengeStatusText })
+        {
+            if (t == null) continue;
+            Material outlined = HudBar.OutlinedMaterial(t.fontSharedMaterial, GameFonts.Outline(t, 0.22f), new Color32(10, 6, 3, 255));
+            if (outlined != null) t.fontSharedMaterial = outlined;
         }
     }
 
@@ -294,7 +306,10 @@ public class PauseMenuUI : MonoBehaviour
         // texte retourné à la ligne sur presque chaque caractère la toute première fois. Activer le GameObject
         // D'ABORD, puis changer le texte et forcer la reconstruction du maillage, règle ça définitivement.
         _descriptionTooltip.gameObject.SetActive(true);
-        _descriptionText.text = upgrade.Description;
+        // MODIFIÉ (2026-10-26) - état ACTUEL de la compétence (nombre d'orbes, bonus total...), voir
+        // UpgradeData.GetCurrentStateDescription ; le texte générique de l'asset annonçait parfois plus que la réalité.
+        string description = upgrade.GetCurrentStateDescription();
+        _descriptionText.text = description;
         _descriptionText.ForceMeshUpdate();
         // CORRIGÉ (2026-10-18, retour utilisateur : "toujours trop en gras blanc qui se chevauche") - propriétés
         // vérifiées en jeu : texte BLANC, contour quasi-blanc (0xF5ECD6, pensé pour l'usage inverse - texte sombre
@@ -313,7 +328,7 @@ public class PauseMenuUI : MonoBehaviour
 
         // Taille du panneau = taille du texte (+ marge intérieure) - plus de format fixe, un texte court donne un
         // petit panneau, un texte long s'enroule à TooltipMaxTextWidth puis grandit en hauteur.
-        Vector2 preferred = _descriptionText.GetPreferredValues(upgrade.Description, TooltipMaxTextWidth, 0f);
+        Vector2 preferred = _descriptionText.GetPreferredValues(description, TooltipMaxTextWidth, 0f);
         _descriptionTooltip.sizeDelta = new Vector2(Mathf.Min(preferred.x, TooltipMaxTextWidth) + TooltipPadding.x, preferred.y + TooltipPadding.y);
 
         RectTransform parentRt = _descriptionTooltip.parent as RectTransform;
@@ -715,7 +730,7 @@ public class PauseMenuUI : MonoBehaviour
         }
 
         if (_mainFrame != null)
-            _mainFrame.localScale = Vector3.one * _frameStartScale;
+            _mainFrame.localScale = Vector3.one * (_frameStartScale * _frameScale);
 
         // --- Phase 1 : fondu du voile noir + fondu/pop du MainFrame, en parallele ---
 
@@ -741,7 +756,7 @@ public class PauseMenuUI : MonoBehaviour
                 // de la valeur finale - plus fluide qu'une interpolation lineaire brute.
                 float eased = 1f - (1f - frameT) * (1f - frameT);
                 _mainFrameCanvasGroup.alpha = eased;
-                _mainFrame.localScale = Vector3.one * Mathf.Lerp(_frameStartScale, 1f, eased);
+                _mainFrame.localScale = Vector3.one * (Mathf.Lerp(_frameStartScale, 1f, eased) * _frameScale);
             }
 
             yield return null;
@@ -762,7 +777,7 @@ public class PauseMenuUI : MonoBehaviour
         }
 
         if (_mainFrame != null)
-            _mainFrame.localScale = Vector3.one;
+            _mainFrame.localScale = Vector3.one * _frameScale;
 
         // --- Phase 2 : apparition en cascade des slots de la grille ---
 

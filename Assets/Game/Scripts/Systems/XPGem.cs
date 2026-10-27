@@ -45,9 +45,17 @@ public class XPGem : MonoBehaviour
     private Color _gemColor = Color.white; // conservée pour XPGemCollectFX (voir Collect()) - plus utilisée pour le rendu du corps (voir note suite 13)
     private float _gemScale = 0.3f;
 
+    // MODIFIÉ (2026-10-25, retour utilisateur : "le bug des xp quand ils drop, ça fait une sorte de tourbillon") -
+    // mesuré en Play (captures au ralenti x0,15 + relevé de rotation par frame) : chaque gemme faisait un tour
+    // complet de 360° sur elle-même pendant son saut, et toutes les gemmes d'une même mort partaient du même point,
+    // au même instant, avec le même angle -> elles tournoyaient en bloc, d'où le "tourbillon". L'aimantation vers le
+    // joueur, elle, a été vérifiée saine (trajectoire droite, aucune orbite). Rotation supprimée : la gemme reste
+    // face caméra, le jaillissement ne garde que l'arc + le rebond d'échelle. Durée et hauteur d'arc légèrement
+    // variées par gemme pour que plusieurs gemmes d'une même mort ne bougent plus en parfait unisson.
     private const float PopDuration = 0.3f;
     private const float PopArcHeight = 0.8f;
-    private const float PopSpinDegrees = 360f; // flourish d'arrivée uniquement - pas de rotation continue ensuite
+    private float _popDuration = PopDuration;
+    private float _popArcHeight = PopArcHeight;
 
     // CORRIGE (2026-10-04, suite 14) - retour utilisateur : "le relief n'est pas le même, et il a l'air plus fin
     // [...] le contour aussi n'est pas le même". Cause : la suite 13 figeait l'orientation sur UNE SEULE mesure
@@ -332,6 +340,8 @@ public class XPGem : MonoBehaviour
         _popOrigin = transform.position;
         _popTarget = landPosition;
         _popTimer = 0f;
+        _popDuration = PopDuration * Random.Range(0.85f, 1.15f);
+        _popArcHeight = PopArcHeight * Random.Range(0.75f, 1.15f);
 
         if (_trail != null) { _trail.emitting = false; _trail.Clear(); }
 
@@ -456,20 +466,15 @@ public class XPGem : MonoBehaviour
     private void UpdatePopping()
     {
         _popTimer += Time.deltaTime;
-        float t = Mathf.Clamp01(_popTimer / PopDuration);
+        float t = Mathf.Clamp01(_popTimer / _popDuration);
 
         Vector3 flat = Vector3.Lerp(_popOrigin, _popTarget, t);
-        float arc = Mathf.Sin(t * Mathf.PI) * PopArcHeight;
+        float arc = Mathf.Sin(t * Mathf.PI) * _popArcHeight;
         transform.position = flat + Vector3.up * arc;
 
         float scaleT = FXSprites.EaseOutBack(t, 1.5f);
         transform.localScale = Vector3.one * _gemScale * Mathf.Max(0f, scaleT);
-        // Flourish d'arrivée : rotation calculée directement depuis la progression `t` (absolue, jamais
-        // accumulée via transform.Rotate) - un tour complet autour de l'axe face-caméra (recalculé chaque frame,
-        // voir GetBillboardRotation), retombant pile sur l'orientation face-caméra au dixième de degré près, quel
-        // que soit le nombre de frames écoulées (un calcul accumulé par frame dérive selon le framerate réel -
-        // bug trouvé et corrigé en suite 11).
-        transform.rotation = GetBillboardRotation() * Quaternion.Euler(0f, 0f, PopSpinDegrees * t);
+        transform.rotation = GetBillboardRotation(); // plus de tour sur soi-même (voir PopDuration)
 
         ApplyGlow(Mathf.Lerp(MinGlow, MaxGlow, 0.6f)); // leger eclat pendant le vol, stabilise des l'atterrissage
 

@@ -18,7 +18,8 @@ public static class FXSprites
     // fautif dans les tests. Impact perf negligeable (une poignee de Material par effet, effets courts/transitoires).
     private static readonly System.Collections.Generic.Dictionary<Sprite, Material> _matBySprite = new System.Collections.Generic.Dictionary<Sprite, Material>();
 
-    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar, _gem, _flameBurst, _crystalShard;
+    private static Sprite _glow, _disc, _thinRing, _tickRing, _square, _chevron, _pillar, _gem, _flameBurst, _crystalShard, _splinter, _shatterRing;
+    private static readonly Sprite[] _crystalFragments = new Sprite[CrystalFragmentVariants];
 
     // Un Material par sprite (voir commentaire ci-dessus) : jamais partage entre deux sprites DIFFERENTS.
     public static Material SpriteMaterial(Sprite sprite)
@@ -371,6 +372,199 @@ public static class FXSprites
         _crystalShard = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
         return _crystalShard;
     }
+
+    // AJOUTÉ (2026-10-27, explosion de Fragmentation, voir ArcaneBurstVFX) - éclat de cristal allongé, pointe vers +X
+    // (orienter avec SetFlat(sr, longueur, angle de la direction)). Deux facettes de luminosité différente bakées dans le
+    // RGB (même technique que Gem/CrystalShard) et une arête claire au milieu : il scintille une fois teinté.
+    public static Sprite Splinter()
+    {
+        if (_splinter != null) return _splinter;
+
+        const int n = 128;
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float px = (x + 0.5f) / n * 2f - 1f;
+                float py = (y + 0.5f) / n * 2f - 1f;
+                // Losange asymétrique : talon court à -0,55, pointe longue à +1, plus large à -0,2.
+                const float back = -0.55f, widest = -0.2f, maxHalfWidth = 0.22f;
+                float half = px < widest
+                    ? maxHalfWidth * Mathf.Clamp01((px - back) / (widest - back))
+                    : maxHalfWidth * Mathf.Clamp01((1f - px) / (1f - widest));
+                if (half <= 0f || Mathf.Abs(py) >= half) { tex.SetPixel(x, y, new Color(0f, 0f, 0f, 0f)); continue; }
+
+                float edge = Mathf.Abs(py) / half;                 // 0 sur l'arête, 1 au bord
+                float alpha = Smooth((1f - edge) / 0.25f);
+                float brightness = py > 0f ? 1.25f : 0.72f;
+                brightness += 0.5f * Smooth(1f - edge / 0.18f);    // arête claire
+                tex.SetPixel(x, y, new Color(brightness, brightness, brightness, alpha));
+            }
+        }
+        tex.Apply();
+        _splinter = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _splinter;
+    }
+
+    // AJOUTÉ (2026-10-27, retour utilisateur sur l'explosion de Fragmentation : "elle ressemble beaucoup à ce qui a déjà
+    // été vu dans les autres télégraphes") - ThinRing/TickRing sont la grammaire des TÉLÉGRAPHES ENNEMIS (GroundTelegraphFX :
+    // "danger, sors de là"). Les effets du joueur ne doivent pas les réutiliser. Les deux sprites suivants sont propres
+    // aux explosions du joueur (ArcaneBurstVFX) : du cristal facetté et cassé, jamais un cercle lisse ou gradué.
+
+    // Anneau de cristal BRISÉ : couronne épaisse dont le bord intérieur est en dents de cristal (pointes vers le centre),
+    // coupée par des fissures inégales, chaque dent en deux facettes de luminosité différente et un liseré sombre au bord
+    // intérieur (contraste sur le sol clair). Le bord EXTÉRIEUR est à 93 % du rayon du sprite : pour qu'il tombe à R,
+    // utiliser un diamètre de 2R / ShatterRingOuter.
+    public const float ShatterRingOuter = 0.93f;
+    public static Sprite ShatterRing()
+    {
+        if (_shatterRing != null) return _shatterRing;
+
+        const int n = 512;
+        const int segments = 13;                       // morceaux de couronne séparés par des fissures
+        const float aa = 2.2f / n;                     // largeur d'anticrénelage (en rayon normalisé)
+        System.Random rng = new System.Random(4127);   // graine fixe : même dessin à chaque lancement
+
+        // Découpage irrégulier du tour : bornes des segments, largeur de chaque fissure (certaines quasi fermées),
+        // profondeur des deux dents de chaque segment.
+        float[] bounds = new float[segments + 1];
+        float acc = 0f;
+        float[] weights = new float[segments];
+        for (int i = 0; i < segments; i++) { weights[i] = 0.7f + (float)rng.NextDouble() * 0.6f; acc += weights[i]; }
+        bounds[0] = 0f;
+        for (int i = 0; i < segments; i++) bounds[i + 1] = bounds[i] + weights[i] / acc * Mathf.PI * 2f;
+        float[] gap = new float[segments];
+        float[] toothA = new float[segments];
+        float[] toothB = new float[segments];
+        float[] shade = new float[segments];
+        for (int i = 0; i < segments; i++)
+        {
+            gap[i] = rng.NextDouble() < 0.7 ? 0.035f + (float)rng.NextDouble() * 0.05f : 0.012f;
+            toothA[i] = 0.07f + (float)rng.NextDouble() * 0.09f;
+            toothB[i] = 0.05f + (float)rng.NextDouble() * 0.07f;
+            shade[i] = 0.9f + (float)rng.NextDouble() * 0.15f;
+        }
+
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        Color clear = new Color(0f, 0f, 0f, 0f);
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                float px = (x + 0.5f) / n * 2f - 1f;
+                float py = (y + 0.5f) / n * 2f - 1f;
+                float r = Mathf.Sqrt(px * px + py * py);
+                if (r > ShatterRingOuter + 0.02f || r < 0.6f) { tex.SetPixel(x, y, clear); continue; }
+
+                float ang = Mathf.Atan2(py, px);
+                if (ang < 0f) ang += Mathf.PI * 2f;
+                int s = 0;
+                while (s < segments - 1 && ang >= bounds[s + 1]) s++;
+                float a0 = bounds[s], a1 = bounds[s + 1];
+                float u = (ang - a0) / (a1 - a0);                       // 0..1 le long du segment
+
+                // Fissures : distance angulaire (en longueur d'arc au rayon r) aux deux bords du segment.
+                float halfGap = gap[s] * 0.5f;
+                float distStart = (ang - a0) * r, distEnd = (a1 - ang) * r;
+                float crack = Mathf.Min(distStart, distEnd) - halfGap;
+
+                // Bord intérieur : deux dents par segment (pics vers le centre à u = 0,25 et 0,75).
+                float tooth = u < 0.5f
+                    ? toothA[s] * (1f - Mathf.Abs(u - 0.25f) / 0.25f)
+                    : toothB[s] * (1f - Mathf.Abs(u - 0.75f) / 0.25f);
+                float inner = 0.82f - tooth;
+                // Bord extérieur légèrement facetté (plat par moitié de segment, pas un cercle parfait).
+                float outer = ShatterRingOuter - 0.012f * Mathf.Abs(Mathf.Sin(u * Mathf.PI * 2f));
+
+                float alpha = Smooth((r - inner) / aa + 0.5f) * Smooth((outer - r) / aa + 0.5f) * Smooth(crack / aa + 0.5f);
+                if (alpha <= 0f) { tex.SetPixel(x, y, clear); continue; }
+
+                // Facettes : la pente gauche et la pente droite de chaque dent n'ont pas la même lumière.
+                float local = u < 0.5f ? u / 0.5f : (u - 0.5f) / 0.5f;
+                float facet = local < 0.5f ? 0.95f : 0.62f;   // < 1 : laisse de la marge au liseré clair (texture plafonnée à 1)
+                float brightness = facet * shade[s];
+                // Liseré lumineux au bord extérieur, liseré sombre au bord intérieur (contour qui détache du sol).
+                brightness += 0.45f * Smooth(1f - (outer - r) / 0.03f);
+                brightness *= Mathf.Lerp(0.35f, 1f, Smooth((r - inner) / 0.035f));
+                tex.SetPixel(x, y, new Color(brightness, brightness, brightness, alpha));
+            }
+        }
+        tex.Apply();
+        _shatterRing = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _shatterRing;
+    }
+
+    // Fragment de cristal trapu et irrégulier (polygone de 5 à 7 sommets), facetté en éventail depuis un centre décalé
+    // (chaque facette a sa propre luminosité), arête claire en haut à gauche, contour sombre. Plusieurs variantes, pour
+    // qu'une couronne de fragments ne montre jamais deux fois le même morceau côte à côte.
+    public const int CrystalFragmentVariants = 4;
+    public static Sprite CrystalFragment(int variant)
+    {
+        variant = ((variant % CrystalFragmentVariants) + CrystalFragmentVariants) % CrystalFragmentVariants;
+        if (_crystalFragments[variant] != null) return _crystalFragments[variant];
+
+        const int n = 128;
+        const float aa = 2.2f / n;
+        System.Random rng = new System.Random(9001 + variant * 131);
+        int count = 5 + rng.Next(3);
+        float[] vAng = new float[count];
+        float[] vRad = new float[count];
+        float start = (float)rng.NextDouble() * Mathf.PI * 2f;
+        for (int i = 0; i < count; i++)
+        {
+            vAng[i] = start + (i + ((float)rng.NextDouble() - 0.5f) * 0.5f) / count * Mathf.PI * 2f;
+            vRad[i] = 0.55f + (float)rng.NextDouble() * 0.4f;
+        }
+        // Centre des facettes décalé : le "sommet" du cristal n'est pas au milieu, il paraît en relief et incliné.
+        Vector2 apex = new Vector2(((float)rng.NextDouble() - 0.5f) * 0.25f, ((float)rng.NextDouble() - 0.5f) * 0.25f);
+        Vector2[] verts = new Vector2[count];
+        float[] facet = new float[count];
+        for (int i = 0; i < count; i++)
+        {
+            verts[i] = new Vector2(Mathf.Cos(vAng[i]), Mathf.Sin(vAng[i])) * vRad[i];
+            // Lumière venant d'en haut à gauche : la facette tournée vers elle est claire, l'opposée sombre.
+            Vector2 mid = (new Vector2(Mathf.Cos(vAng[i]), Mathf.Sin(vAng[i])) + new Vector2(Mathf.Cos(vAng[(i + 1) % count]), Mathf.Sin(vAng[(i + 1) % count]))).normalized;
+            facet[i] = Mathf.Lerp(0.5f, 0.92f, Vector2.Dot(mid, new Vector2(-0.6f, 0.8f)) * 0.5f + 0.5f);
+        }
+
+        Texture2D tex = NewTexture(n, n, FilterMode.Bilinear);
+        for (int y = 0; y < n; y++)
+        {
+            for (int x = 0; x < n; x++)
+            {
+                Vector2 p = new Vector2((x + 0.5f) / n * 2f - 1f, (y + 0.5f) / n * 2f - 1f);
+                // Distance signée au polygone (négative dedans) et facette contenant le point (secteur autour de l'apex).
+                float inside = float.MaxValue;
+                int sector = 0;
+                float bestSector = float.MinValue;
+                for (int i = 0; i < count; i++)
+                {
+                    Vector2 a = verts[i], b = verts[(i + 1) % count];
+                    Vector2 e = b - a;
+                    Vector2 nrm = new Vector2(e.y, -e.x).normalized;          // normale sortante (sommets dans le sens trigonométrique)
+                    float d = Vector2.Dot(p - a, nrm);
+                    inside = Mathf.Min(inside, -d);
+                    // Secteur : le point est du bon côté des deux rayons apex->a et apex->b.
+                    float s1 = Cross(a - apex, p - apex), s2 = Cross(p - apex, b - apex);
+                    float score = Mathf.Min(s1, s2);
+                    if (score > bestSector) { bestSector = score; sector = i; }
+                }
+                float alpha = Smooth(inside / aa + 0.5f);
+                if (alpha <= 0f) { tex.SetPixel(x, y, new Color(0f, 0f, 0f, 0f)); continue; }
+
+                float brightness = facet[sector];
+                brightness += 0.35f * Smooth(1f - Mathf.Abs(bestSector) / 0.03f);   // arêtes entre facettes, claires
+                brightness *= Mathf.Lerp(0.3f, 1f, Smooth(inside / 0.07f));          // contour sombre
+                tex.SetPixel(x, y, new Color(brightness, brightness, brightness, alpha));
+            }
+        }
+        tex.Apply();
+        _crystalFragments[variant] = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        return _crystalFragments[variant];
+    }
+
+    private static float Cross(Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
 
     // Carré blanc de 1 x 1 unité exactement (bandes de la zone de charge : on le met à l'échelle largeur x longueur).
     public static Sprite Square()

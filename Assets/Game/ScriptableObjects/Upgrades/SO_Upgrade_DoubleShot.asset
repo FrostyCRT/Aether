@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: SO_Upgrade_DoubleShot
   m_EditorClassIdentifier: 
   upgradeName: Double Tir
-  description: Tire 2 projectiles en rafale
+  description: "Ton tir de base tire un second projectile juste apr\xE8s le premier"
   icon: {fileID: 21300000, guid: deccc92b146036b4ca2a940cdf2ec321, type: 3}
   upgradeType: 3
   value: 0
+  _fusionSource1: 0
+  _fusionSource2: 0
+  _fusionResultId: 
+  _fusionBranch: 3
   _levelValues: []
   _maxLevel: 1
   _requiresUnlockPick: 0

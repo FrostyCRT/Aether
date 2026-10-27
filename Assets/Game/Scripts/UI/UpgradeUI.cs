@@ -25,13 +25,66 @@ public class UpgradeUI : MonoBehaviour
     // (comme _titleDefaultY ci-dessus) plutôt que redupliqués en dur dans DisplayUpgrades : une carte normale
     // retrouve EXACTEMENT ce qu'elle avait dans la scène, même si ces valeurs sont retouchées plus tard dans
     // l'Inspector - seule la carte de FUSION s'écarte de cette référence, via des constantes dédiées.
+    // AJOUTÉ (2026-10-25) - carte de fusion : bloc titre (3 lignes, ~100 px) / icône (215) / description (3 lignes au plus,
+    // ~100 px) séparés de 28 px, centré sur le parchemin : de +235 à -235. Boîtes alignées en haut (titre, description).
+    // MODIFIÉ (2026-10-26, retour utilisateur : "remonte en Y les titres, les icônes et les descriptions de seulement
+    // quelques pixels, les icônes doivent être au même emplacement en Y entre les 2 types de cartes") - titres et
+    // descriptions remontés de CardRaiseY (fusion et normale) ; icône à CardIconY sur les deux types (avant : -3 en
+    // fusion, -9 en normale, valeur de la scène).
+    private const float CardRaiseY = 8f;
+    private const float CardIconY = 0f;
+    private const float FusionNameY = 185f + CardRaiseY;          // boîte 100 px alignée en haut
+    private const float FusionDescHeight = 110f;
+    private const float FusionDescY = -138f - FusionDescHeight / 2f + CardRaiseY;
+    private const string FusionSourcesHex = "7A3B1C";                  // GameUI.ParchmentInkColorLight
+
+    // AJOUTÉ (2026-10-26, retour utilisateur : "pour les compétences classiques (tout sauf fusion), la description tienne
+    // sur 2 lignes") - carte normale : police réduite juste ce qu'il faut pour 2 lignes (voir TextBalancer.FitToLines) au
+    // lieu de l'auto-size, qui laissait 3 lignes.
+    // MODIFIÉ (2026-10-26, retour utilisateur avec capture : "rétrécis un peu la longueur, ça va un peu trop sur les
+    // côtés") - même largeur de 350 px pour les deux types de carte (380 avant). Mesuré dans les 11 langues à 350 px :
+    // classiques en 2 lignes à 19 ou plus (22,5 en français).
+    // MODIFIÉ (2026-10-26, retour utilisateur : "4 lignes c'est trop") - fusion : 3 lignes au plus. Les descriptions
+    // trop longues ont été raccourcies (toutes tiennent en 3 lignes à la taille 26) ; FitToLines ne sert que de
+    // filet de sécurité (texte futur trop long : police légèrement réduite plutôt qu'une 4e ligne).
+    private const float DescWidth = 350f;
+    private const int NormalDescMaxLines = 2;
+    private const float NormalDescMaxSize = 28f;
+    private const int FusionDescMaxLines = 3;
+    private const float FusionDescMaxSize = 26f;
+    private const float DescMinSize = 18f;
+
+    // MODIFIÉ (2026-10-26, retour utilisateur : "je veux que les caractères soient de la même taille pour chaque cartes. Je
+    // veux aussi que le format soit en centré, et on oublie les même caratères par ligne", compétences de base seulement)
+    // - centré sur toute la largeur, sans équilibrage des lignes ; une seule taille pour toutes les cartes classiques du
+    // tirage (la plus petite des tailles qui tiennent en 2 lignes, voir UniformNormalDescriptionSize). Pendant la roulette,
+    // les fausses descriptions prennent cette même taille (réduite seulement si l'une dépasserait 2 lignes).
+    private float _normalDescSize = NormalDescMaxSize;
+
+    private static void FitNormalDescription(TextMeshProUGUI t, float maxSize = NormalDescMaxSize)
+    {
+        t.horizontalAlignment = HorizontalAlignmentOptions.Center;
+        TextBalancer.FitToLines(t, NormalDescMaxLines, maxSize, DescMinSize, balance: false);
+    }
+
+    private void UniformNormalDescriptionSize(List<UpgradeData> upgrades)
+    {
+        _normalDescSize = NormalDescMaxSize;
+        for (int i = 0; i < _cards.Length && i < upgrades.Count; i++)
+            if (upgrades[i].upgradeType != UpgradeType.Fusion && _cards[i].descriptionText != null)
+                _normalDescSize = Mathf.Min(_normalDescSize, _cards[i].descriptionText.fontSize);
+        for (int i = 0; i < _cards.Length && i < upgrades.Count; i++)
+        {
+            if (upgrades[i].upgradeType == UpgradeType.Fusion || _cards[i].descriptionText == null) continue;
+            _cards[i].descriptionText.fontSize = _normalDescSize;
+            _cards[i].descriptionText.ForceMeshUpdate(true);
+        }
+    }
+
     private float[] _defaultNameY;
-    private float[] _defaultIconY;
     private Vector2[] _defaultIconSize;
     private float[] _defaultDescY;
     private Vector2[] _defaultDescSize;
-    private bool[] _defaultDescAutoSize;
-    private float[] _defaultDescFontSize;
 
     // AJOUTÉ (2026-10-01) - retour utilisateur : "quand le level up panel arrive, une transition rapide pour
     // afficher les cartes, pas juste un écran qui spawn comme ça, fluide et dynamique". Le fond fait un court
@@ -230,12 +283,9 @@ public class UpgradeUI : MonoBehaviour
             _titleDefaultY = _levelUpTitleText.anchoredPosition.y;
 
         _defaultNameY = new float[_cards.Length];
-        _defaultIconY = new float[_cards.Length];
         _defaultIconSize = new Vector2[_cards.Length];
         _defaultDescY = new float[_cards.Length];
         _defaultDescSize = new Vector2[_cards.Length];
-        _defaultDescAutoSize = new bool[_cards.Length];
-        _defaultDescFontSize = new float[_cards.Length];
 
         for (int i = 0; i < _cards.Length; i++)
         {
@@ -244,7 +294,6 @@ public class UpgradeUI : MonoBehaviour
             if (_cards[i].iconImage != null)
             {
                 RectTransform iconRt = (RectTransform)_cards[i].iconImage.transform;
-                _defaultIconY[i] = iconRt.anchoredPosition.y;
                 _defaultIconSize[i] = iconRt.sizeDelta;
             }
             if (_cards[i].descriptionText != null)
@@ -252,8 +301,6 @@ public class UpgradeUI : MonoBehaviour
                 RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
                 _defaultDescY[i] = descRt.anchoredPosition.y;
                 _defaultDescSize[i] = descRt.sizeDelta;
-                _defaultDescAutoSize[i] = _cards[i].descriptionText.enableAutoSizing;
-                _defaultDescFontSize[i] = _cards[i].descriptionText.fontSize;
             }
 
             if (_cards[i].chooseButton != null)
@@ -272,7 +319,8 @@ public class UpgradeUI : MonoBehaviour
             _cards[i].nameText.color = GameUI.ParchmentInkColor;
             _cards[i].descriptionText.color = GameUI.ParchmentInkColor;
             GameUI.ApplyReadableOutline(_cards[i].nameText);
-            GameUI.ApplyReadableOutline(_cards[i].descriptionText);
+            // MODIFIÉ (2026-10-25) - la description est en police de lecture (GameFonts) : le halo clair rongeait son trait
+            // fin et la rendait pâle. Encre foncée sur parchemin clair, elle se lit sans halo.
         }
     }
 
@@ -338,7 +386,12 @@ public class UpgradeUI : MonoBehaviour
                 // MODIFIE (2026-10-11, retour utilisateur : "augmente la taille des caractères des noms pour les
                 // fusions") - 2e ligne (le nom spécifique) agrandie de 65% à 85% de la taille de base ("FUSION"
                 // reste à 100%, toujours la ligne la plus visible).
-                _cards[i].nameText.text = isFusionCard ? Loc.T("FUSION") + $"\n<size=85%>{upgrades[i].Name}</size>" : upgrades[i].Name;
+                // MODIFIÉ (2026-10-25, retour utilisateur : "la description est bien trop longue") - 3e ligne : les deux
+                // armes fusionnées (« Orbitaux + Foudre »), retirées de la description qui ne les répète plus.
+                string sources = isFusionCard ? upgrades[i].FusionSourcesLabel() : "";
+                _cards[i].nameText.text = isFusionCard
+                    ? Loc.T("FUSION") + $"\n<size=85%>{upgrades[i].Name}</size>" + (sources.Length > 0 ? $"\n<size=62%><color=#{FusionSourcesHex}>{sources}</color></size>" : "")
+                    : upgrades[i].Name;
                 _cards[i].descriptionText.text = upgrades[i].GetDynamicDescription();
 
                 // CORRIGE (2026-10-11, retour utilisateur avec capture : "le grand vide en bas", "même écart entre
@@ -369,6 +422,9 @@ public class UpgradeUI : MonoBehaviour
                 // (icône et description), (2) le titre descend de 15px DE PLUS que le reste (30px au total), lui
                 // seul - rapproche visuellement le titre "FUSION" du haut des cartes voisines (Dégâts+/Cadence+,
                 // dont le titre ne bouge jamais) sans toucher à l'icône ni à la description une 2e fois.
+                // MODIFIÉ (2026-10-25, retour utilisateur : "les éléments sont mal répartis sur la carte, tout est trop bas")
+                // - avec les descriptions raccourcies (3 lignes au plus), titre (3 lignes), icône et description forment
+                // un bloc centré verticalement sur le parchemin (800 px, centre à 0), voir les constantes Fusion*.
                 if (isFusionCard)
                 {
                     // CORRIGE (2026-10-11, retour utilisateur avec capture : "baisse tous les titres, pour la carte
@@ -376,10 +432,10 @@ public class UpgradeUI : MonoBehaviour
                     // titre 210 -> 190 (même baisse de 20px que les cartes normales, scène, nameText.y 218 -> 198) ;
                     // description -210 -> -230 (encore 20px de plus, rien d'autre ne bouge).
                     if (_cards[i].nameText != null)
-                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, 190f);
+                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, FusionNameY);
                     // CORRIGE (2026-10-11, retour utilisateur avec capture : "l'icone pour la carte de fusion doit
                     // être de la même taille que celle des autres, et les icones de fusions et de upgrade doivent
-                    // être au même niveau en Y") - 2 corrections : (1) Y alignée sur _defaultIconY[i], la MÊME
+                    // être au même niveau en Y") - 2 corrections : (1) Y alignée sur CardIconY, la MÊME
                     // valeur que la branche "else" ci-dessous utilise pour les cartes normales (abandon du Y fixe à
                     // 30 qui plaçait l'icône de fusion plus haut que celles des cartes voisines) ; (2) boîte élargie
                     // à 400x215 (au lieu de la boîte carrée 225x225 héritée de la scène, partagée avec les cartes
@@ -394,39 +450,35 @@ public class UpgradeUI : MonoBehaviour
                     if (_cards[i].iconImage != null)
                     {
                         RectTransform fusionIconRt = (RectTransform)_cards[i].iconImage.transform;
-                        fusionIconRt.anchoredPosition = new Vector2(fusionIconRt.anchoredPosition.x, _defaultIconY[i]);
+                        fusionIconRt.anchoredPosition = new Vector2(fusionIconRt.anchoredPosition.x, CardIconY);
                         fusionIconRt.sizeDelta = new Vector2(400f, 215f);
                     }
                     if (_cards[i].descriptionText != null)
                     {
                         RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
-                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, -245f);
-                        descRt.sizeDelta = new Vector2(380f, 190f);
+                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, FusionDescY);
+                        descRt.sizeDelta = new Vector2(DescWidth, FusionDescHeight);
                         // "pas obligé de rendre le texte plus petit quand c'est long, il faut que ça prenne de la
-                        // place" - la boîte est maintenant assez haute (190px, ~5 lignes) pour que même la
-                        // description la plus longue tienne à taille fixe ; plus besoin de laisser l'auto-size la
-                        // rétrécir.
-                        _cards[i].descriptionText.enableAutoSizing = false;
-                        _cards[i].descriptionText.fontSize = 26f;
+                        // place" - taille 26, réduite seulement au-delà de 3 lignes (voir FusionDescMaxLines).
+                        TextBalancer.FitToLines(_cards[i].descriptionText, FusionDescMaxLines, FusionDescMaxSize, DescMinSize);
                     }
                 }
                 else
                 {
                     if (_cards[i].nameText != null)
-                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, _defaultNameY[i]);
+                        ((RectTransform)_cards[i].nameText.transform).anchoredPosition = new Vector2(((RectTransform)_cards[i].nameText.transform).anchoredPosition.x, _defaultNameY[i] + CardRaiseY);
                     if (_cards[i].iconImage != null)
                     {
                         RectTransform normalIconRt = (RectTransform)_cards[i].iconImage.transform;
-                        normalIconRt.anchoredPosition = new Vector2(normalIconRt.anchoredPosition.x, _defaultIconY[i]);
+                        normalIconRt.anchoredPosition = new Vector2(normalIconRt.anchoredPosition.x, CardIconY);
                         normalIconRt.sizeDelta = _defaultIconSize[i];
                     }
                     if (_cards[i].descriptionText != null)
                     {
                         RectTransform descRt = (RectTransform)_cards[i].descriptionText.transform;
-                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, _defaultDescY[i]);
-                        descRt.sizeDelta = _defaultDescSize[i];
-                        _cards[i].descriptionText.enableAutoSizing = _defaultDescAutoSize[i];
-                        _cards[i].descriptionText.fontSize = _defaultDescFontSize[i];
+                        descRt.anchoredPosition = new Vector2(descRt.anchoredPosition.x, _defaultDescY[i] + CardRaiseY);
+                        descRt.sizeDelta = new Vector2(DescWidth, _defaultDescSize[i].y);
+                        FitNormalDescription(_cards[i].descriptionText);
                     }
                 }
 
@@ -463,6 +515,8 @@ public class UpgradeUI : MonoBehaviour
                     _cards[i].chooseButton.gameObject.SetActive(false);
             }
         }
+
+        UniformNormalDescriptionSize(upgrades);
 
         // AJOUTÉ (2026-10-01) - lance la transition d'arrivée maintenant que les cartes sont configurées et
         // activées (voir StartIntro : si le panel n'est pas encore actif, elle démarre dans OnEnable).
@@ -710,7 +764,11 @@ public class UpgradeUI : MonoBehaviour
     {
         s.iconImage.sprite = upgrade.icon;
         if (s.nameText != null) s.nameText.text = upgrade.Name;
-        if (s.descriptionText != null) s.descriptionText.text = upgrade.GetDynamicDescription();
+        if (s.descriptionText != null)
+        {
+            s.descriptionText.text = upgrade.GetDynamicDescription();
+            FitNormalDescription(s.descriptionText, _normalDescSize);   // descriptionText n'est renseigné que pour les cartes normales
+        }
         if (s.backgroundImage != null) s.backgroundImage.sprite = GetParchmentFor(upgrade);
         if (s.spinDots && s.card != null) UpdateTierDots(s.cardIndex, s.card, upgrade);
     }

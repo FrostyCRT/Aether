@@ -63,15 +63,15 @@
 62	Orbites : rapprocher	Orbits: pull in
 63	Orbites : éloigner	Orbits: push out
 64	Pause	Pause
-65	Dash : déplacement rapide, invincible un court instant, absorbe les projectiles	Dash: a quick burst of movement, briefly invincible, absorbs projectiles.
-66	Déclenche l'ultime quand le cristal est chargé	Unleashes your Ultimate once the crystal is charged.
-67	Invoque le clone spectral. Nécessite la compétence correspondante	Summons the Spectral Clone. Requires the matching skill.
-68	Choisit la 1re carte à la montée de niveau	Picks the 1st card on level up.
-69	Choisit la 2e carte à la montée de niveau	Picks the 2nd card on level up.
-70	Choisit la 3e carte à la montée de niveau	Picks the 3rd card on level up.
-71	Réduit le rayon des orbes de l'arme orbitale	Shrinks the radius of the orbital weapon's orbs.
-72	Augmente le rayon des orbes de l'arme orbitale	Widens the radius of the orbital weapon's orbs.
-73	Ouvre / ferme le menu pause	Opens / closes the pause menu.
+65	Dash : déplacement rapide, invincible un court instant, absorbe les projectiles	Dash: a quick burst of movement, briefly invincible, absorbs projectiles
+66	Déclenche l'ultime quand le cristal est chargé	Unleashes your Ultimate once the crystal is charged
+67	Invoque le clone spectral. Nécessite la compétence correspondante	Summons the Spectral Clone. Requires the matching skill
+68	Choisit la 1re carte à la montée de niveau	Picks the 1st card on level up
+69	Choisit la 2e carte à la montée de niveau	Picks the 2nd card on level up
+70	Choisit la 3e carte à la montée de niveau	Picks the 3rd card on level up
+71	Réduit le rayon des orbes de l'arme orbitale	Shrinks the radius of the orbital weapon's orbs
+72	Augmente le rayon des orbes de l'arme orbitale	Widens the radius of the orbital weapon's orbs
+73	Ouvre / ferme le menu pause	Opens / closes the pause menu
 
 ## Paramètres : page (SettingsSchema)
 74	Performance	Performance
@@ -168,27 +168,27 @@
 163	PARTIE EN PAUSE	RUN PAUSED
 164	Retour	Back
 165	Retour automatique à l'ancien affichage dans {0} s	Reverting to the previous display in {0} s
-166	Affichage conservé	Display kept.
-167	Ancien affichage rétabli	Previous display restored.
+166	Affichage conservé	Display kept
+167	Ancien affichage rétabli	Previous display restored
 168	Appuie sur une touche, un bouton de souris ou de manette	Press a key, a mouse button or a gamepad button
 169	Échap : annuler     Retour arrière : effacer	Esc: cancel     Backspace: clear
-170	Impossible : « {0} » doit garder au moins une touche	Not possible: "{0}" must keep at least one key.
-171	« {0} » est la seule touche de « {1} » : libère-la d'abord	"{0}" is the only key for "{1}": free it up first.
-172	« {0} » était utilisée par « {1} » : elles échangent leurs touches (« {2} »)	"{0}" was used by "{1}": they swap keys ("{2}").
-173	« {0} » était utilisée par « {1} » : elle lui est retirée	"{0}" was used by "{1}": it has been removed from it.
+170	Impossible : « {0} » doit garder au moins une touche	Not possible: "{0}" must keep at least one key
+171	« {0} » est la seule touche de « {1} » : libère-la d'abord	"{0}" is the only key for "{1}": free it up first
+172	« {0} » était utilisée par « {1} » : elles échangent leurs touches (« {2} »)	"{0}" was used by "{1}": they swap keys ("{2}")
+173	« {0} » était utilisée par « {1} » : elle lui est retirée	"{0}" was used by "{1}": it has been removed from it
 174	« {0} » : {1}	"{0}": {1}
 175	RÉINITIALISER « {0} » ?	RESET "{0}"?
-176	Les réglages de cette page reprennent leur valeur d'origine	The settings on this page go back to their default values.
+176	Les réglages de cette page reprennent leur valeur d'origine	The settings on this page go back to their default values
 177	Réinitialiser	Reset
-178	Page « {0} » réinitialisée	"{0}" page reset.
+178	Page « {0} » réinitialisée	"{0}" page reset
 179	TOUT RÉINITIALISER ?	RESET EVERYTHING?
-180	Tous les réglages et toutes les touches reprennent leur valeur d'origine	All settings and all keys go back to their default values.
+180	Tous les réglages et toutes les touches reprennent leur valeur d'origine	All settings and all keys go back to their default values
 181	Tout réinitialiser	Reset everything
-182	Tous les paramètres ont été réinitialisés	All settings have been reset.
+182	Tous les paramètres ont été réinitialisés	All settings have been reset
 183	QUITTER LE JEU ?	QUIT THE GAME?
-184	Le jeu va se fermer. Tes réglages sont enregistrés	The game will close. Your settings are saved.
+184	Le jeu va se fermer. Tes réglages sont enregistrés.	The game will close. Your settings are saved.
 185	Quitter	Quit
-186	Disposition « {0} » appliquée	"{0}" layout applied.
+186	Disposition « {0} » appliquée	"{0}" layout applied
 187	OUI	ON
 188	NON	OFF
 189	AZERTY (ZQSD)	AZERTY (ZQSD)
@@ -204,18 +204,18 @@
 197	DIFFICILE	HARD
 198	Défi réussi ! {0}	Challenge complete! {0}
 199	Nouveau record de survie : {0} !	New survival record: {0}!
-200	À deux doigts de ton record de survie...	So close to your survival record...
+200	Ton record de survie était à portée	Your survival record was within reach
 201	Nouveau record d'éliminations : {0} !	New kill record: {0}!
-202	Si proche de ton record d'éliminations...	So close to your kill record...
+202	Ton record d'éliminations était à portée	Your kill record was within reach
 203	Nouveau record de niveau : {0} !	New level record: {0}!
-204	Un cheveu de ton meilleur niveau...	A hair away from your best level...
+204	Ton meilleur niveau était à portée	Your best level was within reach
 205	Nouveau record d'Or en une partie : {0} !	New gold record in a single run: {0}!
-206	Tout près de ton record d'Or...	So close to your gold record...
+206	Ton record d'Or était à portée	Your gold record was within reach
 207	Nouveau personnage débloqué : {0} !	New character unlocked: {0}!
-208	Tu as tout donné à cette branche. Littéralement	You gave everything to this branch. Literally.
-209	Plus rien à débloquer ici — change de personnage pour la suite	Nothing left to unlock here — switch heroes to keep going.
-210	Cette branche n'a plus de secret pour toi	This branch holds no more secrets for you.
-211	Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose	Skill tree and Reputation maxed out. Switch heroes if you want something new.
+208	Tu as tout débloqué dans cette branche	You've unlocked everything in this branch
+209	Plus rien à débloquer ici — change de personnage pour la suite	Nothing left to unlock here — switch heroes to keep going
+210	Cette branche n'a plus de secret pour toi	This branch holds no more secrets for you
+211	Arbre de compétences et Réputation au maximum. Change de personnage pour découvrir autre chose.	Skill tree and Reputation maxed out. Switch heroes if you want something new.
 212	Or	Gold
 213	Éclats	Shards
 214	Encore {0} {1} pour débloquer {2}	{0} more {1} to unlock {2}
@@ -223,28 +223,28 @@
 216	Tentative n°{0}	Attempt #{0}
 217	Survie {0:00}:{1:00}    ·    Titans {2}/3	Survival {0:00}:{1:00}    ·    Titans {2}/3
 218	Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}	Survival {0:00}:{1:00}    ·    Kills {2}    ·    Level {3}    ·    {4}
-219	{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort	{0} bosses out of {1}. The rush shows no mercy — come back stronger.
+219	{0} boss sur {1}. La ruée ne pardonne pas — reviens plus fort.	{0} bosses out of {1}. The rush shows no mercy — come back stronger.
 220	Aucun titan abattu	No titans slain
 221	1 titan abattu	1 titan slain
 222	{0} titans abattus	{0} titans slain
-223	{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort	{0} out of 3. All three together show no mercy — come back stronger.
-224	{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps	{t} survived, {b} bosses slain. You can last longer.
-225	Tu as tenu {t} face à des boss de plus en plus féroces	You held out for {t} against ever-fiercer bosses.
-226	{b} boss vaincus avant la chute. Le prochain record est à portée	{b} bosses defeated before the fall. The next record is within reach.
-227	{0} boss abattus en {1}. La ruée est à toi	{0} bosses slain in {1}. The rush is yours.
-228	Les 3 titans terrassés en {0}. Rien ne t'arrête	All 3 titans brought down in {0}. Nothing can stop you.
-229	La Source Corrompue n'a pas tenu la distance	The Corrupted Source couldn't go the distance.
-230	Elle ne se relèvera pas	It won't rise again.
-231	La corruption s'éteint ici	The corruption ends here.
-232	{0} au compteur, {1} ennemis au tapis. {2}	{0} on the clock, {1} enemies down. {2}
-233	Pas de record aujourd'hui, mais la victoire est bien réelle	No record today, but the victory is very real.
-234	Rien d'exceptionnel à signaler, à part la victoire elle-même	Nothing remarkable to report, apart from the victory itself.
-235	Aucun exploit cette fois — juste une victoire de plus	No feats this time — just one more victory.
-236	Une victoire sans la moindre compétence. Chapeau	A victory without a single skill. Hats off.
-237	Aucune compétence récupérée. Le style, ça compte double	No skills picked up. Style counts double.
-238	Rien pris en cours de route, et pourtant tu es là	Nothing picked up along the way, and yet here you are.
-239	Pas eu le temps de récupérer la moindre compétence	No time to pick up a single skill.
-240	Aucune compétence récupérée cette fois	No skills picked up this time.
+223	{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.	{0} out of 3. All three together show no mercy — come back stronger.
+224	{t} de survie, {b} boss abattus. Tu peux tenir plus longtemps.	{t} survived, {b} bosses slain. You can last longer.
+225	Tu as tenu {t} face à des boss de plus en plus féroces	You held out for {t} against ever-fiercer bosses
+226	{b} boss vaincus avant la chute. Le prochain record est à portée.	{b} bosses defeated before the fall. The next record is within reach.
+227	{0} boss abattus en {1}. La ruée est à toi	{0} bosses slain in {1}. The rush is yours
+228	Les 3 titans terrassés en {0}. Rien ne t'arrête.	All 3 titans brought down in {0}. Nothing can stop you.
+229	La Source Corrompue n'a pas tenu la distance	The Corrupted Source couldn't go the distance
+230	Elle ne se relèvera pas	It won't rise again
+231	La corruption s'éteint ici	The corruption ends here
+232	{0} de combat, {1} ennemis vaincus. {2}	{0} of combat, {1} enemies defeated. {2}
+233	Pas de record aujourd'hui, mais la victoire est bien réelle.	No record today, but the victory is very real.
+234	Rien d'exceptionnel à signaler, à part la victoire elle-même.	Nothing remarkable to report, apart from the victory itself.
+235	Aucun exploit cette fois — juste une victoire de plus	No feats this time — just one more victory
+236	Une victoire sans la moindre compétence. Remarquable.	A victory without a single skill. Remarkable.
+237	Aucune compétence récupérée, et la victoire malgré tout.	No skills picked up, and victory all the same.
+238	Rien pris en cours de route, et pourtant tu es là.	Nothing picked up along the way, and yet here you are.
+239	Tu n'as pas eu le temps de récupérer la moindre compétence	You didn't have time to pick up a single skill
+240	Aucune compétence récupérée cette fois	No skills picked up this time
 241	VICTOIRE !	VICTORY!
 242	FIN DE PARTIE	GAME OVER
 243	DÉFAITE	DEFEAT
@@ -282,50 +282,50 @@
 273	Niv. {0}/{1}	Lv. {0}/{1}
 274	En cours	In progress
 275	{0}/3000 Or	{0}/3000 Gold
-276	Pas de défi dans ce mode	No challenge in this mode.
+276	Pas de défi dans ce mode	No challenge in this mode
 277	Défi déjà réussi cette heure !	Challenge already completed this hour!
-278	Nouveau défi dans {0} min	New challenge in {0} min.
+278	Nouveau défi dans {0} min	New challenge in {0} min
 279	Nouveau défi à ta prochaine partie !	New challenge on your next run!
 280	Réussi	Completed
 281	Statut	Status
 
 ## Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
 282	Concentration	Focus
-283	Chaque seconde sans recevoir de dégâts augmente tes dégâts (+8% / sec). Le bonus se réinitialise à chaque coup reçu	Each second without taking damage increases your damage (+8% / sec). The bonus resets whenever you get hit
-284	+8% / sec, plafond +15%	+8% / sec, cap +15%
-285	+8% / sec, plafond +30%	+8% / sec, cap +30%
-286	+8% / sec, plafond +50%	+8% / sec, cap +50%
+283	Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.	Each second without taking damage increases your damage, up to a cap. The bonus drops to zero whenever you get hit.
+284	+2% / s, plafond +15%	+2% / s, cap +15%
+285	+3% / s, plafond +30%	+3% / s, cap +30%
+286	+5% / s, plafond +50%	+5% / s, cap +50%
 287	Cadence	Fire Rate
-288	Augmente la vitesse de tir de toutes tes armes	Increases the fire rate of all your weapons
+288	Augmente la cadence de ton tir de base.	Increases the fire rate of your basic attack.
 289	Fragmentation	Fragmentation
-290	Les projectiles ont 15% de chance d'exploser à l'impact	Projectiles have a 15% chance to explode on impact
+290	Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.	Every 4th projectile of your basic attack explodes on impact and deals its full damage to nearby enemies.
 291	Dégâts Cristal	Crystal Damage
-292	Augmente les dégâts de l'ultime et de la Nova	Increases the damage of your Ultimate and Nova
+292	Augmente les dégâts de l'ultime et de la Nova.	Increases the damage of your Ultimate and Nova.
 293	Surpuissance	Overpower
-294	Après l'ultime, tes dégâts sont doublés pendant 5 secondes	After your Ultimate, your damage is doubled for 5 seconds
+294	Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.	After your Ultimate, your damage is doubled for 10 seconds.
 295	Vitalité	Vitality
-296	Augmente tes points de vie maximum	Increases your maximum HP
+296	Augmente tes points de vie maximum.	Increases your maximum HP.
 297	Récupération	Recovery
-298	Chaque projectile absorbé par le dash restaure des PV	Each projectile absorbed by your dash restores HP
+298	Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.	Each projectile absorbed, by your dash or your Mana Shield, restores HP.
 299	+20 PV par absorption	+20 HP per absorb
 300	+50 PV par absorption	+50 HP per absorb
 301	+80 PV par absorption	+80 HP per absorb
 302	Second Souffle	Second Wind
-303	Une fois par partie, survit à un coup fatal avec 1 PV	Once per run, survive a fatal blow with 1 HP
+303	Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.	Once per run, survive a fatal blow with 1 HP, then become invincible for 3 seconds.
 304	Armure	Armor
-305	Réduit les dégâts reçus de tous les ennemis	Reduces damage taken from all enemies
+305	Réduit les dégâts reçus de tous les ennemis.	Reduces damage taken from all enemies.
 306	Bouclier de Mana	Mana Shield
-307	Absorbe automatiquement 1 projectile ennemi toutes les 8 secondes	Automatically absorbs 1 enemy projectile every 8 seconds
+307	Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.	A 3-charge bubble that blocks enemy projectiles and absorbs them like your dash. Recharge: 1 charge every 3 seconds, paused for 4 seconds if the bubble breaks.
 308	Impulsion Nova	Nova Impulse
-309	Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé	If the Nova triggered by an absorb kills at least one enemy, your dash cooldown is instantly reset
+309	Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.	If the Nova triggered by an absorb kills at least one enemy, your dash cooldown is instantly reset.
 310	Dash Amélioré	Improved Dash
-311	Réduit le temps de recharge du dash	Reduces the dash cooldown
+311	Réduit le temps de recharge du dash.	Reduces the dash cooldown.
 312	Maîtrise du Cristal	Crystal Mastery
-313	Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5)	Reduces the number of Nova charges needed for your Ultimate by 1 (6 to 5)
+313	Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5).	Reduces the number of Nova charges needed for your Ultimate by 1 (6 to 5).
 314	Nova Étendue	Wide Nova
-315	Augmente le rayon de la Nova de Cristal	Increases the radius of the Crystal Nova
+315	Augmente le rayon de la Nova de Cristal.	Increases the radius of the Crystal Nova.
 316	Clone Spectral	Spectral Clone
-317	Débloque un Clone spectral, activable via une touche dédiée : il attire les ennemis proches pendant 2 secondes	Unlocks a Spectral Clone, triggered with a dedicated key: it draws nearby enemies to it for 2 seconds
+317	Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible. Recharge : 8 secondes.	Unlocks a Spectral Clone, triggered with a dedicated key: for 3 seconds it draws every enemy to it and you become invincible. Cooldown: 8 seconds.
 318	TALENT UNIQUE	UNIQUE TALENT
 319	NIVEAU {0} / {1}	LEVEL {0} / {1}
 320	débloqué	unlocked
@@ -333,14 +333,14 @@
 322	NIV {0}	LV {0}
 323	ACQUIS	OWNED
 324	NIVEAU MAX	MAX LEVEL
-325	Ce talent est actif	This talent is active.
-326	Cette compétence est au maximum	This skill is maxed out.
+325	Ce talent est actif	This talent is active
+326	Cette compétence est au maximum	This skill is maxed out
 327	INDISPONIBLE	UNAVAILABLE
-328	Sélectionne {0} dans l'onglet Personnages pour acheter	Select {0} in the Characters tab to buy.
+328	Sélectionne {0} dans l'onglet Personnages pour acheter	Select {0} in the Characters tab to buy
 329	VERROUILLÉ	LOCKED
-330	Débloque d'abord les prérequis ci-dessus	Unlock the prerequisites above first.
+330	Débloque d'abord les prérequis ci-dessus	Unlock the prerequisites above first
 331	OR INSUFFISANT	NOT ENOUGH GOLD
-332	Il te manque {0} or	You need {0} more gold.
+332	Il te manque {0} or	You need {0} more gold
 333	ACHETER	BUY
 334	reste {0}	{0} left
 335	{0} compétences achetables  ·  repère le halo doré	{0} skills available  ·  look for the golden glow
@@ -362,63 +362,63 @@
 
 ## Améliorations (ScriptableObjects + UpgradeData)
 349	Marécage Maudit	Cursed Swamp
-350	FUSION — Boue + Foudre : tes zones deviennent un marécage électrifié qui électrocute tout ce qui s'y attarde	FUSION — Mud + Lightning: your zones become an electrified swamp that shocks anything lingering inside
+350	Tes flaques de boue deviennent un marécage qui foudroie les ennemis	Your mud puddles become an electrified swamp that shocks enemies
 351	Vortex de Mana	Mana Vortex
-352	FUSION — Aura + Orbitaux : un tourbillon d'éclats de mana, bien plus large et bien plus puissant, tourne désormais autour de toi	FUSION — Aura + Orbitals: a far wider, far stronger whirlwind of mana shards now spins around you
+352	Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.	A wider, stronger whirlwind of mana shards spins around you.
 353	Lames Ricochet	Ricochet Blades
-354	FUSION — Couteaux + Orbe rebondissant : ta salve perfore ET ricoche désormais d'ennemi en ennemi	FUSION — Knives + Bouncing Orb: your volley now pierces AND ricochets from enemy to enemy
+354	Ta salve de couteaux perfore et ricoche d'ennemi en ennemi	Your knife volley pierces and ricochets from enemy to enemy
 355	Pluie de Météores	Meteor Shower
-356	FUSION — Boule de feu + Boue : des météorites s'abattent sur les ennemis, explosent à l'impact et laissent un cratère de boue brûlante qui les ralentit.	FUSION — Fireball + Mud: meteors crash down on enemies, explode on impact and leave a crater of burning mud that slows them down.
+356	Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit	Meteors crash down on enemies and leave burning mud that slows them down
 357	Orbes Foudroyants	Thundering Orbs
-358	FUSION — Orbitaux + Foudre : tes éclats en orbite déchargent désormais la foudre en chaîne à chaque contact	FUSION — Orbitals + Lightning: your orbiting shards now unleash chain lightning on every hit
+358	Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis	Your orbitals set off chain lightning when they touch enemies
 359	Sillage Boueux	Muddy Wake
-360	FUSION — Orbe rebondissant + Boue : tes orbes laissent désormais derrière eux un sillage de flaques boueuses qui ralentissent et blessent tout ce qu'elles touchent	FUSION — Bouncing Orb + Mud: your orbs now leave a trail of muddy puddles behind them, slowing and hurting everything they touch
+360	Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis	Your orbs leave a trail of mud that slows and hurts enemies
 361	Aura	Aura
 362	Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée	Creates a permanent field around you that damages and slows nearby enemies
 363	Orbe Rebondissant	Bouncing Orb
 364	Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés	Launches orbs that bounce endlessly around the arena, hurting every enemy they hit
 365	Dégâts +	Damage +
-366	+20% aux dégâts	+20% damage
+366	+20% de dégâts sur toutes tes armes	+20% damage on all your weapons
 367	Double Tir	Double Shot
-368	Tire 2 projectiles en rafale	Fires 2 projectiles in a burst
+368	Ton tir de base tire un second projectile juste après le premier	Your basic attack fires a second projectile right after the first
 369	Boule de Feu	Fireball
-370	Lance une boule de feu	Throws a fireball
+370	Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense	Throws a fireball that explodes on the densest group of enemies
 371	Cadence+	Fire Rate+
-372	+20% à la cadence de tir	+20% fire rate
+372	+20% de cadence sur toutes tes armes de tir	+20% fire rate on all your shooting weapons
 373	Soin	Heal
-374	Restaure 50% des HP maximum	Restores 50% of max HP
+374	Restaure 50% de tes PV max	Restores 50% of your max HP
 375	Couteaux	Knives
-376	Envoie des salves de couteaux	Throws volleys of knives
+376	Lance des salves de couteaux qui transpercent les ennemis	Throws volleys of knives that pierce through enemies
 377	Chaîne de Foudre	Chain Lightning
 378	Décharge électrique qui rebondit sur les ennemis proches	An electric discharge that bounces between nearby enemies
 379	Boue	Mud
 380	Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent	Spawns mud puddles that slow and hurt the enemies standing in them
 381	Orbitaux	Orbitals
-382	Débloque les projectiles orbitaux	Unlocks orbiting projectiles
-383	Débloque 2 orbitaux tournants qui frappent au contact	Unlocks 2 orbiting shards that strike on contact.
-384	+1 orbital supplémentaire	+1 extra orbital.
-385	Débloque la foudre en chaîne	Unlocks chain lightning.
-386	+1 rebond de foudre supplémentaire	+1 extra lightning bounce.
-387	Débloque 3 flaques de boue ralentissante autour de toi	Unlocks 3 slowing mud puddles around you.
-388	+1 flaque de boue supplémentaire	+1 extra mud puddle.
-389	+{0}% dégâts sur toutes tes armes actives	+{0}% damage on all your active weapons.
-390	+{0}% vitesse de tir sur toutes tes armes actives	+{0}% fire rate on all your active weapons.
-391	Restaure {0}% de tes PV max	Restores {0}% of your max HP.
-392	Débloque un second tir simultané	Unlocks a second simultaneous shot.
-393	Débloque Boule de feu : équipe l'arme exclusive d'Aether	Unlocks Fireball: equips Aether's exclusive weapon.
-394	Le rayon d'explosion est 2 fois plus grand	The explosion radius is twice as large.
-395	+{0}% dégâts	+{0}% damage.
-396	Débloque la Brûlure : les ennemis touchés brûlent sur la durée	Unlocks Burn: enemies hit keep burning over time.
-397	Débloque l'Aura : équipe l'arme exclusive de Kael	Unlocks the Aura: equips Kael's exclusive weapon.
-398	+{0}% rayon	+{0}% radius.
-399	+{0}% ralentissement	+{0}% slow.
-400	Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra	Unlocks Knife Volley: equips Lyra's exclusive weapon.
-401	Débloque un couteau supplémentaire dans la salve	Adds one more knife to the volley.
-402	+{0} ennemis perforés en plus	Pierces {0} more enemies.
-403	+{0} ennemi perforé en plus	Pierces {0} more enemy.
-404	Débloque un orbe rebondissant qui traverse les ennemis	Unlocks a bouncing orb that passes through enemies.
-405	+{0}% vitesse	+{0}% speed.
-406	+1 orbe rebondissant supplémentaire	+1 extra bouncing orb.
+382	Des éclats tournent autour de toi et frappent les ennemis au contact	Shards orbit around you and strike enemies on contact
+383	Débloque 2 orbitaux tournants qui frappent au contact	Unlocks 2 orbiting shards that strike on contact
+384	+1 orbital supplémentaire	+1 extra orbital
+385	Débloque la foudre en chaîne : elle frappe 3 ennemis	Unlocks chain lightning: it strikes 3 enemies
+386	+1 rebond de foudre supplémentaire	+1 extra lightning bounce
+387	Débloque 3 flaques de boue qui ralentissent et blessent	Unlocks 3 mud puddles that slow and hurt enemies
+388	+1 flaque de boue supplémentaire	+1 extra mud puddle
+389	+{0}% de dégâts sur toutes tes armes	+{0}% damage on all your weapons
+390	+{0}% de cadence sur toutes tes armes de tir	+{0}% fire rate on all your shooting weapons
+391	Restaure {0}% de tes PV max	Restores {0}% of your max HP
+392	Débloque le Double Tir : ton tir de base tire deux fois	Unlocks Double Shot: your basic attack fires twice
+393	Débloque Boule de feu : équipe l'arme exclusive d'Aether	Unlocks Fireball: equips Aether's exclusive weapon
+394	Le rayon d'explosion est 2 fois plus grand	The explosion radius is twice as large
+395	+{0}% dégâts	+{0}% damage
+396	Débloque la Brûlure : les ennemis touchés brûlent sur la durée	Unlocks Burn: enemies hit keep burning over time
+397	Débloque l'Aura : équipe l'arme exclusive de Kael	Unlocks the Aura: equips Kael's exclusive weapon
+398	+{0}% rayon	+{0}% radius
+399	Ralentissement renforcé : {0}% au lieu de {1}%	Stronger slow: {0}% instead of {1}%
+400	Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra	Unlocks Knife Volley: equips Lyra's exclusive weapon
+401	Débloque un couteau supplémentaire dans la salve	Adds one more knife to the volley
+402	+{0} ennemis perforés en plus	Pierces {0} more enemies
+403	+{0} ennemi perforé en plus	Pierces {0} more enemy
+404	Débloque un orbe rebondissant qui traverse les ennemis	Unlocks a bouncing orb that passes through enemies
+405	+{0}% vitesse des orbes	+{0}% orb speed
+406	+1 orbe rebondissant supplémentaire	+1 extra bouncing orb
 
 ## Personnages (CharacterSelectUI / CharacterInfoPanel)
 407	DISTANCE	RANGED
@@ -435,7 +435,7 @@
 418	GUERRIER	WARRIOR
 419	Montée en puissance offensive	Offensive power ramp-up
 420	Aura de mana	Mana aura
-421	Champ permanent autour de toi qui blesse les ennemis au contact	A permanent field around you that hurts enemies on contact
+421	Champ permanent autour de toi qui blesse et ralentit les ennemis à portée	A permanent field around you that damages and slows nearby enemies
 422	Dégâts / Rayon / Ralentissement	Damage / Radius / Slow
 423	GARDIEN	GUARDIAN
 424	Survie et résilience	Survival and resilience
@@ -444,8 +444,8 @@
 427	Couteau en plus / Dégâts / Perforation	Extra knife / Damage / Pierce
 428	FANTÔME	PHANTOM
 429	Mobilité et dash	Mobility and dash
-430	Atteins le Boss 2 dans une partie pour débloquer Kael	Reach Boss 2 in a run to unlock Kael.
-431	Termine une partie (bats le Boss 3) pour débloquer Lyra	Finish a run (beat Boss 3) to unlock Lyra.
+430	Atteins le Boss 2 dans une partie pour débloquer Kael	Reach Boss 2 in a run to unlock Kael
+431	Termine une partie (bats le Boss 3) pour débloquer Lyra	Finish a run (beat Boss 3) to unlock Lyra
 432	Débloquer — {0} Éclats	Unlock — {0} Shards
 433	Sélectionné	Selected
 434	Sélectionner	Select
@@ -465,7 +465,7 @@
 
 ## Réputation et skins (ReputationUI / SkinCatalog / SkinCardUI / ReputationStatCardUI)
 446	{0} EST VERROUILLÉ	{0} IS LOCKED
-447	Débloque-le dans l'onglet Personnages\npour accéder à ses skins	Unlock this character in the Characters tab\nto access their skins.
+447	Débloque-le dans l'onglet Personnages\npour accéder à ses skins	Unlock this character in the Characters tab\nto access their skins
 448	PRESTIGE  ·  ÉCLATS	PRESTIGE  ·  SHARDS
 449	CLASSIQUE  ·  OR	CLASSIC  ·  GOLD
 450	Tenue d'origine	Original Outfit
@@ -475,11 +475,11 @@
 454	ÉQUIPER	EQUIP
 455	ÉCLATS INSUFFISANTS	NOT ENOUGH SHARDS
 456	CONFIRMER L'ACHAT ?	CONFIRM PURCHASE?
-457	{0} est verrouillé	{0} is locked.
-458	{0} équipé pour {1}	{0} equipped for {1}.
+457	{0} est verrouillé	{0} is locked
+458	{0} équipé pour {1}	{0} equipped for {1}
 459	Nouveau skin : {0} !	New skin: {0}!
-460	Il te manque des Éclats	You don't have enough Shards.
-461	Il te manque de l'or	You don't have enough gold.
+460	Il te manque des Éclats	You don't have enough Shards
+461	Il te manque de l'or	You don't have enough gold
 462	BIENTÔT	COMING SOON
 463	POSSÉDÉ	OWNED
 464	NIVEAU MAXIMUM	MAXIMUM LEVEL
@@ -498,13 +498,13 @@
 475	CLASSIQUE	CLASSIC
 476	Remporte une partie en mode Classique pour débloquer ce mode	Win a run in Classic mode to unlock this mode
 477	Bats au moins le Boss 1 en mode Classique pour débloquer ce mode	Beat at least Boss 1 in Classic mode to unlock this mode
-478	Les boss reviennent en boucle, de plus en plus forts. Tiens le plus longtemps possible	The bosses keep coming back, stronger every time. Survive as long as you can
+478	Les boss reviennent en boucle, de plus en plus forts. Tiens le plus longtemps possible.	The bosses keep coming back, stronger every time. Survive as long as you can.
 479	le Boss 1	Boss 1
 480	les Boss 1 et 2	Bosses 1 and 2
 481	les 3 boss	all 3 bosses
-482	Un boss par minute : {0}, chacun 3 fois et de plus en plus fort. {1} boss, {1} min	One boss per minute: {0}, each one 3 times and stronger each time. {1} bosses, {1} min
-483	Toutes les améliorations au maximum, aucun ennemi... mais les 3 boss en même temps. Survis et abats-les tous	Every upgrade maxed out, no enemies... but all 3 bosses at once. Survive and take them all down
-484	Bats les 3 boss en 15 minutes pour remporter la partie	Beat all 3 bosses within 15 minutes to win the run
+482	Un boss par minute : {0}, chacun 3 fois et de plus en plus fort. Au total, {1} boss en {1} minutes.	One boss per minute: {0}, each one 3 times and stronger each time. {1} bosses in {1} minutes in total.
+483	Toutes les améliorations au maximum et aucun ennemi, mais les 3 boss en même temps. Survis et abats-les tous.	Every upgrade maxed out and no enemies, but all 3 bosses at once. Survive and take them all down.
+484	Affronte des vagues d'ennemis toujours plus nombreuses et abats les 3 boss en 15 minutes pour l'emporter	Face ever-larger waves of enemies and defeat the 3 bosses within 15 minutes to win
 485	victoire	win
 486	victoires	wins
 487	Meilleur : {0}  ·  {1} boss	Best: {0}  ·  {1} bosses
@@ -534,17 +534,17 @@
 509	La Source Corrompue	The Corrupted Source
 
 ## Messages de Game Over (GameOverMessagePool)
-510	La prochaine sera la bonne	Next time's the one.
-511	Une défaite de plus vers la victoire	One more defeat on the road to victory.
-512	Retourne au combat. C'est comme ça qu'on progresse	Back into the fight. That's how you get better.
-513	Relève-toi, c'est pas fini	Get up, it's not over.
-514	Tu as le niveau pour la suivante	You've got what it takes for the next one.
-515	Tu sais déjà ce qui a coincé. Corrige-le	You already know what went wrong. Fix it.
-516	Ça ne s'est pas joué à grand-chose	It came down to very little.
-517	Tu étais proche. Refais-en une	You were close. Run it again.
-518	Il ne t'a laissé aucune ouverture cette fois	It didn't give you a single opening this time.
-519	Un adversaire coriace. Il faudra revenir plus fort	A tough opponent. You'll have to come back stronger.
-520	Le boss a gagné cette bataille. Il n'a pas gagné la guerre	The boss won this battle. Not the war.
+510	La prochaine sera la bonne	Next time's the one
+511	Une défaite de plus vers la victoire	One more defeat on the road to victory
+512	Retourne au combat. C'est ainsi que l'on progresse.	Back into the fight. That's how you improve.
+513	Relève-toi, ce n'est pas fini.	Get up, it's not over.
+514	Tu as le niveau pour la suivante	You've got what it takes for the next one
+515	Tu sais déjà ce qui a coincé. Corrige-le.	You already know what went wrong. Fix it.
+516	Ça ne s'est pas joué à grand-chose	It came down to very little
+517	Tu étais proche. Relance une partie.	You were close. Start another run.
+518	Il ne t'a laissé aucune ouverture cette fois	It didn't give you a single opening this time
+519	Un adversaire coriace. Il faudra revenir plus fort.	A tough opponent. You'll have to come back stronger.
+520	Le boss a gagné cette bataille. Il n'a pas gagné la guerre.	The boss won this battle. Not the war.
 
 ## Libellés fixes posés dans les scènes / prefabs (LocalizedText.LocalizeTree)
 521	Jouer	Play
@@ -569,7 +569,7 @@
 540	TON OR	YOUR GOLD
 541	RÉPUTATION	REPUTATION
 542	ARBRE DE COMPÉTENCES	SKILL TREE
-543	Renforce tes héros pour de bon, et change leur apparence.	Strengthen your heroes for good, and change their look.
+543	Renforce durablement tes héros et choisis leur apparence	Permanently strengthen your heroes and choose their look
 544	Achetés avec de l'or	Bought with gold
 545	Achetés avec des Éclats	Bought with Shards
 546	Améliorés avec des Éclats	Upgraded with Shards
@@ -608,14 +608,35 @@
 ## Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
 578	FUSION	FUSION
 579	Éclat	Shard
-580	Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss	Never drop below 30% health, from the start of the run until the 2nd boss dies
+580	Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.	Never drop below 30% health, from the start of the run until the 2nd boss dies.
 581	Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss	Don't use the Ultimate (F key) before defeating the 2nd boss
-582	Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss	Never drop below 50% health, from the start of the run until the 1st boss is defeated
+582	Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.	Never drop below 50% health, from the start of the run until the 1st boss is defeated.
 583	Vaincre n'importe quel boss en moins de 30 secondes après son apparition	Defeat any boss within 30 seconds of its appearance
 584	Ramasser au moins 3000 Or au total durant la partie	Collect at least 3000 Gold in total during the run
 585	MODÉRÉ	MODERATE
 586	VIOLENT	SEVERE
 587	APOCALYPTIQUE	APOCALYPTIC
-588	L'expérience Classique telle qu'elle a toujours été	The Classic experience exactly as it has always been
-589	Carte plus grande, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux	Bigger map, tougher and more dangerous enemies, but more generous Gold and Shards
-590	Carte bien plus grande, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum	Much bigger map, noticeably tougher and more dangerous enemies, maximum Gold and Shards
+588	Carte sans limite, l'expérience Classique telle qu'elle a toujours été.	Unbounded map, the Classic experience exactly as it has always been.
+589	Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.	Tunnel map with no side limits, tougher and more dangerous enemies, but more generous Gold and Shards.
+590	Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.	A map closed in on all 4 sides, much tougher and more dangerous enemies, maximum Gold and Shards.
+591	Recharge -0,3 s	Cooldown -0.3 s
+592	Recharge -0,6 s	Cooldown -0.6 s
+593	Recharge -1 s	Cooldown -1 s
+594	Couleur du compteur d'images	FPS counter color
+595	Couleur des images par seconde et des millisecondes affichées en haut à gauche.	Color of the frame rate and frame time shown in the top-left corner.
+596	Active d'abord l'affichage des images par seconde.	Turn on Show FPS first.
+597	IPS	FPS
+598	ms	ms
+599	Choisis le héros qui partira au combat	Choose the hero who will go into battle
+600	Appuie sur une touche pour passer	Press any key to skip
+601	Lance un orbe qui rebondit sans arrêt dans l'arène et blesse les ennemis touchés	Launches an orb that bounces endlessly around the arena, hurting every enemy it hits
+602	Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés	Launches {0} orbs that bounce endlessly around the arena, hurting every enemy they hit
+603	{0} éclats tournent autour de toi et frappent les ennemis au contact	{0} shards orbit around you and strike enemies on contact
+604	Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent	Spawns {0} mud puddles that slow and hurt the enemies standing in them
+605	Lance des salves de {0} couteaux qui transpercent les ennemis	Throws volleys of {0} knives that pierce through enemies
+606	Décharge électrique qui rebondit sur {0} ennemis proches	An electric discharge that bounces to {0} nearby enemies
+607	Survie	Survival
+608	Éliminations	Kills
+609	Niveau	Level
+610	Boss	Bosses
+611	Titans	Titans

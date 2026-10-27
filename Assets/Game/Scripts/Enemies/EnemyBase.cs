@@ -227,9 +227,15 @@ public class EnemyBase : MonoBehaviour
         foreach (Animator a in _cachedAnimators)
             a.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
 
+        // MODIFIÉ (2026-10-25, retour utilisateur : "les ennemis doivent avoir une ombre, la seule exception c'est les
+        // projectiles") - le point 2) ci-dessus est annulé : le modèle de l'ennemi (mesh VAT ou arme tenue, ex. la
+        // sarbacane du gobelin) projette son ombre, animée grâce à la passe ShadowCaster de VATLit.shader. Effets
+        // (particules, traînées, lignes, sprites) toujours sans ombre. Les projectiles ennemis sont des objets à part.
         Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
         foreach (Renderer r in renderers)
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.shadowCastingMode = r is MeshRenderer || r is SkinnedMeshRenderer
+                ? UnityEngine.Rendering.ShadowCastingMode.On
+                : UnityEngine.Rendering.ShadowCastingMode.Off;
 
         // AJOUTÉ (2026-10-05) - suite du correctif perf ci-dessus : le culling hors-champ + le GPU Resident Drawer
         // (activé sur les 3 profils URP) n'ont donné que +10 FPS en vrai jeu - pas assez, le vrai poste de coût

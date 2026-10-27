@@ -236,6 +236,22 @@ public class SettingsPage : MonoBehaviour
             b.onClick.AddListener(() => Go(idx));
             _tabs.Add(b);
         }
+        FitTabs();
+    }
+
+    // AJOUTÉ (2026-10-25) - depuis l'onglet Langue, les 7 onglets à largeur fixe dépassent la rangée : la mise en page les
+    // alignait alors à gauche, tout décalés vers la droite. Ils se partagent maintenant la largeur de la rangée (le texte
+    // se réduit seul au besoin), donc restent centrés quel que soit leur nombre.
+    private void FitTabs()
+    {
+        HorizontalLayoutGroup row = _tabsRoot.GetComponent<HorizontalLayoutGroup>();
+        float spacing = row != null ? row.spacing : 0f;
+        float available = (_tabsRoot.rect.width - spacing * (_tabs.Count - 1)) / Mathf.Max(1, _tabs.Count);
+        foreach (Button b in _tabs)
+        {
+            RectTransform rt = (RectTransform)b.transform;
+            rt.sizeDelta = new Vector2(Mathf.Min(rt.sizeDelta.x, available), rt.sizeDelta.y);
+        }
     }
 
     private void Step(int dir)
@@ -265,7 +281,7 @@ public class SettingsPage : MonoBehaviour
             bool sel = i == index;
             Image bg = _tabs[i].targetGraphic as Image;
             TextMeshProUGUI t = _tabs[i].GetComponentInChildren<TextMeshProUGUI>();
-            if (bg != null) bg.color = sel ? SettingsStyle.Accent : SettingsStyle.Field;
+            if (bg != null) bg.color = sel ? SettingsStyle.AccentFill : SettingsStyle.Field;
             if (t != null) t.color = sel ? Color.white : SettingsStyle.Muted;
         }
 
@@ -547,7 +563,7 @@ public class SettingsPage : MonoBehaviour
         // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "formulation maladroite") - "La partie en cours de
         // préparation sera fermée" était une tournure passive et confuse pour un simple message de confirmation
         // de fermeture du jeu depuis le menu.
-        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés"), Loc.T("Quitter"), () =>
+        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
         {
             GameSettings.Flush();
             InputBindings.Flush();

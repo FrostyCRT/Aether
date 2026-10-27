@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Heal
   m_EditorClassIdentifier: 
   upgradeName: Soin
-  description: Restaure 50% des HP maximum
+  description: Restaure 50% de tes PV max
   icon: {fileID: 21300000, guid: ea8ae58ddc2b8b64eae536dda9d68836, type: 3}
   upgradeType: 2
   value: 0.5
+  _fusionSource1: 0
+  _fusionSource2: 0
+  _fusionResultId: 
+  _fusionBranch: 3
   _levelValues: []
   _maxLevel: 5
   _requiresUnlockPick: 0

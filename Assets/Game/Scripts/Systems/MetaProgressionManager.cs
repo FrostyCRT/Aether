@@ -90,6 +90,16 @@ public class MetaProgressionManager : MonoBehaviour
             ChallengeManager.Instance.RefreshDisplay();
     }
 
+    // AJOUTÉ (2026-10-26, bug signalé par l'utilisateur : "quand on meurt au boss 3, c'est écrit Nouveau record de survie
+    // 15 min ! Sauf que c'est pas record vu que j'ai déjà eu les 15 minutes plusieurs fois") - records du Classique tels
+    // qu'ils étaient AVANT la partie qui vient de finir. SaveRunResults les remplace aussitôt par ceux de la partie, et les
+    // écrans de fin comparaient la partie à ces records déjà mis à jour : une égalité (15:00, le chrono se fige au boss 3)
+    // passait pour un record battu. Les écrans de fin comparent désormais à ces valeurs-ci.
+    public float PreviousBestTime { get; private set; }
+    public int PreviousBestKills { get; private set; }
+    public int PreviousBestLevel { get; private set; }
+    public int PreviousBestGoldInRun { get; private set; }
+
     public void SaveRunResults(float runTime, int kills, int levelReached, int bossKills, bool victory)
     {
         if (Data == null) LoadData();
@@ -148,6 +158,10 @@ public class MetaProgressionManager : MonoBehaviour
                 // écrit (gardé seulement pour la migration en lecture d'une sauvegarde pré-existante).
                 EnsureBestTimeByTierArray();
                 int tierIndex = (int)DifficultyTiers.Current;
+                PreviousBestTime = Data.bestTimeByTier[tierIndex];
+                PreviousBestKills = Data.bestKills;
+                PreviousBestLevel = Data.bestLevel;
+                PreviousBestGoldInRun = Data.bestGoldInRun;
                 if (runTime > Data.bestTimeByTier[tierIndex]) Data.bestTimeByTier[tierIndex] = runTime;
                 if (kills > Data.bestKills) Data.bestKills = kills;
                 // AJOUTE - 2 records supplementaires. RunGold est lu AVANT d'etre remis a
@@ -521,12 +535,14 @@ public class MetaProgressionManager : MonoBehaviour
         return Data != null && Data.fragmentationUnlocked;
     }
 
-    [Tooltip("Chance de fragmentation accordée par le nœud meta, s'additionne à celle du palier 3 de la carte Boule de Feu.")]
-    [SerializeField] private float _fragmentationNodeChance = 0.15f;
+    // MODIFIÉ (2026-10-27, retour utilisateur : "très peu efficace en jeu") - plus de chance aléatoire (15 %) : un
+    // projectile du tir de base sur FragmentationShotInterval explose à coup sûr (voir WeaponBase.FireProjectile).
+    public const int FragmentationShotInterval = 4;
 
-    public float GetFragmentationChance()
+    // 0 = nœud non débloqué (aucune explosion).
+    public int GetFragmentationInterval()
     {
-        return HasFragmentation() ? _fragmentationNodeChance : 0f;
+        return HasFragmentation() ? FragmentationShotInterval : 0;
     }
 
     public bool HasOverpower()
@@ -618,12 +634,25 @@ public class MetaProgressionManager : MonoBehaviour
     // Valeurs de chaque palier (index = niveau, 0 = aucun bonus). Publiques en lecture pour que l'onglet Réputation
     // puisse afficher le bonus du PROCHAIN palier sans dupliquer ces tableaux.
     public const int MaxReputationLevel = 5;
-    private static readonly float[] ReputationDamageValues = { 0f, 0.05f, 0.12f, 0.20f, 0.30f, 0.42f };
-    private static readonly float[] ReputationSpeedValues = { 0f, 0.05f, 0.10f, 0.16f, 0.23f, 0.25f };
-    private static readonly float[] ReputationRegenValues = { 0f, 10f, 20f, 30f, 50f, 70f };
+    // MODIFIÉ (2026-10-25, retour utilisateur : "42 % pour un dernier palier, c'est bizarre, c'est pas rond") - paliers
+    // arrondis à 5 près, équilibre quasi inchangé : Dégâts 5/12/20/30/42 -> 5/10/20/30/40, Vitesse 5/10/16/23/25 ->
+    // 5/10/15/20/25 (Régénération déjà ronde).
+    // MODIFIÉ (2026-10-25, retour utilisateur : "il faut regarder si chaque achat procure une vraie avancée") - gain
+    // RÉEL de chaque achat (stat totale avant -> après), avec les coûts 100/300/700/1500/3000 :
+    //   ancien Dégâts 5/10/20/30/40 : +5 %, +4,8 %, +9,1 %, +8,3 %, +7,7 % -> le 2e achat (300 Or) ne rapportait
+    //     presque rien, et les 2 derniers (les plus chers) rapportaient MOINS que le 3e.
+    //   ancienne Vitesse 5/10/15/20/25 : +0,25 m/s à chaque achat (~+4 %), sous le seuil de ce qu'on ressent.
+    //   ancienne Régénération 10/20/30/50/70 (+ 5 PV/s de base) : correcte, mais palier 3 creux (+10 entre +10 et +20).
+    // Nouveaux paliers : chaque achat gagne au moins autant que le précédent (le coût monte toujours), et chaque
+    // achat améliore réellement la stat (~+9 à +10 % de dégâts, +0,3 m/s de vitesse, +10 à +20 PV/s). La Vitesse
+    // reste plafonnée à +30 % (5 -> 6,5 m/s) : c'est la stat de survie principale du genre, les ennemis courants
+    // vont de 1,5 à 4,5 m/s - plus haut, plus rien ne rattraperait le joueur.
+    private static readonly float[] ReputationDamageValues = { 0f, 0.10f, 0.20f, 0.30f, 0.45f, 0.60f };
+    private static readonly float[] ReputationSpeedValues = { 0f, 0.06f, 0.12f, 0.18f, 0.24f, 0.30f };
+    private static readonly float[] ReputationRegenValues = { 0f, 10f, 20f, 35f, 50f, 70f };
 
     // Bonus d'une stat de Réputation à un niveau donné (0..MaxReputationLevel) : Dégâts / Vitesse en fraction
-    // (0,42 = +42 %), Régénération en PV/s. Renvoie 0 pour un identifiant inconnu.
+    // (0,40 = +40 %), Régénération en PV/s. Renvoie 0 pour un identifiant inconnu.
     public float GetReputationValueAt(string nodeId, int level)
     {
         float[] values = null;

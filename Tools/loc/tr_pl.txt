@@ -42,8 +42,8 @@
 34| Apostrof
 35| Cudzysłów
 36| Grawis
-37| Lewy nawias kw.
-38| Prawy nawias kw.
+37| Lewy nawias kw
+38| Prawy nawias kw
 39| Num +
 40| Num −
 41| Num ×
@@ -70,15 +70,15 @@
 62| Orbita: bliżej
 63| Orbita: dalej
 64| Pauza
-65| Zryw: błyskawiczny doskok, chwilowa nietykalność, pochłania pociski.
-66| Uwalnia supermoc, gdy kryształ jest naładowany.
-67| Przyzywa widmowego klona. Wymaga odpowiedniej umiejętności.
-68| Wybiera 1. kartę po zdobyciu poziomu.
-69| Wybiera 2. kartę po zdobyciu poziomu.
-70| Wybiera 3. kartę po zdobyciu poziomu.
-71| Zmniejsza promień orbity satelitów.
-72| Zwiększa promień orbity satelitów.
-73| Otwiera / zamyka menu pauzy.
+65| Zryw: błyskawiczny doskok, chwilowa nietykalność, pochłania pociski
+66| Uwalnia supermoc, gdy kryształ jest naładowany
+67| Przyzywa widmowego klona. Wymaga odpowiedniej umiejętności
+68| Wybiera 1. kartę po zdobyciu poziomu
+69| Wybiera 2. kartę po zdobyciu poziomu
+70| Wybiera 3. kartę po zdobyciu poziomu
+71| Zmniejsza promień orbity satelitów
+72| Zwiększa promień orbity satelitów
+73| Otwiera / zamyka menu pauzy
 
 ## Paramètres : page
 74| Wydajność
@@ -93,14 +93,14 @@
 83| EKRAN
 84| Okno, rozdzielczość i płynność obrazu
 85| Tryb wyświetlania
-86| Pełny ekran, okno bez ramki lub zwykłe okno.
+86| Pełny ekran, okno bez ramki lub zwykłe okno
 87| Rozdzielczość
-88| Rozdzielczość obrazu na pełnym ekranie i w oknie.
+88| Rozdzielczość obrazu na pełnym ekranie i w oknie
 89| Tryb bez ramki zawsze używa rozdzielczości pulpitu.
 90| Synchronizacja pionowa
 91| Zapobiega rozrywaniu obrazu. Ogranicza płynność do częstotliwości odświeżania monitora.
 92| Limit klatek na sekundę
-93| Ogranicza liczbę wyświetlanych klatek na sekundę.
+93| Ogranicza liczbę wyświetlanych klatek na sekundę
 94| Nie działa, gdy synchronizacja pionowa jest włączona.
 95| Jasność
 96| Rozjaśnia lub przyciemnia cały obraz, łącznie z menu.
@@ -113,7 +113,7 @@
 103| Cienie
 104| Cienie rzucane przez postacie i wrogów.
 105| Efekty otoczenia w menu
-106| Animowany kurz i poświata w menu.
+106| Animowany kurz i poświata w menu
 107| DŹWIĘK
 108| Głośność i zachowanie dźwięku
 109| Głośność ogólna
@@ -127,7 +127,7 @@
 117| ROZGRYWKA
 118| Celowanie, pauza i wskaźniki walki
 119| Celowanie
-120| Automatyczne: strzały lecą w najbliższego wroga. Mysz: celujesz samodzielnie.
+120| Automatyczne: strzały lecą w najbliższego wroga. Mysz: celujesz samodzielnie
 121| Myszą
 122| Automatyczne
 123| Automatyczna pauza
@@ -158,7 +158,7 @@
 148| Klawiatura, mysz i pad
 149| Kliknij klawisz, aby go zmienić.   Esc: anuluj   •   Backspace: wyczyść.
 150| Układ klawiatury
-151| Ustawia klawisze ruchu i orbity. Pozostałe klawisze się nie zmieniają.
+151| Ustawia klawisze ruchu i orbity. Pozostałe klawisze się nie zmieniają
 152| Ruch
 153| Walka
 154| Nowy poziom
@@ -169,33 +169,33 @@
 159| JĘZYK / LANGUAGE
 160| Język wszystkich tekstów w grze
 161| Język gry
-162| Wszystkie teksty zmieniają się od razu, w menu i podczas rozgrywki.
+162| Wszystkie teksty zmieniają się od razu, w menu i podczas rozgrywki
 
 ## Paramètres : fenêtres et messages
 163| ROZGRYWKA WSTRZYMANA
 164| Wróć
 165| Powrót do poprzednich ustawień ekranu za {0} s
-166| Ustawienia ekranu zachowane.
-167| Przywrócono poprzednie ustawienia ekranu.
+166| Ustawienia ekranu zachowane
+167| Przywrócono poprzednie ustawienia ekranu
 168| Naciśnij klawisz albo przycisk myszy lub pada
 169| Esc: anuluj     Backspace: wyczyść
-170| Niemożliwe: akcja „{0}” musi mieć co najmniej jeden klawisz.
-171| „{0}” to jedyny klawisz akcji „{1}”: najpierw go zwolnij.
-172| Klawisz „{0}” był przypisany do akcji „{1}”: akcje zamieniają się klawiszami („{2}”).
-173| Klawisz „{0}” był przypisany do akcji „{1}”: przypisanie usunięto.
+170| Niemożliwe: akcja „{0}” musi mieć co najmniej jeden klawisz
+171| „{0}” to jedyny klawisz akcji „{1}”: najpierw go zwolnij
+172| Klawisz „{0}” był przypisany do akcji „{1}”: akcje zamieniają się klawiszami („{2}”)
+173| Klawisz „{0}” był przypisany do akcji „{1}”: przypisanie usunięto
 174| „{0}”: {1}
 175| ZRESETOWAĆ „{0}”?
-176| Ustawienia na tej stronie wrócą do wartości domyślnych.
+176| Ustawienia na tej stronie wrócą do wartości domyślnych
 177| Resetuj
-178| Zresetowano stronę „{0}”.
+178| Zresetowano stronę „{0}”
 179| ZRESETOWAĆ WSZYSTKO?
-180| Wszystkie ustawienia i klawisze wrócą do wartości domyślnych.
+180| Wszystkie ustawienia i klawisze wrócą do wartości domyślnych
 181| Resetuj wszystko
-182| Wszystkie ustawienia zostały zresetowane.
+182| Wszystkie ustawienia zostały zresetowane
 183| WYJŚĆ Z GRY?
 184| Gra zostanie zamknięta. Twoje ustawienia są zapisane.
 185| Wyjdź
-186| Zastosowano układ „{0}”.
+186| Zastosowano układ „{0}”
 187| TAK
 188| NIE
 189| AZERTY (ZQSD)
@@ -211,17 +211,17 @@
 197| TRUDNE
 198| Wyzwanie zaliczone! {0}
 199| Nowy rekord przetrwania: {0}!
-200| Niewiele zabrakło do rekordu przetrwania...
+200| Rekord przetrwania był w zasięgu ręki
 201| Nowy rekord zabójstw: {0}!
-202| Tak blisko rekordu zabójstw...
+202| Rekord zabójstw był w zasięgu ręki
 203| Nowy rekord poziomu: {0}!
-204| O włos od najlepszego poziomu...
+204| Najlepszy poziom był w zasięgu ręki
 205| Nowy rekord złota w jednej rozgrywce: {0}!
-206| Rekord złota był tuż-tuż...
+206| Rekord złota był w zasięgu ręki
 207| Nowa postać odblokowana: {0}!
-208| Ta gałąź dostała od ciebie wszystko. Dosłownie.
-209| Nie ma tu już nic do odblokowania — zmień postać, aby iść dalej.
-210| Ta gałąź nie ma już przed tobą tajemnic.
+208| W tej gałęzi wszystko jest już odblokowane
+209| Nie ma tu już nic do odblokowania — zmień postać, aby iść dalej
+210| Ta gałąź nie ma już przed tobą tajemnic
 211| Drzewko i reputacja na maksa. Zmień postać, jeśli chcesz czegoś nowego.
 212| złota
 213| odłamków
@@ -236,22 +236,22 @@
 222| Pokonani tytani: {0} z 3
 223| {0}. Cała trójka naraz nie wybacza — następnym razem pójdzie lepiej.
 224| {t} przetrwania, pokonani bossowie: {b}. Stać cię na więcej.
-225| Udało ci się wytrwać {t} wobec coraz groźniejszych bossów.
+225| Udało ci się wytrwać {t} wobec coraz groźniejszych bossów
 226| Bossowie pokonani przed upadkiem: {b}. Kolejny rekord jest w zasięgu ręki.
-227| Pokonani bossowie: {0} w {1}. Maraton należy do ciebie.
+227| Pokonani bossowie: {0} w {1}. Maraton należy do ciebie
 228| Wszyscy trzej tytani powaleni w {0}. Nic cię nie zatrzyma.
-229| Skażone Źródło nie wytrzymało tempa.
-230| Już się nie podniesie.
-231| Tu kończy się skażenie.
-232| {0} na liczniku, {1} wrogów na ziemi. {2}
+229| Skażone Źródło nie wytrzymało tempa
+230| Już się nie podniesie
+231| Tu kończy się skażenie
+232| {0} walki, pokonani wrogowie: {1}. {2}
 233| Dziś bez rekordu, ale zwycięstwo jest jak najbardziej prawdziwe.
 234| Nic szczególnego do zgłoszenia, poza samym zwycięstwem.
-235| Tym razem bez wyczynów — po prostu kolejne zwycięstwo.
-236| Zwycięstwo bez ani jednej umiejętności. Szacun.
-237| Ani jednej zebranej umiejętności. Styl liczy się podwójnie.
+235| Tym razem bez wyczynów — po prostu kolejne zwycięstwo
+236| Zwycięstwo bez ani jednej umiejętności. Imponujące.
+237| Ani jednej zebranej umiejętności, a mimo to zwycięstwo.
 238| Ani jednej zdobyczy po drodze, a jednak tu jesteś.
-239| Zabrakło czasu, by zebrać choćby jedną umiejętność.
-240| Tym razem bez zebranych umiejętności.
+239| Zabrakło czasu, by zebrać choćby jedną umiejętność
+240| Tym razem bez zebranych umiejętności
 241| ZWYCIĘSTWO!
 242| KONIEC GRY
 243| PORAŻKA
@@ -289,40 +289,40 @@
 273| Poz. {0}/{1}
 274| W toku
 275| {0}/3000 złota
-276| W tym trybie nie ma wyzwania.
+276| W tym trybie nie ma wyzwania
 277| Wyzwanie w tej godzinie już zaliczone!
-278| Nowe wyzwanie za {0} min.
+278| Nowe wyzwanie za {0} min
 279| Nowe wyzwanie w następnej rozgrywce!
 280| Zaliczone
 281| Status
 
 ## Arbre de compétences
 282| Skupienie
-283| Każda sekunda bez otrzymania obrażeń zwiększa twoje obrażenia (+8% / s). Premia zeruje się przy każdym otrzymanym ciosie.
-284| +8% / s, maks. +15%
-285| +8% / s, maks. +30%
-286| +8% / s, maks. +50%
+283| Każda sekunda bez otrzymania obrażeń zwiększa twoje obrażenia, aż do limitu. Premia spada do zera przy każdym otrzymanym ciosie.
+284| +2% / s, maks. +15%
+285| +3% / s, maks. +30%
+286| +5% / s, maks. +50%
 287| Szybkostrzelność
-288| Zwiększa szybkostrzelność wszystkich twoich broni.
+288| Zwiększa szybkostrzelność twojego podstawowego ataku.
 289| Fragmentacja
-290| Pociski mają 15% szans na wybuch przy trafieniu.
+290| Co 4. pocisk twojego podstawowego ataku wybucha przy trafieniu i zadaje pełne obrażenia pobliskim wrogom.
 291| Obrażenia kryształu
 292| Zwiększa obrażenia supermocy i Novy.
 293| Potęga
-294| Po użyciu supermocy twoje obrażenia są podwojone przez 5 sekund.
+294| Po użyciu supermocy twoje obrażenia są podwojone przez 10 sekund.
 295| Witalność
 296| Zwiększa twoje maksymalne punkty życia.
 297| Odnowa
-298| Każdy pocisk pochłonięty zrywem przywraca PŻ.
+298| Każdy pocisk pochłonięty zrywem lub Tarczą many przywraca PŻ.
 299| +20 PŻ za pochłonięcie
 300| +50 PŻ za pochłonięcie
 301| +80 PŻ za pochłonięcie
 302| Drugi oddech
-303| Raz na rozgrywkę przeżywasz śmiertelny cios z 1 PŻ.
+303| Raz na rozgrywkę przeżywasz śmiertelny cios z 1 PŻ, a przez kolejne 3 sekundy nic nie może cię zranić.
 304| Pancerz
 305| Zmniejsza obrażenia otrzymywane od wszystkich wrogów.
 306| Tarcza many
-307| Automatycznie pochłania 1 wrogi pocisk co 8 sekund.
+307| Bańka z 3 ładunkami blokuje wrogie pociski i pochłania je jak zryw. Odnawianie: 1 ładunek co 3 sekundy, wstrzymane na 4 sekundy po pęknięciu bańki.
 308| Impuls Novy
 309| Jeśli Nova wywołana pochłonięciem zabije choć jednego wroga, czas odnowienia zrywu natychmiast się zeruje.
 310| Ulepszony zryw
@@ -332,7 +332,7 @@
 314| Szeroka Nova
 315| Zwiększa promień Kryształowej Novy.
 316| Widmowy zryw
-317| Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 2 sekundy przyciąga pobliskich wrogów.
+317| Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 3 sekundy przyciąga wszystkich wrogów, a nic nie może cię zranić. Odnowienie: 8 sekund.
 318| UNIKALNY TALENT
 319| POZIOM {0} / {1}
 320| odblokowanie
@@ -340,14 +340,14 @@
 322| POZ. {0}
 323| ZDOBYTY
 324| MAKS. POZIOM
-325| Ten talent jest aktywny.
-326| Ta umiejętność jest na maksymalnym poziomie.
+325| Ten talent jest aktywny
+326| Ta umiejętność jest na maksymalnym poziomie
 327| NIEDOSTĘPNE
-328| Wybierz postać {0} w zakładce Postacie, aby kupić.
+328| Wybierz postać {0} w zakładce Postacie, aby kupić
 329| ZABLOKOWANA
-330| Najpierw odblokuj wymagania powyżej.
+330| Najpierw odblokuj wymagania powyżej
 331| ZA MAŁO ZŁOTA
-332| Brakuje ci {0} złota.
+332| Brakuje ci {0} złota
 333| KUP
 334| zostanie {0}
 335| Do kupienia: {0}  ·  szukaj złotej poświaty
@@ -369,63 +369,63 @@
 
 ## Améliorations
 349| Przeklęte bagno
-350| FUZJA — Błoto + Łańcuch błyskawic: twoje strefy zmieniają się w naelektryzowane bagno, które poraża wszystko, co w nim zostaje.
+350| Twoje kałuże błota zmieniają się w bagno, które poraża wrogów
 351| Wir many
-352| FUZJA — Aura + Satelity: wokół ciebie krąży teraz wir odłamków many, znacznie szerszy i znacznie potężniejszy.
+352| Wokół ciebie krąży wir odłamków many, szerszy i potężniejszy.
 353| Ostrza rykoszetu
-354| FUZJA — Noże + Sprężysta kula: twoja salwa przebija teraz wrogów I odbija się od jednego do drugiego.
+354| Twoja salwa noży przebija wrogów i odbija się od jednego do drugiego
 355| Deszcz meteorów
-356| FUZJA — Kula ognia + Błoto: meteory spadają na wrogów, wybuchają przy uderzeniu i zostawiają krater płonącego błota, który ich spowalnia.
+356| Meteory spadają na wrogów i zostawiają płonące błoto, które ich spowalnia
 357| Gromowe kule
-358| FUZJA — Satelity + Łańcuch błyskawic: twoje krążące odłamki przy każdym trafieniu wyzwalają łańcuch błyskawic.
+358| Twoje satelity wyzwalają łańcuch błyskawic przy kontakcie z wrogami
 359| Bliźniacze kule
-360| FUZJA — Podwójny strzał + Sprężysta kula: twój podstawowy strzał dzieli się na dwie kule, które odbijają się bez końca.
+360| Twoje kule zostawiają smugę błota, która spowalnia i rani wrogów
 361| Aura
 362| Strefa aury
 363| Sprężysta kula
-364| Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga.
+364| Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
 365| Obrażenia +
-366| +20% obrażeń
+366| +20% do obrażeń wszystkich broni
 367| Podwójny strzał
-368| Wystrzeliwuje serię 2 pocisków
+368| Twój podstawowy atak wystrzeliwuje drugi pocisk tuż po pierwszym
 369| Kula ognia
-370| Ciska kulą ognia
+370| Ciska kulą ognia, która wybucha w największym skupisku wrogów
 371| Szybkostrzelność+
-372| +20% szybkostrzelności
+372| +20% szybkostrzelności wszystkich broni strzelających
 373| Leczenie
 374| Przywraca 50% maksymalnych PŻ
 375| Noże
-376| Rzuca salwy noży
+376| Rzuca salwy noży przebijających wrogów
 377| Łańcuch błyskawic
 378| Wyładowanie elektryczne przeskakujące między pobliskimi wrogami
 379| Błoto
-380| Tworzy kałuże błota, które spowalniają i ranią stojących w nich wrogów.
+380| Tworzy kałuże błota, które spowalniają i ranią stojących w nich wrogów
 381| Satelity
-382| Odblokowuje pociski orbitalne
-383| Odblokowuje 2 krążące satelity, które ranią przy kontakcie.
-384| +1 dodatkowy satelita.
-385| Odblokowuje łańcuch błyskawic.
-386| +1 dodatkowy przeskok błyskawicy.
-387| Odblokowuje 3 spowalniające kałuże błota wokół ciebie.
-388| +1 dodatkowa kałuża błota.
-389| +{0}% do obrażeń wszystkich aktywnych broni.
-390| +{0}% do szybkostrzelności wszystkich aktywnych broni.
-391| Przywraca {0}% twoich maksymalnych PŻ.
-392| Odblokowuje drugi, jednoczesny strzał.
-393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera.
-394| Promień wybuchu jest dwa razy większy.
-395| +{0}% obrażeń.
-396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę.
-397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela.
-398| +{0}% promienia.
-399| +{0}% spowolnienia.
-400| Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry.
-401| Dodaje jeden nóż do salwy.
-402| Przebija o {0} wrogów więcej.
-403| Przebija o {0} wroga więcej.
-404| Odblokowuje sprężystą kulę, która przenika przez wrogów.
-405| +{0}% szybkości.
-406| +1 dodatkowa sprężysta kula.
+382| Odłamki krążą wokół ciebie i ranią wrogów przy kontakcie
+383| Odblokowuje 2 krążące satelity, które ranią przy kontakcie
+384| +1 dodatkowy satelita
+385| Odblokowuje łańcuch błyskawic: trafia 3 wrogów
+386| +1 dodatkowy przeskok błyskawicy
+387| Odblokowuje 3 kałuże błota, które spowalniają i ranią
+388| +1 dodatkowa kałuża błota
+389| +{0}% do obrażeń wszystkich broni
+390| +{0}% szybkostrzelności wszystkich broni strzelających
+391| Przywraca {0}% twoich maksymalnych PŻ
+392| Odblokowuje Podwójny strzał: twój podstawowy atak strzela dwa razy
+393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera
+394| Promień wybuchu jest dwa razy większy
+395| +{0}% obrażeń
+396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę
+397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela
+398| +{0}% promienia
+399| Silniejsze spowolnienie: {0}% zamiast {1}%
+400| Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry
+401| Dodaje jeden nóż do salwy
+402| Przebija o {0} wrogów więcej
+403| Przebija o {0} wroga więcej
+404| Odblokowuje sprężystą kulę, która przenika przez wrogów
+405| +{0}% szybkości kul
+406| +1 dodatkowa sprężysta kula
 
 ## Personnages
 407| DYSTANS
@@ -437,22 +437,22 @@
 413| PRZEBICIE
 414| SALWA
 415| Kula ognia
-416| Kula ognia, która wybucha przy trafieniu i rani wszystkich pobliskich wrogów.
+416| Kula ognia, która wybucha przy trafieniu i rani wszystkich pobliskich wrogów
 417| Promień / Obrażenia / Podpalenie
 418| WOJOWNIK
 419| Rosnąca siła ataku
 420| Aura many
-421| Stałe pole wokół ciebie, które rani wrogów przy kontakcie.
+421| Stałe pole wokół ciebie, które rani i spowalnia pobliskich wrogów
 422| Obrażenia / Promień / Spowolnienie
 423| STRAŻNIK
 424| Przetrwanie i wytrzymałość
 425| Salwa noży
-426| Rzuca salwę noży, które przebijają wrogów.
+426| Rzuca salwę noży, które przebijają wrogów
 427| Dodatkowy nóż / Obrażenia / Przebicie
 428| WIDMO
 429| Mobilność i zryw
-430| Dotrzyj do bossa 2 w jednej rozgrywce, aby odblokować Kaela.
-431| Ukończ rozgrywkę (pokonaj bossa 3), aby odblokować Lyrę.
+430| Dotrzyj do bossa 2 w jednej rozgrywce, aby odblokować Kaela
+431| Ukończ rozgrywkę (pokonaj bossa 3), aby odblokować Lyrę
 432| Odblokuj — {0} odłamków
 433| Wybrano
 434| Wybierz
@@ -472,21 +472,21 @@
 
 ## Réputation et skins
 446| {0} — POSTAĆ ZABLOKOWANA
-447| Odblokuj tę postać w zakładce Postacie,\naby zobaczyć jej skórki.
+447| Odblokuj tę postać w zakładce Postacie,\naby zobaczyć jej skórki
 448| PRESTIŻ  ·  ODŁAMKI
 449| KLASYCZNA  ·  ZŁOTO
 450| Oryginalny strój
-451| Strój, w którym {0} rusza do walki.
+451| Strój, w którym {0} rusza do walki
 452| POSTAĆ ZABLOKOWANA
 453| W UŻYCIU
 454| ZAŁÓŻ
 455| ZA MAŁO ODŁAMKÓW
 456| POTWIERDZIĆ ZAKUP?
-457| Postać zablokowana: {0}.
-458| Założono: {0} ({1}).
+457| Postać zablokowana: {0}
+458| Założono: {0} ({1})
 459| Nowa skórka: {0}!
-460| Brakuje ci odłamków.
-461| Brakuje ci złota.
+460| Brakuje ci odłamków
+461| Brakuje ci złota
 462| WKRÓTCE
 463| POSIADANA
 464| MAKSYMALNY POZIOM
@@ -503,15 +503,15 @@
 473| MARATON BOSSÓW
 474| STARCIE TYTANÓW
 475| KLASYCZNY
-476| Wygraj rozgrywkę w trybie Klasycznym, aby odblokować ten tryb.
-477| Pokonaj co najmniej bossa 1 w trybie Klasycznym, aby odblokować ten tryb.
+476| Wygraj rozgrywkę w trybie Klasycznym, aby odblokować ten tryb
+477| Pokonaj co najmniej bossa 1 w trybie Klasycznym, aby odblokować ten tryb
 478| Bossowie wracają raz za razem, coraz silniejsi. Wytrwaj jak najdłużej.
 479| boss 1
 480| bossowie 1 i 2
 481| wszyscy 3 bossowie
-482| Jeden boss na minutę: {0}, każdy 3 razy i za każdym razem silniejszy. Bossów: {1}, czas: {1} min.
-483| Wszystkie ulepszenia na maksa, żadnych wrogów... ale wszyscy 3 bossowie naraz. Przetrwaj i pokonaj ich wszystkich.
-484| Pokonaj wszystkich 3 bossów w 15 minut, aby wygrać rozgrywkę.
+482| Jeden boss na minutę: {0}, każdy 3 razy i za każdym razem silniejszy. Łącznie bossów: {1}, czas: {1} min.
+483| Wszystkie ulepszenia na maksa i żadnych wrogów, ale wszyscy 3 bossowie naraz. Przetrwaj i pokonaj ich wszystkich.
+484| Stawiaj czoła coraz liczniejszym falom wrogów i pokonaj wszystkich 3 bossów w 15 minut, aby wygrać rozgrywkę
 485| wygrana
 486| wygranych
 487| Rekord: {0}  ·  bossowie: {1}
@@ -541,15 +541,15 @@
 509| Skażone Źródło
 
 ## Messages de Game Over
-510| Następnym razem się uda.
-511| Kolejna porażka w drodze do zwycięstwa.
+510| Następnym razem się uda
+511| Kolejna porażka w drodze do zwycięstwa
 512| Wracaj do walki. Tak się robi postępy.
 513| Wstawaj, to jeszcze nie koniec.
-514| Masz wszystko, czego trzeba, na następną rozgrywkę.
+514| Masz wszystko, czego trzeba, na następną rozgrywkę
 515| Już wiesz, co poszło nie tak. Popraw to.
-516| Niewiele brakowało.
-517| Było blisko. Jeszcze raz!
-518| Tym razem nie dał ci żadnej szansy.
+516| Niewiele brakowało
+517| Było blisko. Jeszcze raz.
+518| Tym razem nie dał ci żadnej szansy
 519| Twardy przeciwnik. Trzeba będzie wrócić w lepszej formie.
 520| Boss wygrał tę bitwę. Ale nie wojnę.
 
@@ -576,7 +576,7 @@
 540| TWOJE ZŁOTO
 541| REPUTACJA
 542| DRZEWKO UMIEJĘTNOŚCI
-543| Wzmocnij swoich bohaterów na stałe i zmień ich wygląd.
+543| Trwale wzmacniaj swoich bohaterów i wybieraj ich wygląd
 544| Kupowane za złoto
 545| Kupowane za odłamki
 546| Ulepszane za odłamki
@@ -618,14 +618,40 @@
 
 ## Formes propres au polonais (3e forme du pluriel : 2-4, sauf 12-14)
 + victoires#few| wygrane
-580| Nie schodź poniżej 30% zdrowia od początku rozgrywki aż do śmierci 2. bossa
+580| Nie schodź poniżej 30% zdrowia od początku rozgrywki aż do śmierci 2. bossa.
 581| Nie używaj supermocy (klawisz F) przed pokonaniem 2. bossa
-582| Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa
+582| Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa.
 583| Pokonaj dowolnego bossa w ciągu 30 sekund od jego pojawienia się
 584| Zbierz łącznie co najmniej 3000 złota w trakcie rozgrywki
 585| UMIARKOWANY
 586| BRUTALNY
 587| APOKALIPTYCZNY
-588| Klasyczna rozgrywka, taka jak zawsze
-589| Większa mapa, wytrzymalsi i groźniejsi wrogowie, ale więcej złota i odłamków
-590| Znacznie większa mapa, dużo wytrzymalsi i groźniejsi wrogowie, maksimum złota i odłamków
+588| Mapa bez granic, klasyczna rozgrywka, taka jak zawsze.
+589| Mapa w kształcie tunelu bez bocznych granic, wytrzymalsi i groźniejsi wrogowie, ale więcej złota i odłamków.
+590| Mapa zamknięta z 4 stron, dużo wytrzymalsi i groźniejsi wrogowie, maksimum złota i odłamków.
+591| Odnowienie -0,3 s
+592| Odnowienie -0,6 s
+593| Odnowienie -1 s
+594| Kolor licznika FPS
+595| Kolor liczby klatek na sekundę i milisekund w lewym górnym rogu.
+596| Najpierw włącz „Licznik FPS”.
+597| FPS
+598| ms
+599| Wybierz bohatera, który ruszy do walki
+600| Naciśnij dowolny klawisz, aby pominąć
+601| Wystrzeliwuje kulę, która bez przerwy odbija się po arenie i rani każdego trafionego wroga
+602| Wystrzeliwuje {0} kul, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
+603| {0} odłamków krąży wokół ciebie i rani wrogów przy kontakcie
+604| Tworzy {0} kałuż błota, które spowalniają i ranią stojących w nich wrogów
+605| Rzuca salwy {0} noży przebijających wrogów
+606| Wyładowanie elektryczne przeskakujące na {0} pobliskich wrogów
++ Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés#few| Wystrzeliwuje {0} kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
++ {0} éclats tournent autour de toi et frappent les ennemis au contact#few| {0} odłamki krążą wokół ciebie i ranią wrogów przy kontakcie
++ Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent#few| Tworzy {0} kałuże błota, które spowalniają i ranią stojących w nich wrogów
+
+## Écrans de fin : intitulés des cases de stats
+607| Przetrwanie
+608| Zabójstwa
+609| Poziom
+610| Bossowie
+611| Tytani

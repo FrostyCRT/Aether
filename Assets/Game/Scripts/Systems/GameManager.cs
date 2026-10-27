@@ -413,6 +413,7 @@ public class GameManager : MonoBehaviour
 
     private void ShowGameOver()
     {
+        FreezeWorldForEndScreen();
         GameUI.Instance.SetHUDVisible(false);
 
         // CORRIGE (2026-09-17) - ClearPool existait deja (commentaire d'origine :
@@ -453,6 +454,16 @@ public class GameManager : MonoBehaviour
         GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause, _bossKillCount);
     }
 
+    // AJOUTÉ (2026-10-26, retour utilisateur : "quand le game over panel arrive, les animations jouées sont les même
+    // qu'avant, ce qui veut dire que les ennemis/boss sont toujours en train de fraper le corps du joueur, et aussi les
+    // projectiles bougent encore") - le monde se fige à l'apparition de l'écran de fin (Défaite comme Victoire) :
+    // ennemis, animations, projectiles, particules. Les écrans de fin n'utilisent que le temps réel (comptage de l'Or,
+    // fondus), et RestartGame / GoToMainMenu remettent Time.timeScale à 1.
+    private void FreezeWorldForEndScreen()
+    {
+        Time.timeScale = 0f;
+    }
+
     public void RestartGame()
     {
         Time.timeScale = 1f;
@@ -480,6 +491,7 @@ public class GameManager : MonoBehaviour
 
     private void ShowVictory()
     {
+        FreezeWorldForEndScreen();
         GameUI.Instance.SetHUDVisible(false);
 
         if (ObjectPool.Instance != null)

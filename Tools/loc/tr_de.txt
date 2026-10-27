@@ -68,15 +68,15 @@
 62| Orbit: enger
 63| Orbit: weiter
 64| Pause
-65| Dash: blitzschnelle Ausweichbewegung, kurz unverwundbar, absorbiert Projektile.
-66| Entfesselt deine Ultimate, sobald der Kristall aufgeladen ist.
-67| Ruft den Spektralklon herbei. Erfordert die passende Fähigkeit.
-68| Wählt beim Levelaufstieg die 1. Karte.
-69| Wählt beim Levelaufstieg die 2. Karte.
-70| Wählt beim Levelaufstieg die 3. Karte.
-71| Zieht deine Trabanten enger um dich zusammen.
-72| Lässt deine Trabanten weiter außen kreisen.
-73| Öffnet / schließt das Pausenmenü.
+65| Dash: blitzschnelle Ausweichbewegung, kurz unverwundbar, absorbiert Projektile
+66| Entfesselt deine Ultimate, sobald der Kristall aufgeladen ist
+67| Ruft den Spektralklon herbei. Erfordert die passende Fähigkeit
+68| Wählt beim Levelaufstieg die 1. Karte
+69| Wählt beim Levelaufstieg die 2. Karte
+70| Wählt beim Levelaufstieg die 3. Karte
+71| Zieht deine Trabanten enger um dich zusammen
+72| Lässt deine Trabanten weiter außen kreisen
+73| Öffnet / schließt das Pausenmenü
 
 ## Paramètres : page
 74| Leistung
@@ -91,14 +91,14 @@
 83| ANZEIGE
 84| Fenster, Auflösung und Bildrate
 85| Anzeigemodus
-86| Vollbild, randloses Fenster oder normales Fenster.
+86| Vollbild, randloses Fenster oder normales Fenster
 87| Auflösung
-88| Bildauflösung im Vollbild- und im Fenstermodus.
+88| Bildauflösung im Vollbild- und im Fenstermodus
 89| Im randlosen Modus wird immer die Desktopauflösung verwendet.
 90| V-Sync
 91| Verhindert Bildrisse (Tearing). Begrenzt die Bildrate auf die Bildwiederholfrequenz deines Monitors.
 92| Bildratenbegrenzung
-93| Begrenzt die Anzahl der Bilder pro Sekunde.
+93| Begrenzt die Anzahl der Bilder pro Sekunde
 94| Ohne Wirkung, solange V-Sync aktiviert ist.
 95| Helligkeit
 96| Macht das gesamte Bild heller oder dunkler, Menüs eingeschlossen.
@@ -111,7 +111,7 @@
 103| Schatten
 104| Schatten, die Figuren und Gegner werfen.
 105| Atmosphärische Effekte in Menüs
-106| Animierter Staub und Lichtschimmer in den Menüs.
+106| Animierter Staub und Lichtschimmer in den Menüs
 107| AUDIO
 108| Lautstärke und Tonverhalten
 109| Gesamtlautstärke
@@ -125,7 +125,7 @@
 117| SPIEL
 118| Zielen, Pause und Kampf-Feedback
 119| Zielen
-120| Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Maus: Du zielst selbst.
+120| Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Maus: Du zielst selbst
 121| Mit der Maus
 122| Automatisch
 123| Automatische Pause
@@ -156,7 +156,7 @@
 148| Tastatur, Maus und Controller
 149| Klicke auf eine Taste, um sie zu ändern.   Esc: abbrechen   •   Rücktaste: löschen.
 150| Tastaturlayout
-151| Legt die Bewegungs- und Orbit-Tasten fest. Alle anderen Tasten bleiben gleich.
+151| Legt die Bewegungs- und Orbit-Tasten fest. Alle anderen Tasten bleiben gleich
 152| Bewegung
 153| Kampf
 154| Levelaufstieg
@@ -167,33 +167,33 @@
 159| SPRACHE / LANGUAGE
 160| Sprache aller Texte im Spiel
 161| Spielsprache
-162| Alle Texte wechseln sofort, in den Menüs und im Run.
+162| Alle Texte wechseln sofort, in den Menüs und im Run
 
 ## Paramètres : fenêtres et messages
 163| RUN PAUSIERT
 164| Zurück
 165| Zurück zur vorherigen Anzeige in {0} s
-166| Anzeige beibehalten.
-167| Vorherige Anzeige wiederhergestellt.
+166| Anzeige beibehalten
+167| Vorherige Anzeige wiederhergestellt
 168| Drücke eine Taste, eine Maustaste oder eine Controllertaste
 169| Esc: abbrechen     Rücktaste: löschen
-170| Nicht möglich: „{0}“ braucht mindestens eine Taste.
-171| „{0}“ ist die einzige Taste für „{1}“: Gib sie zuerst frei.
-172| „{0}“ war „{1}“ zugewiesen: Die beiden tauschen ihre Tasten („{2}“).
-173| „{0}“ war „{1}“ zugewiesen: Die Zuweisung wurde dort entfernt.
+170| Nicht möglich: „{0}“ braucht mindestens eine Taste
+171| „{0}“ ist die einzige Taste für „{1}“: Gib sie zuerst frei
+172| „{0}“ war „{1}“ zugewiesen: Die beiden tauschen ihre Tasten („{2}“)
+173| „{0}“ war „{1}“ zugewiesen: Die Zuweisung wurde dort entfernt
 174| „{0}“: {1}
 175| „{0}“ ZURÜCKSETZEN?
-176| Die Einstellungen dieser Seite werden auf ihre Standardwerte zurückgesetzt.
+176| Die Einstellungen dieser Seite werden auf ihre Standardwerte zurückgesetzt
 177| Zurücksetzen
-178| Seite „{0}“ zurückgesetzt.
+178| Seite „{0}“ zurückgesetzt
 179| ALLES ZURÜCKSETZEN?
-180| Alle Einstellungen und alle Tasten werden auf ihre Standardwerte zurückgesetzt.
+180| Alle Einstellungen und alle Tasten werden auf ihre Standardwerte zurückgesetzt
 181| Alles zurücksetzen
-182| Alle Einstellungen wurden zurückgesetzt.
+182| Alle Einstellungen wurden zurückgesetzt
 183| SPIEL BEENDEN?
 184| Das Spiel wird geschlossen. Deine Einstellungen sind gespeichert.
 185| Beenden
-186| Layout „{0}“ übernommen.
+186| Layout „{0}“ übernommen
 187| AN
 188| AUS
 189| AZERTY (ZQSD)
@@ -209,17 +209,17 @@
 197| SCHWER
 198| Herausforderung geschafft! {0}
 199| Neuer Überlebensrekord: {0}!
-200| Ganz knapp an deinem Überlebensrekord vorbei ...
+200| Dein Überlebensrekord war zum Greifen nah
 201| Neuer Kill-Rekord: {0}!
-202| So nah an deinem Kill-Rekord ...
+202| Dein Kill-Rekord war zum Greifen nah
 203| Neuer Level-Rekord: {0}!
-204| Nur um Haaresbreite an deinem besten Level vorbei ...
+204| Dein bestes Level war zum Greifen nah
 205| Neuer Gold-Rekord in einem Run: {0}!
-206| Ganz nah an deinem Gold-Rekord ...
+206| Dein Gold-Rekord war zum Greifen nah
 207| Neuer Charakter freigeschaltet: {0}!
-208| Du hast diesem Zweig alles gegeben. Buchstäblich.
-209| Hier gibt es nichts mehr freizuschalten – wechsle den Charakter, um weiterzumachen.
-210| Dieser Zweig hat keine Geheimnisse mehr vor dir.
+208| Du hast in diesem Zweig alles freigeschaltet
+209| Hier gibt es nichts mehr freizuschalten – wechsle den Charakter, um weiterzumachen
+210| Dieser Zweig hat keine Geheimnisse mehr vor dir
 211| Baum und Ruf voll ausgebaut. Wechsle den Charakter, wenn du etwas Neues willst.
 212| Gold
 213| Splitter
@@ -234,22 +234,22 @@
 222| {0} von 3 Titanen bezwungen
 223| {0}. Alle drei zusammen kennen keine Gnade – komm stärker zurück.
 224| {t} überlebt, besiegte Bosse: {b}. Da geht noch mehr.
-225| Du hast {t} gegen immer wildere Bosse durchgehalten.
+225| Du hast {t} gegen immer wildere Bosse durchgehalten
 226| Besiegte Bosse vor deinem Fall: {b}. Der nächste Rekord ist zum Greifen nah.
-227| {0} Bosse in {1} besiegt. Der Ansturm gehört dir.
+227| {0} Bosse in {1} besiegt. Der Ansturm gehört dir
 228| Alle 3 Titanen in {0} niedergestreckt. Nichts hält dich auf.
-229| Die Verderbte Quelle hat nicht durchgehalten.
-230| Sie wird sich nicht wieder erheben.
-231| Hier endet die Verderbnis.
-232| {0} auf der Uhr, {1} Gegner am Boden. {2}
+229| Die Verderbte Quelle hat nicht durchgehalten
+230| Sie wird sich nicht wieder erheben
+231| Hier endet die Verderbnis
+232| {0} Kampfzeit, {1} Gegner besiegt. {2}
 233| Heute kein Rekord, aber der Sieg ist trotzdem echt.
 234| Nichts Besonderes zu melden, außer dem Sieg selbst.
-235| Diesmal keine Heldentat – einfach ein Sieg mehr.
-236| Ein Sieg ganz ohne Fähigkeiten. Hut ab.
-237| Keine einzige Fähigkeit eingesammelt. Stil zählt doppelt.
+235| Diesmal keine Heldentat – einfach ein Sieg mehr
+236| Ein Sieg ganz ohne Fähigkeiten. Bemerkenswert.
+237| Keine einzige Fähigkeit eingesammelt und trotzdem gesiegt.
 238| Unterwegs nichts mitgenommen, und trotzdem stehst du hier.
-239| Keine Zeit, auch nur eine Fähigkeit einzusammeln.
-240| Diesmal keine Fähigkeit eingesammelt.
+239| Keine Zeit, auch nur eine Fähigkeit einzusammeln
+240| Diesmal keine Fähigkeit eingesammelt
 241| SIEG!
 242| SPIEL VORBEI
 243| NIEDERLAGE
@@ -287,40 +287,40 @@
 273| Lvl. {0}/{1}
 274| Läuft
 275| {0}/3000 Gold
-276| In diesem Modus gibt es keine Herausforderung.
+276| In diesem Modus gibt es keine Herausforderung
 277| Herausforderung in dieser Stunde bereits geschafft!
-278| Neue Herausforderung in {0} Min.
+278| Neue Herausforderung in {0} Min
 279| Neue Herausforderung in deinem nächsten Run!
 280| Geschafft
 281| Status
 
 ## Arbre de compétences
 282| Fokus
-283| Jede Sekunde ohne erlittenen Schaden erhöht deinen Schaden (+8 % / s). Der Bonus wird bei jedem Treffer zurückgesetzt.
-284| +8 % / s, max. +15 %
-285| +8 % / s, max. +30 %
-286| +8 % / s, max. +50 %
+283| Jede Sekunde ohne erlittenen Schaden erhöht deinen Schaden bis zu einer Obergrenze. Der Bonus fällt bei jedem Treffer auf null.
+284| +2 % / s, max. +15 %
+285| +3 % / s, max. +30 %
+286| +5 % / s, max. +50 %
 287| Feuerrate
-288| Erhöht die Feuerrate all deiner Waffen.
+288| Erhöht die Feuerrate deines Standardangriffs.
 289| Splitterwirkung
-290| Projektile explodieren mit 15 % Chance beim Aufprall.
+290| Jedes 4. Projektil deines Standardangriffs explodiert beim Aufprall und fügt Gegnern in der Nähe vollen Schaden zu.
 291| Kristallschaden
 292| Erhöht den Schaden deiner Ultimate und der Nova.
 293| Übermacht
-294| Nach deiner Ultimate ist dein Schaden 5 Sekunden lang verdoppelt.
+294| Nach deiner Ultimate ist dein Schaden 10 Sekunden lang verdoppelt.
 295| Vitalität
 296| Erhöht deine maximalen LP.
 297| Erholung
-298| Jedes Projektil, das dein Dash absorbiert, stellt LP wieder her.
+298| Jedes Projektil, das dein Dash oder dein Manaschild absorbiert, stellt LP wieder her.
 299| +20 LP pro Absorption
 300| +50 LP pro Absorption
 301| +80 LP pro Absorption
 302| Zweiter Atem
-303| Einmal pro Run überlebst du einen tödlichen Treffer mit 1 LP.
+303| Einmal pro Run überlebst du einen tödlichen Treffer mit 1 LP und bist danach 3 Sekunden lang unverwundbar.
 304| Rüstung
 305| Verringert den Schaden, den du von allen Gegnern erleidest.
 306| Manaschild
-307| Absorbiert alle 8 Sekunden automatisch 1 gegnerisches Projektil.
+307| Eine Blase mit 3 Ladungen blockt gegnerische Projektile und absorbiert sie wie dein Dash. Aufladung: 1 Ladung alle 3 Sekunden, 4 Sekunden pausiert, wenn die Blase zerbricht.
 308| Nova-Impuls
 309| Tötet die durch eine Absorption ausgelöste Nova mindestens einen Gegner, wird die Abklingzeit deines Dash sofort zurückgesetzt.
 310| Verbesserter Dash
@@ -330,7 +330,7 @@
 314| Weite Nova
 315| Vergrößert den Radius der Kristallnova.
 316| Phantom-Dash
-317| Schaltet einen Spektralklon frei, den du mit einer eigenen Taste rufst: Er zieht nahe Gegner 2 Sekunden lang auf sich.
+317| Schaltet einen Spektralklon frei, den du mit einer eigenen Taste rufst: 3 Sekunden lang zieht er alle Gegner auf sich und du bist unverwundbar. Abklingzeit: 8 Sekunden.
 318| EINZIGARTIGES TALENT
 319| STUFE {0} / {1}
 320| freigeschaltet
@@ -338,14 +338,14 @@
 322| STUFE {0}
 323| ERWORBEN
 324| MAX. STUFE
-325| Dieses Talent ist aktiv.
-326| Diese Fähigkeit ist voll ausgebaut.
+325| Dieses Talent ist aktiv
+326| Diese Fähigkeit ist voll ausgebaut
 327| NICHT VERFÜGBAR
-328| Wähle {0} im Tab „Charaktere“, um zu kaufen.
+328| Wähle {0} im Tab „Charaktere“, um zu kaufen
 329| GESPERRT
-330| Schalte zuerst die Voraussetzungen oben frei.
+330| Schalte zuerst die Voraussetzungen oben frei
 331| ZU WENIG GOLD
-332| Dir fehlen {0} Gold.
+332| Dir fehlen {0} Gold
 333| KAUFEN
 334| danach {0}
 335| {0} Fähigkeiten kaufbar  ·  achte auf den goldenen Schimmer
@@ -367,63 +367,63 @@
 
 ## Améliorations
 349| Verfluchter Sumpf
-350| FUSION – Schlamm + Kettenblitz: Deine Zonen werden zu einem elektrisch geladenen Sumpf, der alles unter Strom setzt, was darin verweilt.
+350| Deine Schlammpfützen werden zu einem Sumpf, der Gegner unter Strom setzt
 351| Manawirbel
-352| FUSION – Aura + Trabanten: Ein viel größerer und viel stärkerer Wirbel aus Manasplittern kreist jetzt um dich.
+352| Ein größerer und stärkerer Wirbel aus Manasplittern kreist um dich.
 353| Abprallklingen
-354| FUSION – Messer + Prallkugel: Deine Salve durchbohrt Gegner jetzt UND prallt von einem zum nächsten ab.
+354| Deine Messersalve durchbohrt Gegner und prallt von einem zum nächsten ab
 355| Meteorschauer
-356| FUSION – Feuerball + Schlamm: Meteore stürzen auf die Gegner, explodieren beim Aufprall und hinterlassen einen Krater aus brennendem Schlamm, der sie verlangsamt.
+356| Meteore treffen die Gegner und hinterlassen bremsenden Glutschlamm
 357| Blitzkugeln
-358| FUSION – Trabanten + Kettenblitz: Deine kreisenden Splitter entfesseln jetzt bei jedem Treffer einen Kettenblitz.
+358| Deine Trabanten lösen bei Gegnerkontakt einen Kettenblitz aus
 359| Zwillingskugeln
-360| FUSION – Doppelschuss + Prallkugel: Dein Grundschuss teilt sich in zwei Kugeln, die endlos abprallen.
+360| Deine Kugeln hinterlassen eine Schlammspur, die bremst und verletzt
 361| Aura
 362| Aura-Zone
 363| Prallkugel
-364| Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen.
+364| Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
 365| Schaden +
-366| +20 % Schaden
+366| +20 % Schaden für alle deine Waffen
 367| Doppelschuss
-368| Feuert 2 Projektile kurz hintereinander
+368| Dein Standardangriff feuert direkt nach dem ersten ein zweites Projektil
 369| Feuerball
-370| Schleudert einen Feuerball
+370| Schleudert einen Feuerball, der in der dichtesten Gegnergruppe explodiert
 371| Feuerrate+
-372| +20 % Feuerrate
+372| +20 % Feuerrate für alle deine Schusswaffen
 373| Heilung
 374| Stellt 50 % deiner maximalen LP wieder her
 375| Messer
-376| Wirft Messersalven
+376| Wirft Messersalven, die Gegner durchbohren
 377| Kettenblitz
 378| Elektrische Entladung, die zwischen nahen Gegnern überspringt
 379| Schlamm
-380| Erzeugt Schlammpfützen, die Gegner darin verlangsamen und verletzen.
+380| Erzeugt Schlammpfützen, die Gegner darin verlangsamen und verletzen
 381| Trabanten
-382| Schaltet kreisende Projektile frei
-383| Schaltet 2 kreisende Trabanten frei, die bei Berührung zuschlagen.
-384| +1 zusätzlicher Trabant.
-385| Schaltet den Kettenblitz frei.
-386| +1 zusätzlicher Blitzsprung.
-387| Schaltet 3 verlangsamende Schlammpfützen um dich herum frei.
-388| +1 zusätzliche Schlammpfütze.
-389| +{0} % Schaden für alle deine aktiven Waffen.
-390| +{0} % Feuerrate für alle deine aktiven Waffen.
-391| Stellt {0} % deiner maximalen LP wieder her.
-392| Schaltet einen zweiten, gleichzeitigen Schuss frei.
-393| Schaltet den Feuerball frei: Aethers exklusive Waffe.
-394| Der Explosionsradius ist doppelt so groß.
-395| +{0} % Schaden.
-396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach.
-397| Schaltet die Aura frei: Kaels exklusive Waffe.
-398| +{0} % Radius.
-399| +{0} % Verlangsamung.
-400| Schaltet die Messersalve frei: Lyras exklusive Waffe.
-401| Ein zusätzliches Messer in der Salve.
-402| Durchbohrt {0} weitere Gegner.
-403| Durchbohrt {0} weiteren Gegner.
-404| Schaltet eine Prallkugel frei, die Gegner durchdringt.
-405| +{0} % Tempo.
-406| +1 zusätzliche Prallkugel.
+382| Splitter kreisen um dich und treffen Gegner bei Berührung
+383| Schaltet 2 kreisende Trabanten frei, die bei Berührung zuschlagen
+384| +1 zusätzlicher Trabant
+385| Schaltet den Kettenblitz frei: Er trifft 3 Gegner
+386| +1 zusätzlicher Blitzsprung
+387| Schaltet 3 Schlammpfützen frei, die verlangsamen und verletzen
+388| +1 zusätzliche Schlammpfütze
+389| +{0} % Schaden für alle deine Waffen
+390| +{0} % Feuerrate für alle deine Schusswaffen
+391| Stellt {0} % deiner maximalen LP wieder her
+392| Schaltet Doppelschuss frei: Dein Standardangriff feuert zweimal
+393| Schaltet den Feuerball frei: Aethers exklusive Waffe
+394| Der Explosionsradius ist doppelt so groß
+395| +{0} % Schaden
+396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach
+397| Schaltet die Aura frei: Kaels exklusive Waffe
+398| +{0} % Radius
+399| Stärkere Verlangsamung: {0} % statt {1} %
+400| Schaltet die Messersalve frei: Lyras exklusive Waffe
+401| Ein zusätzliches Messer in der Salve
+402| Durchbohrt {0} weitere Gegner
+403| Durchbohrt {0} weiteren Gegner
+404| Schaltet eine Prallkugel frei, die Gegner durchdringt
+405| +{0} % Kugeltempo
+406| +1 zusätzliche Prallkugel
 
 ## Personnages
 407| FERNKAMPF
@@ -435,22 +435,22 @@
 413| DURCHBOHREND
 414| SALVE
 415| Feuerball
-416| Ein Feuerball, der beim Aufprall explodiert und alle Gegner in der Nähe trifft.
+416| Ein Feuerball, der beim Aufprall explodiert und alle Gegner in der Nähe trifft
 417| Radius / Schaden / Verbrennung
 418| KRIEGER
 419| Wachsende Angriffskraft
 420| Mana-Aura
-421| Ein dauerhaftes Feld um dich, das Gegner bei Berührung verletzt.
+421| Ein dauerhaftes Feld um dich, das Gegner in Reichweite verletzt und verlangsamt
 422| Schaden / Radius / Verlangsamung
 423| WÄCHTER
 424| Überleben und Widerstandskraft
 425| Messersalve
-426| Wirft eine Salve von Messern, die Gegner durchbohren.
+426| Wirft eine Salve von Messern, die Gegner durchbohren
 427| Extra-Messer / Schaden / Durchbohren
 428| PHANTOM
 429| Mobilität und Dash
-430| Erreiche in einem Run Boss 2, um Kael freizuschalten.
-431| Beende einen Run (besiege Boss 3), um Lyra freizuschalten.
+430| Erreiche in einem Run Boss 2, um Kael freizuschalten
+431| Beende einen Run (besiege Boss 3), um Lyra freizuschalten
 432| Freischalten – {0} Splitter
 433| Ausgewählt
 434| Auswählen
@@ -470,21 +470,21 @@
 
 ## Réputation et skins
 446| {0} IST GESPERRT
-447| Schalte den Charakter im Tab „Charaktere“ frei,\num an seine Skins zu kommen.
+447| Schalte den Charakter im Tab „Charaktere“ frei,\num an seine Skins zu kommen
 448| PRESTIGE  ·  SPLITTER
 449| KLASSISCH  ·  GOLD
 450| Start-Outfit
-451| Das Outfit, in dem {0} in den Kampf zieht.
+451| Das Outfit, in dem {0} in den Kampf zieht
 452| CHARAKTER GESPERRT
 453| AUSGERÜSTET
 454| AUSRÜSTEN
 455| ZU WENIG SPLITTER
 456| KAUF BESTÄTIGEN?
-457| {0} ist gesperrt.
-458| {0} für {1} ausgerüstet.
+457| {0} ist gesperrt
+458| {0} für {1} ausgerüstet
 459| Neuer Skin: {0}!
-460| Dir fehlen Splitter.
-461| Dir fehlt Gold.
+460| Dir fehlen Splitter
+461| Dir fehlt Gold
 462| DEMNÄCHST
 463| IM BESITZ
 464| MAXIMALE STUFE
@@ -501,15 +501,15 @@
 473| BOSS-ANSTURM
 474| KAMPF DER TITANEN
 475| KLASSISCH
-476| Gewinne einen Run im Modus Klassisch, um diesen Modus freizuschalten.
-477| Besiege im Modus Klassisch mindestens Boss 1, um diesen Modus freizuschalten.
+476| Gewinne einen Run im Modus Klassisch, um diesen Modus freizuschalten
+477| Besiege im Modus Klassisch mindestens Boss 1, um diesen Modus freizuschalten
 478| Die Bosse kehren immer wieder zurück, jedes Mal stärker. Halte so lange durch, wie du kannst.
 479| Boss 1
 480| Boss 1 und 2
 481| alle 3 Bosse
-482| Ein Boss pro Minute: {0}, jeder dreimal und jedes Mal stärker. {1} Bosse, {1} Min.
-483| Alle Verbesserungen auf Maximum, keine Gegner ... aber alle 3 Bosse gleichzeitig. Überlebe und bezwinge sie alle.
-484| Besiege alle 3 Bosse innerhalb von 15 Minuten, um den Run zu gewinnen.
+482| Ein Boss pro Minute: {0}, jeder dreimal und jedes Mal stärker. Insgesamt {1} Bosse in {1} Minuten.
+483| Alle Verbesserungen auf Maximum und keine Gegner, aber alle 3 Bosse gleichzeitig. Überlebe und bezwinge sie alle.
+484| Trotze immer größeren Gegnerwellen und besiege alle 3 Bosse innerhalb von 15 Minuten, um den Run zu gewinnen
 485| Sieg
 486| Siege
 487| Rekord: {0}  ·  Bosse: {1}
@@ -539,15 +539,15 @@
 509| Die Verderbte Quelle
 
 ## Messages de Game Over
-510| Beim nächsten Mal klappt's.
-511| Eine Niederlage mehr auf dem Weg zum Sieg.
+510| Beim nächsten Mal klappt's
+511| Eine Niederlage mehr auf dem Weg zum Sieg
 512| Zurück in den Kampf. So wird man besser.
 513| Steh auf, es ist noch nicht vorbei.
-514| Du hast das Zeug für den nächsten Versuch.
+514| Du hast das Zeug für den nächsten Versuch
 515| Du weißt schon, woran es lag. Mach es besser.
-516| Das war verdammt knapp.
+516| Das war verdammt knapp
 517| Du warst nah dran. Gleich noch mal.
-518| Diesmal hat er dir keine einzige Lücke gelassen.
+518| Diesmal hat er dir keine einzige Lücke gelassen
 519| Ein zäher Gegner. Du musst stärker zurückkommen.
 520| Der Boss hat diese Schlacht gewonnen. Nicht den Krieg.
 
@@ -574,7 +574,7 @@
 540| DEIN GOLD
 541| RUF
 542| FÄHIGKEITENBAUM
-543| Stärke deine Helden dauerhaft und verändere ihr Aussehen.
+543| Stärke deine Helden dauerhaft und wähle ihr Aussehen
 544| Mit Gold gekauft
 545| Mit Splittern gekauft
 546| Mit Splittern verbessert
@@ -613,14 +613,37 @@
 ## Ajouts (fin de table)
 578| FUSION
 579| Splitter
-580| Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses
+580| Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses.
 581| Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast
-582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses
+582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses.
 583| Besiege einen beliebigen Boss innerhalb von 30 Sekunden nach seinem Erscheinen
 584| Sammle im Laufe des Runs insgesamt mindestens 3000 Gold
 585| MÄSSIG
 586| HEFTIG
 587| APOKALYPTISCH
-588| Das klassische Erlebnis, so wie es immer war
-589| Größere Karte, zähere und gefährlichere Gegner, dafür mehr Gold und Splitter
-590| Viel größere Karte, deutlich zähere und gefährlichere Gegner, Gold und Splitter maximal
+588| Karte ohne Grenzen, das klassische Erlebnis, so wie es immer war.
+589| Tunnelkarte ohne seitliche Grenzen, zähere und gefährlichere Gegner, dafür mehr Gold und Splitter.
+590| Enge, auf allen 4 Seiten begrenzte Karte, deutlich zähere und gefährlichere Gegner, Gold und Splitter maximal.
+591| Abklingzeit -0,3 s
+592| Abklingzeit -0,6 s
+593| Abklingzeit -1 s
+594| Farbe der FPS-Anzeige
+595| Farbe der Bilder pro Sekunde und der Millisekunden oben links.
+596| Aktiviere zuerst „FPS anzeigen“.
+597| FPS
+598| ms
+599| Wähle den Helden, der in den Kampf zieht
+600| Drücke eine beliebige Taste, um zu überspringen
+601| Schießt eine Kugel, die unablässig durch die Arena prallt und jeden getroffenen Gegner verletzt
+602| Schießt {0} Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
+603| {0} Splitter kreisen um dich und treffen Gegner bei Berührung
+604| Erzeugt {0} Schlammpfützen, die Gegner darin verlangsamen und verletzen
+605| Wirft Salven aus {0} Messern, die Gegner durchbohren
+606| Elektrische Entladung, die auf {0} nahe Gegner überspringt
+
+## Écrans de fin : intitulés des cases de stats
+607| Überlebt
+608| Kills
+609| Level
+610| Bosse
+611| Titanen

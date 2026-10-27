@@ -13,10 +13,15 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Fireball
   m_EditorClassIdentifier: 
   upgradeName: Boule de Feu
-  description: Lance une boule de feu
+  description: Lance une boule de feu qui explose sur le groupe d'ennemis le plus
+    dense
   icon: {fileID: 21300000, guid: 65bc1a5858b97b2438c34d7ddcd70d3c, type: 3}
   upgradeType: 4
   value: 0
+  _fusionSource1: 0
+  _fusionSource2: 0
+  _fusionResultId: 
+  _fusionBranch: 3
   _levelValues:
   - 2.25
   - 0.35

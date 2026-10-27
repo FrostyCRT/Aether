@@ -15,6 +15,7 @@ public class WeaponLightningChain : MonoBehaviour
     [SerializeField] private int _maxChainUpgrades = 10;
     private int _chainUpgradeCount = 0;
     public bool IsMaxChain() => _chainUpgradeCount >= _maxChainUpgrades;
+    public int ChainCount => _maxChains;   // rebonds après la 1re cible ; info-bulle du menu Pause
 
     public void AddChain()
     {

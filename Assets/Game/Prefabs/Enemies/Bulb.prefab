@@ -214,7 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 0
-  _maxHealth: 180
+  _maxHealth: 220
   _isFlying: 0
   _xpValue: 12
   _goldValue: 2

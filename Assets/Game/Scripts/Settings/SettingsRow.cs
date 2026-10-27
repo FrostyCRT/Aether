@@ -13,6 +13,9 @@ public static class SettingsStyle
     public static readonly Color FieldHover = new Color32(0x22, 0x1C, 0x31, 0xFF);
     public static readonly Color Accent = new Color32(0x4F, 0xA8, 0xE8, 0xFF);
     public static readonly Color AccentSoft = new Color32(0x2F, 0x62, 0x8C, 0xFF);
+    // AJOUTÉ (2026-10-25, audit de lisibilité) - fond plein sous un texte blanc (interrupteur « OUI », onglet choisi) :
+    // le blanc sur Accent ne faisait que 2,6:1, 4,7:1 sur ce bleu plus profond. Accent reste pour les liserés.
+    public static readonly Color AccentFill = new Color32(0x2B, 0x78, 0xB8, 0xFF);
     public static readonly Color Muted = new Color32(0x9C, 0x93, 0xAE, 0xFF);
     public static readonly Color Body = new Color32(0xD7, 0xD0, 0xE2, 0xFF);
     public static readonly Color Track = new Color32(0x3A, 0x35, 0x46, 0xFF);
@@ -62,6 +65,11 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private TextMeshProUGUI[] _presetTexts;
     [SerializeField] private Image[] _presetBorders;
 
+    // AJOUTÉ (2026-10-25) - ligne "pastilles de couleur" (RowKind.Swatches, couleur du compteur d'images) : construite en
+    // code au premier Bind, au même emplacement et à la même taille que le bouton de choix, sans toucher au prefab de ligne.
+    private RectTransform _swatchRoot;
+    private Image[] _swatchBorders;
+
     public RowDef Def { get; private set; }
     private SettingsPage _page;
     private bool _binding;
@@ -89,6 +97,8 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         SetActive(_choiceRoot, def.kind == RowKind.Choice);
         SetActive(_keysRoot, def.kind == RowKind.Keybind);
         SetActive(_presetsRoot, def.kind == RowKind.Presets);
+        if (def.kind == RowKind.Swatches && _swatchRoot == null) BuildSwatches(def.swatches);
+        if (_swatchRoot != null) _swatchRoot.gameObject.SetActive(def.kind == RowKind.Swatches);
 
         if (def.kind == RowKind.Slider)
         {
@@ -139,6 +149,25 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private static void SetActive(GameObject go, bool on) { if (go != null) go.SetActive(on); }
 
+    private const float DisabledAlpha = 0.42f;
+
+    // Estompe toutes les branches de la ligne sauf celle qui mène à la description (un CanvasGroup par branche).
+    private void DimExceptDescription(Transform root, float alpha)
+    {
+        foreach (Transform child in root)
+        {
+            if (child == _description.transform) continue;
+            if (_description.transform.IsChildOf(child)) { DimExceptDescription(child, alpha); continue; }
+            CanvasGroup g = child.GetComponent<CanvasGroup>();
+            if (g == null)
+            {
+                if (alpha >= 1f) continue;
+                g = child.gameObject.AddComponent<CanvasGroup>();
+            }
+            g.alpha = alpha;
+        }
+    }
+
     // ---- lecture des valeurs -------------------------------------------------------------------------------
     public void Refresh(bool instant = false)
     {
@@ -148,7 +177,14 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         bool enabled = Def.isEnabled == null || Def.isEnabled();
         if (_group != null)
         {
-            _group.alpha = enabled ? 1f : 0.42f;
+            // MODIFIÉ (2026-10-25, audit de lisibilité) - l'estompage de la ligne désactivée épargne la description :
+            // c'est elle qui affiche l'explication dorée (POURQUOI la ligne est grisée), illisible à 42 %.
+            if (_description != null && _description.transform.IsChildOf(_group.transform))
+            {
+                _group.alpha = 1f;
+                DimExceptDescription(_group.transform, enabled ? 1f : DisabledAlpha);
+            }
+            else _group.alpha = enabled ? 1f : DisabledAlpha;
             _group.interactable = enabled;
             _group.blocksRaycasts = enabled;
         }
@@ -174,7 +210,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 _toggleText.text = on ? Loc.T("OUI") : Loc.T("NON");
                 _toggleText.color = on ? Color.white : SettingsStyle.Muted;
                 _toggleText.alignment = on ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;   // à l'opposé du bouton
-                _toggleTrack.color = on ? SettingsStyle.Accent : SettingsStyle.Track;
+                _toggleTrack.color = on ? SettingsStyle.AccentFill : SettingsStyle.Track;
                 float target = on ? 1f : 0f;
                 _knobT = instant || _knobT < 0f ? target : _knobT;
                 _toggleTarget = target;
@@ -196,6 +232,16 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     _keyTexts[s].text = GameInput.KeyLabel(k);
                     _keyTexts[s].color = k == KeyCode.None ? SettingsStyle.Muted : Color.white;
                     _keyBorders[s].color = SettingsStyle.AccentSoft;
+                }
+                break;
+            }
+            case RowKind.Swatches:
+            {
+                int cur = GameSettings.GetInt(Def.key);
+                for (int s = 0; s < _swatchBorders.Length; s++)
+                {
+                    _swatchBorders[s].color = s == cur ? Color.white : SettingsStyle.Track;
+                    _swatchBorders[s].rectTransform.localScale = Vector3.one * (s == cur ? 1.12f : 1f);
                 }
                 break;
             }
@@ -262,6 +308,66 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (index == cur) return;
         _page.BeforeDisplayChange(Def);
         if (Def.setIndex != null) Def.setIndex(index); else GameSettings.SetInt(Def.key, index);
+        _page.OnRowChanged(this);
+    }
+
+    private void BuildSwatches(Color[] colors)
+    {
+        if (colors == null || colors.Length == 0 || _choiceRoot == null) return;
+        RectTransform anchor = (RectTransform)_choiceRoot.transform;
+        _swatchRoot = new GameObject("SwatchesRoot", typeof(RectTransform)).GetComponent<RectTransform>();
+        _swatchRoot.SetParent(anchor.parent, false);
+        _swatchRoot.anchorMin = anchor.anchorMin;
+        _swatchRoot.anchorMax = anchor.anchorMax;
+        _swatchRoot.pivot = anchor.pivot;
+        _swatchRoot.anchoredPosition = anchor.anchoredPosition;
+        _swatchRoot.sizeDelta = anchor.sizeDelta;
+
+        int n = colors.Length;
+        float size = anchor.sizeDelta.y;
+        float gap = n > 1 ? (anchor.sizeDelta.x - n * size) / (n - 1) : 0f;
+        _swatchBorders = new Image[n];
+        for (int i = 0; i < n; i++)
+        {
+            int index = i;
+            RectTransform rt = new GameObject("Swatch" + (i + 1), typeof(RectTransform), typeof(Image), typeof(Button)).GetComponent<RectTransform>();
+            rt.SetParent(_swatchRoot, false);
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
+            rt.sizeDelta = new Vector2(size, size);
+            rt.anchoredPosition = new Vector2(i * (size + gap), 0f);
+            _swatchBorders[i] = rt.GetComponent<Image>();
+            Button button = rt.GetComponent<Button>();
+            button.targetGraphic = _swatchBorders[i];
+            button.onClick.AddListener(() => ApplySwatch(index));
+
+            // cadre (couleur = sélection) > liseré sombre > couleur : le cadre blanc de la pastille choisie reste visible
+            // même autour de la pastille blanche
+            RectTransform gapRt = new GameObject("Gap", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+            gapRt.SetParent(rt, false);
+            gapRt.anchorMin = Vector2.zero;
+            gapRt.anchorMax = Vector2.one;
+            gapRt.offsetMin = new Vector2(3f, 3f);
+            gapRt.offsetMax = new Vector2(-3f, -3f);
+            Image gapImage = gapRt.GetComponent<Image>();
+            gapImage.color = SettingsStyle.PanelDark;
+            gapImage.raycastTarget = false;
+
+            RectTransform fill = new GameObject("Color", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+            fill.SetParent(rt, false);
+            fill.anchorMin = Vector2.zero;
+            fill.anchorMax = Vector2.one;
+            fill.offsetMin = new Vector2(6f, 6f);
+            fill.offsetMax = new Vector2(-6f, -6f);
+            Image swatch = fill.GetComponent<Image>();
+            swatch.color = colors[i];
+            swatch.raycastTarget = false;
+        }
+    }
+
+    private void ApplySwatch(int index)
+    {
+        if (_binding || index == GameSettings.GetInt(Def.key)) return;
+        GameSettings.SetInt(Def.key, index);
         _page.OnRowChanged(this);
     }
 

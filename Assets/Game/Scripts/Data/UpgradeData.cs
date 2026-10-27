@@ -120,28 +120,31 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
-                    ? Loc.T("Débloque la foudre en chaîne")
+                    ? Loc.T("Débloque la foudre en chaîne : elle frappe 3 ennemis")
                     : Loc.T("+1 rebond de foudre supplémentaire");
 
             case UpgradeType.MudPuddle:
                 return nextLevel == 1
-                    ? Loc.T("Débloque 3 flaques de boue ralentissante autour de toi")
+                    ? Loc.T("Débloque 3 flaques de boue qui ralentissent et blessent")
                     : Loc.T("+1 flaque de boue supplémentaire");
 
             case UpgradeType.BouncingOrb:
                 return FormatBouncingOrbDescription(nextLevel);
 
             case UpgradeType.Damage:
-                return Loc.F("+{0}% dégâts sur toutes tes armes actives", PercentOf(value));
+                return Loc.F("+{0}% de dégâts sur toutes tes armes", PercentOf(value));
 
             case UpgradeType.FireRate:
-                return Loc.F("+{0}% vitesse de tir sur toutes tes armes actives", PercentOf(value));
+                // CORRIGÉ (2026-10-25) - "toutes tes armes" était faux : seules les armes qui TIRENT ont une cadence (tir de
+                // base, Boule de feu, Couteaux, Foudre, Lames Ricochet - voir Apply plus bas), pas l'Aura, les Orbitaux, etc.
+                return Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(value));
 
             case UpgradeType.Heal:
                 return Loc.F("Restaure {0}% de tes PV max", PercentOf(value));
 
             case UpgradeType.DoubleShot:
-                return Loc.T("Débloque un second tir simultané");
+                // CORRIGÉ (2026-10-25) - le second tir n'est pas simultané : il part _doubleShotDelay (0,1 s) après le premier.
+                return Loc.T("Débloque le Double Tir : ton tir de base tire deux fois");
 
             default:
                 return Description;
@@ -202,7 +205,15 @@ public class UpgradeData : ScriptableObject
         {
             case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
             case 2: return Loc.F("+{0}% rayon", PercentOf(v));
-            case 3: return Loc.F("+{0}% ralentissement", PercentOf(v));
+            // CORRIGÉ (2026-10-25) - "+50% ralentissement" ne disait pas la réalité : la valeur se RETRANCHE du
+            // multiplicateur de vitesse (0,85 -> 0,40 plancher), donc le ralentissement passe de 15% à 60%. Affiche les 2.
+            case 3:
+                {
+                    GameObject player = GetActivePlayer();
+                    WeaponAura aura = player != null ? player.GetComponent<WeaponAura>() : null;
+                    if (aura == null) return Description;
+                    return Loc.F("Ralentissement renforcé : {0}% au lieu de {1}%", aura.SlowPercentAfter(v), aura.SlowPercent);
+                }
             default: return Description;
         }
     }
@@ -253,13 +264,69 @@ public class UpgradeData : ScriptableObject
         switch (tier)
         {
             case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
-            case 2: return Loc.F("+{0}% vitesse", PercentOf(v));
+            case 2: return Loc.F("+{0}% vitesse des orbes", PercentOf(v));
             case 3: return Loc.T("+1 orbe rebondissant supplémentaire");
             default: return Description;
         }
     }
 
     private int PercentOf(float ratio) => Mathf.RoundToInt(ratio * 100f);
+
+    // AJOUTÉ (2026-10-26, retour utilisateur : "l'info-bulle de l'orbe rebondissant dit que ça lance 2 orbes, alors qu'en
+    // jeu ça en lance qu'une [...] adapte les info-bulles par rapport à la globalité de l'état actuel de la compétence")
+    // - texte de l'info-bulle du menu Pause : ce que la compétence fait MAINTENANT (nombre d'orbes, d'éclats, de flaques,
+    // de couteaux, de rebonds, bonus total de Dégâts+ / Cadence+), lu sur l'arme du joueur. À ne pas confondre avec
+    // GetDynamicDescription (le PROCHAIN palier, cartes de montée de niveau) ni avec Description (texte générique de
+    // l'asset, toujours utilisé pour les fusions et les armes dont le texte ne dépend pas du niveau).
+    public string GetCurrentStateDescription()
+    {
+        GameObject player = GetActivePlayer();
+        LevelUpManager levels = LevelUpManager.Instance;
+        switch (upgradeType)
+        {
+            case UpgradeType.Damage:
+                return levels != null ? Loc.F("+{0}% de dégâts sur toutes tes armes", PercentOf(levels.DamageBonusTotal)) : Description;
+            case UpgradeType.FireRate:
+                return levels != null ? Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(levels.FireRateBonusTotal)) : Description;
+            case UpgradeType.BouncingOrb:
+                {
+                    WeaponBouncingOrb orb = player != null ? player.GetComponent<WeaponBouncingOrb>() : null;
+                    if (orb == null) return Description;
+                    return Loc.Plural(orb.OrbCount,
+                        "Lance un orbe qui rebondit sans arrêt dans l'arène et blesse les ennemis touchés",
+                        "Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés");
+                }
+            // Au moins 2 dès le déblocage : la forme du pluriel suffit (passée deux fois à Loc.Plural pour le polonais et le russe).
+            case UpgradeType.Orbital:
+                {
+                    WeaponOrbital orbital = player != null ? player.GetComponent<WeaponOrbital>() : null;
+                    if (orbital == null) return Description;
+                    const string key = "{0} éclats tournent autour de toi et frappent les ennemis au contact";
+                    return Loc.Plural(orbital.OrbitalCount, key, key);
+                }
+            case UpgradeType.MudPuddle:
+                {
+                    WeaponMudPuddle mud = player != null ? player.GetComponent<WeaponMudPuddle>() : null;
+                    if (mud == null) return Description;
+                    const string key = "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent";
+                    return Loc.Plural(mud.PuddleCount, key, key);
+                }
+            case UpgradeType.Knives:
+                {
+                    WeaponShurikenBarrage knives = player != null ? player.GetComponent<WeaponShurikenBarrage>() : null;
+                    if (knives == null) return Description;
+                    return Loc.F("Lance des salves de {0} couteaux qui transpercent les ennemis", knives.KnifeCount);
+                }
+            case UpgradeType.Lightning:
+                {
+                    WeaponLightningChain chain = player != null ? player.GetComponent<WeaponLightningChain>() : null;
+                    if (chain == null) return Description;
+                    return Loc.F("Décharge électrique qui rebondit sur {0} ennemis proches", chain.ChainCount);
+                }
+            default:
+                return Description;
+        }
+    }
 
     // AJOUTÉ (2026-10-14) - textes à AFFICHER dans la langue courante (voir Loc). upgradeName / description restent les
     // valeurs françaises de l'asset (clés de traduction).
@@ -351,6 +418,17 @@ public class UpgradeData : ScriptableObject
         foreach (UpgradeData u in LevelUpManager.Instance.AllUpgrades)
             if (u != null && u.upgradeType == type) return u;
         return null;
+    }
+
+    // AJOUTÉ (2026-10-25) - « Orbitaux + Foudre » : les deux armes d'une fusion, affichées sous son nom sur la carte de
+    // montée de niveau (la description ne les répète plus). Vide si ce n'est pas une fusion.
+    public string FusionSourcesLabel()
+    {
+        if (upgradeType != UpgradeType.Fusion) return "";
+        UpgradeData s1 = FindUpgradeByType(_fusionSource1);
+        UpgradeData s2 = FindUpgradeByType(_fusionSource2);
+        if (s1 == null || s2 == null) return "";
+        return s1.Name + " + " + s2.Name;
     }
 
     private bool BothFusionSourcesMaxed()

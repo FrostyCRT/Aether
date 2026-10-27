@@ -247,7 +247,7 @@ public class CharacterSelectUI : MonoBehaviour
                 displayName           = "KAEL",
                 tags                 = new[] { "MÊLÉE", "AURA", "RALENTISSEMENT" },
                 weaponName           = "Aura de mana",
-                weaponDescription    = "Champ permanent autour de toi qui blesse les ennemis au contact",
+                weaponDescription    = "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée",
                 weaponUpgrades       = "Dégâts / Rayon / Ralentissement",
                 branch               = SkillTreeData.CharacterBranch.Gardien,
                 branchName           = "GARDIEN",
@@ -576,8 +576,12 @@ public class CharacterSelectUI : MonoBehaviour
         if (_ambientFX != null) _ambientFX.gameObject.SetActive(active);
     }
 
+    // Texte du bouton « Sélectionné » (bouton désactivé) : gris neutre foncé, lisible sur le parchemin assombri.
+    public static readonly Color SelectedLabelColor = new Color32(0x1E, 0x1E, 0x1E, 0xFF);
+
     // Reflète l'état du personnage courant : verrouillé (portrait grisé, condition
     // + bouton Éclats) ou débloqué (bouton Sélectionner).
+
     private void ApplySelectButtonState()
     {
         if (MetaProgressionManager.Instance == null) return;
@@ -646,9 +650,11 @@ public class CharacterSelectUI : MonoBehaviour
         if (_selectButtonText != null)
             _selectButtonText.text = isSelected ? Loc.T("Sélectionné") : Loc.T("Sélectionner");
 
+        // MODIFIÉ (2026-10-25, audit de lisibilité) - gris neutre foncé #1E1E1E au lieu de (0.5,0.5,0.5) : le gris moyen
+        // se fondait dans le parchemin assombri du bouton désactivé (1,1:1), le foncé reste neutre et se lit (3,8:1).
         if (_selectButtonText != null)
             _selectButtonText.color = isSelected
-                ? new Color(0.5f, 0.5f, 0.5f, 1f)
+                ? SelectedLabelColor
                 : Color.white;
     }
 }

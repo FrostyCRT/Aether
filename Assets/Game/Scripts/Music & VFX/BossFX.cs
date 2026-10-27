@@ -10,7 +10,8 @@ using UnityEngine;
 //     détruit à cet instant, et l'effet termine ses particules tout seul.
 // Arrivée (PlayArrival) : éclat, onde de choc, courte colonne de lumière et gerbe d'étincelles à l'apparition d'un boss.
 //
-// Le temps utilise Time.deltaTime : tout se fige tout seul en pause. Le ralenti global ne touche JAMAIS à
+// Le temps utilise Time.deltaTime : tout se fige tout seul en pause (sauf la mort d'un boss pendant un choix de compétence,
+// voir Update). Le ralenti global ne touche JAMAIS à
 // Time.timeScale si le jeu est en pause / sur un écran de choix, et ne le restaure que si personne d'autre ne l'a modifié.
 public class BossFX : MonoBehaviour
 {
@@ -162,6 +163,12 @@ public class BossFX : MonoBehaviour
     private void Update()
     {
         float dt = Time.deltaTime;
+        // MODIFIÉ (2026-10-26, retour utilisateur : "quand on prend le coffre à la mort d'un boss, on a les 2 upgrades,
+        // mais pendant la sélection, l'animation du boss qui est en train de trembler pour disparaitre continue, il faut
+        // [...] qu'elle se termine même quand il y a un level up") - pendant un écran de choix de compétence (jeu figé),
+        // la mort du boss continue en temps réel jusqu'à son final ; elle reste figée dans le menu Pause.
+        if (_mode == Mode.Death && Time.timeScale == 0f && LevelUpManager.Instance != null && LevelUpManager.Instance.IsChoosing)
+            dt = Time.unscaledDeltaTime;
         if (_cam == null && Camera.main != null) _cam = Camera.main.transform;
 
         UpdateSlowMo();

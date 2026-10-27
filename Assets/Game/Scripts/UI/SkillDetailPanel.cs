@@ -102,7 +102,9 @@ public class SkillDetailPanel : MonoBehaviour
     [SerializeField] private Button _closeButton;
 
     private static readonly Color BuyEnabledText = new Color32(0x32, 0x32, 0x32, 0xFF);
-    private static readonly Color BuyDisabledText = new Color32(0x5A, 0x52, 0x66, 0xFF);
+    // MODIFIÉ (2026-10-25, audit de lisibilité) - #5A5266 se perdait sur le parchemin assombri du bouton désactivé
+    // (1,2:1) : parchemin clair sur contour sombre (4,8:1), bien distinct du texte foncé du bouton actif.
+    private static readonly Color BuyDisabledText = new Color32(0xED, 0xE4, 0xD3, 0xFF);
 
     public Button BuyButton => _buyButton;
     public Button CloseButton => _closeButton;
@@ -232,7 +234,7 @@ public class SkillDetailPanel : MonoBehaviour
             row.pipFill.gameObject.SetActive(false);
             row.tag.color = SkillTreeStyle.Gold;
             row.effect.color = Color.white;
-            row.right.text = price.ToString();
+            row.right.text = Loc.Int(price);
             row.right.color = SkillTreeStyle.Gold;
             row.coin.gameObject.SetActive(true);
             row.coin.color = Color.white;
@@ -244,7 +246,7 @@ public class SkillDetailPanel : MonoBehaviour
             row.pipFill.gameObject.SetActive(false);
             row.tag.color = dim;
             row.effect.color = dim;
-            row.right.text = price.ToString();
+            row.right.text = Loc.Int(price);
             row.right.color = dim;
             row.coin.gameObject.SetActive(true);
             row.coin.color = new Color(1, 1, 1, 0.45f);
@@ -300,11 +302,11 @@ public class SkillDetailPanel : MonoBehaviour
         _afterValue.gameObject.SetActive(hasCost && canBuy);
         if (hasCost)
         {
-            _costValue.text = cost.ToString();
+            _costValue.text = Loc.Int(cost);
             _costValue.color = gold >= cost ? SkillTreeStyle.Gold : SkillTreeStyle.Warn;
         }
-        _goldValue.text = gold.ToString();
-        if (hasCost && canBuy) _afterValue.text = Loc.F("reste {0}", gold - cost);
+        _goldValue.text = Loc.Int(gold);                       // « 128 015 » : séparateur de milliers de la langue
+        if (hasCost && canBuy) _afterValue.text = Loc.F("reste {0}", Loc.Int(gold - cost));
 
         _statusText.gameObject.SetActive(!string.IsNullOrEmpty(status));
         _statusText.text = status;

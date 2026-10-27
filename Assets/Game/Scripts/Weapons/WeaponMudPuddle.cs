@@ -56,6 +56,9 @@ public class WeaponMudPuddle : MonoBehaviour
         _puddleCount++;
     }
 
+    // Lu par l'info-bulle du menu Pause (UpgradeData.GetCurrentStateDescription).
+    public int PuddleCount => _puddleCount;
+
     public void AddDamage(float value) => _damagePerSecond += _damagePerSecond * value;
 
     // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.

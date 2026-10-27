@@ -262,6 +262,10 @@ public class WeaponAura : MonoBehaviour
         RedrawAuraRing();
     }
 
+    // AJOUTÉ (2026-10-25) - lus par UpgradeData pour afficher le vrai ralentissement sur la carte du palier 3 (en %).
+    public int SlowPercent => Mathf.RoundToInt((1f - _slowMultiplier) * 100f);
+    public int SlowPercentAfter(float value) => Mathf.RoundToInt((1f - Mathf.Max(_minSlowMultiplier, _slowMultiplier - value)) * 100f);
+
     public void AddSlowStrength(float value)
     {
         _slowMultiplier = Mathf.Max(_minSlowMultiplier, _slowMultiplier - value);

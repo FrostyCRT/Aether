@@ -29,6 +29,7 @@ public static class GameSettings
     public const string FpsCap = "settings_fpscap";               // index dans FpsCaps
     public const string Brightness = "settings_brightness";
     public const string ShowFps = "settings_showfps";
+    public const string FpsColor = "settings_fps_color";          // index dans FpsColors (AJOUTÉ 2026-10-25)
     // Graphismes
     public const string Quality = "settings_quality";             // index QualitySettings
     public const string Shadows = "settings_shadows";             // clé historique
@@ -54,6 +55,20 @@ public static class GameSettings
     // Limites d'images par seconde proposées (0 = illimité).
     public static readonly int[] FpsCaps = { 0, 30, 60, 90, 120, 144, 165, 240 };
 
+    // AJOUTÉ (2026-10-25, retour utilisateur : "la couleur des ips (et ms) qu'on voit en haut à gauche [...] un panel de
+    // quelques couleurs") - pastilles proposées dans Paramètres > Affichage. Blanc par défaut (le noir d'origine était
+    // illisible sur la barre d'onglets du menu, 1,7:1).
+    public static readonly Color[] FpsColors =
+    {
+        new Color32(0xFF, 0xFF, 0xFF, 0xFF),   // blanc
+        new Color32(0xFF, 0xD8, 0x4D, 0xFF),   // jaune
+        new Color32(0x6B, 0xE3, 0x7A, 0xFF),   // vert
+        new Color32(0x4F, 0xD8, 0xF0, 0xFF),   // cyan
+        new Color32(0xFF, 0x7A, 0xB8, 0xFF),   // rose
+        new Color32(0x00, 0x00, 0x00, 0xFF),   // noir
+    };
+    public const int FpsColorDefault = 0;
+
     private enum Kind { Bool, Int, Float, String }
 
     private struct Def
@@ -77,6 +92,7 @@ public static class GameSettings
         { FpsCap,           I(0, 0, 7) },
         { Brightness,       F(1.00f, 0.50f, 1.20f) },
         { ShowFps,          B(false) },
+        { FpsColor,         I(FpsColorDefault, 0, FpsColors.Length - 1) },
 
         { Quality,          I(2, 0, 2) },
         { Shadows,          B(false) },

@@ -140,6 +140,23 @@ public class ReputationUI : MonoBehaviour
             foreach (CanvasGroup g in _introBlocks) if (g != null) _blockBase[g] = ((RectTransform)g.transform).anchoredPosition;
         if (_toastGroup != null) _toastGroup.alpha = 0f;
         if (_cardTemplate != null) _cardTemplate.gameObject.SetActive(false);
+        StyleBackdropNotes();
+    }
+
+    // AJOUTÉ (2026-10-25, audit de lisibilité) - sous-titre de la page et notes des rangées (« Achetés avec de l'or »,
+    // « Améliorés avec des Éclats »...) sont posés directement sur le décor chargé : en gris-lavande sans contour, ils
+    // tombaient à 1,7-2,3:1. Ils passent en lavande clair avec un contour sombre, comme les textes du HUD sur le sol.
+    private static readonly string[] BackdropNoteNames = { "Subtitle", "Note", "ClassicNote", "PrestigeNote" };
+
+    private void StyleBackdropNotes()
+    {
+        foreach (TextMeshProUGUI t in GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            if (System.Array.IndexOf(BackdropNoteNames, t.name) < 0 || t.color != ReputationStyle.Muted) continue;
+            t.color = ReputationStyle.Body;
+            Material outlined = HudBar.OutlinedMaterial(t.fontSharedMaterial, GameFonts.Outline(t, 0.22f), new Color32(10, 6, 3, 255));
+            if (outlined != null) t.fontSharedMaterial = outlined;
+        }
     }
 
     private void OnEnable()
@@ -325,8 +342,9 @@ public class ReputationUI : MonoBehaviour
         // CORRIGÉ (2026-10-18, retour utilisateur : "pourquoi tu as mis du vert ? Je t'ai dis que je voulais que
         // ce soit comme dans la sélection de personnage") - dans CharacterSelectUI, "Sélectionné" ne recolore PAS
         // le bouton : même fond que d'habitude, bouton désactivé, texte gris neutre (0.5,0.5,0.5). Même traitement
-        // ici : tint reste blanc (fond par défaut, pas de teinte), seul le texte passe au gris neutre.
-        else if (owned && equipped) { label = Loc.T("ÉQUIPÉ"); interactable = false; labelColor = new Color(0.5f, 0.5f, 0.5f, 1f); }
+        // ici : tint reste blanc (fond par défaut, pas de teinte), seul le texte passe au gris neutre (foncé depuis
+        // l'audit de lisibilité du 2026-10-25, voir CharacterSelectUI.SelectedLabelColor).
+        else if (owned && equipped) { label = Loc.T("ÉQUIPÉ"); interactable = false; labelColor = CharacterSelectUI.SelectedLabelColor; }
         else if (owned) { label = Loc.T("ÉQUIPER"); interactable = true; glow = true; }
         else if (!CanAfford(meta, skin))
         {

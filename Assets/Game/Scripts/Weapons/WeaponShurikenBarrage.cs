@@ -148,6 +148,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
 
     // AJOUTE - palier 1 : +1 couteau a la salve.
     public void AddKnife() => _knifeCount += 1;
+    public int KnifeCount => _knifeCount;   // info-bulle du menu Pause (UpgradeData.GetCurrentStateDescription)
 
     // Appele par le palier 3 de la carte Couteaux
     public void AddPierce(int amount) => _maxPierceCount += Mathf.Max(1, amount);

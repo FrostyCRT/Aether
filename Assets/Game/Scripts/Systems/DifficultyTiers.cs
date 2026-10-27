@@ -60,11 +60,11 @@ public static class DifficultyTiers
         switch (tier)
         {
             case DifficultyTier.Violent:
-                return Loc.T("Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux");
+                return Loc.T("Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.");
             case DifficultyTier.Apocalyptic:
-                return Loc.T("Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum");
+                return Loc.T("Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.");
             default:
-                return Loc.T("Carte sans limite, l'expérience Classique telle qu'elle a toujours été");
+                return Loc.T("Carte sans limite, l'expérience Classique telle qu'elle a toujours été.");
         }
     }
 

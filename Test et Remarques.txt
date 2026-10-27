@@ -4,8 +4,6 @@ C:\Users\jules\My project\Aether
 
 restyliser la barre de chargement dans le loading screen, mettre des éléments comme les caractères du texte du titre, pour retrouver un peu la DA
 
-revoir toutes les descriptions et les noms des upgrades pour les valider pour la version finale.
-
 adapter les fonds d'écran, jour/crépuscule/nuit, avec MetaIA
 
 ajuster les fonds d'écran Aether et Lyra
@@ -14,10 +12,10 @@ Main Aether et visage Lyra
 
 Mode coop ? deux joueurs dans la partie.
 
-petite explosion pouvoir de l'arbre de compétence de Aether
 
 
 
+petite explosion pouvoir de l'arbre de compétence de Aether revoir la compétence dans l'arbre de compétence
 
 
-
+10eme -> 10e

@@ -29,10 +29,10 @@ public static class GameOverMessagePool
     {
         "La prochaine sera la bonne",
         "Une défaite de plus vers la victoire",
-        "Retourne au combat. C'est comme ça qu'on progresse",
-        "Relève-toi, c'est pas fini",
+        "Retourne au combat. C'est ainsi que l'on progresse.",
+        "Relève-toi, ce n'est pas fini.",
         "Tu as le niveau pour la suivante",
-        "Tu sais déjà ce qui a coincé. Corrige-le",
+        "Tu sais déjà ce qui a coincé. Corrige-le.",
     };
 
     // MODIFIE (2026-09-12, 3e passe) - "Tu étais proche. Refais-en une."
@@ -43,7 +43,7 @@ public static class GameOverMessagePool
     private static readonly string[] _closeToTheEndMessages =
     {
         "Ça ne s'est pas joué à grand-chose",
-        "Tu étais proche. Refais-en une",
+        "Tu étais proche. Relance une partie.",
     };
     private const float _closeToTheEndMinSeconds = 12f * 60f;
     private const float _closeToTheEndMaxSeconds = 15f * 60f;
@@ -56,8 +56,8 @@ public static class GameOverMessagePool
     private static readonly string[] _bossMessages =
     {
         "Il ne t'a laissé aucune ouverture cette fois",
-        "Un adversaire coriace. Il faudra revenir plus fort",
-        "Le boss a gagné cette bataille. Il n'a pas gagné la guerre",
+        "Un adversaire coriace. Il faudra revenir plus fort.",
+        "Le boss a gagné cette bataille. Il n'a pas gagné la guerre.",
     };
 
     public static string GetMessage(string deathCause, float runTime)

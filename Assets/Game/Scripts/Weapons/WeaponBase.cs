@@ -159,6 +159,11 @@ public class WeaponBase : MonoBehaviour
             StartCoroutine(FireDelayed(direction));
     }
 
+    // Nœud Réputation "Fragmentation" (voir FireProjectile).
+    private const float FragmentDamageRatio = 1f;
+    private const float FragmentRadius = 4f;
+    private int _shotsSinceFragment;
+
     private void FireProjectile(Vector3 direction)
     {
         if (ObjectPool.Instance == null) return;
@@ -179,18 +184,20 @@ public class WeaponBase : MonoBehaviour
             float finalDamage = _currentDamage * _damageMultiplier * PlayerBuffs.OutgoingDamageMultiplier;
             projectile.Init(direction, finalDamage);
 
-            // MODIFIÉ — SetFragmentation prend maintenant une chance (float) plutôt qu'un bool.
-            // On récupère directement la chance déjà exposée par MetaProgressionManager
-            // (GetFragmentationChance() renvoie 0f si le nœud n'est pas débloqué, donc pas
-            // besoin de re-tester HasFragmentation() séparément).
-            float fragChance = MetaProgressionManager.Instance != null
-                ? MetaProgressionManager.Instance.GetFragmentationChance()
-                : 0f;
+            // MODIFIÉ (2026-10-27, retour utilisateur : Fragmentation "très peu efficace en jeu", puis "le rayon
+            // d'explosion [doit être] quand même assez large, et je veux que ce soit visible") - au lieu de 15 % de
+            // chance (50 % des dégâts, rayon 2) : un projectile sur 4 (Double Tir compris) explose à coup sûr, avec
+            // tous ses dégâts, dans un rayon de FragmentRadius. Le projectile chargé est marqué (traînée plus large et
+            // plus claire) pour que le joueur le voie partir.
+            int interval = MetaProgressionManager.Instance != null
+                ? MetaProgressionManager.Instance.GetFragmentationInterval()
+                : 0;
 
-            if (fragChance > 0f)
+            if (interval > 0 && ++_shotsSinceFragment >= interval)
             {
-                float fragDamage = finalDamage * 0.5f;
-                projectile.SetFragmentation(fragChance, fragDamage, 2f);
+                _shotsSinceFragment = 0;
+                projectile.SetFragmentation(1f, finalDamage * FragmentDamageRatio, FragmentRadius);
+                projectile.MarkFragmentCharged();
             }
         }
     }

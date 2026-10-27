@@ -66,9 +66,9 @@ public class ProjectileBasic : MonoBehaviour
         // devient quasi invisible vu l'angle de caméra plongeant du jeu, surtout sur une trajectoire rectiligne
         // qui peut se retrouver presque "de face" par rapport à la caméra.
         _trail = gameObject.AddComponent<TrailRenderer>();
-        _trail.time = 0.12f;
+        _trail.time = TrailTime;
         _trail.minVertexDistance = 0.05f;
-        _trail.widthMultiplier = 0.2f;
+        _trail.widthMultiplier = TrailWidth;
         _trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
         _trail.material = new Material(Shader.Find("Sprites/Default"));
         _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -97,6 +97,8 @@ public class ProjectileBasic : MonoBehaviour
 
         _trail.Clear(); // sans ça, un projectile recyclé depuis le pool dessinerait une traînée depuis sa position précédente
         _trail.startColor = FXSprites.A(_damageColor, 0.7f);
+        _trail.widthMultiplier = TrailWidth;
+        _trail.time = TrailTime;
         _trail.endColor = FXSprites.A(_damageColor, 0f);
     }
 
@@ -106,6 +108,18 @@ public class ProjectileBasic : MonoBehaviour
         _hasRicochet = bounceCount > 0;
         _ricochetsLeft = bounceCount;
         _ricochetRange = range;
+    }
+
+    private const float TrailWidth = 0.2f;
+    private const float TrailTime = 0.12f;
+
+    // AJOUTÉ (2026-10-27, Fragmentation : 1 tir sur 4) - le projectile qui va exploser se distingue des autres : traînée
+    // plus large, plus longue et presque blanche. Remis à la normale par Init (projectile recyclé).
+    public void MarkFragmentCharged()
+    {
+        _trail.widthMultiplier = TrailWidth * 2f;
+        _trail.time = TrailTime * 1.8f;
+        _trail.startColor = FXSprites.A(Color.Lerp(_damageColor, Color.white, 0.55f), 0.95f);
     }
 
     public void SetFragmentation(float chance, float damage, float radius)
@@ -155,18 +169,23 @@ public class ProjectileBasic : MonoBehaviour
             // - la Boule de feu (seule arme à mettre _useFireExplosionVisual à true, voir WeaponFireball) utilise
             // désormais une vraie déflagration enflammée (FireExplosionVFX) à la place du simple anneau générique,
             // qui reste inchangé pour le nœud Réputation "Fragmentation" du tir de base (aucun rapport avec le feu).
+            // MODIFIÉ (2026-10-27, retour utilisateur sur Fragmentation : "là c'est juste un prefab moche qui grossit, tu
+            // peux faire une animation de la même qualité que [...] la déflagration de la boule de feu") - le tir de base
+            // a sa propre explosion d'éclats de cristal (ArcaneBurstVFX), au lieu de l'anneau orange générique.
             if (_useFireExplosionVisual)
+            {
                 FireExplosionVFX.Spawn(transform.position, _fragmentRadius);
+                // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences".
+                // Éclat agrandi au centre, au moment pile de l'explosion.
+                ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorFireball, 2f);
+                // AJOUTÉ (2026-10-05) - secousse de caméra modérée : une explosion doit se SENTIR, pas seulement se
+                // voir. Réservé à Boule de feu (l'un des rares "gros impacts" ponctuels du jeu) - jamais sur les
+                // armes à cadence élevée, pour ne pas secouer l'écran en permanence en plein combat (le tir de base
+                // explose une fois sur 4 avec Fragmentation : pas de secousse).
+                CameraShakeFX.Shake(0.35f);
+            }
             else
-                ExpandingRingVFX.Spawn(transform.position, _fragmentRadius, new Color(1f, 0.5f, 0.15f, 0.85f), 0.35f);
-            // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut travailler sur les animations des compétences".
-            // L'anneau seul marque bien la LIMITE de la zone, mais manquait de "punch" au centre, au moment pile
-            // de l'explosion. Éclat agrandi (même composant que les impacts normaux, juste plus gros).
-            ImpactSparkVFX.Spawn(transform.position, DamageNumberSpawner.ColorFireball, 2f);
-            // AJOUTÉ (2026-10-05) - secousse de caméra modérée : une explosion doit se SENTIR, pas seulement se
-            // voir. Réservé à Boule de feu (l'un des rares "gros impacts" ponctuels du jeu) - jamais sur les
-            // armes à cadence élevée, pour ne pas secouer l'écran en permanence en plein combat.
-            CameraShakeFX.Shake(0.35f);
+                ArcaneBurstVFX.Spawn(transform.position, _fragmentRadius, _damageColor);
 
             int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _fragmentRadius, _overlapBuffer, EnemyLayers.Mask);
             for (int i = 0; i < hitCount; i++)

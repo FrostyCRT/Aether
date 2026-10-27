@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 4
-  _maxHealth: 180
+  _maxHealth: 220
   _isFlying: 1
   _flightAltitude: 1.15
   _xpValue: 25

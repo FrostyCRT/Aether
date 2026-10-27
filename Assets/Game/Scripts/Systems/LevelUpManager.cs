@@ -54,6 +54,8 @@ public class LevelUpManager : MonoBehaviour
     private bool _hasOfferedCharacterUnlock = false;
 
     public bool IsWaitingForChoice => _waitingForChoice;
+    // Écran de choix ouvert ou sur le point de l'être (entre deux cartes d'une même rafale, le jeu reste figé).
+    public bool IsChoosing => _waitingForChoice || _showingDelay || _preShowPending;
 
     public UpgradeData[] AllUpgrades => _allUpgrades;
 

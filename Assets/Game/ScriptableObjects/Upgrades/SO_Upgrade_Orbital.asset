@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Orbital
   m_EditorClassIdentifier: 
   upgradeName: Orbitaux
-  description: "D\xE9bloque les projectiles orbitaux"
+  description: "Des \xE9clats tournent autour de toi et frappent les ennemis au contact"
   icon: {fileID: 21300000, guid: e4b4cf60165c0604e80e5b39a8f83527, type: 3}
   upgradeType: 7
   value: 0
+  _fusionSource1: 0
+  _fusionSource2: 0
+  _fusionResultId: 
+  _fusionBranch: 3
   _levelValues: []
   _maxLevel: 3
   _requiresUnlockPick: 1

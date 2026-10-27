@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Knives
   m_EditorClassIdentifier: 
   upgradeName: Couteaux
-  description: Envoie des salves de couteaux
+  description: Lance des salves de couteaux qui transpercent les ennemis
   icon: {fileID: 21300000, guid: 4e15047d2b94bea48ae521e0661e57b0, type: 3}
   upgradeType: 6
   value: 0
+  _fusionSource1: 0
+  _fusionSource2: 0
+  _fusionResultId: 
+  _fusionBranch: 3
   _levelValues:
   - 0
   - 0.35

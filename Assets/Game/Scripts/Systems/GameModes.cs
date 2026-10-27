@@ -125,7 +125,7 @@ public static class GameModes
                 return new ModeInfo
                 {
                     name = ShortName(mode),
-                    description = Loc.T("Les boss reviennent en boucle, de plus en plus forts. Tiens le plus longtemps possible")
+                    description = Loc.T("Les boss reviennent en boucle, de plus en plus forts. Tiens le plus longtemps possible.")
                 };
             case GameMode.BossRush:
             {
@@ -137,7 +137,7 @@ public static class GameModes
                 {
                     int bosses = progress * 3;
                     string which = progress == 1 ? Loc.T("le Boss 1") : progress == 2 ? Loc.T("les Boss 1 et 2") : Loc.T("les 3 boss");
-                    desc = Loc.F("Un boss par minute : {0}, chacun 3 fois et de plus en plus fort. {1} boss, {1} min", which, bosses);
+                    desc = Loc.F("Un boss par minute : {0}, chacun 3 fois et de plus en plus fort. Au total, {1} boss en {1} minutes.", which, bosses);
                 }
                 return new ModeInfo { name = ShortName(mode), description = desc };
             }
@@ -146,14 +146,14 @@ public static class GameModes
                 {
                     name = ShortName(mode),
                     description = IsUnlocked(mode, data)
-                        ? Loc.T("Toutes les améliorations au maximum, aucun ennemi... mais les 3 boss en même temps. Survis et abats-les tous")
+                        ? Loc.T("Toutes les améliorations au maximum et aucun ennemi, mais les 3 boss en même temps. Survis et abats-les tous.")
                         : LockedHint(mode)
                 };
             default:
                 return new ModeInfo
                 {
                     name = ShortName(mode),
-                    description = Loc.T("Bats les 3 boss en 15 minutes pour remporter la partie")
+                    description = Loc.T("Affronte des vagues d'ennemis toujours plus nombreuses et abats les 3 boss en 15 minutes pour l'emporter")
                 };
         }
     }
