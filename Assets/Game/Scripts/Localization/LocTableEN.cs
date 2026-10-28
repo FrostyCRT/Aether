@@ -241,7 +241,7 @@ public static class LocTableEN
         { "Le rayon d'explosion est 2 fois plus grand", "The explosion radius is twice as large" }, { "+{0}% dégâts", "+{0}% damage" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Unlocks Burn: enemies hit keep burning over time" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Unlocks the Aura: equips Kael's exclusive weapon" },
-        { "+{0}% rayon", "+{0}% radius" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "Stronger slow: {0}% instead of {1}%" },
+        { "+{0}% rayon", "+{0}% radius" }, { "Ralentissement porté à {0}%", "Slow increased to {0}%" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Unlocks Knife Volley: equips Lyra's exclusive weapon" },
         { "Débloque un couteau supplémentaire dans la salve", "Adds one more knife to the volley" },
         { "+{0} ennemis perforés en plus", "Pierces {0} more enemies" }, { "+{0} ennemi perforé en plus", "Pierces {0} more enemy" },
@@ -387,6 +387,9 @@ public static class LocTableEN
         { "Première victoire en Violent : +{0} éclats", "First win on Severe: +{0} Shards" },
         { "Première victoire en Apocalyptique : +{0} éclats", "First win on Apocalyptic: +{0} Shards" },
         { "Victoire en Modéré", "Win on Moderate" }, { "Victoire en Violent", "Win on Severe" }, { "avec {0}", "with {0}" },
+
+        // AJOUTÉ (2026-10-28) - confirmation de fermeture du jeu (Alt+F4, croix de la fenêtre) pendant une partie (QuitConfirm).
+        { "Ta partie en cours sera perdue", "Your current run will be lost" },
 
         // ==== SECTIONS SUIVANTES ====
     };

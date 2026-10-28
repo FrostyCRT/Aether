@@ -196,7 +196,7 @@ public static class LocTableDE
         { "Le rayon d'explosion est 2 fois plus grand", "Der Explosionsradius ist doppelt so groß" }, { "+{0}% dégâts", "+{0} % Schaden" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Schaltet die Aura frei: Kaels exklusive Waffe" }, { "+{0}% rayon", "+{0} % Radius" },
-        { "Ralentissement renforcé : {0}% au lieu de {1}%", "Stärkere Verlangsamung: {0} % statt {1} %" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Schaltet die Messersalve frei: Lyras exklusive Waffe" },
+        { "Ralentissement porté à {0}%", "Verlangsamung auf {0} % erhöht" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Schaltet die Messersalve frei: Lyras exklusive Waffe" },
         { "Débloque un couteau supplémentaire dans la salve", "Ein zusätzliches Messer in der Salve" }, { "+{0} ennemis perforés en plus", "Durchbohrt {0} weitere Gegner" },
         { "+{0} ennemi perforé en plus", "Durchbohrt {0} weiteren Gegner" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Schaltet eine Prallkugel frei, die Gegner durchdringt" },
         { "+{0}% vitesse des orbes", "+{0} % Kugeltempo" }, { "+1 orbe rebondissant supplémentaire", "+1 zusätzliche Prallkugel" },
@@ -301,6 +301,6 @@ public static class LocTableDE
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "Erster Sieg auf Mäßig: +{0} Splitter" }, { "Première victoire en Violent : +{0} éclats", "Erster Sieg auf Heftig: +{0} Splitter" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Erster Sieg auf Apokalyptisch: +{0} Splitter" }, { "Victoire en Modéré", "Sieg auf Mäßig" },
-        { "Victoire en Violent", "Sieg auf Heftig" }, { "avec {0}", "mit {0}" },
+        { "Victoire en Violent", "Sieg auf Heftig" }, { "avec {0}", "mit {0}" }, { "Ta partie en cours sera perdue", "Dein aktueller Run geht verloren" },
     };
 }

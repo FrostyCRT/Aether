@@ -25,7 +25,7 @@ public static class SettingsPageBuilder
     private static readonly Color Body = SettingsStyle.Body;
 
     // Bouton "sombre" : l'image est plus CLAIRE que sa teinte normale (0,62), le survol la ramène à 1 => il s'éclaircit.
-    private static readonly Color BtnBase = new Color32(0x2C, 0x25, 0x40, 0xFF);
+    internal static readonly Color BtnBase = new Color32(0x2C, 0x25, 0x40, 0xFF);
 
     [MenuItem("Aether/Rebuild Settings Page")]
     public static void Build()
@@ -220,7 +220,7 @@ public static class SettingsPageBuilder
 
     // ── chargement ─────────────────────────────────────────────────────────
 
-    private static void LoadAssets()
+    internal static void LoadAssets()
     {
         _font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Game/Fonts/Bangers-Regular SDF.asset");
         _circle = AssetDatabase.LoadAssetAtPath<Sprite>(Ui + "Personnage/UI_Circle.png");
@@ -233,14 +233,14 @@ public static class SettingsPageBuilder
 
     // ── petites fabriques ──────────────────────────────────────────────────
 
-    private static RectTransform NewRt(string name, Transform parent)
+    internal static RectTransform NewRt(string name, Transform parent)
     {
         GameObject go = new GameObject(name, typeof(RectTransform));
         go.transform.SetParent(parent, false);
         return (RectTransform)go.transform;
     }
 
-    private static void Center(RectTransform rt, float x, float y, float w, float h)
+    internal static void Center(RectTransform rt, float x, float y, float w, float h)
     {
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
         rt.anchoredPosition = new Vector2(x, y);
@@ -254,7 +254,7 @@ public static class SettingsPageBuilder
         rt.sizeDelta = new Vector2(w, h);
     }
 
-    private static void Stretch(RectTransform rt, float l = 0, float t = 0, float r = 0, float b = 0)
+    internal static void Stretch(RectTransform rt, float l = 0, float t = 0, float r = 0, float b = 0)
     {
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
         rt.offsetMin = new Vector2(l, b); rt.offsetMax = new Vector2(-r, -t);
@@ -269,7 +269,7 @@ public static class SettingsPageBuilder
         return img;
     }
 
-    private static TextMeshProUGUI AddText(RectTransform rt, string text, float size, Color color, TextAlignmentOptions align, bool wrap = false, bool outline = false)
+    internal static TextMeshProUGUI AddText(RectTransform rt, string text, float size, Color color, TextAlignmentOptions align, bool wrap = false, bool outline = false)
     {
         TextMeshProUGUI t = rt.gameObject.AddComponent<TextMeshProUGUI>();
         t.font = _font;
@@ -284,7 +284,7 @@ public static class SettingsPageBuilder
     private static Navigation NoNav() { Navigation n = new Navigation(); n.mode = Navigation.Mode.None; return n; }
 
     // Bouton sombre "pilule" : contour (couleur `border`) + fond ; le survol l'éclaircit (voir BtnBase).
-    private static Button MakeButton(string name, Transform parent, Color fill, float w, float h, string label, float fontSize, Color textColor,
+    internal static Button MakeButton(string name, Transform parent, Color fill, float w, float h, string label, float fontSize, Color textColor,
                                      out TextMeshProUGUI text, Color? border = null)
     {
         RectTransform rt = NewRt(name, parent);
@@ -566,7 +566,7 @@ public static class SettingsPageBuilder
 
     // ── fenêtres ────────────────────────────────────────────────────────────
 
-    private static RectTransform DialogShell(Transform parent, string name, float w, float h, out RectTransform box)
+    internal static RectTransform DialogShell(Transform parent, string name, float w, float h, out RectTransform box)
     {
         RectTransform root = NewRt(name, parent);
         Stretch(root);

@@ -12,7 +12,9 @@ Main Aether et visage Lyra
 
 Mode coop ? deux joueurs dans la partie.
 
+l'indicateur de dégâts sur les ennemis doit être plus proche de lui. Sauf pour les boss
 
+j'ai l'impression que je prend moins de dégâts physique avec Kael, quand je cours dans une horde je me prends presque pas de dégâts
 
-revoir xp fps, faire différents types d'xp ? Il y a forcément une solution, que font les meilleurs jeux du genre quand l'écran est blindé d'xp sur le sol ?
-
+le texte de la dernière amélioration de la compétence Aura de Kael dit 60% de ralentissement au lieu de 15%. On garde vraiment ce 'Au lieu de X' ? Je ne vois pas ça souvent dans les jeux pro.
+60% de ralentissement en jeu c'est trop, baisse le à 40%

@@ -416,7 +416,7 @@
 396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo
 397| Desbloqueia a Aura: equipa a arma exclusiva de Kael
 398| +{0}% de raio
-399| Lentidão reforçada: {0}% em vez de {1}%
+399| Lentidão aumentada para {0}%
 400| Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra
 401| Adiciona mais uma faca à rajada
 402| Perfura mais {0} inimigos
@@ -653,3 +653,4 @@
 615| Vitória no Moderado
 616| Vitória no Violento
 617| com {0}
+618| Sua partida atual será perdida

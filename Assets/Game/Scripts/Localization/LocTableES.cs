@@ -194,8 +194,7 @@ public static class LocTableES
         { "Le rayon d'explosion est 2 fois plus grand", "El radio de explosión es el doble de grande" }, { "+{0}% dégâts", "+{0}% de daño" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Desbloquea Quemadura: los enemigos alcanzados siguen ardiendo un tiempo" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Desbloquea el Aura: equipa el arma exclusiva de Kael" },
-        { "+{0}% rayon", "+{0}% de radio" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "Ralentización reforzada: {0}% en lugar de {1}%" },
-        { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloquea la Ráfaga de cuchillos: equipa el arma exclusiva de Lyra" },
+        { "+{0}% rayon", "+{0}% de radio" }, { "Ralentissement porté à {0}%", "Ralentización aumentada al {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloquea la Ráfaga de cuchillos: equipa el arma exclusiva de Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Añade un cuchillo más a la ráfaga" }, { "+{0} ennemis perforés en plus", "Perfora a {0} enemigos más" },
         { "+{0} ennemi perforé en plus", "Perfora a {0} enemigo más" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Desbloquea un orbe rebotador que atraviesa a los enemigos" },
         { "+{0}% vitesse des orbes", "+{0}% de velocidad de los orbes" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe rebotador adicional" },
@@ -302,6 +301,6 @@ public static class LocTableES
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "Primera victoria en Moderado: +{0} fragmentos" }, { "Première victoire en Violent : +{0} éclats", "Primera victoria en Violento: +{0} fragmentos" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Primera victoria en Apocalíptico: +{0} fragmentos" }, { "Victoire en Modéré", "Victoria en Moderado" },
-        { "Victoire en Violent", "Victoria en Violento" }, { "avec {0}", "con {0}" },
+        { "Victoire en Violent", "Victoria en Violento" }, { "avec {0}", "con {0}" }, { "Ta partie en cours sera perdue", "Perderás la partida en curso" },
     };
 }

@@ -72,6 +72,8 @@ public class DamageNumberSpawner : MonoBehaviour
     // avancé), 2 couleurs se partageaient le même lane et leurs chiffres se superposaient (vérifié en jeu :
     // "100" cyan et "100!" orange quasi illisibles l'un sur l'autre). 16 décalages (13 couleurs actuelles + marge
     // pour de futures armes/fusions), toujours dispersés en X ET Y.
+    private const float NormalEnemyLaneScale = 0.35f;
+    private const float NormalEnemyHeight = 1.2f;
     private readonly Dictionary<Color, int> _laneByColor = new Dictionary<Color, int>();
     private int _nextLane = 0;
     private static readonly Vector2[] LaneOffsets =
@@ -129,8 +131,18 @@ public class DamageNumberSpawner : MonoBehaviour
             _laneByColor[color] = lane;
         }
 
+        // MODIFIÉ (2026-10-28, retour utilisateur : "l'indicateur de dégâts sur les ennemis doit être plus proche de
+        // l'ennemi. Sauf pour les boss") - l'écart des lanes (jusqu'à 2 m) a été dimensionné pour les boss, vus de loin
+        // et frappés par beaucoup d'armes à la fois. Sur un ennemi normal, il éloignait le chiffre de sa cible : lanes
+        // resserrées (x0,35) et chiffre plus bas, juste au-dessus de la tête. Boss et joueur inchangés.
         Vector2 offset = LaneOffsets[lane];
-        Vector3 spawnPos = position + Vector3.up * (1.5f + offset.y) + Vector3.right * offset.x;
+        float baseHeight = 1.5f;
+        if (target != null && !target.TryGetComponent(out BossBase _))
+        {
+            offset *= NormalEnemyLaneScale;
+            baseHeight = NormalEnemyHeight;
+        }
+        Vector3 spawnPos = position + Vector3.up * (baseHeight + offset.y) + Vector3.right * offset.x;
         GameObject go = ObjectPool.Instance.Get("DamageNumber", spawnPos, Quaternion.identity);
         if (go == null) return;
 

@@ -418,7 +418,7 @@
 396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę
 397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela
 398| +{0}% promienia
-399| Silniejsze spowolnienie: {0}% zamiast {1}%
+399| Spowolnienie zwiększone do {0}%
 400| Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry
 401| Dodaje jeden nóż do salwy
 402| Przebija o {0} wrogów więcej
@@ -661,3 +661,4 @@
 615| Zwycięstwo na poziomie Umiarkowany
 616| Zwycięstwo na poziomie Brutalny
 617| postać: {0}
+618| Bieżąca rozgrywka zostanie utracona

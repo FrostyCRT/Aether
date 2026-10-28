@@ -195,7 +195,7 @@ public static class LocTablePL
         { "Le rayon d'explosion est 2 fois plus grand", "Promień wybuchu jest dwa razy większy" }, { "+{0}% dégâts", "+{0}% obrażeń" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Odblokowuje Aurę: wyposaża w unikalną broń Kaela" }, { "+{0}% rayon", "+{0}% promienia" },
-        { "Ralentissement renforcé : {0}% au lieu de {1}%", "Silniejsze spowolnienie: {0}% zamiast {1}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry" },
+        { "Ralentissement porté à {0}%", "Spowolnienie zwiększone do {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry" },
         { "Débloque un couteau supplémentaire dans la salve", "Dodaje jeden nóż do salwy" }, { "+{0} ennemis perforés en plus", "Przebija o {0} wrogów więcej" },
         { "+{0} ennemi perforé en plus", "Przebija o {0} wroga więcej" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Odblokowuje sprężystą kulę, która przenika przez wrogów" },
         { "+{0}% vitesse des orbes", "+{0}% szybkości kul" }, { "+1 orbe rebondissant supplémentaire", "+1 dodatkowa sprężysta kula" },
@@ -301,7 +301,7 @@ public static class LocTablePL
         { "Première victoire en Modéré : +{0} éclats", "Pierwsze zwycięstwo na poziomie Umiarkowany: +{0} odłamków" }, { "Première victoire en Violent : +{0} éclats", "Pierwsze zwycięstwo na poziomie Brutalny: +{0} odłamków" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Pierwsze zwycięstwo na poziomie Apokaliptyczny: +{0} odłamków" },
         { "Victoire en Modéré", "Zwycięstwo na poziomie Umiarkowany" }, { "Victoire en Violent", "Zwycięstwo na poziomie Brutalny" },
-        { "avec {0}", "postać: {0}" },
+        { "avec {0}", "postać: {0}" }, { "Ta partie en cours sera perdue", "Bieżąca rozgrywka zostanie utracona" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

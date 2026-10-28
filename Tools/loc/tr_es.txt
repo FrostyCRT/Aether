@@ -417,7 +417,7 @@
 396| Desbloquea Quemadura: los enemigos alcanzados siguen ardiendo un tiempo
 397| Desbloquea el Aura: equipa el arma exclusiva de Kael
 398| +{0}% de radio
-399| Ralentización reforzada: {0}% en lugar de {1}%
+399| Ralentización aumentada al {0}%
 400| Desbloquea la Ráfaga de cuchillos: equipa el arma exclusiva de Lyra
 401| Añade un cuchillo más a la ráfaga
 402| Perfora a {0} enemigos más
@@ -654,3 +654,4 @@
 615| Victoria en Moderado
 616| Victoria en Violento
 617| con {0}
+618| Perderás la partida en curso

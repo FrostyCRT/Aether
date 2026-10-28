@@ -15,7 +15,9 @@ public class WeaponAura : MonoBehaviour
     [SerializeField] private float _tickRate = 0.25f;
     [Header("Ralentissement léger")]
     [SerializeField] private float _slowMultiplier = 0.85f; // -15%
-    [SerializeField] private float _minSlowMultiplier = 0.4f;
+    // MODIFIÉ (2026-10-28, retour utilisateur : "60% de ralentissement en jeu c'est trop, baisse le à 40%") - plancher
+    // 0,4 -> 0,6 : le palier 3 de l'Aura mène le ralentissement de 15% à 40% (valeur du palier 0,5 -> 0,25, voir l'asset).
+    [SerializeField] private float _minSlowMultiplier = 0.6f;
     private float _tickTimer = 0f;
     private static readonly Collider[] _auraOverlapBuffer = new Collider[64];
     private readonly Dictionary<int, EnemyBase> _currentlySlowed = new Dictionary<int, EnemyBase>();

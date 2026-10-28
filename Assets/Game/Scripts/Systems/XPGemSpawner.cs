@@ -5,8 +5,6 @@ public class XPGemSpawner : MonoBehaviour
 {
     public static XPGemSpawner Instance { get; private set; }
 
-    private Transform _playerTransform;
-
     // Unification du rayon d'attraction (0f par défaut, s'agrandit au fil du jeu)
     public float AttractionRadius { get; private set; } = 0f;
 
@@ -44,13 +42,6 @@ public class XPGemSpawner : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
-    {
-        GameObject player = GameObject.FindWithTag("Player");
-        if (player != null)
-            _playerTransform = player.transform;
-    }
-
     // Appelé par XPSystem quand le joueur level up
     public void OnLevelUp(int level)
     {
@@ -69,11 +60,9 @@ public class XPGemSpawner : MonoBehaviour
     // mort représente maintenant SA PROPRE valeur intégralement et IMMÉDIATEMENT : les paliers 50/20/10 habituels,
     // PLUS une dernière gemme (visuellement Small, valeur réelle exacte via xpOverride) pour le reste < 10 au lieu
     // de le reporter invisible sur la prochaine mort. Plus aucun kill qui rapporte de l'XP ne reste sans gemme.
-    // Appelé à la mort d'un ennemi — calcule et spawne les gemmes via l'ObjectPool
+    // Appelé à la mort d'un ennemi — calcule et spawne les gemmes (XPGemField, 2026-10-28 : plus d'ObjectPool)
     public void SpawnGems(Vector3 position, float xpValue)
     {
-        if (ObjectPool.Instance == null) return;
-
         float remainder = CalculateGems(xpValue); // remplit le cache interne, renvoie le reste (< 10) de CETTE mort
 
         for (int i = 0; i < _gemsCalculationCache.Count; i++)
@@ -92,19 +81,13 @@ public class XPGemSpawner : MonoBehaviour
             Random.Range(-0.8f, 0.8f)
         );
 
-        // MODIFIÉ (2026-10-04) - la gemme spawne maintenant PILE au point de mort (position), pas déjà décalée :
-        // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
-        // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
-        // "pas le côté satisfaisant").
-        GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
-        if (gemGO == null) return;
-
+        // MODIFIÉ (2026-10-04) - la gemme part PILE du point de mort (position), pas déjà décalée : XPGemField
+        // l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset), comme si elle
+        // jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur : "pas le côté
+        // satisfaisant").
         Vector3 landTarget = position + offset;
         landTarget.y = GemLandY;
-
-        gemGO.TryGetComponent(out XPGem gem);
-        if (gem != null)
-            gem.Init(gemType, _playerTransform, landTarget, xpOverride);
+        XPGemField.Instance.Spawn(gemType, position, landTarget, xpOverride);
     }
 
     // Algorithme optimisé "rendre la monnaie" sans aucune allocation mémoire.
@@ -146,7 +129,6 @@ public class XPGemSpawner : MonoBehaviour
 
     public void SpawnBossGemBurst(Vector3 position, float xpValue)
     {
-        if (ObjectPool.Instance == null) return;
         StartCoroutine(BossGemBurstRoutine(position, xpValue));
     }
 
@@ -208,24 +190,10 @@ public class XPGemSpawner : MonoBehaviour
         float burstRadius = Random.Range(1.8f, 3.2f);
         Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * burstRadius;
 
-        GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
-        if (gemGO == null) return;
-
         Vector3 landTarget = position + offset;
         landTarget.y = GemLandY;
-
-        gemGO.TryGetComponent(out XPGem gem);
-        if (gem != null)
-            gem.Init(type, _playerTransform, landTarget, xpOverride);
+        XPGemField.Instance.Spawn(type, position, landTarget, xpOverride);
     }
 
-    private static float GemTypeValue(XPGem.GemType type)
-    {
-        switch (type)
-        {
-            case XPGem.GemType.Large: return 50f;
-            case XPGem.GemType.Medium: return 20f;
-            default: return 10f;
-        }
-    }
+    private static float GemTypeValue(XPGem.GemType type) => XPGem.Value(type);
 }

@@ -211,13 +211,15 @@ public class UpgradeData : ScriptableObject
             case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
             case 2: return Loc.F("+{0}% rayon", PercentOf(v));
             // CORRIGÉ (2026-10-25) - "+50% ralentissement" ne disait pas la réalité : la valeur se RETRANCHE du
-            // multiplicateur de vitesse (0,85 -> 0,40 plancher), donc le ralentissement passe de 15% à 60%. Affiche les 2.
+            // multiplicateur de vitesse, elle n'est pas un pourcentage du ralentissement.
+            // MODIFIÉ (2026-10-28, retour utilisateur : "On garde vraiment ce 'Au lieu de X' ? Je ne vois pas ça souvent
+            // dans les jeux pro") - n'affiche plus que la valeur atteinte (15% -> 40%, voir WeaponAura._minSlowMultiplier).
             case 3:
                 {
                     GameObject player = GetActivePlayer();
                     WeaponAura aura = player != null ? player.GetComponent<WeaponAura>() : null;
                     if (aura == null) return Description;
-                    return Loc.F("Ralentissement renforcé : {0}% au lieu de {1}%", aura.SlowPercentAfter(v), aura.SlowPercent);
+                    return Loc.F("Ralentissement porté à {0}%", aura.SlowPercentAfter(v));
                 }
             default: return Description;
         }

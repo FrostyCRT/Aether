@@ -214,17 +214,8 @@ public class CrystalSystem : MonoBehaviour
 
     private void AttractGems(float range, bool fast = false)
     {
-        XPGem[] allGems = FindObjectsByType<XPGem>(FindObjectsSortMode.None);
-        foreach (XPGem gem in allGems)
-        {
-            if (gem == null) continue;
-            if (range >= float.MaxValue ||
-                Vector3.Distance(transform.position, gem.transform.position) <= range)
-            {
-                if (fast) gem.ForceAttractFast();
-                else gem.ForceAttract();
-            }
-        }
+        // MODIFIÉ (2026-10-28) - les gemmes sont des données d'XPGemField (plus de GameObjects à chercher).
+        if (XPGemField.Count > 0) XPGemField.Instance.AttractInRange(transform.position, range, fast);
     }
 
     private void TriggerNova()

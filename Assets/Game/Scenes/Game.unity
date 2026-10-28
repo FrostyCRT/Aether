@@ -13237,10 +13237,6 @@ MonoBehaviour:
     prefab: {fileID: 3359487387374504140, guid: cfe18a115c3e6d5499bf48e9c09741f5,
       type: 3}
     size: 125
-  - tag: XPGem
-    prefab: {fileID: 4691050856994466880, guid: 8962d9ecaa199844093aabc7a0d3bb2f,
-      type: 3}
-    size: 75
   - tag: OrbitalProjectile
     prefab: {fileID: 6076549467375830856, guid: c96efb4a855bf1a40b968c32cbd21496,
       type: 3}

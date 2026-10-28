@@ -411,7 +411,7 @@
 396	Débloque la Brûlure : les ennemis touchés brûlent sur la durée	Unlocks Burn: enemies hit keep burning over time
 397	Débloque l'Aura : équipe l'arme exclusive de Kael	Unlocks the Aura: equips Kael's exclusive weapon
 398	+{0}% rayon	+{0}% radius
-399	Ralentissement renforcé : {0}% au lieu de {1}%	Stronger slow: {0}% instead of {1}%
+399	Ralentissement porté à {0}%	Slow increased to {0}%
 400	Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra	Unlocks Knife Volley: equips Lyra's exclusive weapon
 401	Débloque un couteau supplémentaire dans la salve	Adds one more knife to the volley
 402	+{0} ennemis perforés en plus	Pierces {0} more enemies
@@ -648,3 +648,4 @@
 615	Victoire en Modéré	Win on Moderate
 616	Victoire en Violent	Win on Severe
 617	avec {0}	with {0}
+618	Ta partie en cours sera perdue	Your current run will be lost

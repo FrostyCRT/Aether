@@ -102,21 +102,43 @@ public class BouncingOrbProjectile : MonoBehaviour
 
         // Rebond indépendant sur chaque axe (comme un pong classique), pour gérer
         // correctement le cas où l'orbe touche un coin sur les deux axes à la fois.
-        if (nextPos.x <= bounds.min.x || nextPos.x >= bounds.max.x)
+        bool bounced = false;
+        // Rebond seulement si l'orbe va VERS ce bord : une orbe restée derrière le bord (qui suit la caméra) et qui
+        // repart déjà vers l'intérieur était renvoyée vers l'extérieur à chaque image, et restait collée au bord.
+        if ((nextPos.x <= bounds.min.x && _direction.x < 0f) || (nextPos.x >= bounds.max.x && _direction.x > 0f))
         {
             _direction.x = -_direction.x;
             nextPos.x = Mathf.Clamp(nextPos.x, bounds.min.x, bounds.max.x);
+            bounced = true;
         }
-        if (nextPos.z <= bounds.min.z || nextPos.z >= bounds.max.z)
+        if ((nextPos.z <= bounds.min.z && _direction.z < 0f) || (nextPos.z >= bounds.max.z && _direction.z > 0f))
         {
             _direction.z = -_direction.z;
             nextPos.z = Mathf.Clamp(nextPos.z, bounds.min.z, bounds.max.z);
+            bounced = true;
         }
+        if (bounced) _direction = KeepAwayFromAxes(_direction);
+        nextPos.x = Mathf.Clamp(nextPos.x, bounds.min.x, bounds.max.x);
+        nextPos.z = Mathf.Clamp(nextPos.z, bounds.min.z, bounds.max.z);
 
         nextPos.y = _groundY;
         transform.position = nextPos;
 
         CleanupHitCooldowns();
+    }
+
+    // AJOUTÉ (2026-10-28, retour utilisateur : même comportement que les orbes de Sillage Boueux) - une orbe dont la
+    // trajectoire était presque parallèle à un bord se faisait pousser le long de l'écran par ce bord quand le joueur
+    // avançait (le bord suit la caméra) : elle restait collée contre lui. Après chaque rebond, chaque axe garde au moins
+    // MinAxis : l'orbe repart toujours franchement vers l'intérieur. Vitesse (_speed) jamais modifiée.
+    private const float MinAxis = 0.35f;
+
+    private static Vector3 KeepAwayFromAxes(Vector3 d)
+    {
+        if (Mathf.Abs(d.x) < MinAxis) d.x = MinAxis * (d.x < 0f ? -1f : 1f);
+        if (Mathf.Abs(d.z) < MinAxis) d.z = MinAxis * (d.z < 0f ? -1f : 1f);
+        d.y = 0f;
+        return d.normalized;
     }
 
     // Calcule le rectangle visible par la caméra actuelle, projeté sur le plan du sol.

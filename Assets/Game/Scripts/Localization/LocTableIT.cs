@@ -198,8 +198,7 @@ public static class LocTableIT
         { "Le rayon d'explosion est 2 fois plus grand", "Il raggio dell'esplosione è due volte più grande" }, { "+{0}% dégâts", "+{0}% ai danni" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Sblocca Ustione: i nemici colpiti continuano a bruciare per un po'" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Sblocca l'Aura: equipaggia l'arma esclusiva di Kael" },
-        { "+{0}% rayon", "+{0}% al raggio" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "Rallentamento potenziato: {0}% invece di {1}%" },
-        { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Sblocca la Raffica di coltelli: equipaggia l'arma esclusiva di Lyra" },
+        { "+{0}% rayon", "+{0}% al raggio" }, { "Ralentissement porté à {0}%", "Rallentamento aumentato al {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Sblocca la Raffica di coltelli: equipaggia l'arma esclusiva di Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Aggiunge un coltello alla raffica" }, { "+{0} ennemis perforés en plus", "Perfora {0} nemici in più" },
         { "+{0} ennemi perforé en plus", "Perfora {0} nemico in più" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Sblocca una sfera rimbalzante che attraversa i nemici" },
         { "+{0}% vitesse des orbes", "+{0}% alla velocità delle sfere" }, { "+1 orbe rebondissant supplémentaire", "+1 sfera rimbalzante aggiuntiva" },
@@ -307,6 +306,6 @@ public static class LocTableIT
         { "Première victoire en Modéré : +{0} éclats", "Prima vittoria a difficoltà Moderata: +{0} frammenti" }, { "Première victoire en Violent : +{0} éclats", "Prima vittoria a difficoltà Violenta: +{0} frammenti" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Prima vittoria a difficoltà Apocalittica: +{0} frammenti" },
         { "Victoire en Modéré", "Vittoria a difficoltà Moderata" }, { "Victoire en Violent", "Vittoria a difficoltà Violenta" },
-        { "avec {0}", "con {0}" },
+        { "avec {0}", "con {0}" }, { "Ta partie en cours sera perdue", "La partita in corso andrà persa" },
     };
 }

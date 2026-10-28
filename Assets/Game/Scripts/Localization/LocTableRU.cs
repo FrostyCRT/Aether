@@ -191,7 +191,7 @@ public static class LocTableRU
         { "Le rayon d'explosion est 2 fois plus grand", "Радиус взрыва в 2 раза больше" }, { "+{0}% dégâts", "+{0}% к урону" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Открывает горение: задетые враги ещё какое-то время горят" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Открывает «Ауру» — уникальное оружие Kael" }, { "+{0}% rayon", "+{0}% к радиусу" },
-        { "Ralentissement renforcé : {0}% au lieu de {1}%", "Усиленное замедление: {0}% вместо {1}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Открывает «Залп ножей» — уникальное оружие Lyra" },
+        { "Ralentissement porté à {0}%", "Замедление усилено до {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Открывает «Залп ножей» — уникальное оружие Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Добавляет в залп ещё один нож" }, { "+{0} ennemis perforés en plus", "+{0} к пробиванию врагов" },
         { "+{0} ennemi perforé en plus", "+{0} к пробиванию врагов" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Открывает прыгучую сферу, которая проходит сквозь врагов" },
         { "+{0}% vitesse des orbes", "+{0}% к скорости сфер" }, { "+1 orbe rebondissant supplémentaire", "+1 дополнительная прыгучая сфера" },
@@ -299,7 +299,7 @@ public static class LocTableRU
         { "Première victoire en Modéré : +{0} éclats", "Первая победа на сложности «Умеренный»: +{0} осколков" }, { "Première victoire en Violent : +{0} éclats", "Первая победа на сложности «Жестокий»: +{0} осколков" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Первая победа на сложности «Апокалипсис»: +{0} осколков" },
         { "Victoire en Modéré", "Победа на сложности «Умеренный»" }, { "Victoire en Violent", "Победа на сложности «Жестокий»" },
-        { "avec {0}", "персонаж: {0}" },
+        { "avec {0}", "персонаж: {0}" }, { "Ta partie en cours sera perdue", "Текущий забег будет потерян" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },

@@ -161,7 +161,7 @@ public static class LocTableZH
         { "Augmente tes PV max de {0}% et en restaure {1}%", "最大生命值提高 {0}%，并恢复 {1}%" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "解锁双重射击：普通攻击会连续发射两次" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "解锁火球：Aether 的专属武器" }, { "Le rayon d'explosion est 2 fois plus grand", "爆炸范围扩大至 2 倍" },
         { "+{0}% dégâts", "伤害 +{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "解锁灼烧：被击中的敌人会持续燃烧" },
-        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "解锁光环：Kael 的专属武器" }, { "+{0}% rayon", "范围 +{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "减速强化：{0}%（原为 {1}%）" },
+        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "解锁光环：Kael 的专属武器" }, { "+{0}% rayon", "范围 +{0}%" }, { "Ralentissement porté à {0}%", "减速提升至 {0}%" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "解锁飞刀齐射：Lyra 的专属武器" }, { "Débloque un couteau supplémentaire dans la salve", "齐射增加一把飞刀" },
         { "+{0} ennemis perforés en plus", "额外穿透 {0} 名敌人" }, { "+{0} ennemi perforé en plus", "额外穿透 {0} 名敌人" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "解锁一颗可穿透敌人的弹跳法球" },
         { "+{0}% vitesse des orbes", "法球速度 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "+1 颗弹跳法球" },
@@ -250,6 +250,6 @@ public static class LocTableZH
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "首次在温和难度获胜：＋{0} 碎片" }, { "Première victoire en Violent : +{0} éclats", "首次在猛烈难度获胜：＋{0} 碎片" },
         { "Première victoire en Apocalyptique : +{0} éclats", "首次在末日难度获胜：＋{0} 碎片" }, { "Victoire en Modéré", "在温和难度获胜" },
-        { "Victoire en Violent", "在猛烈难度获胜" }, { "avec {0}", "使用 {0}" },
+        { "Victoire en Violent", "在猛烈难度获胜" }, { "avec {0}", "使用 {0}" }, { "Ta partie en cours sera perdue", "当前对局将会丢失" },
     };
 }

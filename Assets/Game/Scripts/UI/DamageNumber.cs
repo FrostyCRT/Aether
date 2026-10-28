@@ -38,6 +38,12 @@ public class DamageNumber : MonoBehaviour
         // ces propriétés, pas besoin de gérer le matériau à la main.
         _text.outlineWidth = 0.2f;
         _text.outlineColor = new Color32(0x1A, 0x14, 0x0D, 0xFF);
+
+        // AJOUTÉ (2026-10-28, retour utilisateur : "les ennemis grands comme gobelin ou golem, la moitié du nombre est
+        // sous l'ennemi, donc ça doit passer en priorité le nombre") - le texte est dans le monde 3D et le corps des
+        // grands ennemis le masquait par la profondeur. Test de profondeur désactivé sur le matériau de CETTE instance
+        // (déjà dédiée, voir le contour ci-dessus) : le nombre est toujours dessiné par-dessus les ennemis.
+        _text.fontMaterial.SetFloat("unity_GUIZTestMode", (float)UnityEngine.Rendering.CompareFunction.Always);
     }
 
     public void Init(float damage, Color color, Transform target, bool isCritical = false)

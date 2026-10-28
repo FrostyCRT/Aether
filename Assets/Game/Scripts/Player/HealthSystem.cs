@@ -119,6 +119,28 @@ public class HealthSystem : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-10-28) - coup de contact d'un ennemi de la horde : le délai entre deux coups est tenu par CHAQUE ennemi
+    // (EnemyBase._nextContactHitTime), pas par le joueur - plusieurs ennemis au contact frappent chacun à leur rythme.
+    // Renvoie false si le coup n'a pas porté (invincibilité : dash, bouclier...), pour que l'ennemi ne perde pas son tour.
+    // Plafond : au plus ContactHitsPerWindow coups par fenêtre de ContactHitWindow s (mesure 2026-10-28 sans plafond :
+    // ~2 750 dégâts/s immobile dans la horde à 3:20, Kael mort en ~1 s). Coup refusé par le plafond = false aussi.
+    private const int ContactHitsPerWindow = 3;
+    private const float ContactHitWindow = 0.5f;
+    private readonly float[] _contactHitTimes = new float[ContactHitsPerWindow];
+    private int _contactHitIndex;
+
+    public bool TakeContactHit(float damage, string source = "horde")
+    {
+        if (_isDead || IsInvincible) return false;
+        // Le plus ancien des N derniers coups doit être sorti de la fenêtre.
+        if (Time.time - _contactHitTimes[_contactHitIndex] < ContactHitWindow && _contactHitTimes[_contactHitIndex] > 0f) return false;
+        _contactHitTimes[_contactHitIndex] = Time.time;
+        _contactHitIndex = (_contactHitIndex + 1) % ContactHitsPerWindow;
+        TakeDamage(damage, source);
+        return true;
+    }
+
+    // Boss : délai global côté joueur (un seul boss, plusieurs zones de contact qui ne doivent pas cumuler).
     public void TryTakeContactDamage(float damage, float cooldown, string source = "horde")
     {
         if (IsInvincible) return;

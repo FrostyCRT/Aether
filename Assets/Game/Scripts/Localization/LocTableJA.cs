@@ -167,7 +167,7 @@ public static class LocTableJA
         { "Augmente tes PV max de {0}% et en restaure {1}%", "最大HPが{0}%増え、{1}%回復する" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "ダブルショットを解放する。通常攻撃が2回発射される" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "ファイアボールを解放：Aetherの専用武器" }, { "Le rayon d'explosion est 2 fois plus grand", "爆発範囲が2倍になる" },
         { "+{0}% dégâts", "ダメージ+{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "炎上を解放：当たった敵がしばらく燃え続ける" },
-        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "オーラを解放：Kaelの専用武器" }, { "+{0}% rayon", "範囲+{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "減速強化：{1}%から{0}%に" },
+        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "オーラを解放：Kaelの専用武器" }, { "+{0}% rayon", "範囲+{0}%" }, { "Ralentissement porté à {0}%", "減速が{0}%に上昇" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "ナイフ一斉投擲を解放：Lyraの専用武器" }, { "Débloque un couteau supplémentaire dans la salve", "一斉投擲のナイフを1本追加する" },
         { "+{0} ennemis perforés en plus", "貫通する敵の数+{0}" }, { "+{0} ennemi perforé en plus", "貫通する敵の数+{0}" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "敵を貫通するバウンドオーブを解放する" },
         { "+{0}% vitesse des orbes", "オーブのスピード+{0}%" }, { "+1 orbe rebondissant supplémentaire", "バウンドオーブ+1" },
@@ -259,6 +259,6 @@ public static class LocTableJA
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "難易度「ふつう」で初勝利：欠片＋{0}" }, { "Première victoire en Violent : +{0} éclats", "難易度「はげしい」で初勝利：欠片＋{0}" },
         { "Première victoire en Apocalyptique : +{0} éclats", "難易度「アポカリプス」で初勝利：欠片＋{0}" }, { "Victoire en Modéré", "難易度「ふつう」で勝利" },
-        { "Victoire en Violent", "難易度「はげしい」で勝利" }, { "avec {0}", "{0}で" },
+        { "Victoire en Violent", "難易度「はげしい」で勝利" }, { "avec {0}", "{0}で" }, { "Ta partie en cours sera perdue", "現在のプレイは失われます" },
     };
 }

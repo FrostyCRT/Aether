@@ -194,8 +194,7 @@ public static class LocTablePT
         { "Le rayon d'explosion est 2 fois plus grand", "O raio de explosão fica duas vezes maior" }, { "+{0}% dégâts", "+{0}% de dano" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "Desbloqueia a Aura: equipa a arma exclusiva de Kael" },
-        { "+{0}% rayon", "+{0}% de raio" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "Lentidão reforçada: {0}% em vez de {1}%" },
-        { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra" },
+        { "+{0}% rayon", "+{0}% de raio" }, { "Ralentissement porté à {0}%", "Lentidão aumentada para {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Adiciona mais uma faca à rajada" }, { "+{0} ennemis perforés en plus", "Perfura mais {0} inimigos" },
         { "+{0} ennemi perforé en plus", "Perfura mais {0} inimigo" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Desbloqueia um orbe quicante que atravessa os inimigos" },
         { "+{0}% vitesse des orbes", "+{0}% de velocidade dos orbes" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe quicante extra" },
@@ -301,6 +300,6 @@ public static class LocTablePT
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "Primeira vitória no Moderado: +{0} fragmentos" }, { "Première victoire en Violent : +{0} éclats", "Primeira vitória no Violento: +{0} fragmentos" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Primeira vitória no Apocalíptico: +{0} fragmentos" }, { "Victoire en Modéré", "Vitória no Moderado" },
-        { "Victoire en Violent", "Vitória no Violento" }, { "avec {0}", "com {0}" },
+        { "Victoire en Violent", "Vitória no Violento" }, { "avec {0}", "com {0}" }, { "Ta partie en cours sera perdue", "Sua partida atual será perdida" },
     };
 }

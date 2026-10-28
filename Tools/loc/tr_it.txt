@@ -417,7 +417,7 @@
 396| Sblocca Ustione: i nemici colpiti continuano a bruciare per un po'
 397| Sblocca l'Aura: equipaggia l'arma esclusiva di Kael
 398| +{0}% al raggio
-399| Rallentamento potenziato: {0}% invece di {1}%
+399| Rallentamento aumentato al {0}%
 400| Sblocca la Raffica di coltelli: equipaggia l'arma esclusiva di Lyra
 401| Aggiunge un coltello alla raffica
 402| Perfora {0} nemici in più
@@ -654,3 +654,4 @@
 615| Vittoria a difficoltà Moderata
 616| Vittoria a difficoltà Violenta
 617| con {0}
+618| La partita in corso andrà persa

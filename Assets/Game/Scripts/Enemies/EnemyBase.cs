@@ -41,6 +41,10 @@ public class EnemyBase : MonoBehaviour
     [Header("Dégâts de contact")]
     [SerializeField] private float _contactDamage = 150f; // MODIFIE - x10, cf. rescale global des degats/PV
     [SerializeField] private float _contactDamageCooldown = 0.5f;
+    // AJOUTÉ (2026-10-28, retour utilisateur : "fais un délai par ennemi pour les dégâts de contact") - chaque ennemi a
+    // son propre délai entre deux coups (avant : un seul délai global de 0,5 s côté joueur, donc traverser une horde de
+    // 50 ennemis faisait aussi mal qu'en toucher un seul). Remis à zéro à chaque sortie du pool (OnEnable).
+    private float _nextContactHitTime;
 
     [Header("Scaling difficulté")]
     private float _healthMultiplier = 1f;
@@ -300,6 +304,7 @@ public class EnemyBase : MonoBehaviour
         if (IsRangedAttacker) ActiveRangedCount++;
 
         _currentHealth = _maxHealth * _healthMultiplier + _bonusHealth;
+        _nextContactHitTime = 0f;
         _isDead = false; // nouvelle vie à la sortie du pool (voir TakeDamage/Die)
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
@@ -570,8 +575,9 @@ public class EnemyBase : MonoBehaviour
             if (target == _playerTransform)
             {
                 _playerTransform.TryGetComponent(out HealthSystem playerHealth);
-                if (playerHealth != null)
-                    playerHealth.TryTakeContactDamage(_contactDamage * GameModes.EnemyDamageScale, _contactDamageCooldown);
+                if (playerHealth != null && Time.time >= _nextContactHitTime
+                    && playerHealth.TakeContactHit(_contactDamage * GameModes.EnemyDamageScale))
+                    _nextContactHitTime = Time.time + _contactDamageCooldown;
             }
 
             return;

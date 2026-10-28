@@ -196,28 +196,19 @@ public class DebugCheats : MonoBehaviour
     }
 
     // AJOUTE (2026-10-04) - fait apparaître une gemme d'XP d'un type donné juste devant le joueur, en passant
-    // directement par l'ObjectPool/XPGem.Init comme le ferait XPGemSpawner (sans passer par CalculateGems, puisqu'on
+    // directement par XPGemField comme le ferait XPGemSpawner (sans passer par CalculateGems, puisqu'on
     // veut UN type précis, pas une somme d'XP à convertir).
     private void SpawnDebugGem(XPGem.GemType type)
     {
         GameObject player = GameObject.FindWithTag("Player");
-        if (player == null || ObjectPool.Instance == null)
+        if (player == null)
         {
-            Debug.LogWarning("[DebugCheats] Joueur ou ObjectPool introuvable.");
+            Debug.LogWarning("[DebugCheats] Joueur introuvable.");
             return;
         }
 
         Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-        GameObject gemGO = ObjectPool.Instance.Get("XPGem", spawnPos, Quaternion.identity);
-        if (gemGO == null)
-        {
-            Debug.LogWarning("[DebugCheats] Echec du spawn de la gemme (pool \"XPGem\" introuvable).");
-            return;
-        }
-
-        gemGO.TryGetComponent(out XPGem gem);
-        if (gem != null)
-            gem.Init(type, player.transform, spawnPos);
+        XPGemField.Instance.Spawn(type, spawnPos, spawnPos);
 
         Debug.Log($"[DebugCheats] Gemme {type} spawnée.");
     }

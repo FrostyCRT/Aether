@@ -168,7 +168,7 @@ public static class LocTableKO
         { "Augmente tes PV max de {0}% et en restaure {1}%", "최대 HP가 {0}% 증가하고 {1}%를 회복합니다" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "더블 샷을 해금합니다． 기본 공격이 두 번 발사됩니다" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "파이어볼 해금： Aether의 전용 무기" }, { "Le rayon d'explosion est 2 fois plus grand", "폭발 범위가 2배로 커집니다" },
         { "+{0}% dégâts", "피해 +{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "화상 해금： 맞은 적이 한동안 불탑니다" },
-        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "오라 해금： Kael의 전용 무기" }, { "+{0}% rayon", "범위 +{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "둔화 강화： {0}% （기존 {1}%）" },
+        { "Débloque l'Aura : équipe l'arme exclusive de Kael", "오라 해금： Kael의 전용 무기" }, { "+{0}% rayon", "범위 +{0}%" }, { "Ralentissement porté à {0}%", "둔화 {0}%로 강화" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "단검 일제 투척 해금： Lyra의 전용 무기" }, { "Débloque un couteau supplémentaire dans la salve", "일제 투척에 단검 1자루를 추가합니다" },
         { "+{0} ennemis perforés en plus", "관통하는 적 수 +{0}" }, { "+{0} ennemi perforé en plus", "관통하는 적 수 +{0}" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "적을 관통하는 튕기는 구체를 해금합니다" },
         { "+{0}% vitesse des orbes", "구체 속도 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "튕기는 구체 +1" },
@@ -261,6 +261,6 @@ public static class LocTableKO
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
         { "Première victoire en Modéré : +{0} éclats", "보통 난이도 첫 승리： 파편 +{0}" }, { "Première victoire en Violent : +{0} éclats", "격렬 난이도 첫 승리： 파편 +{0}" },
         { "Première victoire en Apocalyptique : +{0} éclats", "종말 난이도 첫 승리： 파편 +{0}" }, { "Victoire en Modéré", "보통 난이도 승리" },
-        { "Victoire en Violent", "격렬 난이도 승리" }, { "avec {0}", "캐릭터： {0}" },
+        { "Victoire en Violent", "격렬 난이도 승리" }, { "avec {0}", "캐릭터： {0}" }, { "Ta partie en cours sera perdue", "진행 중인 게임이 사라집니다" },
     };
 }

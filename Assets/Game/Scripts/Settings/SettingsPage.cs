@@ -563,16 +563,8 @@ public class SettingsPage : MonoBehaviour
         // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "formulation maladroite") - "La partie en cours de
         // préparation sera fermée" était une tournure passive et confuse pour un simple message de confirmation
         // de fermeture du jeu depuis le menu.
-        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés."), Loc.T("Quitter"), () =>
-        {
-            GameSettings.Flush();
-            InputBindings.Flush();
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        });
+        // Déjà confirmé ici : QuitNow() ferme sans rouvrir la fenêtre de confirmation d'Alt+F4 (voir QuitConfirm).
+        Confirm(Loc.T("QUITTER LE JEU ?"), Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés."), Loc.T("Quitter"), QuitConfirm.QuitNow);
     }
 
     private void Confirm(string title, string body, string yesLabel, Action onYes)
