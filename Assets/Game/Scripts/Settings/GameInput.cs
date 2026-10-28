@@ -232,8 +232,8 @@ public static class GameInput
             case GameAction.Ultimate: return Loc.T("Déclenche l'ultime quand le cristal est chargé");
             case GameAction.PhantomClone: return Loc.T("Invoque le clone spectral. Nécessite la compétence correspondante");
             case GameAction.Card1: return Loc.T("Choisit la 1re carte à la montée de niveau");
-            case GameAction.Card2: return Loc.T("Choisit la 2e carte à la montée de niveau");
-            case GameAction.Card3: return Loc.T("Choisit la 3e carte à la montée de niveau");
+            case GameAction.Card2: return Loc.T("Choisit la 2ème carte à la montée de niveau");
+            case GameAction.Card3: return Loc.T("Choisit la 3ème carte à la montée de niveau");
             case GameAction.OrbitShrink: return Loc.T("Réduit le rayon des orbes de l'arme orbitale");
             case GameAction.OrbitGrow: return Loc.T("Augmente le rayon des orbes de l'arme orbitale");
             case GameAction.Pause: return Loc.T("Ouvre / ferme le menu pause");

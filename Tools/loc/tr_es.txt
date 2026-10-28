@@ -281,13 +281,13 @@
 266| Relámpago
 267| Derrota a un jefe en menos de 30 s
 268| Fortuna
-269| Recoge al menos 3000 de oro
+269| Recoge al menos 1200 de oro
 270| Poder absoluto
 271| Nivel 30 en la misma partida
-272| Oro x{0}
+272| +{0} de oro
 273| Nv. {0}/{1}
 274| En curso
-275| {0}/3000 de oro
+275| {0}/{1} de oro
 276| No hay desafío en este modo
 277| ¡Desafío ya superado en esta hora!
 278| Nuevo desafío en {0} min
@@ -367,17 +367,17 @@
 348| Reputación: Regeneración
 
 ## Améliorations
-349| Ciénaga maldita
-350| Tus charcos de barro se vuelven una ciénaga que electrocuta a los enemigos
-351| Vórtice de maná
-352| Un torbellino de fragmentos de maná, más amplio y potente, gira a tu alrededor.
-353| Cuchillas de rebote
-354| Tu ráfaga de cuchillos perfora y rebota de un enemigo a otro
+349| Turbera magnética
+350| Turberas electrificadas atraen a los enemigos y luego estallan en una tormenta de rayos
+351| Corona prismática
+352| Cristales unidos por rayos forman una muralla y luego barren la zona con haces de luz
+353| Vals de cuchillas
+354| Tus cuchillas rebotan en los bordes de la pantalla y luego vuelven a ti cortándolo todo
 355| Lluvia de meteoros
 356| Caen meteoritos sobre los enemigos y dejan barro ardiente que los ralentiza
-357| Orbes fulminantes
-358| Tus orbitales desatan un rayo en cadena al tocar a los enemigos
-359| Orbes gemelos
+357| Constelación tormentosa
+358| Tus orbes ionizan a los enemigos y luego un rayo los une a todos en una constelación
+359| Estela de barro
 360| Tus orbes dejan un rastro de barro que ralentiza y daña a los enemigos
 361| Aura
 362| Zona de aura
@@ -409,7 +409,7 @@
 388| +1 charco de barro adicional
 389| +{0}% de daño en todas tus armas
 390| +{0}% de cadencia en todas tus armas de disparo
-391| Restaura el {0}% de tu vida máxima
+391| Aumenta tu vida máxima un {0}% y restaura un {1}%
 392| Desbloquea Disparo doble: tu ataque básico dispara dos veces
 393| Desbloquea Bola de fuego: equipa el arma exclusiva de Aether
 394| El radio de explosión es el doble de grande
@@ -618,7 +618,7 @@
 581| No uses la definitiva (tecla F) antes de derrotar al 2.º jefe
 582| No bajes nunca del 50% de vida, desde el inicio de la partida hasta la muerte del 1.er jefe.
 583| Derrota a cualquier jefe en menos de 30 segundos desde su aparición
-584| Recoge al menos 3000 de oro en total durante la partida
+584| Recoge al menos 1200 de oro en total durante la partida
 585| MODERADO
 586| VIOLENTO
 587| APOCALÍPTICO
@@ -648,3 +648,9 @@
 609| Nivel
 610| Jefes
 611| Titanes
+612| Primera victoria en Moderado: +{0} fragmentos
+613| Primera victoria en Violento: +{0} fragmentos
+614| Primera victoria en Apocalíptico: +{0} fragmentos
+615| Victoria en Moderado
+616| Victoria en Violento
+617| con {0}

@@ -26,8 +26,8 @@ public static class LocTablePL
         { "Carte n°3", "Karta 3" }, { "Orbites : rapprocher", "Orbita: bliżej" }, { "Orbites : éloigner", "Orbita: dalej" },
         { "Pause", "Pauza" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "Zryw: błyskawiczny doskok, chwilowa nietykalność, pochłania pociski" },
         { "Déclenche l'ultime quand le cristal est chargé", "Uwalnia supermoc, gdy kryształ jest naładowany" }, { "Invoque le clone spectral. Nécessite la compétence correspondante", "Przyzywa widmowego klona. Wymaga odpowiedniej umiejętności" },
-        { "Choisit la 1re carte à la montée de niveau", "Wybiera 1. kartę po zdobyciu poziomu" }, { "Choisit la 2e carte à la montée de niveau", "Wybiera 2. kartę po zdobyciu poziomu" },
-        { "Choisit la 3e carte à la montée de niveau", "Wybiera 3. kartę po zdobyciu poziomu" }, { "Réduit le rayon des orbes de l'arme orbitale", "Zmniejsza promień orbity satelitów" },
+        { "Choisit la 1re carte à la montée de niveau", "Wybiera 1. kartę po zdobyciu poziomu" }, { "Choisit la 2ème carte à la montée de niveau", "Wybiera 2. kartę po zdobyciu poziomu" },
+        { "Choisit la 3ème carte à la montée de niveau", "Wybiera 3. kartę po zdobyciu poziomu" }, { "Réduit le rayon des orbes de l'arme orbitale", "Zmniejsza promień orbity satelitów" },
         { "Augmente le rayon des orbes de l'arme orbitale", "Zwiększa promień orbity satelitów" }, { "Ouvre / ferme le menu pause", "Otwiera / zamyka menu pauzy" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -124,11 +124,11 @@ public static class LocTablePL
         { "Toujours en Mouvement", "Zawsze w ruchu" }, { "Utiliser le Dash 20 fois", "Użyj zrywu 20 razy" }, { "Sang-Froid", "Zimna krew" },
         { "Garder 30% de vie jusqu'au boss 2", "Utrzymaj ponad 30% zdrowia do bossa 2" }, { "Double Chasse", "Podwójne łowy" },
         { "Vaincre 2 boss dans la même partie", "Pokonaj 2 bossów w jednej rozgrywce" }, { "Ascension Rapide", "Szybki awans" },
-        { "Niveau 18 avant la 10e minute", "18. poziom przed 10. minutą" }, { "Sans Cristal", "Bez kryształu" }, { "Sans Ultime jusqu'au boss 2", "Bez supermocy do bossa 2" },
+        { "Niveau 18 avant la 10ème minute", "18. poziom przed 10. minutą" }, { "Sans Cristal", "Bez kryształu" }, { "Sans Ultime jusqu'au boss 2", "Bez supermocy do bossa 2" },
         { "Résilience", "Bez skazy" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Bez obrażeń do bossa 1" }, { "Éclair", "Błyskawica" },
-        { "Vaincre un boss en moins de 30s", "Pokonaj bossa w mniej niż 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 3000 Or ramassé", "Zbierz co najmniej 3000 złota" },
+        { "Vaincre un boss en moins de 30s", "Pokonaj bossa w mniej niż 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 1200 Or ramassé", "Zbierz co najmniej 1200 złota" },
         { "Puissance Absolue", "Absolutna potęga" }, { "Niveau 30 dans la même partie", "30. poziom w jednej rozgrywce" },
-        { "Or x{0}", "Złoto x{0}" }, { "Niv. {0}/{1}", "Poz. {0}/{1}" }, { "En cours", "W toku" }, { "{0}/3000 Or", "{0}/3000 złota" },
+        { "+{0} or", "+{0} złota" }, { "Niv. {0}/{1}", "Poz. {0}/{1}" }, { "En cours", "W toku" }, { "{0}/{1} Or", "{0}/{1} złota" },
         { "Pas de défi dans ce mode", "W tym trybie nie ma wyzwania" }, { "Défi déjà réussi cette heure !", "Wyzwanie w tej godzinie już zaliczone!" },
         { "Nouveau défi dans {0} min", "Nowe wyzwanie za {0} min" }, { "Nouveau défi à ta prochaine partie !", "Nowe wyzwanie w następnej rozgrywce!" },
         { "Réussi", "Zaliczone" }, { "Statut", "Status" },
@@ -168,12 +168,12 @@ public static class LocTablePL
         { "Réputation : Dégâts", "Reputacja: Obrażenia" }, { "Réputation : Vitesse", "Reputacja: Szybkość" }, { "Réputation : Régénération", "Reputacja: Regeneracja" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "Przeklęte bagno" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "Twoje kałuże błota zmieniają się w bagno, które poraża wrogów" },
-        { "Vortex de Mana", "Wir many" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "Wokół ciebie krąży wir odłamków many, szerszy i potężniejszy." },
-        { "Lames Ricochet", "Ostrza rykoszetu" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "Twoja salwa noży przebija wrogów i odbija się od jednego do drugiego" },
+        { "Tourbière Magnétique", "Magnetyczne torfowisko" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "Naelektryzowane torfowiska wciągają wrogów, a potem wybuchają burzą piorunów" },
+        { "Couronne Prismatique", "Pryzmatyczna korona" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "Kryształy połączone promieniami tworzą barierę, a potem omiatają obszar wiązkami światła" },
+        { "Valse des Lames", "Walc ostrzy" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "Twoje ostrza odbijają się od krawędzi ekranu, a potem wracają do ciebie, tnąc wszystko po drodze" },
         { "Pluie de Météores", "Deszcz meteorów" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "Meteory spadają na wrogów i zostawiają płonące błoto, które ich spowalnia" },
-        { "Orbes Foudroyants", "Gromowe kule" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "Twoje satelity wyzwalają łańcuch błyskawic przy kontakcie z wrogami" },
-        { "Sillage Boueux", "Bliźniacze kule" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Twoje kule zostawiają smugę błota, która spowalnia i rani wrogów" },
+        { "Constellation Orageuse", "Burzowa konstelacja" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "Twoje kule jonizują wrogów, a potem błyskawica łączy ich wszystkich w konstelację" },
+        { "Sillage Boueux", "Błotny ślad" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Twoje kule zostawiają smugę błota, która spowalnia i rani wrogów" },
         { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Strefa aury" },
         { "Orbe Rebondissant", "Sprężysta kula" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga" },
         { "Dégâts +", "Obrażenia +" }, { "+20% de dégâts sur toutes tes armes", "+20% do obrażeń wszystkich broni" }, { "Double Tir", "Podwójny strzał" },
@@ -189,7 +189,7 @@ public static class LocTablePL
         { "+1 orbital supplémentaire", "+1 dodatkowy satelita" }, { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "Odblokowuje łańcuch błyskawic: trafia 3 wrogów" },
         { "+1 rebond de foudre supplémentaire", "+1 dodatkowy przeskok błyskawicy" }, { "Débloque 3 flaques de boue qui ralentissent et blessent", "Odblokowuje 3 kałuże błota, które spowalniają i ranią" },
         { "+1 flaque de boue supplémentaire", "+1 dodatkowa kałuża błota" }, { "+{0}% de dégâts sur toutes tes armes", "+{0}% do obrażeń wszystkich broni" },
-        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% szybkostrzelności wszystkich broni strzelających" }, { "Restaure {0}% de tes PV max", "Przywraca {0}% twoich maksymalnych PŻ" },
+        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% szybkostrzelności wszystkich broni strzelających" }, { "Augmente tes PV max de {0}% et en restaure {1}%", "Zwiększa twoje maksymalne PŻ o {0}% i przywraca {1}%" },
         { "Débloque le Double Tir : ton tir de base tire deux fois", "Odblokowuje Podwójny strzał: twój podstawowy atak strzela dwa razy" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera" },
         { "Le rayon d'explosion est 2 fois plus grand", "Promień wybuchu jest dwa razy większy" }, { "+{0}% dégâts", "+{0}% obrażeń" },
@@ -277,11 +277,11 @@ public static class LocTablePL
         { "ASSIGNER UNE TOUCHE À", "PRZYPISZ KLAWISZ DO AKCJI" }, { "Appuyez sur une touche pour commencer", "Naciśnij dowolny klawisz, aby rozpocząć" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUZJA" }, { "Éclat", "odłamka" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "Nie schodź poniżej 30% zdrowia od początku rozgrywki aż do śmierci 2. bossa." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Nie używaj supermocy (klawisz F) przed pokonaniem 2. bossa" },
+        { "FUSION", "FUZJA" }, { "Éclat", "odłamka" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Nie schodź poniżej 30% zdrowia od początku rozgrywki aż do śmierci 2. bossa." },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Nie używaj supermocy (klawisz F) przed pokonaniem 2. bossa" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa." },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Pokonaj dowolnego bossa w ciągu 30 sekund od jego pojawienia się" },
-        { "Ramasser au moins 3000 Or au total durant la partie", "Zbierz łącznie co najmniej 3000 złota w trakcie rozgrywki" },
+        { "Ramasser au moins 1200 Or au total durant la partie", "Zbierz łącznie co najmniej 1200 złota w trakcie rozgrywki" },
         { "MODÉRÉ", "UMIARKOWANY" }, { "VIOLENT", "BRUTALNY" }, { "APOCALYPTIQUE", "APOKALIPTYCZNY" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "Mapa bez granic, klasyczna rozgrywka, taka jak zawsze." },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "Mapa w kształcie tunelu bez bocznych granic, wytrzymalsi i groźniejsi wrogowie, ale więcej złota i odłamków." },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "Mapa zamknięta z 4 stron, dużo wytrzymalsi i groźniejsi wrogowie, maksimum złota i odłamków." },
@@ -296,6 +296,12 @@ public static class LocTablePL
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "Rzuca salwy {0} noży przebijających wrogów" },
         { "Décharge électrique qui rebondit sur {0} ennemis proches", "Wyładowanie elektryczne przeskakujące na {0} pobliskich wrogów" },
         { "Survie", "Przetrwanie" }, { "Éliminations", "Zabójstwa" }, { "Niveau", "Poziom" }, { "Boss", "Bossowie" }, { "Titans", "Tytani" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "Pierwsze zwycięstwo na poziomie Umiarkowany: +{0} odłamków" }, { "Première victoire en Violent : +{0} éclats", "Pierwsze zwycięstwo na poziomie Brutalny: +{0} odłamków" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "Pierwsze zwycięstwo na poziomie Apokaliptyczny: +{0} odłamków" },
+        { "Victoire en Modéré", "Zwycięstwo na poziomie Umiarkowany" }, { "Victoire en Violent", "Zwycięstwo na poziomie Brutalny" },
+        { "avec {0}", "postać: {0}" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

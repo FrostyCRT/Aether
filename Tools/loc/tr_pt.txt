@@ -280,13 +280,13 @@
 266| Relâmpago
 267| Derrote um chefe em menos de 30 s
 268| Fortuna
-269| Colete pelo menos 3000 de ouro
+269| Colete pelo menos 1200 de ouro
 270| Poder Absoluto
 271| Nível 30 na mesma partida
-272| Ouro x{0}
+272| +{0} de ouro
 273| Nv. {0}/{1}
 274| Em andamento
-275| {0}/3000 de ouro
+275| {0}/{1} de ouro
 276| Não há desafio neste modo
 277| Desafio já concluído nesta hora!
 278| Novo desafio em {0} min
@@ -366,17 +366,17 @@
 348| Reputação: Regeneração
 
 ## Améliorations
-349| Pântano Amaldiçoado
-350| Suas poças de lama viram um pântano que eletrocuta os inimigos
-351| Vórtice de Mana
-352| Um redemoinho de mana, mais largo e mais forte, gira ao seu redor.
-353| Lâminas Ricocheteantes
-354| Sua rajada de facas perfura e ricocheteia de inimigo em inimigo
+349| Turfeira Magnética
+350| Turfeiras eletrificadas puxam os inimigos e depois explodem em uma tempestade de raios
+351| Coroa Prismática
+352| Cristais ligados por raios formam uma muralha e depois varrem a área com feixes de luz
+353| Valsa das Lâminas
+354| Suas lâminas ricocheteiam nas bordas da tela e depois voltam até você, cortando tudo
 355| Chuva de Meteoros
 356| Meteoros caem sobre os inimigos e deixam lama ardente que os retarda
-357| Orbes Fulminantes
-358| Seus orbitais soltam raios em cadeia ao tocar os inimigos
-359| Orbes Gêmeos
+357| Constelação Tempestuosa
+358| Seus orbes ionizam os inimigos e depois um raio liga todos eles em uma constelação
+359| Rastro de Lama
 360| Seus orbes deixam um rastro de lama que retarda e fere os inimigos
 361| Aura
 362| Zona de Aura
@@ -408,7 +408,7 @@
 388| +1 poça de lama extra
 389| +{0}% de dano em todas as suas armas
 390| +{0}% de cadência em todas as suas armas de disparo
-391| Restaura {0}% da sua vida máxima
+391| Aumenta sua vida máxima em {0}% e restaura {1}%
 392| Desbloqueia o Tiro Duplo: seu ataque básico dispara duas vezes
 393| Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether
 394| O raio de explosão fica duas vezes maior
@@ -617,7 +617,7 @@
 581| Não use a suprema (tecla F) antes de derrotar o 2º chefe
 582| Nunca fique abaixo de 50% de vida, do início da partida até a morte do 1º chefe.
 583| Derrote qualquer chefe em menos de 30 segundos após o seu surgimento
-584| Colete pelo menos 3000 de ouro no total durante a partida
+584| Colete pelo menos 1200 de ouro no total durante a partida
 585| MODERADO
 586| VIOLENTO
 587| APOCALÍPTICO
@@ -647,3 +647,9 @@
 609| Nível
 610| Chefes
 611| Titãs
+612| Primeira vitória no Moderado: +{0} fragmentos
+613| Primeira vitória no Violento: +{0} fragmentos
+614| Primeira vitória no Apocalíptico: +{0} fragmentos
+615| Vitória no Moderado
+616| Vitória no Violento
+617| com {0}

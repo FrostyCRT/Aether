@@ -46,10 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75b301a4e7ae4ff428bc1b6f3dcd877e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 250000
+  _maxHealth: 300000
   _moveSpeed: 4
   _xpValue: 0
-  _goldValue: 120
+  _goldValue: 200
   _healPlayerOnDeath: 0
   _deathSequenceEnabled: 1
   _deathSequenceDuration: 1.4

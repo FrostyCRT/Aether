@@ -210,7 +210,7 @@ public class EnemySpawner : MonoBehaviour
         float timeBasedMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
         float healthMultiplier = timeBasedMultiplier * difficultyMultiplier;
 
-        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier);
+        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth);
 
         if (spawned == null)
         {
@@ -326,6 +326,14 @@ public class EnemySpawner : MonoBehaviour
         public float debutMinutes;
         public List<WeightedEnemyEntry> composition;
         public float healthMultiplier; // scaling PV pour ce palier — valeurs à ajuster en playtest
+        // AJOUTÉ (2026-10-27, retour utilisateur : "je veux qu'on doive mettre une attaque de plus pour en tuer un, ça
+        // valable pour les ennemis de 0 à 12 min") - PV fixes ajoutés à chaque ennemi du palier APRÈS healthMultiplier
+        // et la difficulté (voir EnemyBase._bonusHealth) : environ un tir de base moyen à ce moment de la partie (dégâts
+        // mesurés en test long, Concentration à mi-chemin). Un pourcentage ne donnerait pas "un tir de plus" à la fois
+        // au loup et au golem. Étendu au palier de 12 min le même jour ("il faut bien que tu augmente les pv aussi de
+        // ceux qui sont après 12minutes [...] quand le joueur a 1 ou 2 fusions, le joueur est presque inatteignable") :
+        // 400, un tir de base de fin de partie avec la Concentration.
+        public float bonusHealth;
     }
 
     // MODIFIE (2026-10-07, retour utilisateur : "je voulais qu'on fasse en sorte qu'on ait pas tous les ennemis en

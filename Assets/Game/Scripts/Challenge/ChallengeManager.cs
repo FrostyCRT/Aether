@@ -15,10 +15,17 @@ public class ChallengeManager : MonoBehaviour
     // le palier Difficile jugé trop faible vu l'effort demandé (ex. Résilience,
     // Éclair). Facile et Moyen doubles dans les memes proportions pour garder
     // un ecart coherent entre paliers (x1,2 / x1,5 / x2).
-    [Header("Bonus d'or par palier (pourcentage de l'or ramassé)")]
-    [SerializeField] private float _easyRewardPercent = 0.20f;
-    [SerializeField] private float _mediumRewardPercent = 0.50f;
-    [SerializeField] private float _hardRewardPercent = 1.00f;
+    // MODIFIÉ (2026-10-27, refonte de l'économie - voir MetaProgressionManager) - prime FIXE au lieu d'un pourcentage
+    // de l'or de la partie (+20 % / +50 % / +100 %) : un pourcentage grossissait avec les builds les plus forts et
+    // l'Apocalyptique (jusqu'à +45 000 or), et repassait en plus dans le multiplicateur de difficulté. Une victoire en
+    // Modéré rapporte ~1 000 or : la prime pèse beaucoup pour un nouveau joueur, moins pour un vétéran en Apocalyptique.
+    // Constantes : les anciens pourcentages étaient sérialisés dans la scène Game.
+    public const int EasyRewardGold = 150;
+    public const int MediumRewardGold = 300;
+    public const int HardRewardGold = 500;
+    // Défi "Fortune" (id "gold3000" conservé : il est enregistré dans les sauvegardes). 3 000 or était devenu hors
+    // d'atteinte : 1 200 = une victoire en Violent, ou une victoire en Modéré d'un joueur déjà aguerri.
+    public const int FortuneGoldGoal = 1200;
 
     [Header("Anti-répétition")]
     [SerializeField] private int _recentHistorySize = 3;
@@ -186,18 +193,18 @@ public class ChallengeManager : MonoBehaviour
         return ChallengeDifficulty.Hard;
     }
 
-    // AJOUTE - expose le pourcentage de recompense du defi en cours, pour
+    // AJOUTE - expose la recompense du defi en cours, pour
     // l'affichage detaille dans le menu pause (PauseMenuUI).
-    public float GetCurrentRewardPercent()
+    public int GetCurrentRewardGold()
     {
-        if (CurrentChallenge == null) return 0f;
+        if (CurrentChallenge == null) return 0;
 
         switch (CurrentChallenge.difficulty)
         {
-            case ChallengeDifficulty.Easy: return _easyRewardPercent;
-            case ChallengeDifficulty.Medium: return _mediumRewardPercent;
-            case ChallengeDifficulty.Hard: return _hardRewardPercent;
-            default: return 0f;
+            case ChallengeDifficulty.Easy: return EasyRewardGold;
+            case ChallengeDifficulty.Medium: return MediumRewardGold;
+            case ChallengeDifficulty.Hard: return HardRewardGold;
+            default: return 0;
         }
     }
 
@@ -207,13 +214,10 @@ public class ChallengeManager : MonoBehaviour
     // (PauseMenuUI) pour rester coherent partout ou la recompense s'affiche.
     // Virgule francaise explicite (pas de dependance a la culture systeme) ;
     // pas de decimale quand le multiplicateur est un nombre entier (x2, pas x2,0).
-    public static string FormatRewardMultiplier(float rewardPercent)
+    // MODIFIÉ (2026-10-27) - prime fixe : "+500 or" (séparateur de milliers de la langue).
+    public static string FormatRewardGold(int gold)
     {
-        float multiplier = 1f + rewardPercent;
-        string multiplierStr = Mathf.Approximately(multiplier, Mathf.Round(multiplier))
-            ? Mathf.RoundToInt(multiplier).ToString()
-            : Loc.Num(multiplier, "0.0");   // séparateur décimal de la langue du jeu (Loc.Num)
-        return Loc.F("Or x{0}", multiplierStr);
+        return Loc.F("+{0} or", Loc.Int(gold));
     }
 
     // =====================
@@ -354,7 +358,7 @@ public class ChallengeManager : MonoBehaviour
             case "boss2": return bossKills >= 2;
             case "level20in10min": return _level20ReachedInTime;
             case "bossUnder30s": return _fastestBossKillTime <= 30f;
-            case "gold3000": return gold >= 3000;
+            case "gold3000": return gold >= FortuneGoldGoal;
             case "level30": return level >= 30;
             case "hp30never":
             case "noUltimate":
@@ -405,7 +409,7 @@ public class ChallengeManager : MonoBehaviour
             case "noUltimate": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
             case "hp50boss1": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
             case "bossUnder30s": return Loc.T("En cours");
-            case "gold3000": return Loc.F("{0}/3000 Or", Mathf.Min(gold, 3000));
+            case "gold3000": return Loc.F("{0}/{1} Or", Mathf.Min(gold, FortuneGoldGoal), FortuneGoldGoal);
             case "level30": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 30), 30);
             default: return "";
         }
@@ -434,7 +438,7 @@ public class ChallengeManager : MonoBehaviour
             case "boss2": success = bossKillCount >= 2; break;
             case "level20in10min": success = _level20ReachedInTime; break;
             case "bossUnder30s": success = _fastestBossKillTime <= 30f; break;
-            case "gold3000": success = runGoldEarned >= 3000; break;
+            case "gold3000": success = runGoldEarned >= FortuneGoldGoal; break;
             case "level30": success = levelReached >= 30; break;
         }
 
@@ -455,8 +459,7 @@ public class ChallengeManager : MonoBehaviour
             return;
         }
 
-        int bonus = Mathf.RoundToInt(runGoldEarned * GetCurrentRewardPercent());
-        MetaProgressionManager.Instance.AddRunGold(bonus);
+        MetaProgressionManager.Instance.AddRunGold(GetCurrentRewardGold(), applyDifficulty: false);
 
         data.currentChallengeRewardClaimed = true;
         SaveSystem.Save(data);

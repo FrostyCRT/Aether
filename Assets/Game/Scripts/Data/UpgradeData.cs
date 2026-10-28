@@ -139,8 +139,10 @@ public class UpgradeData : ScriptableObject
                 // base, Boule de feu, Couteaux, Foudre, Lames Ricochet - voir Apply plus bas), pas l'Aura, les Orbitaux, etc.
                 return Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(value));
 
+            // MODIFIÉ (2026-10-27, retour utilisateur : "la compétence de soin devrait augmenter la santé maximum [...]
+            // on pourrait soigner, et augmenter la vie max de quelques pourcentage, genre 25%") - voir Apply.
             case UpgradeType.Heal:
-                return Loc.F("Restaure {0}% de tes PV max", PercentOf(value));
+                return Loc.F("Augmente tes PV max de {0}% et en restaure {1}%", PercentOf(HealMaxHealthBonus), PercentOf(value));
 
             case UpgradeType.DoubleShot:
                 // CORRIGÉ (2026-10-25) - le second tir n'est pas simultané : il part _doubleShotDelay (0,1 s) après le premier.
@@ -176,6 +178,9 @@ public class UpgradeData : ScriptableObject
     // VALEUR elle-même est conçue pour toujours représenter un doublement exact depuis cette base, même registre
     // que "Débloque la Brûlure" juste en dessous (effet décrit en mots, pas en chiffre).
     private const float FireballBaseFragmentRadius = 2.25f;
+
+    // Carte Soin (2026-10-27) : PV max gagnés à chaque pick, en fraction des PV max de départ (5 picks = +125 %).
+    public const float HealMaxHealthBonus = 0.25f;
 
     private string FormatFireballDescription(int level)
     {
@@ -768,8 +773,13 @@ public class UpgradeData : ScriptableObject
                     break;
                 }
 
+            // PV max d'abord (+25 % des PV max de départ), puis le soin (value, 50 %) sur les nouveaux PV max.
             case UpgradeType.Heal:
-                if (health != null) health.Heal(value);
+                if (health != null)
+                {
+                    health.AddMaxHealthPercent(HealMaxHealthBonus);
+                    health.Heal(value);
+                }
                 break;
 
 
@@ -840,18 +850,17 @@ public class UpgradeData : ScriptableObject
                     float inheritedField = aura != null ? aura.CurrentDamagePerSecond : 0f;
                     float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
                     int inheritedOrbitalCount = orbital != null ? orbital.OrbitalCount : 0;
+                    float inheritedSlow = aura != null ? aura.SlowMultiplier : 0.6f;
 
                     if (aura != null) Object.Destroy(aura);
                     if (orbital != null) Object.Destroy(orbital);
 
+                    // MODIFIÉ (2026-10-27, refonte en Couronne Prismatique) - plus d'orbes poolés : la fusion calcule ses
+                    // contacts elle-même et hérite aussi du ralentissement de l'Aura.
                     if (playerGO.GetComponent<WeaponFusionManaVortex>() == null)
                     {
                         WeaponFusionManaVortex fused = playerGO.AddComponent<WeaponFusionManaVortex>();
-                        GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
-                        if (prefab != null)
-                            fused.Init(prefab, Mathf.Max(1f, inheritedField), Mathf.Max(1f, inheritedOrbital), inheritedOrbitalCount);
-                        else
-                            Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
+                        fused.Init(Mathf.Max(1f, inheritedField), Mathf.Max(1f, inheritedOrbital), inheritedOrbitalCount, inheritedSlow);
                     }
                     break;
                 }
@@ -861,17 +870,20 @@ public class UpgradeData : ScriptableObject
                     WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
                     WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
 
-                    float inheritedDamage = 0f;
-                    if (knives != null) inheritedDamage += knives.CurrentDamage;
-                    if (orb != null) inheritedDamage += orb.CurrentDamage;
+                    float inheritedKnives = knives != null ? knives.CurrentDamage : 0f;
+                    float inheritedOrb = orb != null ? orb.CurrentDamage : 0f;
+                    int inheritedKnifeCount = knives != null ? knives.KnifeCount : 0;
+                    int inheritedOrbCount = orb != null ? orb.OrbCount : 0;
 
                     if (knives != null) Object.Destroy(knives);
                     if (orb != null) Object.Destroy(orb);
 
+                    // MODIFIÉ (2026-10-28, refonte en Valse des Lames) - plus de projectile poolé : lames et contacts gérés
+                    // par l'arme elle-même (voir WeaponFusionRicochetBlades).
                     if (playerGO.GetComponent<WeaponFusionRicochetBlades>() == null)
                     {
                         WeaponFusionRicochetBlades blades = playerGO.AddComponent<WeaponFusionRicochetBlades>();
-                        blades.Init(Mathf.Max(1f, inheritedDamage));
+                        blades.Init(Mathf.Max(1f, inheritedKnives), Mathf.Max(1f, inheritedOrb), inheritedKnifeCount, inheritedOrbCount);
                         // Dégâts déjà hérités des Couteaux (bonus inclus) ; la CADENCE de la fusion repart de sa propre
                         // base : elle rattrape les Cadence+ déjà pris (sinon perdus en fusionnant).
                         float pastFireRate = LevelUpManager.Instance != null ? LevelUpManager.Instance.FireRateBonusTotal : 0f;
@@ -888,18 +900,17 @@ public class UpgradeData : ScriptableObject
                     float inheritedOrbital = orbital != null ? orbital.CurrentDamage : 0f;
                     float inheritedLightning = lightning != null ? lightning.CurrentDamage : 0f;
                     int inheritedOrbitalCount = orbital != null ? orbital.OrbitalCount : 0;
+                    int inheritedChainCount = lightning != null ? lightning.ChainCount : 0;
 
                     if (orbital != null) Object.Destroy(orbital);
                     if (lightning != null) Object.Destroy(lightning);
 
+                    // MODIFIÉ (2026-10-27, refonte en Constellation Orageuse) - plus de prefab : orbes et contacts gérés
+                    // par l'arme elle-même (voir WeaponFusionThunderingOrbs).
                     if (playerGO.GetComponent<WeaponFusionThunderingOrbs>() == null)
                     {
                         WeaponFusionThunderingOrbs fused = playerGO.AddComponent<WeaponFusionThunderingOrbs>();
-                        GameObject prefab = Resources.Load<GameObject>("OrbitalProjectile");
-                        if (prefab != null)
-                            fused.Init(prefab, Mathf.Max(1f, inheritedOrbital), Mathf.Max(1f, inheritedLightning), inheritedOrbitalCount);
-                        else
-                            Debug.LogWarning("Prefab OrbitalProjectile introuvable dans Resources !");
+                        fused.Init(Mathf.Max(1f, inheritedOrbital), Mathf.Max(1f, inheritedLightning), inheritedOrbitalCount, inheritedChainCount);
                     }
                     break;
                 }
@@ -940,15 +951,16 @@ public class UpgradeData : ScriptableObject
                     if (orb != null) Object.Destroy(orb);
                     if (mud != null) Object.Destroy(mud);
 
+                    // MODIFIÉ (2026-10-28, passe visuelle de Sillage Boueux) - plus de "BouncingOrbProjectile" : orbes et
+                    // contacts gérés par l'arme elle-même (voir WeaponFusionMudOrb).
                     if (playerGO.GetComponent<WeaponFusionMudOrb>() == null)
                     {
                         WeaponFusionMudOrb fused = playerGO.AddComponent<WeaponFusionMudOrb>();
-                        GameObject orbPrefab = Resources.Load<GameObject>("BouncingOrbProjectile");
                         GameObject puddlePrefab = Resources.Load<GameObject>("MudPuddleZone");
-                        if (orbPrefab != null && puddlePrefab != null)
-                            fused.Init(orbPrefab, puddlePrefab, Mathf.Max(1f, inheritedOrbDamage), inheritedSpeed, inheritedOrbCount, Mathf.Max(1f, inheritedPuddleDamage));
+                        if (puddlePrefab != null)
+                            fused.Init(puddlePrefab, Mathf.Max(1f, inheritedOrbDamage), inheritedSpeed, inheritedOrbCount, Mathf.Max(1f, inheritedPuddleDamage));
                         else
-                            Debug.LogWarning("Prefab BouncingOrbProjectile ou MudPuddleZone introuvable dans Resources !");
+                            Debug.LogWarning("Prefab MudPuddleZone introuvable dans Resources !");
                     }
                     break;
                 }

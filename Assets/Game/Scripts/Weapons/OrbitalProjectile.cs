@@ -40,9 +40,36 @@ public class OrbitalProjectile : MonoBehaviour
         _damage = damage;
     }
 
+    // AJOUTÉ (2026-10-27, hitbox des boss - voir BossBodyShape et ProjectileBasic._pendingBosses) - un orbe qui entre
+    // dans la boîte d'un boss sans toucher son corps attend (OnTriggerStay) de toucher vraiment le corps : un seul coup
+    // par passage, comme avant.
+    private const float BodyHitMargin = 0.3f;
+    private readonly System.Collections.Generic.List<Collider> _pendingBosses = new System.Collections.Generic.List<Collider>(2);
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (!_pendingBosses.Contains(other)) return;
+        if (!other.CompareTag("Enemy")) { _pendingBosses.Remove(other); return; }
+        if (other.TryGetComponent(out BossBase boss) && boss.IsOnBody(transform.position, BodyHitMargin))
+        {
+            _pendingBosses.Remove(other);
+            OnTriggerEnter(other);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        _pendingBosses.Remove(other);
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Enemy")) return;
+        if (other.TryGetComponent(out BossBase bodyCheck) && !bodyCheck.IsOnBody(transform.position, BodyHitMargin))
+        {
+            if (!_pendingBosses.Contains(other)) _pendingBosses.Add(other);
+            return;
+        }
 
         // Utilisation de l'InstanceID unique (int) au lieu du GameObject complet pour éviter les fuites de mémoire
         int enemyId = other.GetInstanceID();
@@ -93,6 +120,7 @@ public class OrbitalProjectile : MonoBehaviour
     private void OnDisable()
     {
         _lastHitTimestamps.Clear();
+        _pendingBosses.Clear();
     }
 
     // AJOUTÉ (2026-10-05) - sans ça, un orbe recyclé depuis le pool dessinerait une traînée reliant sa position

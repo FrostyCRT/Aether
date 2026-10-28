@@ -146,7 +146,8 @@ public class ObjectPool : MonoBehaviour
     }
 
     // Dans ObjectPool.cs — nouvelle surcharge, n'entrave pas l'existant
-    public GameObject Get(string tag, Vector3 position, Quaternion rotation, float healthMultiplier)
+    // bonusHealth : PV fixes ajoutés après le multiplicateur (voir EnemyBase._bonusHealth), remis à 0 par défaut.
+    public GameObject Get(string tag, Vector3 position, Quaternion rotation, float healthMultiplier, float bonusHealth = 0f)
     {
         if (!_poolDictionary.ContainsKey(tag))
         {
@@ -184,7 +185,7 @@ public class ObjectPool : MonoBehaviour
         obj.transform.rotation = rotation;
 
         obj.TryGetComponent(out EnemyBase eb);
-        if (eb != null) eb.SetHealthMultiplier(healthMultiplier);
+        if (eb != null) eb.SetHealthMultiplier(healthMultiplier, bonusHealth);
 
         obj.SetActive(true);
         return obj;

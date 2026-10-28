@@ -32,21 +32,11 @@ public class XPGemSpawner : MonoBehaviour
     // en hauteur (Y), gemmes toujours cachées.
     private const float GemLandY = 0.3f;
 
-    // AJOUTÉ (2026-10-24, session FPS - voir le commentaire du registre dans XPGem) - nombre maximum de gemmes
-    // actives en même temps. Au-delà, chaque nouvelle gemme fait d'abord fusionner la gemme posée la plus éloignée du
-    // joueur dans sa voisine (XPGem.MergeFarthestIdleGem) : l'XP totale ne change jamais, seul le nombre d'objets est
-    // borné. Mesuré : ~120 fps vers 130 gemmes, ~100 fps vers 400 - 250 laisse largement de quoi joncher l'écran.
-    private const int MaxGemsOnGround = 250;
-
-    private void MakeRoomForOneGem()
-    {
-        if (_playerTransform == null) return;
-        int guard = 8;
-        while (XPGem.ActiveCount >= MaxGemsOnGround && guard-- > 0)
-        {
-            if (!XPGem.MergeFarthestIdleGem(_playerTransform.position)) return;
-        }
-    }
+    // RETIRÉ (2026-10-27, retour utilisateur : "pour les xp qui disparaissent, enlève ça, je ferai des tests moi-même
+    // pour voir s'il y a des problèmes de performance, mais je ne veux pas qu'ils soient détruits, donc enlève la limite
+    // d'xp max sur la map") - plus aucun plafond de gemmes au sol (l'ancien MaxGemsOnGround, ajouté le 2026-10-24 pour
+    // les FPS : ~120 fps vers 130 gemmes, ~100 vers 400, ~70 vers 890) : aucune gemme n'est plus jamais fusionnée ni
+    // détruite, elles restent toutes là où elles tombent.
 
     private void Awake()
     {
@@ -106,7 +96,6 @@ public class XPGemSpawner : MonoBehaviour
         // XPGem.Init() l'anime en un petit arc depuis ce point jusqu'à sa position finale (position + offset),
         // comme si elle jaillissait de l'ennemi au lieu d'apparaître à plat sur le sol (retour utilisateur :
         // "pas le côté satisfaisant").
-        MakeRoomForOneGem();
         GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
         if (gemGO == null) return;
 
@@ -219,7 +208,6 @@ public class XPGemSpawner : MonoBehaviour
         float burstRadius = Random.Range(1.8f, 3.2f);
         Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * burstRadius;
 
-        MakeRoomForOneGem();
         GameObject gemGO = ObjectPool.Instance.Get("XPGem", position, Quaternion.identity);
         if (gemGO == null) return;
 

@@ -25,8 +25,8 @@ public static class LocTableRU
         { "Carte n°1", "Карта №1" }, { "Carte n°2", "Карта №2" }, { "Carte n°3", "Карта №3" }, { "Orbites : rapprocher", "Орбиты: ближе" },
         { "Orbites : éloigner", "Орбиты: дальше" }, { "Pause", "Пауза" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "Рывок: стремительное перемещение, краткая неуязвимость, поглощает снаряды" },
         { "Déclenche l'ultime quand le cristal est chargé", "Активирует ульту, когда кристалл заряжен" }, { "Invoque le clone spectral. Nécessite la compétence correspondante", "Призывает призрачного клона. Нужен соответствующий навык" },
-        { "Choisit la 1re carte à la montée de niveau", "Выбирает 1-ю карту при повышении уровня" }, { "Choisit la 2e carte à la montée de niveau", "Выбирает 2-ю карту при повышении уровня" },
-        { "Choisit la 3e carte à la montée de niveau", "Выбирает 3-ю карту при повышении уровня" }, { "Réduit le rayon des orbes de l'arme orbitale", "Уменьшает радиус вращения спутников" },
+        { "Choisit la 1re carte à la montée de niveau", "Выбирает 1-ю карту при повышении уровня" }, { "Choisit la 2ème carte à la montée de niveau", "Выбирает 2-ю карту при повышении уровня" },
+        { "Choisit la 3ème carte à la montée de niveau", "Выбирает 3-ю карту при повышении уровня" }, { "Réduit le rayon des orbes de l'arme orbitale", "Уменьшает радиус вращения спутников" },
         { "Augmente le rayon des orbes de l'arme orbitale", "Увеличивает радиус вращения спутников" }, { "Ouvre / ferme le menu pause", "Открывает и закрывает меню паузы" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -120,12 +120,12 @@ public static class LocTableRU
         { "Premier Sang", "Первая кровь" }, { "Vaincre 1 boss", "Победи 1 босса" }, { "Toujours en Mouvement", "Всегда в движении" },
         { "Utiliser le Dash 20 fois", "Соверши рывок 20 раз" }, { "Sang-Froid", "Хладнокровие" }, { "Garder 30% de vie jusqu'au boss 2", "Держи здоровье выше 30% до босса 2" },
         { "Double Chasse", "Двойная охота" }, { "Vaincre 2 boss dans la même partie", "Победи 2 боссов за один забег" },
-        { "Ascension Rapide", "Стремительный взлёт" }, { "Niveau 18 avant la 10e minute", "18-й уровень до 10-й минуты" },
+        { "Ascension Rapide", "Стремительный взлёт" }, { "Niveau 18 avant la 10ème minute", "18-й уровень до 10-й минуты" },
         { "Sans Cristal", "Без кристалла" }, { "Sans Ultime jusqu'au boss 2", "Без ульты до босса 2" }, { "Résilience", "Безупречность" },
         { "Garder plus de 50% de vie jusqu'au boss 1", "Не получай урона до босса 1" }, { "Éclair", "Молния" }, { "Vaincre un boss en moins de 30s", "Победи босса быстрее чем за 30 с" },
-        { "Fortune", "Фортуна" }, { "Avec au moins 3000 Or ramassé", "Собери не меньше 3000 золота" }, { "Puissance Absolue", "Абсолютная мощь" },
-        { "Niveau 30 dans la même partie", "30-й уровень за один забег" }, { "Or x{0}", "Золото x{0}" }, { "Niv. {0}/{1}", "Ур. {0}/{1}" },
-        { "En cours", "В процессе" }, { "{0}/3000 Or", "{0}/3000 золота" }, { "Pas de défi dans ce mode", "В этом режиме испытаний нет" },
+        { "Fortune", "Фортуна" }, { "Avec au moins 1200 Or ramassé", "Собери не меньше 1200 золота" }, { "Puissance Absolue", "Абсолютная мощь" },
+        { "Niveau 30 dans la même partie", "30-й уровень за один забег" }, { "+{0} or", "+{0} золота" }, { "Niv. {0}/{1}", "Ур. {0}/{1}" },
+        { "En cours", "В процессе" }, { "{0}/{1} Or", "{0}/{1} золота" }, { "Pas de défi dans ce mode", "В этом режиме испытаний нет" },
         { "Défi déjà réussi cette heure !", "Испытание этого часа уже пройдено!" }, { "Nouveau défi dans {0} min", "Новое испытание через {0} мин" },
         { "Nouveau défi à ta prochaine partie !", "Новое испытание — в следующем забеге!" }, { "Réussi", "Пройдено" }, { "Statut", "Статус" },
 
@@ -164,12 +164,12 @@ public static class LocTableRU
         { "Réputation : Dégâts", "Репутация: Урон" }, { "Réputation : Vitesse", "Репутация: Скорость" }, { "Réputation : Régénération", "Репутация: Регенерация" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "Проклятая топь" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "Твои лужи грязи становятся топью, которая бьёт врагов током" },
-        { "Vortex de Mana", "Вихрь маны" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "Вокруг тебя кружит вихрь осколков маны — шире и мощнее." },
-        { "Lames Ricochet", "Рикошетные клинки" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "Твой залп ножей пробивает врагов и рикошетит от одного к другому" },
+        { "Tourbière Magnétique", "Магнитная трясина" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "Наэлектризованные трясины затягивают врагов, а затем взрываются грозой" },
+        { "Couronne Prismatique", "Призматическая корона" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "Кристаллы, соединённые лучами, образуют барьер, а затем сметают всё вокруг потоками света" },
+        { "Valse des Lames", "Вальс клинков" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "Твои клинки отскакивают от краёв экрана и возвращаются к тебе, рассекая всё на своём пути" },
         { "Pluie de Météores", "Метеоритный дождь" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "Метеориты падают на врагов, а раскалённая грязь их замедляет" },
-        { "Orbes Foudroyants", "Громовые сферы" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "При касании врагов твои спутники выпускают цепную молнию" },
-        { "Sillage Boueux", "Сферы-близнецы" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Твои сферы оставляют грязевой след, который замедляет и ранит врагов" },
+        { "Constellation Orageuse", "Грозовое созвездие" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "Твои сферы ионизируют врагов, а затем молния связывает их всех в созвездие" },
+        { "Sillage Boueux", "Грязевой след" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Твои сферы оставляют грязевой след, который замедляет и ранит врагов" },
         { "Aura", "Аура" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Зона ауры" },
         { "Orbe Rebondissant", "Прыгучая сфера" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Выпускает сферы, которые без остановки отскакивают по арене и ранят каждого задетого врага" },
         { "Dégâts +", "Урон +" }, { "+20% de dégâts sur toutes tes armes", "+20% к урону всего оружия" }, { "Double Tir", "Двойной выстрел" },
@@ -185,7 +185,7 @@ public static class LocTableRU
         { "+1 orbital supplémentaire", "+1 дополнительный спутник" }, { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "Открывает цепную молнию: она поражает 3 врагов" },
         { "+1 rebond de foudre supplémentaire", "+1 дополнительный отскок молнии" }, { "Débloque 3 flaques de boue qui ralentissent et blessent", "Открывает 3 лужи грязи, которые замедляют и ранят" },
         { "+1 flaque de boue supplémentaire", "+1 дополнительная лужа грязи" }, { "+{0}% de dégâts sur toutes tes armes", "+{0}% к урону всего оружия" },
-        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% к скорострельности всего стрелкового оружия" }, { "Restaure {0}% de tes PV max", "Восстанавливает {0}% максимального запаса здоровья" },
+        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% к скорострельности всего стрелкового оружия" }, { "Augmente tes PV max de {0}% et en restaure {1}%", "Увеличивает максимальный запас здоровья на {0}% и восстанавливает {1}%" },
         { "Débloque le Double Tir : ton tir de base tire deux fois", "Открывает двойной выстрел: твоя базовая атака стреляет дважды" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "Открывает «Огненный шар» — уникальное оружие Aether" },
         { "Le rayon d'explosion est 2 fois plus grand", "Радиус взрыва в 2 раза больше" }, { "+{0}% dégâts", "+{0}% к урону" },
@@ -275,11 +275,11 @@ public static class LocTableRU
         { "ASSIGNER UNE TOUCHE À", "НАЗНАЧЬ КЛАВИШУ ДЛЯ ДЕЙСТВИЯ" }, { "Appuyez sur une touche pour commencer", "Нажми любую клавишу, чтобы начать" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "СЛИЯНИЕ" }, { "Éclat", "осколка" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "Не опускай здоровье ниже 30% с начала забега и до гибели 2-го босса." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Не используй ульту (клавиша F), пока не победишь 2-го босса" },
+        { "FUSION", "СЛИЯНИЕ" }, { "Éclat", "осколка" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Не опускай здоровье ниже 30% с начала забега и до гибели 2-го босса." },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Не используй ульту (клавиша F), пока не победишь 2-го босса" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Не опускай здоровье ниже 50% с начала забега и до гибели 1-го босса." },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Победи любого босса не позже чем через 30 секунд после его появления" },
-        { "Ramasser au moins 3000 Or au total durant la partie", "Собери за забег не меньше 3000 золота" }, { "MODÉRÉ", "УМЕРЕННЫЙ" },
+        { "Ramasser au moins 1200 Or au total durant la partie", "Собери за забег не меньше 1200 золота" }, { "MODÉRÉ", "УМЕРЕННЫЙ" },
         { "VIOLENT", "ЖЕСТОКИЙ" }, { "APOCALYPTIQUE", "АПОКАЛИПСИС" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "Карта без границ, классика в своём привычном виде." },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "Карта-туннель без боковых границ, враги крепче и опаснее, но золота и осколков больше." },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "Карта, зажатая со всех 4 сторон, враги заметно крепче и опаснее, золото и осколки на максимуме." },
@@ -294,6 +294,12 @@ public static class LocTableRU
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "Метает залпы из {0} ножей, пронзающих врагов" },
         { "Décharge électrique qui rebondit sur {0} ennemis proches", "Электрический разряд, перескакивающий на {0} ближайших врагов" },
         { "Survie", "Выживание" }, { "Éliminations", "Убийства" }, { "Niveau", "Уровень" }, { "Boss", "Боссы" }, { "Titans", "Титаны" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "Первая победа на сложности «Умеренный»: +{0} осколков" }, { "Première victoire en Violent : +{0} éclats", "Первая победа на сложности «Жестокий»: +{0} осколков" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "Первая победа на сложности «Апокалипсис»: +{0} осколков" },
+        { "Victoire en Modéré", "Победа на сложности «Умеренный»" }, { "Victoire en Violent", "Победа на сложности «Жестокий»" },
+        { "avec {0}", "персонаж: {0}" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },

@@ -280,13 +280,13 @@
 266| Blitzschnell
 267| Besiege einen Boss in unter 30 s
 268| Reichtum
-269| Sammle mindestens 3000 Gold
+269| Sammle mindestens 1200 Gold
 270| Absolute Macht
 271| Level 30 in einem Run
-272| Gold x{0}
+272| +{0} Gold
 273| Lvl. {0}/{1}
 274| Läuft
-275| {0}/3000 Gold
+275| {0}/{1} Gold
 276| In diesem Modus gibt es keine Herausforderung
 277| Herausforderung in dieser Stunde bereits geschafft!
 278| Neue Herausforderung in {0} Min
@@ -366,17 +366,17 @@
 348| Ruf: Regeneration
 
 ## Améliorations
-349| Verfluchter Sumpf
-350| Deine Schlammpfützen werden zu einem Sumpf, der Gegner unter Strom setzt
-351| Manawirbel
-352| Ein größerer und stärkerer Wirbel aus Manasplittern kreist um dich.
-353| Abprallklingen
-354| Deine Messersalve durchbohrt Gegner und prallt von einem zum nächsten ab
+349| Magnetmoor
+350| Elektrisierte Moore ziehen Gegner an und entladen sich dann in einem Blitzsturm
+351| Prismenkrone
+352| Durch Lichtstrahlen verbundene Kristalle bilden einen Schutzwall und fegen dann über das Feld
+353| Klingenwalzer
+354| Deine Klingen prallen von den Bildschirmrändern ab und kehren dann zu dir zurück, wobei sie alles durchschneiden
 355| Meteorschauer
 356| Meteore treffen die Gegner und hinterlassen bremsenden Glutschlamm
-357| Blitzkugeln
-358| Deine Trabanten lösen bei Gegnerkontakt einen Kettenblitz aus
-359| Zwillingskugeln
+357| Sturmkonstellation
+358| Deine Kugeln ionisieren Gegner, dann verbindet ein Blitz sie alle zu einem Sternbild
+359| Schlammspur
 360| Deine Kugeln hinterlassen eine Schlammspur, die bremst und verletzt
 361| Aura
 362| Aura-Zone
@@ -408,7 +408,7 @@
 388| +1 zusätzliche Schlammpfütze
 389| +{0} % Schaden für alle deine Waffen
 390| +{0} % Feuerrate für alle deine Schusswaffen
-391| Stellt {0} % deiner maximalen LP wieder her
+391| Erhöht deine maximalen LP um {0} % und stellt {1} % davon wieder her
 392| Schaltet Doppelschuss frei: Dein Standardangriff feuert zweimal
 393| Schaltet den Feuerball frei: Aethers exklusive Waffe
 394| Der Explosionsradius ist doppelt so groß
@@ -617,7 +617,7 @@
 581| Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast
 582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses.
 583| Besiege einen beliebigen Boss innerhalb von 30 Sekunden nach seinem Erscheinen
-584| Sammle im Laufe des Runs insgesamt mindestens 3000 Gold
+584| Sammle im Laufe des Runs insgesamt mindestens 1200 Gold
 585| MÄSSIG
 586| HEFTIG
 587| APOKALYPTISCH
@@ -647,3 +647,9 @@
 609| Level
 610| Bosse
 611| Titanen
+612| Erster Sieg auf Mäßig: +{0} Splitter
+613| Erster Sieg auf Heftig: +{0} Splitter
+614| Erster Sieg auf Apokalyptisch: +{0} Splitter
+615| Sieg auf Mäßig
+616| Sieg auf Heftig
+617| mit {0}

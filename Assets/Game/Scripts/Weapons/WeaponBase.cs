@@ -39,6 +39,9 @@ public class WeaponBase : MonoBehaviour
     private readonly Collider[] _detectionBuffer = new Collider[50];
 
     public float baseDamage => _baseDamage;
+    // AJOUTÉ (2026-10-27, équilibrage des PV ennemis : "une attaque de plus pour en tuer un") - dégâts d'un tir de base
+    // à cet instant, hors buffs temporaires (Concentration, Surpuissance : PlayerBuffs.OutgoingDamageMultiplier). Lecture seule.
+    public float CurrentShotDamage => _currentDamage * _damageMultiplier;
 
     private void Awake()
     {

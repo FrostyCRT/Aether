@@ -162,7 +162,11 @@ public class HudKeyLegend : MonoBehaviour
             GameObject p = GameObject.FindWithTag("Player");
             if (p != null) _player = p.transform;
         }
-        return _player != null && _player.GetComponent<WeaponOrbital>() != null;
+        // MODIFIÉ (2026-10-27) - les 2 fusions qui reprennent le contrôle A/E des Orbitaux (Couronne Prismatique,
+        // Constellation Orageuse) le gardent : la ligne disparaissait du HUD au moment de la fusion.
+        return _player != null && (_player.GetComponent<WeaponOrbital>() != null
+            || _player.GetComponent<WeaponFusionManaVortex>() != null
+            || _player.GetComponent<WeaponFusionThunderingOrbs>() != null);
     }
 
     private void Update()

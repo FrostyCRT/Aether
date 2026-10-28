@@ -24,8 +24,8 @@ public static class LocTableJA
         { "Clone spectral", "幻影分身" }, { "Carte n°1", "カード1" }, { "Carte n°2", "カード2" }, { "Carte n°3", "カード3" }, { "Orbites : rapprocher", "軌道：縮める" },
         { "Orbites : éloigner", "軌道：広げる" }, { "Pause", "ポーズ" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "ダッシュ：素早く移動し、一瞬だけ無敵になり、敵の弾を吸収する" },
         { "Déclenche l'ultime quand le cristal est chargé", "クリスタルが溜まったら必殺技を放つ" }, { "Invoque le clone spectral. Nécessite la compétence correspondante", "幻影分身を呼び出す。対応するスキルが必要" },
-        { "Choisit la 1re carte à la montée de niveau", "レベルアップ時に1枚目のカードを選ぶ" }, { "Choisit la 2e carte à la montée de niveau", "レベルアップ時に2枚目のカードを選ぶ" },
-        { "Choisit la 3e carte à la montée de niveau", "レベルアップ時に3枚目のカードを選ぶ" }, { "Réduit le rayon des orbes de l'arme orbitale", "オービタルの軌道半径を縮める" },
+        { "Choisit la 1re carte à la montée de niveau", "レベルアップ時に1枚目のカードを選ぶ" }, { "Choisit la 2ème carte à la montée de niveau", "レベルアップ時に2枚目のカードを選ぶ" },
+        { "Choisit la 3ème carte à la montée de niveau", "レベルアップ時に3枚目のカードを選ぶ" }, { "Réduit le rayon des orbes de l'arme orbitale", "オービタルの軌道半径を縮める" },
         { "Augmente le rayon des orbes de l'arme orbitale", "オービタルの軌道半径を広げる" }, { "Ouvre / ferme le menu pause", "ポーズメニューを開く／閉じる" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -105,11 +105,11 @@ public static class LocTableJA
         { "Chasseur", "ハンター" }, { "Tuer 150 ennemis", "敵を150体倒す" }, { "Montée en Puissance", "パワーアップ" }, { "Atteindre le niveau 10", "レベル10に到達する" },
         { "Premier Sang", "ファーストブラッド" }, { "Vaincre 1 boss", "ボスを1体倒す" }, { "Toujours en Mouvement", "止まるな" }, { "Utiliser le Dash 20 fois", "ダッシュを20回使う" },
         { "Sang-Froid", "冷静沈着" }, { "Garder 30% de vie jusqu'au boss 2", "ボス2までHPを30%以上に保つ" }, { "Double Chasse", "ダブルハント" },
-        { "Vaincre 2 boss dans la même partie", "1回のプレイでボスを2体倒す" }, { "Ascension Rapide", "急成長" }, { "Niveau 18 avant la 10e minute", "10分経過までにレベル18" },
+        { "Vaincre 2 boss dans la même partie", "1回のプレイでボスを2体倒す" }, { "Ascension Rapide", "急成長" }, { "Niveau 18 avant la 10ème minute", "10分経過までにレベル18" },
         { "Sans Cristal", "クリスタル禁止" }, { "Sans Ultime jusqu'au boss 2", "ボス2まで必殺技を使わない" }, { "Résilience", "ノーダメージ" }, { "Garder plus de 50% de vie jusqu'au boss 1", "ボス1までダメージを受けない" },
-        { "Éclair", "電光石火" }, { "Vaincre un boss en moins de 30s", "ボスを30秒以内に倒す" }, { "Fortune", "一攫千金" }, { "Avec au moins 3000 Or ramassé", "ゴールドを3000以上拾う" },
-        { "Puissance Absolue", "絶対的な力" }, { "Niveau 30 dans la même partie", "1回のプレイでレベル30" }, { "Or x{0}", "ゴールド x{0}" },
-        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "進行中" }, { "{0}/3000 Or", "{0}/3000ゴールド" }, { "Pas de défi dans ce mode", "このモードにチャレンジはない" },
+        { "Éclair", "電光石火" }, { "Vaincre un boss en moins de 30s", "ボスを30秒以内に倒す" }, { "Fortune", "一攫千金" }, { "Avec au moins 1200 Or ramassé", "ゴールドを1200以上拾う" },
+        { "Puissance Absolue", "絶対的な力" }, { "Niveau 30 dans la même partie", "1回のプレイでレベル30" }, { "+{0} or", "＋{0}ゴールド" },
+        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "進行中" }, { "{0}/{1} Or", "{0}/{1}ゴールド" }, { "Pas de défi dans ce mode", "このモードにチャレンジはない" },
         { "Défi déjà réussi cette heure !", "この時間帯のチャレンジは達成済み！" }, { "Nouveau défi dans {0} min", "{0}分後に新しいチャレンジ" }, { "Nouveau défi à ta prochaine partie !", "次のプレイで新しいチャレンジ！" },
         { "Réussi", "達成" }, { "Statut", "状態" },
 
@@ -145,12 +145,12 @@ public static class LocTableJA
         { "Réputation : Dégâts", "名声：ダメージ" }, { "Réputation : Vitesse", "名声：スピード" }, { "Réputation : Régénération", "名声：再生" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "呪われた沼" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "泥だまりが帯電した沼に変わり、中にとどまる敵を感電させる" },
-        { "Vortex de Mana", "マナの渦" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "より広く、より強力になったマナの欠片の渦が周囲を回る。" },
-        { "Lames Ricochet", "リコシェブレード" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "ナイフの一斉投擲が敵を貫通し、敵から敵へと跳ね返る" },
+        { "Tourbière Magnétique", "磁気の泥沼" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "帯電した泥沼が敵を引き寄せ、やがて雷の嵐となって炸裂する" },
+        { "Couronne Prismatique", "プリズムの王冠" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "光線でつながった水晶が障壁を築き、光の束であたりをなぎ払う" },
+        { "Valse des Lames", "刃のワルツ" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "刃が画面の端で跳ね返り、道中のすべてを切り裂きながら手元へ戻る" },
         { "Pluie de Météores", "メテオシャワー" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "隕石が敵に降り注ぎ、敵を鈍らせる灼熱の泥を残す" },
-        { "Orbes Foudroyants", "雷撃のオーブ" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "オービタルが敵に触れると連鎖雷撃を放つ" },
-        { "Sillage Boueux", "ツインオーブ" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "オーブが泥の跡を残し、敵を鈍らせてダメージを与える" },
+        { "Constellation Orageuse", "嵐の星座" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "オーブが敵を帯電させ、雷がすべてを星座のように結ぶ" },
+        { "Sillage Boueux", "泥の軌跡" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "オーブが泥の跡を残し、敵を鈍らせてダメージを与える" },
         { "Aura", "オーラ" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "オーラエリア" },
         { "Orbe Rebondissant", "バウンドオーブ" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "アリーナ中を跳ね回り続けるオーブを放ち、当たった敵にダメージを与える" },
         { "Dégâts +", "ダメージ＋" }, { "+20% de dégâts sur toutes tes armes", "すべての武器のダメージ+20%" }, { "Double Tir", "ダブルショット" },
@@ -164,7 +164,7 @@ public static class LocTableJA
         { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "連鎖雷撃を解放する。敵3体に連続で命中する" }, { "+1 rebond de foudre supplémentaire", "雷の跳ね返り回数+1" },
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "敵を減速させて傷つける泥だまりを3つ解放する" }, { "+1 flaque de boue supplémentaire", "泥だまり+1" },
         { "+{0}% de dégâts sur toutes tes armes", "すべての武器のダメージ+{0}%" }, { "+{0}% de cadence sur toutes tes armes de tir", "射撃系のすべての武器の連射速度+{0}%" },
-        { "Restaure {0}% de tes PV max", "最大HPの{0}%を回復する" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "ダブルショットを解放する。通常攻撃が2回発射される" },
+        { "Augmente tes PV max de {0}% et en restaure {1}%", "最大HPが{0}%増え、{1}%回復する" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "ダブルショットを解放する。通常攻撃が2回発射される" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "ファイアボールを解放：Aetherの専用武器" }, { "Le rayon d'explosion est 2 fois plus grand", "爆発範囲が2倍になる" },
         { "+{0}% dégâts", "ダメージ+{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "炎上を解放：当たった敵がしばらく燃え続ける" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "オーラを解放：Kaelの専用武器" }, { "+{0}% rayon", "範囲+{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "減速強化：{1}%から{0}%に" },
@@ -240,9 +240,9 @@ public static class LocTableJA
         { "ASSIGNER UNE TOUCHE À", "キーを割り当てる" }, { "Appuyez sur une touche pour commencer", "いずれかのキーを押してスタート" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "融合" }, { "Éclat", "個の欠片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "プレイ開始から2体目のボスを倒すまで、HPを30%未満にしない。" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "2体目のボスを倒すまで必殺技（Fキー）を使わない" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "プレイ開始から1体目のボスを倒すまで、HPを50%未満にしない。" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "どのボスでも出現から30秒以内に倒す" }, { "Ramasser au moins 3000 Or au total durant la partie", "1回のプレイで合計3000ゴールド以上を拾う" },
+        { "FUSION", "融合" }, { "Éclat", "個の欠片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "プレイ開始から2体目のボスを倒すまで、HPを30%未満にしない。" },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "2体目のボスを倒すまで必殺技（Fキー）を使わない" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "プレイ開始から1体目のボスを倒すまで、HPを50%未満にしない。" },
+        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "どのボスでも出現から30秒以内に倒す" }, { "Ramasser au moins 1200 Or au total durant la partie", "1回のプレイで合計1200ゴールド以上を拾う" },
         { "MODÉRÉ", "ふつう" }, { "VIOLENT", "はげしい" }, { "APOCALYPTIQUE", "アポカリプス" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "境界のないマップ。これまでどおりのクラシック。" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "左右に果てのないトンネル状のマップ。敵はよりタフで危険に。そのぶんゴールドと欠片が多い。" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "四方を囲まれた狭いマップ。敵はかなりタフで危険に。ゴールドと欠片は最大。" },
@@ -255,5 +255,10 @@ public static class LocTableJA
         { "{0} éclats tournent autour de toi et frappent les ennemis au contact", "{0}つの欠片が周りを回り、触れた敵を攻撃する" }, { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "泥だまりを{0}つ作り出し、中にいる敵を減速させてダメージを与える" },
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "敵を貫くナイフを{0}本ずつ連続で投げる" }, { "Décharge électrique qui rebondit sur {0} ennemis proches", "近くの敵{0}体の間を跳ね回る電撃" },
         { "Survie", "生存" }, { "Éliminations", "撃破" }, { "Niveau", "レベル" }, { "Boss", "ボス" }, { "Titans", "タイタン" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "難易度「ふつう」で初勝利：欠片＋{0}" }, { "Première victoire en Violent : +{0} éclats", "難易度「はげしい」で初勝利：欠片＋{0}" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "難易度「アポカリプス」で初勝利：欠片＋{0}" }, { "Victoire en Modéré", "難易度「ふつう」で勝利" },
+        { "Victoire en Violent", "難易度「はげしい」で勝利" }, { "avec {0}", "{0}で" },
     };
 }

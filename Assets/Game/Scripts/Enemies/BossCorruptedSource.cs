@@ -582,7 +582,11 @@ public class BossCorruptedSource : BossBase
                 // normalement affrontés seuls - 30% de ces PV d'origine ne representait donc presque rien.
                 // Pourcentage doublé (0.3 -> 0.6) UNIQUEMENT ici (le Choc des Titans, déjà réglé séparément plus
                 // haut avec son propre repère de DPS, garde son 0.3 inchangé).
-                boss.InitWithReducedHP(percent * 2f);
+                // MODIFIÉ (2026-10-27, retour utilisateur : "les mini boss du boss 3 n'ont pas du tout assez de point de
+                // vie, il faut qu'ils aient la moitié de la vie du boss 3 [...] et je ne veux pas qu'ils donnent de
+                // l'xp") - 60 % des PV du boss d'origine (12 000 à 38 000 selon la difficulté) -> la MOITIÉ des PV max
+                // de La Source (difficulté et boucle Sans fin déjà incluses), barre de vie pleine à l'apparition.
+                boss.InitSummonedHealth(_maxHealth * 0.5f);
             }
 
             // AJOUTE (2026-10-07, retour utilisateur : barre de vie dédiée au mini-boss) - affichée dès que ses PV
@@ -617,10 +621,12 @@ public class BossCorruptedSource : BossBase
             // XP normale (retour utilisateur : "les mini boss donnent bien
             // trop d'xp"). boss.XPValue lit la valeur AVANT cet appel
             // (_xpValue de depart, ex. 1400/2450 pour BossBase/BossDeer).
-            boss.SetXPValue(boss.XPValue * percent);
-            // MODIFIÉ (2026-09-24) - demande utilisateur : un mini-boss donne 50% de la barre d'XP du niveau actuel
-            // (remplace la valeur fixe ci-dessus, gardée seulement comme repli si XPSystem est absent).
-            boss.SetXPBarFraction(0.5f);
+            // MODIFIÉ (2026-10-27, même retour que les PV ci-dessus) - plus aucune XP (était 50 % de la barre du niveau
+            // actuel depuis le 2026-09-24) : BossBase.Die ne fait apparaître aucune gemme quand l'XP vaut 0.
+            boss.SetXPValue(0f);
+            boss.SetXPBarFraction(0f);
+            // AJOUTÉ (2026-10-27, refonte de l'économie) - pas d'or non plus : seul le boss 3 lui-même paie (MetaProgressionManager).
+            boss.SetGoldValue(0);
             boss.RageDisabled = true;
         }
     }

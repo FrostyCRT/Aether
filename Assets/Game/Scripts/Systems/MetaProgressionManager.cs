@@ -22,10 +22,34 @@ public class MetaProgressionManager : MonoBehaviour
     [Header("Personnages jouables")]
     [SerializeField] private GameObject[] _characterPrefabs;
 
-    [Header("Eclats (calcul de fin de run)")]
-    [SerializeField] private int _eclatsPerLevel = 15;
-    [SerializeField] private int _eclatsPerBossKill = 60;
-    [SerializeField] private int _eclatsVictoryBonus = 200;
+    // =====================
+    // BARÈME DES RÉCOMPENSES
+    // =====================
+    // REFONTE (2026-10-27, retour utilisateur : "en une partie complète je gagne beaucoup trop d'or, dans les 40 000, et
+    // éclats c'est pareil [...] je veux que les joueurs restent, qu'ils aient un intérêt de revenir sur le jeu") - l'or
+    // venait presque entièrement des ennemis tués (1 à 5 or chacun) : plus le joueur était fort, plus il tuait, plus il
+    // gagnait. Mesuré sur 6 parties automatiques (joueur immobile, cartes au hasard) : victoire Modéré 5 953 or pour un
+    // nouveau joueur, 23 510 pour un vétéran ; Apocalyptique 42 917 / 47 546 - alors que tout l'arbre (3 branches)
+    // coûtait 14 000 or. Les éclats (15 par niveau + boss + victoire) payaient toute la Réputation en ~12 victoires.
+    // Désormais l'or vient surtout de la PROGRESSION (minutes survécues, boss, victoire), les ennemis n'en donnent plus
+    // qu'une petite part (KillGoldFactor) : victoire ~1 000 or en Modéré (1 044 nouveau / 1 396 vétéran), ~1 700 /
+    // 2 200 en Violent, ~3 000 / 3 100 en Apocalyptique. Les éclats ne viennent plus que des boss et des victoires, plus
+    // une prime unique pour la première victoire de chaque personnage dans chaque palier. Objectifs : une branche
+    // maxée en ~30 parties, toute la Réputation en ~150. Coûts de l'arbre : SkillTreeData.
+    // Constantes (et non [SerializeField]) : l'ancienne version sérialisait ses valeurs dans la scène MainMenu, qui
+    // auraient écrasé ce barème sans qu'on le voie dans le code.
+    public const int GoldPerMinute = 20;                       // par minute de chrono (Classique, Sans fin, Ruée)
+    public const float KillGoldFactor = 0.02f;                 // part de EnemyBase._goldValue réellement versée
+    public const int ClassicVictoryGold = 250;
+    public const int RushVictoryGold = 125;
+    public const int TitansVictoryGold = 50;
+    public const float RushBossRewardScale = 0.5f;             // 9 boss rapprochés : la moitié d'un boss du Classique
+    public const float TitansBossRewardScale = 0.2f;           // ~1 à 2 min de partie : pas de ferme à or
+    private static readonly int[] EclatsPerBoss = { 10, 20, 30 };   // boss 1, 2, 3
+    public const int EclatsVictoryBonus = 40;
+    public const int TitansVictoryEclats = 10;
+    // Prime unique de la PREMIÈRE victoire du Classique dans un palier, pour chaque personnage (Modéré, Violent, Apocalyptique).
+    private static readonly int[] FirstWinEclats = { 300, 600, 1000 };
 
     [Header("Déblocage des personnages (filet Éclats)")]
     [SerializeField] private int _kaelUnlockEclatsCost = 500;
@@ -69,7 +93,44 @@ public class MetaProgressionManager : MonoBehaviour
         else if (Data.kaelUnlocked && Data.bestClassicBossKills < 1) Data.bestClassicBossKills = 1;
     }
 
-    public void AddRunGold(int amount)
+    // Or des ennemis tués : seule une petite part de leur valeur (KillGoldFactor), cumulée en fractions pour que même
+    // un ennemi à 1 or compte. Remis à zéro avec RunGold (SaveRunResults).
+    private float _killGoldCarry;
+
+    public void AddKillGold(int enemyGoldValue)
+    {
+        _killGoldCarry += enemyGoldValue * KillGoldFactor;
+        if (_killGoldCarry < 1f) return;
+        int whole = Mathf.FloorToInt(_killGoldCarry);
+        _killGoldCarry -= whole;
+        AddRunGold(whole);
+    }
+
+    // Or d'un boss, réduit dans les modes qui enchaînent les boss bien plus vite que le Classique.
+    public void AddBossGold(int bossGoldValue)
+    {
+        float scale = GameModes.IsTitans ? TitansBossRewardScale : GameModes.IsBossRush ? RushBossRewardScale : 1f;
+        AddRunGold(Mathf.RoundToInt(bossGoldValue * scale));
+    }
+
+    // Appelé par GameManager à chaque minute pleine du chrono.
+    public void AddSurvivalMinuteGold()
+    {
+        if (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+            AddRunGold(GoldPerMinute);
+    }
+
+    // Appelé par GameManager à la victoire, AVANT l'évaluation du défi (le défi "Fortune" compte cet or).
+    public void AddVictoryGold()
+    {
+        if (GameModes.IsTitans) AddRunGold(TitansVictoryGold);
+        else if (GameModes.IsBossRush) AddRunGold(RushVictoryGold);
+        else if (GameModes.IsClassic) AddRunGold(ClassicVictoryGold);
+    }
+
+    public void AddRunGold(int amount) => AddRunGold(amount, true);
+
+    public void AddRunGold(int amount, bool applyDifficulty)
     {
         // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté ; ÉTENDU 2026-10-20, carrousel de
         // difficulté - "les boss [...] dans les autres difficultés bénéficient du scale donc [...] un niveau de
@@ -77,14 +138,16 @@ public class MetaProgressionManager : MonoBehaviour
         // s'applique maintenant aussi en Sans fin et Ruée de boss (plus seulement le Classique) ; x1 hors ces 3
         // modes ou au palier Modéré. Arrondi au plus proche pour ne jamais perdre le dernier point d'or sur un
         // petit montant.
-        if (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+        // MODIFIÉ (2026-10-27) - applyDifficulty = false pour la prime du défi de l'heure : elle était repassée dans ce
+        // multiplicateur alors qu'elle était calculée sur un or DÉJÀ majoré (x2,5 au lieu de x2 en Apocalyptique).
+        if (applyDifficulty && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
             amount = Mathf.RoundToInt(amount * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
 
         RunGold += amount;
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
             GameUI.Instance.UpdateGold(RunGold);
 
-        // AJOUTE - rafraichit la progression du defi "Fortune" (3000 Or) en
+        // AJOUTE - rafraichit la progression du defi "Fortune" (FortuneGoldGoal Or) en
         // temps reel, pas seulement en fin de run.
         if (ChallengeManager.Instance != null)
             ChallengeManager.Instance.RefreshDisplay();
@@ -180,11 +243,21 @@ public class MetaProgressionManager : MonoBehaviour
         RecordCharacterRun(runTime, victory && classic, !classic);
 
         int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode);
+        if (victory && classic)
+        {
+            int firstWinBonus = RecordClassicWin(GetSelectedCharacterIndex(), DifficultyTiers.Current);
+            if (firstWinBonus > 0)
+            {
+                eclatsEarned += firstWinBonus;
+                LastRunRecordMessage = FirstWinMessage(DifficultyTiers.Current, firstWinBonus);
+            }
+        }
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
 
         SaveSystem.Save(Data);
         RunGold = 0;
+        _killGoldCarry = 0f;
 
         // Déblocage de Lyra : gagner une partie complète (Boss 3) - EN CLASSIQUE uniquement. Idempotent,
         // se sauvegarde lui-même si c'est un nouveau déblocage.
@@ -265,6 +338,73 @@ public class MetaProgressionManager : MonoBehaviour
         if (!endless && runTime > Data.bestTimeByCharacter[c]) Data.bestTimeByCharacter[c] = runTime;
     }
 
+    // =====================
+    // VICTOIRES PAR PALIER (conditions de l'arbre, primes de première victoire)
+    // =====================
+
+    // Garantit 9 cases (3 personnages x 3 paliers). Migration UNE SEULE FOIS, à la création du tableau : les victoires
+    // du Classique déjà enregistrées par personnage (winsByCharacter, sans palier) comptent comme des victoires en
+    // Modéré - sans prime d'éclats (elle n'est versée qu'en passant de 0 à 1 victoire, voir RecordClassicWin).
+    public void EnsureWinsByTierArray()
+    {
+        if (Data == null) return;
+        if (Data.winsByCharacterTier != null && Data.winsByCharacterTier.Length >= 9) return;
+        bool created = Data.winsByCharacterTier == null || Data.winsByCharacterTier.Length == 0;
+        System.Array.Resize(ref Data.winsByCharacterTier, 9);
+        if (!created) return;
+        EnsureCharacterStatArrays();
+        for (int c = 0; c < 3; c++)
+            Data.winsByCharacterTier[c * 3 + (int)DifficultyTier.Moderate] = Data.winsByCharacter[c];
+    }
+
+    // Vrai si ce personnage a gagné une partie du Classique dans ce palier OU dans un palier plus dur.
+    public bool HasWonTier(int characterIndex, DifficultyTier tier)
+    {
+        EnsureWinsByTierArray();
+        if (Data == null || characterIndex < 0 || characterIndex > 2) return false;
+        for (int t = (int)tier; t < 3; t++)
+            if (Data.winsByCharacterTier[characterIndex * 3 + t] > 0) return true;
+        return false;
+    }
+
+    // Enregistre la victoire et renvoie la prime d'éclats de première victoire (0 si ce n'est pas la première).
+    private int RecordClassicWin(int characterIndex, DifficultyTier tier)
+    {
+        EnsureWinsByTierArray();
+        int c = Mathf.Clamp(characterIndex, 0, 2);
+        int i = c * 3 + (int)tier;
+        Data.winsByCharacterTier[i]++;
+        return Data.winsByCharacterTier[i] == 1 ? FirstWinEclats[(int)tier] : 0;
+    }
+
+    private static string FirstWinMessage(DifficultyTier tier, int eclats)
+    {
+        switch (tier)
+        {
+            case DifficultyTier.Violent: return Loc.F("Première victoire en Violent : +{0} éclats", eclats);
+            case DifficultyTier.Apocalyptic: return Loc.F("Première victoire en Apocalyptique : +{0} éclats", eclats);
+            default: return Loc.F("Première victoire en Modéré : +{0} éclats", eclats);
+        }
+    }
+
+    public static int CharacterIndexOf(SkillTreeData.CharacterBranch branch)
+    {
+        switch (branch)
+        {
+            case SkillTreeData.CharacterBranch.Gardien: return 1;
+            case SkillTreeData.CharacterBranch.Fantome: return 2;
+            default: return 0;
+        }
+    }
+
+    // Condition de victoire d'un nœud de l'arbre (SkillTreeData.requiredWinTier) remplie par le personnage de sa branche.
+    public bool IsNodeWinRequirementMet(string nodeId)
+    {
+        SkillTreeData.NodeData node = SkillTreeData.Get(nodeId);
+        if (node == null || node.requiredWinTier < 0) return true;
+        return HasWonTier(CharacterIndexOf(node.branch), (DifficultyTier)node.requiredWinTier);
+    }
+
     public int GetCharacterRuns(int index)
     {
         EnsureCharacterStatArrays();
@@ -283,51 +423,43 @@ public class MetaProgressionManager : MonoBehaviour
         return Data != null && index >= 0 && index < 3 ? Data.bestTimeByCharacter[index] : 0f;
     }
 
-    // ÉCLATS PAR MODE - le classique est la référence (une partie de 15 min). Les autres modes sont plafonnés pour ne pas
-    // devenir une ferme à Éclats :
-    //  - Sans fin : niveau compté jusqu'à 30 et 9 boss au plus (une partie de 15 min vaut ~ 24 niveaux + 3 boss).
-    //  - Ruée de boss : moitié moins par boss, aucun point "niveau" (l'XP ×1,5 gonfle déjà les niveaux) ; la victoire rapporte
-    //    le bonus proportionnellement à sa taille (1 / 2 / 3 tiers du bonus classique).
+    // ÉCLATS PAR MODE - REFONTE (2026-10-27, voir le barème en tête de classe) : plus aucun éclat par niveau, seulement
+    // les boss vaincus (10 / 20 / 30 selon le boss) et la victoire (+40), majorés par le palier de difficulté
+    // (x1 / x1,5 / x2) - une victoire rapporte 100 / 150 / 200 éclats, plus la prime de première victoire (RecordClassicWin).
+    //  - Sans fin : 9 boss comptés au plus (3 boucles), pas de victoire.
+    //  - Ruée de boss : moitié moins par boss ; la victoire rapporte le bonus proportionnellement à la taille de la Ruée.
+    //  - Choc des titans (~1 à 2 min) : seulement une petite prime de victoire, pas de ferme à éclats.
     private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode = GameMode.Classic)
     {
+        float tierMultiplier = DifficultyTiers.RewardMultiplier(DifficultyTiers.Current);
         switch (mode)
         {
             case GameMode.Endless:
             {
-                int total = (Mathf.Min(levelReached, 30) * _eclatsPerLevel) + (Mathf.Min(bossKills, 9) * _eclatsPerBossKill);
-                // AJOUTÉ (2026-10-20, carrousel de difficulté) - même majoration que le Classique (voir default
-                // ci-dessous), le palier de difficulté s'applique maintenant aussi au Sans fin.
-                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
-                return total;
+                int total = 0;
+                for (int i = 0; i < Mathf.Min(bossKills, 9); i++) total += EclatsPerBoss[i % 3];
+                return Mathf.RoundToInt(total * tierMultiplier);
             }
             case GameMode.BossRush:
             {
-                int total = (bossKills * _eclatsPerBossKill) / 2;
+                int total = 0;
+                for (int i = 0; i < bossKills; i++) total += EclatsPerBoss[GameModes.RushBossNumber(i) - 1];
+                total = Mathf.RoundToInt(total * RushBossRewardScale);
                 if (victory)
                 {
                     int progress = Mathf.Max(1, GameModes.ClassicBossProgress(Data));
-                    total += (_eclatsVictoryBonus * progress) / 3;
+                    total += (EclatsVictoryBonus * progress) / 3;
                 }
-                // AJOUTÉ (2026-10-20, carrousel de difficulté) - idem, le palier de difficulté s'applique
-                // maintenant aussi à la Ruée de boss.
-                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
-                return total;
+                return Mathf.RoundToInt(total * tierMultiplier);
             }
             case GameMode.Titans:
-            {
-                // ~2 min de jeu : un demi-boss classique par titan, un tiers du bonus de victoire (pas de ferme à Éclats).
-                int total = (bossKills * _eclatsPerBossKill) / 2;
-                if (victory) total += _eclatsVictoryBonus / 3;
-                return total;
-            }
+                return victory ? TitansVictoryEclats : 0;
             default:
             {
-                int total = (levelReached * _eclatsPerLevel) + (bossKills * _eclatsPerBossKill);
-                if (victory) total += _eclatsVictoryBonus;
-                // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté du
-                // Classique (DifficultyTiers.RewardMultiplier) ; x1 au palier Modéré.
-                total = Mathf.RoundToInt(total * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
-                return total;
+                int total = 0;
+                for (int i = 0; i < Mathf.Min(bossKills, 3); i++) total += EclatsPerBoss[i];
+                if (victory) total += EclatsVictoryBonus;
+                return Mathf.RoundToInt(total * tierMultiplier);
             }
         }
     }
@@ -779,44 +911,33 @@ public class MetaProgressionManager : MonoBehaviour
         return true;
     }
 
+    // MODIFIÉ (2026-10-27, refonte de l'économie) - les coûts de l'arbre ne sont plus dupliqués ici : seule source,
+    // SkillTreeData (costLevel1/2/3, déjà affichés par la fiche de détail). -1 = plus rien à acheter.
     public int GetNodeCost(string nodeId)
     {
         if (Data == null) return -1;
 
-        switch (nodeId)
+        if (IsReputationNode(nodeId)) return GetReputationLevelCost(GetNodeLevel(nodeId));
+
+        SkillTreeData.NodeData node = SkillTreeData.Get(nodeId);
+        if (node == null) return -1;
+        if (node.isUnique) return IsNodePurchased(nodeId) ? -1 : node.costLevel1;
+
+        switch (GetNodeLevel(nodeId))
         {
-            case "concentration": return GetLevelCost(Data.concentrationLevel);
-            case "cadence": return GetLevelCost(Data.cadenceLevel);
-            case "crystalDamage": return GetLevelCost(Data.crystalDamageLevel);
-            case "fragmentation": return Data.fragmentationUnlocked ? -1 : 500;
-            case "overpower": return Data.overpowerUnlocked ? -1 : 1000;
-            case "vitality": return GetLevelCost(Data.vitalityLevel);
-            case "recuperation": return GetLevelCost(Data.recuperationLevel);
-            case "armor": return GetLevelCost(Data.armorLevel);
-            case "secondWind": return Data.secondWindUnlocked ? -1 : 500;
-            case "manaShield": return Data.manaShieldUnlocked ? -1 : 900;
-            case "impulsionNova": return Data.impulsionNovaUnlocked ? -1 : 500;
-            case "dash": return GetLevelCost(Data.dashLevel);
-            case "novaRadius": return GetLevelCost(Data.novaRadiusLevel);
-            case "crystalMastery": return Data.crystalMasteryUnlocked ? -1 : 600;
-            case "phantomDash": return Data.phantomDashUnlocked ? -1 : 1200;
-            case "reputationDamage": return GetReputationLevelCost(Data.reputationDamageLevel);
-            case "reputationSpeed": return GetReputationLevelCost(Data.reputationSpeedLevel);
-            case "reputationRegen": return GetReputationLevelCost(Data.reputationRegenLevel);
+            case 0: return node.costLevel1;
+            case 1: return node.costLevel2;
+            case 2: return node.costLevel3;
             default: return -1;
         }
     }
 
-    private int GetLevelCost(int currentLevel)
-    {
-        int[] costs = { 100, 300, 700 };
-        if (currentLevel >= costs.Length) return -1;
-        return costs[currentLevel];
-    }
-
+    // MODIFIÉ (2026-10-27, refonte de l'économie) - 100/300/700/1 500/3 000 -> 200/500/1 000/2 000/3 500 (7 200 éclats par
+    // bonus, 21 600 pour les 3) : avec ~100 à 200 éclats par victoire et 5 700 de primes de première victoire, toute la
+    // Réputation demande ~150 parties - l'objectif de très long terme, commun aux 3 personnages.
     private int GetReputationLevelCost(int currentLevel)
     {
-        int[] costs = { 100, 300, 700, 1500, 3000 };
+        int[] costs = { 200, 500, 1000, 2000, 3500 };
         if (currentLevel >= costs.Length) return -1;
         return costs[currentLevel];
     }
@@ -824,6 +945,9 @@ public class MetaProgressionManager : MonoBehaviour
     public bool IsNodeUnlockable(string nodeId)
     {
         if (Data == null) return false;
+        // AJOUTÉ (2026-10-27) - nœuds du milieu : une victoire en Modéré, nœud du haut : une victoire en Violent, avec le
+        // personnage de la branche (SkillTreeData.requiredWinTier).
+        if (!IsNodeWinRequirementMet(nodeId)) return false;
 
         switch (nodeId)
         {
@@ -932,7 +1056,7 @@ public class MetaProgressionManager : MonoBehaviour
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
 
-        Data.totalGold = 50000; // DEBUG : 50000 = de quoi tout acheter (~15 100 pour les 3 branches) avec de la marge ; remettre à 0 pour la release
+        Data.totalGold = 100000; // DEBUG : de quoi tout acheter (~91 750 pour les 3 branches depuis la refonte du 2026-10-27) ; remettre à 0 pour la release
 
         SaveSystem.Save(Data);
     }

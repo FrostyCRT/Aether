@@ -67,8 +67,8 @@
 66	Déclenche l'ultime quand le cristal est chargé	Unleashes your Ultimate once the crystal is charged
 67	Invoque le clone spectral. Nécessite la compétence correspondante	Summons the Spectral Clone. Requires the matching skill
 68	Choisit la 1re carte à la montée de niveau	Picks the 1st card on level up
-69	Choisit la 2e carte à la montée de niveau	Picks the 2nd card on level up
-70	Choisit la 3e carte à la montée de niveau	Picks the 3rd card on level up
+69	Choisit la 2ème carte à la montée de niveau	Picks the 2nd card on level up
+70	Choisit la 3ème carte à la montée de niveau	Picks the 3rd card on level up
 71	Réduit le rayon des orbes de l'arme orbitale	Shrinks the radius of the orbital weapon's orbs
 72	Augmente le rayon des orbes de l'arme orbitale	Widens the radius of the orbital weapon's orbs
 73	Ouvre / ferme le menu pause	Opens / closes the pause menu
@@ -267,7 +267,7 @@
 258	Double Chasse	Double Hunt
 259	Vaincre 2 boss dans la même partie	Defeat 2 bosses in one run
 260	Ascension Rapide	Fast Ascent
-261	Niveau 18 avant la 10e minute	Level 18 before minute 10
+261	Niveau 18 avant la 10ème minute	Level 18 before minute 10
 262	Sans Cristal	Crystal-Free
 263	Sans Ultime jusqu'au boss 2	No Ultimate until boss 2
 264	Résilience	Resilience
@@ -275,13 +275,13 @@
 266	Éclair	Lightning Fast
 267	Vaincre un boss en moins de 30s	Defeat a boss in under 30s
 268	Fortune	Fortune
-269	Avec au moins 3000 Or ramassé	Collect at least 3000 gold
+269	Avec au moins 1200 Or ramassé	Collect at least 1200 gold
 270	Puissance Absolue	Absolute Power
 271	Niveau 30 dans la même partie	Reach level 30 in one run
-272	Or x{0}	Gold x{0}
+272	+{0} or	+{0} gold
 273	Niv. {0}/{1}	Lv. {0}/{1}
 274	En cours	In progress
-275	{0}/3000 Or	{0}/3000 Gold
+275	{0}/{1} Or	{0}/{1} Gold
 276	Pas de défi dans ce mode	No challenge in this mode
 277	Défi déjà réussi cette heure !	Challenge already completed this hour!
 278	Nouveau défi dans {0} min	New challenge in {0} min
@@ -361,16 +361,16 @@
 348	Réputation : Régénération	Reputation: Regeneration
 
 ## Améliorations (ScriptableObjects + UpgradeData)
-349	Marécage Maudit	Cursed Swamp
-350	Tes flaques de boue deviennent un marécage qui foudroie les ennemis	Your mud puddles become an electrified swamp that shocks enemies
-351	Vortex de Mana	Mana Vortex
-352	Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.	A wider, stronger whirlwind of mana shards spins around you.
-353	Lames Ricochet	Ricochet Blades
-354	Ta salve de couteaux perfore et ricoche d'ennemi en ennemi	Your knife volley pierces and ricochets from enemy to enemy
+349	Tourbière Magnétique	Magnetic Bog
+350	Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre	Electrified bogs pull enemies in, then burst into a lightning storm
+351	Couronne Prismatique	Prismatic Crown
+352	Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux	Crystals linked by light beams form a barrier, then sweep the area with rays
+353	Valse des Lames	Blade Waltz
+354	Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout	Your blades ricochet off the screen edges, then fly back to you, cutting through everything
 355	Pluie de Météores	Meteor Shower
 356	Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit	Meteors crash down on enemies and leave burning mud that slows them down
-357	Orbes Foudroyants	Thundering Orbs
-358	Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis	Your orbitals set off chain lightning when they touch enemies
+357	Constellation Orageuse	Storm Constellation
+358	Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation	Your orbs ionize enemies, then lightning links them all into a constellation
 359	Sillage Boueux	Muddy Wake
 360	Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis	Your orbs leave a trail of mud that slows and hurts enemies
 361	Aura	Aura
@@ -403,7 +403,7 @@
 388	+1 flaque de boue supplémentaire	+1 extra mud puddle
 389	+{0}% de dégâts sur toutes tes armes	+{0}% damage on all your weapons
 390	+{0}% de cadence sur toutes tes armes de tir	+{0}% fire rate on all your shooting weapons
-391	Restaure {0}% de tes PV max	Restores {0}% of your max HP
+391	Augmente tes PV max de {0}% et en restaure {1}%	Increases your max HP by {0}% and restores {1}%
 392	Débloque le Double Tir : ton tir de base tire deux fois	Unlocks Double Shot: your basic attack fires twice
 393	Débloque Boule de feu : équipe l'arme exclusive d'Aether	Unlocks Fireball: equips Aether's exclusive weapon
 394	Le rayon d'explosion est 2 fois plus grand	The explosion radius is twice as large
@@ -608,11 +608,11 @@
 ## Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
 578	FUSION	FUSION
 579	Éclat	Shard
-580	Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.	Never drop below 30% health, from the start of the run until the 2nd boss dies.
-581	Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss	Don't use the Ultimate (F key) before defeating the 2nd boss
+580	Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.	Never drop below 30% health, from the start of the run until the 2nd boss dies.
+581	Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss	Don't use the Ultimate (F key) before defeating the 2nd boss
 582	Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.	Never drop below 50% health, from the start of the run until the 1st boss is defeated.
 583	Vaincre n'importe quel boss en moins de 30 secondes après son apparition	Defeat any boss within 30 seconds of its appearance
-584	Ramasser au moins 3000 Or au total durant la partie	Collect at least 3000 Gold in total during the run
+584	Ramasser au moins 1200 Or au total durant la partie	Collect at least 1200 Gold in total during the run
 585	MODÉRÉ	MODERATE
 586	VIOLENT	SEVERE
 587	APOCALYPTIQUE	APOCALYPTIC
@@ -640,3 +640,11 @@
 609	Niveau	Level
 610	Boss	Bosses
 611	Titans	Titans
+
+## REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+612	Première victoire en Modéré : +{0} éclats	First win on Moderate: +{0} Shards
+613	Première victoire en Violent : +{0} éclats	First win on Severe: +{0} Shards
+614	Première victoire en Apocalyptique : +{0} éclats	First win on Apocalyptic: +{0} Shards
+615	Victoire en Modéré	Win on Moderate
+616	Victoire en Violent	Win on Severe
+617	avec {0}	with {0}

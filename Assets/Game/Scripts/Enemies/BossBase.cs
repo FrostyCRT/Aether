@@ -137,9 +137,25 @@ public class BossBase : MonoBehaviour
     // `TakeDamage` le passait directement en négatif -> mort instantanée, aléatoirement, sans rapport apparent avec
     // les dégâts réellement infligés. `Awake()` s'exécute lui de façon synchrone à Instantiate(), AVANT que quoi
     // que ce soit d'autre puisse interagir avec le nouvel objet - élimine la fenêtre de course entièrement.
+    // AJOUTÉ (2026-10-27, hitbox des boss) - forme réelle du corps animé, voir BossBodyShape.
+    private BossBodyShape _bodyShape;
+
+    // Le point (vu de dessus) touche-t-il vraiment le corps du boss ? margin = rayon de ce qui touche (projectile,
+    // joueur). Vrai par défaut si le boss n'a pas de forme calculable (aucun maillage lisible).
+    public bool IsOnBody(Vector3 point, float margin)
+    {
+        return _bodyShape == null || _bodyShape.ContainsXZ(point, margin);
+    }
+
+    // Rayon du joueur pour les dégâts de contact (CapsuleCollider du joueur, vu de dessus).
+    private const float PlayerContactRadius = 0.5f;
+
     protected virtual void Awake()
     {
         _currentHealth = _maxHealth;
+
+        _bodyShape = GetComponent<BossBodyShape>();
+        if (_bodyShape == null) _bodyShape = gameObject.AddComponent<BossBodyShape>();
 
         // AJOUTÉ (2026-10-24, retour utilisateur : "les boss quand ils spawn [...] font un 360 degré pour trouver le
         // joueur [...] c'est pas beau") - instanciés avec Quaternion.identity (WaveManager, invocations du Boss 3),
@@ -605,7 +621,8 @@ public class BossBase : MonoBehaviour
                     if (chest != null) chest.Init(gemSpawnPos.y);
                 }
             }
-            else if (XPGemSpawner.Instance != null)
+            // Mini-boss sans XP (SetXPValue(0) sans fraction de barre, voir BossCorruptedSource.InitSummonedBoss).
+            else if (XPGemSpawner.Instance != null && (_xpValue > 0f || _xpBarFraction > 0f))
             {
                 float xpReward = _xpValue;
                 // Mini-boss invoqué : récompense = fraction de la barre d'XP du niveau ACTUEL, lue à la mort
@@ -622,7 +639,7 @@ public class BossBase : MonoBehaviour
         }
 
         GameManager.Instance.AddKill();
-        MetaProgressionManager.Instance.AddRunGold(_goldValue);
+        MetaProgressionManager.Instance.AddBossGold(_goldValue); // réduit en Ruée / Choc des titans (voir AddBossGold)
 
         if (!IsSummoned && GameManager.Instance != null)
             GameManager.Instance.AddBossKill();
@@ -747,7 +764,9 @@ public class BossBase : MonoBehaviour
     protected virtual void OnTriggerEnter(Collider other)
     {
         if (_contactDamageSuppressed) return;
-        if (other.CompareTag("Player"))
+        // MODIFIÉ (2026-10-27, hitbox des boss) - contact uniquement si le joueur touche vraiment le corps (le collider
+        // est la boîte qui l'englobe, voir BossBodyShape).
+        if (other.CompareTag("Player") && IsOnBody(other.transform.position, PlayerContactRadius))
         {
             other.TryGetComponent(out HealthSystem health);
             // MODIFIE - precise "boss" comme source du degat, pour le message
@@ -760,7 +779,7 @@ public class BossBase : MonoBehaviour
     protected virtual void OnTriggerStay(Collider other)
     {
         if (_contactDamageSuppressed) return;
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && IsOnBody(other.transform.position, PlayerContactRadius))
         {
             other.TryGetComponent(out HealthSystem health);
             if (health != null)
@@ -779,9 +798,23 @@ public class BossBase : MonoBehaviour
         _currentHealth = Mathf.Max(1f, health);
     }
 
+    // PV max ET courants imposés (mini-boss du boss 3 en Classique/Sans fin, voir BossCorruptedSource.InitSummonedBoss) :
+    // la barre de vie du mini-boss part pleine, contrairement à InitWithReducedHP qui ne touche qu'aux PV courants.
+    public void InitSummonedHealth(float health)
+    {
+        _maxHealth = Mathf.Max(1f, health);
+        _currentHealth = _maxHealth;
+    }
+
     public void SetXPValue(float value)
     {
         _xpValue = value;
+    }
+
+    // AJOUTÉ (2026-10-27, refonte de l'économie) - mini-boss du boss 3 sans or (voir BossCorruptedSource.InitSummonedBoss).
+    public void SetGoldValue(int value)
+    {
+        _goldValue = Mathf.Max(0, value);
     }
 
     // AJOUTE (2026-09-24) - > 0 : l'XP donnée à la mort vaut cette fraction de la barre d'XP du niveau en cours

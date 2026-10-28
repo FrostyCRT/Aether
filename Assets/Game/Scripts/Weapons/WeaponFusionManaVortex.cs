@@ -2,205 +2,369 @@ using UnityEngine;
 using System.Collections.Generic;
 
 // FUSION (2026-09-27) : Aura + Orbitaux, toutes les deux au palier max → cette arme les remplace [Kael].
-// Réunit les deux mécaniques en une seule : le champ de dégâts/ralentissement autour du joueur (copié de WeaponAura)
-// ET des éclats de mana en orbite (copiés de WeaponOrbital, même prefab poolé "OrbitalProjectile") — plus grands,
-// plus nombreux, plus forts que la somme des deux armes d'origine. Aucun nouvel asset visuel nécessaire.
+//
+// REFONTE COMPLÈTE (2026-10-27, retour utilisateur : "il faut faire un rework de la fusion aura + orbitaux [...] il faut
+// que ça crée du changement au gameplay, et ça doit être plus puissant que les 2 sous-fusions améliorées au max") -
+// l'ancien Vortex de Mana n'était qu'un disque d'Aura agrandi avec les mêmes orbes par-dessus : aucune mécanique
+// nouvelle. Devient la COURONNE PRISMATIQUE (classe et id "ManaVortex" conservés : référencés par l'asset de fusion et
+// les sauvegardes) :
+//
+//  1. COURONNE - les cristaux hérités des Orbitaux (un de plus) tournent au sol autour du joueur et sont RELIÉS par des
+//     rayons de lumière : le cercle des Orbitaux devient un polygone fermé. Un ennemi qui touche un rayon est brûlé et
+//     repoussé vers l'extérieur : la couronne est un REMPART que le joueur règle avec A/E (identité Orbitaux).
+//  2. CHAMP - l'intérieur du polygone brûle et ralentit (identité Aura, ralentissement hérité). Sa puissance dépend de la
+//     taille de la couronne : resserrée, elle concentre le champ (jusqu'à x2) ; élargie, elle le dilue (x0,8) mais ses
+//     rayons tiennent la horde plus loin. Choix tactique permanent avec A/E, que ni l'Aura ni les Orbitaux n'offraient.
+//  3. RÉFRACTION - à intervalle régulier, les cristaux se chargent (ils grossissent et blanchissent : le joueur voit
+//     venir le coup), puis chacun projette un faisceau vers l'extérieur pendant que la couronne accélère : des
+//     faisceaux en rotation balaient tout l'écran autour du joueur. Seule attaque du jeu qui balaie en tournant.
+//
+// Aucun objet poolé "OrbitalProjectile" : tous les contacts sont calculés géométriquement (segments, polygone, secteurs
+// balayés par les faisceaux), les visuels vivent dans PrismaticCrownVisual (Music & VFX/PrismaticCrownVFX.cs), posés
+// au SOL en hauteur absolue et jamais enfants du joueur (ni décalage de hauteur, ni rotation héritée : même centre
+// exact que l'Aura et la Boue).
 public class WeaponFusionManaVortex : MonoBehaviour
 {
-    [Header("Champ (hérité de l'Aura)")]
-    [SerializeField] private float _radius = 8f;
-    [SerializeField] private float _tickRate = 0.25f;
-    [SerializeField] private float _slowMultiplier = 0.55f;
+    [Header("Couronne (héritée des Orbitaux, A/E)")]
+    [SerializeField] private float _crownRadius = 6.5f;   // = rayon de base de l'Aura et distance des flaques de Boue
+    [SerializeField] private float _minCrownRadius = 3f;
+    [SerializeField] private float _maxCrownRadius = 10f;
+    [SerializeField] private float _rangeChangeSpeed = 2.5f;
+    [SerializeField] private float _spinSpeed = 70f;      // degrés par seconde
+    [SerializeField] private int _crystalCount = 6;
+    [SerializeField] private int _maxCrystalCount = 8;
 
-    // CORRIGÉ (2026-10-05) - retour utilisateur : "les fusions ne sont pas très efficaces [...] pas plus
-    // puissant que 2 upgrades améliorées au max". Cause trouvée en relisant le code : _orbitalCount était fixé
-    // à 3 EN DUR ici, alors qu'Orbitaux maxé seul atteint 5 orbitaux (2 de base + 3 upgrades) - fusionner perdait
-    // donc jusqu'à 2 orbitaux sur 5 (-40% de dégâts orbitaux), jamais compensé par ailleurs. Mesuré en jeu avec
-    // des ennemis DISPERSÉS ET MOBILES (pas des mannequins groupés comme la passe du 2026-09-27, qui masquait ce
-    // genre de perte) : ×0,73 - plus FAIBLE que les 2 cartes maxées. Passé en valeur par défaut seulement (sert
-    // de plancher si jamais Init() n'est pas appelé) ; Init() écrase maintenant cette valeur avec le VRAI nombre
-    // d'orbitaux hérité (voir UpgradeData.ApplyFusionResult, WeaponOrbital.OrbitalCount).
-    [Header("Éclats en orbite (hérités des Orbitaux)")]
-    [SerializeField] private float _orbitRadius = 4f;
-    [SerializeField] private float _orbitSpeed = 220f;
-    [SerializeField] private int _orbitalCount = 5;
+    [Header("Rayons du contour")]
+    [Tooltip("Distance au rayon (corps de l'ennemi compris) en dessous de laquelle il est touché.")]
+    [SerializeField] private float _rimHitRadius = 0.85f;
+    [SerializeField] private float _rimHitCooldown = 0.3f;
+    [SerializeField] private float _rimKnockback = 3f;
 
-    // AJOUTE (2026-09-27) - manquait entièrement (retour utilisateur : "le A/E pour la range ne fonctionne pas") :
-    // WeaponOrbital a ce contrôle, ces deux champs et le Update() associé n'avaient jamais été portés ici lors de
-    // la fusion.
-    [Header("Contrôle Range (A/E), hérité des Orbitaux")]
-    [SerializeField] private float _minOrbitRadius = 1f;
-    [SerializeField] private float _maxOrbitRadius = 10f;
-    [SerializeField] private float _rangeChangeSpeed = 2f;
+    [Header("Champ intérieur (hérité de l'Aura)")]
+    [SerializeField] private float _fieldTickRate = 0.25f;
+    [SerializeField] private float _referenceRadius = 6.5f;
+    [SerializeField] private float _minDensity = 0.8f;
+    [SerializeField] private float _maxDensity = 2f;
 
-    private float _fieldDamagePerSecond;
-    private float _orbitalDamage;
+    [Header("Réfraction (faisceaux en rotation)")]
+    [SerializeField] private float _refractionInterval = 5.5f;
+    [SerializeField] private float _refractionWindup = 0.6f;
+    [SerializeField] private float _refractionDuration = 1.3f;
+    [SerializeField] private float _laserLength = 9f;
+    [SerializeField] private float _laserHitRadius = 0.9f;
+    [SerializeField] private float _laserHitCooldown = 0.2f;
+    [SerializeField] private float _refractionSpinBoost = 2.2f;
+    private const float LaserExtendTime = 0.15f;
+    private const float LaserFadeTime = 0.25f;
 
-    private float _tickTimer = 0f;
-    private static readonly Collider[] _overlapBuffer = new Collider[64];
+    [SerializeField] private float _scanInterval = 0.06f;
+
+    private float _rimDamage;
+    private float _fieldDps;
+    private float _laserDamage;
+    private float _slowMultiplier = 0.6f;
+
+    private float _angle;            // degrés, angle du cristal 0
+    private float _refractionTimer;
+    private float _scanTimer;
+    private float _fieldTimer;
+    private float _lastScanAngle;
+    private bool _initialized;
+
+    private PrismaticCrownVisual _visual;
+
+    private static readonly Collider[] _overlapBuffer = new Collider[256];
+    private readonly HashSet<int> _seenThisScan = new HashSet<int>();
+    private readonly HashSet<int> _inFieldThisTick = new HashSet<int>();
     private readonly Dictionary<int, EnemyBase> _currentlySlowed = new Dictionary<int, EnemyBase>();
-    private readonly HashSet<int> _inRangeThisTick = new HashSet<int>();
-    private BossBase _currentlySlowedBoss = null;
+    private BossBase _currentlySlowedBoss;
+    private readonly Dictionary<int, float> _nextRimHit = new Dictionary<int, float>();
+    private readonly Dictionary<int, float> _nextLaserHit = new Dictionary<int, float>();
 
-    private readonly List<GameObject> _orbitals = new List<GameObject>();
-    private readonly List<OrbitalProjectile> _orbitalScripts = new List<OrbitalProjectile>();
-    private float _currentAngle = 0f;
+    private Vector3 Center => new Vector3(transform.position.x, 0f, transform.position.z);
+    private float Density => Mathf.Clamp(_referenceRadius / _crownRadius, _minDensity, _maxDensity);
 
-    private LineRenderer _ringRenderer;
-    [SerializeField] private float _ringGroundY = 0.05f;
-    private const int RingSegments = 48;
-    [SerializeField] private Color _ringColor = new Color(0.55f, 0.55f, 1f, 0.55f);
-
-    // Appelé une fois par UpgradeData.ApplyFusionResult, avec les dégâts hérités des 2 armes d'origine et le VRAI
-    // nombre d'orbitaux accumulé (voir note ci-dessus) - au moins _orbitalCount (5), jamais moins même si l'appelant
-    // passe une valeur inférieure par erreur.
-    public void Init(GameObject orbitalPrefab, float inheritedFieldDamage, float inheritedOrbitalDamage, int inheritedOrbitalCount)
+    // Appelé une fois par UpgradeData.ApplyFusionResult avec ce que les 2 armes d'origine avaient accumulé (Réputation et
+    // "Dégâts+" déjà inclus : pas de second bonus de Réputation ici).
+    public void Init(float inheritedFieldDps, float inheritedOrbitalDamage, int inheritedOrbitalCount, float inheritedSlow)
     {
-        // CORRIGÉ (2026-10-18, audit complet des fusions) - remesuré avec la méthode [[balance-testing-dummies]] :
-        // ×3/×3 ne donnait que ×1,99 la référence (5174 DPS contre 2601 pour Aura + Orbitaux maxées séparément) -
-        // tout juste au-dessus du double, en dessous de la marge des autres fusions déjà auditées (~2,2-2,9x).
-        // Relevé légèrement (le champ de l'Aura, un disque plein centré sur le joueur, n'avait de toute façon
-        // jamais le problème de portée trouvé sur les fusions à base de flaques en anneau).
-        _fieldDamagePerSecond = inheritedFieldDamage * 3.8f;
-        _orbitalDamage = inheritedOrbitalDamage * 3.8f;
-        _orbitalCount = Mathf.Max(_orbitalCount, inheritedOrbitalCount);
-        CreateRingVisual();
-        SpawnOrbitals(orbitalPrefab);
+        // MESURÉ (2026-10-27) en partie réelle, Apocalyptique 3:20 -> 4:20, joueur invincible qui se déplace lentement,
+        // tir de base et Nova coupés, mêmes vagues pour les 2 essais : Aura + Orbitaux maxés = 973 PV retirés/s.
+        // Premier jet (x1,4 / x3 / x1,8) = 3 580 PV/s, soit x3,7 : au-delà des autres fusions (x2,2 à x2,9).
+        // x1 / x2,2 / x1,3 = 2 979 PV/s (x3,1), encore haut. Retenu : x0,85 / x1,9 / x1,1.
+        _rimDamage = inheritedOrbitalDamage * 0.85f;
+        _fieldDps = inheritedFieldDps * 1.9f;
+        _laserDamage = inheritedOrbitalDamage * 1.1f;
+        _slowMultiplier = Mathf.Clamp(inheritedSlow, 0.3f, 1f);
+        _crystalCount = Mathf.Clamp(Mathf.Max(_crystalCount, inheritedOrbitalCount + 1), 3, _maxCrystalCount);
+        _initialized = true;
+
+        _visual = new GameObject("PrismaticCrown").AddComponent<PrismaticCrownVisual>();
+        _visual.Build(_maxCrystalCount);
+        RenderVisual(0f, 0f, 0f);
     }
 
     public void AddDamage(float value)
     {
-        _fieldDamagePerSecond += _fieldDamagePerSecond * value;
-        _orbitalDamage += _orbitalDamage * value;
-        foreach (var s in _orbitalScripts) if (s != null) s.SetDamage(_orbitalDamage);
+        _rimDamage += _rimDamage * value;
+        _fieldDps += _fieldDps * value;
+        _laserDamage += _laserDamage * value;
     }
 
-    private void CreateRingVisual()
-    {
-        GameObject ringGO = new GameObject("ManaVortexRing");
-        ringGO.transform.SetParent(transform, false);
-        // CORRIGE (2026-10-16, audit) - même bug "hauteur Y" que l'Aura (corrigé là-bas le 2026-10-06) : le pivot du
-        // joueur est à hauteur de torse (~1,5) et la hauteur des points était en plus multipliée par le rayon
-        // (0.05 x 8 = 0.4) - l'anneau flottait vers ~1,9. Même calcul que WeaponAura : décalage local jusqu'au sol.
-        ringGO.transform.localPosition = new Vector3(0f, _ringGroundY - transform.position.y, 0f);
-        _ringRenderer = ringGO.AddComponent<LineRenderer>();
-        _ringRenderer.useWorldSpace = false;
-        _ringRenderer.loop = true;
-        _ringRenderer.positionCount = RingSegments;
-        _ringRenderer.widthMultiplier = 0.12f;
-        _ringRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        _ringRenderer.startColor = _ringColor;
-        _ringRenderer.endColor = _ringColor;
-        for (int i = 0; i < RingSegments; i++)
-        {
-            float angle = (i / (float)RingSegments) * Mathf.PI * 2f;
-            _ringRenderer.SetPosition(i, new Vector3(Mathf.Cos(angle) * _radius, 0f, Mathf.Sin(angle) * _radius));
-        }
-    }
-
-    private void SpawnOrbitals(GameObject orbitalPrefab)
-    {
-        if (ObjectPool.Instance == null || orbitalPrefab == null) return;
-        for (int i = 0; i < _orbitalCount; i++)
-        {
-            GameObject go = ObjectPool.Instance.Get("OrbitalProjectile", transform.position, Quaternion.identity);
-            if (go == null) continue;
-            go.transform.SetParent(transform);
-            _orbitals.Add(go);
-            go.TryGetComponent(out OrbitalProjectile proj);
-            if (proj != null)
-            {
-                proj.SetDamage(_orbitalDamage);
-                _orbitalScripts.Add(proj);
-            }
-        }
-    }
+    // Lus par l'info-bulle / les tests.
+    public int CrystalCount => _crystalCount;
+    public float CrownRadius => _crownRadius;
 
     private void Update()
     {
-        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
-        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        if (!_initialized) return;
+        if (GameManager.Instance != null && (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused)) return;
 
-        UpdateOrbitals();
-
-        _tickTimer += Time.deltaTime;
-        if (_tickTimer >= _tickRate)
-        {
-            ApplyFieldTick();
-            _tickTimer = 0f;
-        }
-    }
-
-    private void UpdateOrbitals()
-    {
-        if (_orbitals.Count == 0) return;
+        float dt = Time.deltaTime;
 
         if (GameInput.Held(GameAction.OrbitShrink))
-            _orbitRadius = Mathf.Max(_minOrbitRadius, _orbitRadius - _rangeChangeSpeed * Time.deltaTime);
+            _crownRadius = Mathf.Max(_minCrownRadius, _crownRadius - _rangeChangeSpeed * dt);
         if (GameInput.Held(GameAction.OrbitGrow))
-            _orbitRadius = Mathf.Min(_maxOrbitRadius, _orbitRadius + _rangeChangeSpeed * Time.deltaTime);
+            _crownRadius = Mathf.Min(_maxCrownRadius, _crownRadius + _rangeChangeSpeed * dt);
 
-        _currentAngle += _orbitSpeed * Time.deltaTime;
-        float angleStep = 360f / _orbitals.Count;
-        for (int i = 0; i < _orbitals.Count; i++)
+        // Cycle de Réfraction : [repos ... charge (windup)] [faisceaux (duration)] puis on recommence.
+        _refractionTimer += dt;
+        float cycle = _refractionInterval + _refractionDuration;
+        if (_refractionTimer >= cycle) _refractionTimer -= cycle;
+
+        float charge01 = 0f, laserExtent = 0f, laserAlpha = 0f;
+        bool lasersOn = _refractionTimer >= _refractionInterval;
+        if (lasersOn)
         {
-            if (_orbitals[i] == null) continue;
-            float angle = (_currentAngle + angleStep * i) * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * _orbitRadius;
-            _orbitals[i].transform.position = transform.position + offset;
+            float lt = _refractionTimer - _refractionInterval;
+            laserExtent = FXSprites.EaseOutCubic(lt / LaserExtendTime);
+            laserAlpha = Mathf.Clamp01((_refractionDuration - lt) / LaserFadeTime);
+            if (lt < dt) OnRefractionStart();
         }
+        else if (_refractionTimer >= _refractionInterval - _refractionWindup)
+        {
+            charge01 = (_refractionTimer - (_refractionInterval - _refractionWindup)) / _refractionWindup;
+        }
+
+        _angle = Mathf.Repeat(_angle + _spinSpeed * (lasersOn ? _refractionSpinBoost : 1f) * dt, 360f);
+
+        _scanTimer += dt;
+        _fieldTimer += dt;
+        if (_scanTimer >= _scanInterval)
+        {
+            bool fieldDue = _fieldTimer >= _fieldTickRate;
+            Scan(lasersOn && laserAlpha > 0.3f ? _laserLength * laserExtent : 0f, fieldDue);
+            if (fieldDue) _fieldTimer = 0f;
+            _scanTimer = 0f;
+            _lastScanAngle = _angle;
+        }
+
+        RenderVisual(charge01, laserExtent, laserAlpha);
     }
 
-    private void ApplyFieldTick()
+    private void RenderVisual(float charge01, float laserExtent, float laserAlpha)
     {
-        _inRangeThisTick.Clear();
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _radius, _overlapBuffer, EnemyLayers.Mask);
-        float tickDamage = _fieldDamagePerSecond * _tickRate * PlayerBuffs.OutgoingDamageMultiplier; // + Concentration / Surpuissance (2026-10-16, audit)
+        if (_visual == null) return;
+        float density01 = Mathf.InverseLerp(_minDensity, _maxDensity, Density);
+        _visual.Render(Center, _crownRadius, _angle, _crystalCount, density01, charge01, _laserLength * laserExtent, laserAlpha);
+    }
+
+    private void OnRefractionStart()
+    {
+        CameraShakeFX.Shake(0.12f);
+        if (_visual != null) _visual.FlashRefraction();
+        // Le balayage des faisceaux part de l'angle courant : pas de secteur fantôme hérité de la phase de repos.
+        _lastScanAngle = _angle;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Contacts
+    // ------------------------------------------------------------------------------------------------------------
+
+    private void Scan(float laserLength, bool fieldDue)
+    {
+        Vector3 c = Center;
+        float scanRadius = _crownRadius + Mathf.Max(_rimHitRadius, laserLength + _laserHitRadius) + 1.5f;
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, scanRadius, _overlapBuffer, EnemyLayers.Mask);
+
+        float now = Time.time;
+        float mult = PlayerBuffs.OutgoingDamageMultiplier;
+        float fieldTick = _fieldDps * Density * _fieldTickRate * mult;
+        float halfStep = Mathf.PI / _crystalCount;
+        float apothem = _crownRadius * Mathf.Cos(halfStep);
+
+        _seenThisScan.Clear();
+        if (fieldDue) _inFieldThisTick.Clear();
+
         for (int i = 0; i < hitCount; i++)
         {
-            Collider hit = _overlapBuffer[i];
-            if (hit == null || !hit.CompareTag("Enemy")) continue;
-            int enemyId = hit.GetInstanceID();
-            if (_inRangeThisTick.Contains(enemyId)) continue;
-            _inRangeThisTick.Add(enemyId);
+            Collider col = _overlapBuffer[i];
+            if (col == null || !col.CompareTag("Enemy")) continue;
 
-            hit.TryGetComponent(out EnemyBase enemy);
-            if (enemy != null)
+            col.TryGetComponent(out EnemyBase enemy);
+            BossBase boss = enemy == null ? col.GetComponentInParent<BossBase>() : null;
+            if (enemy == null && boss == null) continue;
+
+            int id = enemy != null ? enemy.GetInstanceID() : boss.GetInstanceID();
+            if (!_seenThisScan.Add(id)) continue;   // un boss a plusieurs colliders
+
+            Vector3 p = enemy != null ? enemy.transform.position : boss.transform.position;
+            Vector3 rel = new Vector3(p.x - c.x, 0f, p.z - c.z);
+            float r = rel.magnitude;
+            float phi = Mathf.Atan2(rel.z, rel.x);
+
+            // Champ : point dans le polygone régulier (distance au centre comparée à l'apothème dans son secteur).
+            float local = Mathf.Repeat(phi - _angle * Mathf.Deg2Rad, 2f * halfStep) - halfStep;
+            bool inside = r * Mathf.Cos(local) <= apothem;
+            if (!inside && boss != null) inside = boss.IsOnBody(c, 0.5f);
+
+            if (fieldDue && inside)
             {
-                enemy.TakeDamage(tickDamage, DamageNumberSpawner.ColorManaVortex);
-                if (!_currentlySlowed.ContainsKey(enemyId)) { enemy.SetSpeedMultiplier(_slowMultiplier); _currentlySlowed[enemyId] = enemy; }
-                continue;
+                _inFieldThisTick.Add(id);
+                if (enemy != null)
+                {
+                    enemy.TakeDamage(fieldTick, DamageNumberSpawner.ColorManaVortex);
+                    if (!_currentlySlowed.ContainsKey(id)) { enemy.SetSpeedMultiplier(_slowMultiplier); _currentlySlowed[id] = enemy; }
+                }
+                else
+                {
+                    boss.TakeDamage(fieldTick, DamageNumberSpawner.ColorManaVortex);
+                    boss.SetSpeedMultiplier(_slowMultiplier);
+                    _currentlySlowedBoss = boss;
+                }
             }
-            BossBase boss = hit.GetComponentInParent<BossBase>();
-            if (boss != null)
+
+            // Rayons du contour.
+            if (!_nextRimHit.TryGetValue(id, out float nextRim) || now >= nextRim)
             {
-                if (!_inRangeThisTick.Add(boss.GetInstanceID())) continue;
-                boss.TakeDamage(tickDamage, DamageNumberSpawner.ColorManaVortex);
-                boss.SetSpeedMultiplier(_slowMultiplier);
-                _currentlySlowedBoss = boss;
+                Vector3 contact;
+                float d = DistanceToRim(c, p, out contact);
+                bool touches = enemy != null ? d <= _rimHitRadius : boss.IsOnBody(contact, _rimHitRadius * 0.5f);
+                if (touches)
+                {
+                    _nextRimHit[id] = now + _rimHitCooldown;
+                    float dmg = _rimDamage * mult;
+                    if (enemy != null)
+                    {
+                        enemy.TakeDamage(dmg, DamageNumberSpawner.ColorManaVortex);
+                        if (r > 0.01f) enemy.ApplyKnockback(rel / r * _rimKnockback);
+                    }
+                    else boss.TakeDamage(dmg, DamageNumberSpawner.ColorManaVortex);
+                    contact.y = 0.4f;
+                    ImpactSparkVFX.Spawn(contact, PrismaticCrownVisual.Prism, 0.8f);
+                }
+            }
+
+            // Faisceaux de Réfraction : chaque faisceau est le rayon radial du cristal i, de R à R + longueur. Contact
+            // si l'ennemi est dans cette tranche de distance ET dans le secteur angulaire BALAYÉ depuis le dernier scan
+            // (le faisceau tourne vite : un test ponctuel laisserait passer les ennemis entre deux scans).
+            if (laserLength > 0f && (!_nextLaserHit.TryGetValue(id, out float nextLaser) || now >= nextLaser))
+            {
+                if (LaserTouches(enemy, boss, c, p, r, phi, laserLength, out Vector3 laserPoint))
+                {
+                    _nextLaserHit[id] = now + _laserHitCooldown;
+                    float dmg = _laserDamage * mult;
+                    if (enemy != null) enemy.TakeDamage(dmg, DamageNumberSpawner.ColorManaVortex);
+                    else boss.TakeDamage(dmg, DamageNumberSpawner.ColorManaVortex);
+                    laserPoint.y = 0.4f;
+                    ImpactSparkVFX.Spawn(laserPoint, PrismaticCrownVisual.WhiteHot, 0.9f);
+                }
             }
         }
+
+        if (fieldDue) RestoreSpeedOutsideField();
+        if (_nextRimHit.Count > 512) PruneCooldowns(_nextRimHit, now);
+        if (_nextLaserHit.Count > 512) PruneCooldowns(_nextLaserHit, now);
+    }
+
+    private Vector3 CrystalPosition(Vector3 c, int i)
+    {
+        float a = (_angle + 360f / _crystalCount * i) * Mathf.Deg2Rad;
+        return c + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * _crownRadius;
+    }
+
+    private float DistanceToRim(Vector3 c, Vector3 p, out Vector3 contact)
+    {
+        Vector3 flatP = new Vector3(p.x, 0f, p.z);
+        float best = float.MaxValue;
+        contact = flatP;
+        Vector3 a = CrystalPosition(c, 0);
+        for (int i = 0; i < _crystalCount; i++)
+        {
+            Vector3 b = CrystalPosition(c, (i + 1) % _crystalCount);
+            Vector3 ab = b - a;
+            float t = Mathf.Clamp01(Vector3.Dot(flatP - a, ab) / Mathf.Max(0.0001f, ab.sqrMagnitude));
+            Vector3 q = a + ab * t;
+            float d = (flatP - q).magnitude;
+            if (d < best) { best = d; contact = q; }
+            a = b;
+        }
+        return best;
+    }
+
+    private bool LaserTouches(EnemyBase enemy, BossBase boss, Vector3 c, Vector3 p, float r, float phi, float laserLength, out Vector3 point)
+    {
+        point = p;
+        float step = 360f / _crystalCount;
+        // Secteur balayé depuis le dernier scan (angles du cristal 0), ramené à [0, 360).
+        float sweep = Mathf.Repeat(_angle - _lastScanAngle, 360f);
+
+        for (int i = 0; i < _crystalCount; i++)
+        {
+            float laserAngle = _angle + step * i;
+            if (enemy != null)
+            {
+                if (r < _crownRadius - _laserHitRadius || r > _crownRadius + laserLength + _laserHitRadius) continue;
+                float halfWidthDeg = Mathf.Atan2(_laserHitRadius, Mathf.Max(0.5f, r)) * Mathf.Rad2Deg;
+                // Retard angulaire de l'ennemi derrière le faisceau : contact s'il est dans [-largeur, balayage + largeur].
+                float behind = Mathf.DeltaAngle(phi * Mathf.Rad2Deg, laserAngle);
+                if (behind < -halfWidthDeg || behind > sweep + halfWidthDeg) continue;
+                float a = laserAngle * Mathf.Deg2Rad;
+                point = c + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r;
+                return true;
+            }
+
+            // Boss : point du faisceau le plus proche de son centre, puis test sur sa vraie silhouette.
+            float la = laserAngle * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Cos(la), 0f, Mathf.Sin(la));
+            Vector3 start = c + dir * _crownRadius;
+            float t = Mathf.Clamp(Vector3.Dot(new Vector3(p.x, 0f, p.z) - start, dir), 0f, laserLength);
+            Vector3 q = start + dir * t;
+            if (boss.IsOnBody(q, _laserHitRadius * 0.5f)) { point = q; return true; }
+        }
+        return false;
+    }
+
+    private void RestoreSpeedOutsideField()
+    {
         List<int> toRemove = null;
         foreach (var kvp in _currentlySlowed)
         {
-            if (_inRangeThisTick.Contains(kvp.Key)) continue;
+            if (_inFieldThisTick.Contains(kvp.Key)) continue;
             if (kvp.Value != null) kvp.Value.SetSpeedMultiplier(1f);
             (toRemove ??= new List<int>()).Add(kvp.Key);
         }
         if (toRemove != null) foreach (int id in toRemove) _currentlySlowed.Remove(id);
-        if (_currentlySlowedBoss != null && !_inRangeThisTick.Contains(_currentlySlowedBoss.GetInstanceID()))
+
+        if (_currentlySlowedBoss != null && !_inFieldThisTick.Contains(_currentlySlowedBoss.GetInstanceID()))
         {
             _currentlySlowedBoss.SetSpeedMultiplier(1f);
             _currentlySlowedBoss = null;
         }
     }
 
+    private static readonly List<int> _pruneBuffer = new List<int>();
+    private static void PruneCooldowns(Dictionary<int, float> map, float now)
+    {
+        _pruneBuffer.Clear();
+        foreach (var kvp in map) if (kvp.Value <= now) _pruneBuffer.Add(kvp.Key);
+        foreach (int id in _pruneBuffer) map.Remove(id);
+    }
+
     private void OnDestroy()
     {
         foreach (var kvp in _currentlySlowed) if (kvp.Value != null) kvp.Value.SetSpeedMultiplier(1f);
         if (_currentlySlowedBoss != null) _currentlySlowedBoss.SetSpeedMultiplier(1f);
-        if (ObjectPool.Instance != null)
-            foreach (var go in _orbitals) if (go != null) ObjectPool.Instance.ReturnToPool("OrbitalProjectile", go);
-        if (_ringRenderer != null) Destroy(_ringRenderer.gameObject);
+        if (_visual != null) Destroy(_visual.gameObject);
     }
 }

@@ -27,8 +27,8 @@ public static class LocTableDE
         { "Pause", "Pause" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "Dash: blitzschnelle Ausweichbewegung, kurz unverwundbar, absorbiert Projektile" },
         { "Déclenche l'ultime quand le cristal est chargé", "Entfesselt deine Ultimate, sobald der Kristall aufgeladen ist" },
         { "Invoque le clone spectral. Nécessite la compétence correspondante", "Ruft den Spektralklon herbei. Erfordert die passende Fähigkeit" },
-        { "Choisit la 1re carte à la montée de niveau", "Wählt beim Levelaufstieg die 1. Karte" }, { "Choisit la 2e carte à la montée de niveau", "Wählt beim Levelaufstieg die 2. Karte" },
-        { "Choisit la 3e carte à la montée de niveau", "Wählt beim Levelaufstieg die 3. Karte" }, { "Réduit le rayon des orbes de l'arme orbitale", "Zieht deine Trabanten enger um dich zusammen" },
+        { "Choisit la 1re carte à la montée de niveau", "Wählt beim Levelaufstieg die 1. Karte" }, { "Choisit la 2ème carte à la montée de niveau", "Wählt beim Levelaufstieg die 2. Karte" },
+        { "Choisit la 3ème carte à la montée de niveau", "Wählt beim Levelaufstieg die 3. Karte" }, { "Réduit le rayon des orbes de l'arme orbitale", "Zieht deine Trabanten enger um dich zusammen" },
         { "Augmente le rayon des orbes de l'arme orbitale", "Lässt deine Trabanten weiter außen kreisen" }, { "Ouvre / ferme le menu pause", "Öffnet / schließt das Pausenmenü" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -124,11 +124,11 @@ public static class LocTableDE
         { "Premier Sang", "Erstes Blut" }, { "Vaincre 1 boss", "Besiege 1 Boss" }, { "Toujours en Mouvement", "Immer in Bewegung" },
         { "Utiliser le Dash 20 fois", "Nutze den Dash 20-mal" }, { "Sang-Froid", "Kühler Kopf" }, { "Garder 30% de vie jusqu'au boss 2", "Bleib bis Boss 2 über 30 % LP" },
         { "Double Chasse", "Doppeljagd" }, { "Vaincre 2 boss dans la même partie", "Besiege 2 Bosse in einem Run" }, { "Ascension Rapide", "Blitzaufstieg" },
-        { "Niveau 18 avant la 10e minute", "Level 18 vor Minute 10" }, { "Sans Cristal", "Kristallfrei" }, { "Sans Ultime jusqu'au boss 2", "Keine Ultimate bis Boss 2" },
+        { "Niveau 18 avant la 10ème minute", "Level 18 vor Minute 10" }, { "Sans Cristal", "Kristallfrei" }, { "Sans Ultime jusqu'au boss 2", "Keine Ultimate bis Boss 2" },
         { "Résilience", "Makellos" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Kein Schaden bis Boss 1" }, { "Éclair", "Blitzschnell" },
-        { "Vaincre un boss en moins de 30s", "Besiege einen Boss in unter 30 s" }, { "Fortune", "Reichtum" }, { "Avec au moins 3000 Or ramassé", "Sammle mindestens 3000 Gold" },
-        { "Puissance Absolue", "Absolute Macht" }, { "Niveau 30 dans la même partie", "Level 30 in einem Run" }, { "Or x{0}", "Gold x{0}" },
-        { "Niv. {0}/{1}", "Lvl. {0}/{1}" }, { "En cours", "Läuft" }, { "{0}/3000 Or", "{0}/3000 Gold" }, { "Pas de défi dans ce mode", "In diesem Modus gibt es keine Herausforderung" },
+        { "Vaincre un boss en moins de 30s", "Besiege einen Boss in unter 30 s" }, { "Fortune", "Reichtum" }, { "Avec au moins 1200 Or ramassé", "Sammle mindestens 1200 Gold" },
+        { "Puissance Absolue", "Absolute Macht" }, { "Niveau 30 dans la même partie", "Level 30 in einem Run" }, { "+{0} or", "+{0} Gold" },
+        { "Niv. {0}/{1}", "Lvl. {0}/{1}" }, { "En cours", "Läuft" }, { "{0}/{1} Or", "{0}/{1} Gold" }, { "Pas de défi dans ce mode", "In diesem Modus gibt es keine Herausforderung" },
         { "Défi déjà réussi cette heure !", "Herausforderung in dieser Stunde bereits geschafft!" }, { "Nouveau défi dans {0} min", "Neue Herausforderung in {0} Min" },
         { "Nouveau défi à ta prochaine partie !", "Neue Herausforderung in deinem nächsten Run!" }, { "Réussi", "Geschafft" },
         { "Statut", "Status" },
@@ -169,12 +169,12 @@ public static class LocTableDE
         { "Réputation : Dégâts", "Ruf: Schaden" }, { "Réputation : Vitesse", "Ruf: Tempo" }, { "Réputation : Régénération", "Ruf: Regeneration" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "Verfluchter Sumpf" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "Deine Schlammpfützen werden zu einem Sumpf, der Gegner unter Strom setzt" },
-        { "Vortex de Mana", "Manawirbel" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "Ein größerer und stärkerer Wirbel aus Manasplittern kreist um dich." },
-        { "Lames Ricochet", "Abprallklingen" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "Deine Messersalve durchbohrt Gegner und prallt von einem zum nächsten ab" },
+        { "Tourbière Magnétique", "Magnetmoor" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "Elektrisierte Moore ziehen Gegner an und entladen sich dann in einem Blitzsturm" },
+        { "Couronne Prismatique", "Prismenkrone" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "Durch Lichtstrahlen verbundene Kristalle bilden einen Schutzwall und fegen dann über das Feld" },
+        { "Valse des Lames", "Klingenwalzer" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "Deine Klingen prallen von den Bildschirmrändern ab und kehren dann zu dir zurück, wobei sie alles durchschneiden" },
         { "Pluie de Météores", "Meteorschauer" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "Meteore treffen die Gegner und hinterlassen bremsenden Glutschlamm" },
-        { "Orbes Foudroyants", "Blitzkugeln" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "Deine Trabanten lösen bei Gegnerkontakt einen Kettenblitz aus" },
-        { "Sillage Boueux", "Zwillingskugeln" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Deine Kugeln hinterlassen eine Schlammspur, die bremst und verletzt" },
+        { "Constellation Orageuse", "Sturmkonstellation" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "Deine Kugeln ionisieren Gegner, dann verbindet ein Blitz sie alle zu einem Sternbild" },
+        { "Sillage Boueux", "Schlammspur" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Deine Kugeln hinterlassen eine Schlammspur, die bremst und verletzt" },
         { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Aura-Zone" },
         { "Orbe Rebondissant", "Prallkugel" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen" },
         { "Dégâts +", "Schaden +" }, { "+20% de dégâts sur toutes tes armes", "+20 % Schaden für alle deine Waffen" }, { "Double Tir", "Doppelschuss" },
@@ -190,7 +190,7 @@ public static class LocTableDE
         { "+1 orbital supplémentaire", "+1 zusätzlicher Trabant" }, { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "Schaltet den Kettenblitz frei: Er trifft 3 Gegner" },
         { "+1 rebond de foudre supplémentaire", "+1 zusätzlicher Blitzsprung" }, { "Débloque 3 flaques de boue qui ralentissent et blessent", "Schaltet 3 Schlammpfützen frei, die verlangsamen und verletzen" },
         { "+1 flaque de boue supplémentaire", "+1 zusätzliche Schlammpfütze" }, { "+{0}% de dégâts sur toutes tes armes", "+{0} % Schaden für alle deine Waffen" },
-        { "+{0}% de cadence sur toutes tes armes de tir", "+{0} % Feuerrate für alle deine Schusswaffen" }, { "Restaure {0}% de tes PV max", "Stellt {0} % deiner maximalen LP wieder her" },
+        { "+{0}% de cadence sur toutes tes armes de tir", "+{0} % Feuerrate für alle deine Schusswaffen" }, { "Augmente tes PV max de {0}% et en restaure {1}%", "Erhöht deine maximalen LP um {0} % und stellt {1} % davon wieder her" },
         { "Débloque le Double Tir : ton tir de base tire deux fois", "Schaltet Doppelschuss frei: Dein Standardangriff feuert zweimal" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "Schaltet den Feuerball frei: Aethers exklusive Waffe" },
         { "Le rayon d'explosion est 2 fois plus grand", "Der Explosionsradius ist doppelt so groß" }, { "+{0}% dégâts", "+{0} % Schaden" },
@@ -278,11 +278,11 @@ public static class LocTableDE
         { "ASSIGNER UNE TOUCHE À", "TASTE ZUWEISEN FÜR" }, { "Appuyez sur une touche pour commencer", "Drücke eine beliebige Taste" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSION" }, { "Éclat", "Splitter" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast" },
+        { "FUSION", "FUSION" }, { "Éclat", "Splitter" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses." },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses." },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Besiege einen beliebigen Boss innerhalb von 30 Sekunden nach seinem Erscheinen" },
-        { "Ramasser au moins 3000 Or au total durant la partie", "Sammle im Laufe des Runs insgesamt mindestens 3000 Gold" },
+        { "Ramasser au moins 1200 Or au total durant la partie", "Sammle im Laufe des Runs insgesamt mindestens 1200 Gold" },
         { "MODÉRÉ", "MÄSSIG" }, { "VIOLENT", "HEFTIG" }, { "APOCALYPTIQUE", "APOKALYPTISCH" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "Karte ohne Grenzen, das klassische Erlebnis, so wie es immer war." },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "Tunnelkarte ohne seitliche Grenzen, zähere und gefährlichere Gegner, dafür mehr Gold und Splitter." },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "Enge, auf allen 4 Seiten begrenzte Karte, deutlich zähere und gefährlichere Gegner, Gold und Splitter maximal." },
@@ -297,5 +297,10 @@ public static class LocTableDE
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "Wirft Salven aus {0} Messern, die Gegner durchbohren" },
         { "Décharge électrique qui rebondit sur {0} ennemis proches", "Elektrische Entladung, die auf {0} nahe Gegner überspringt" },
         { "Survie", "Überlebt" }, { "Éliminations", "Kills" }, { "Niveau", "Level" }, { "Boss", "Bosse" }, { "Titans", "Titanen" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "Erster Sieg auf Mäßig: +{0} Splitter" }, { "Première victoire en Violent : +{0} éclats", "Erster Sieg auf Heftig: +{0} Splitter" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "Erster Sieg auf Apokalyptisch: +{0} Splitter" }, { "Victoire en Modéré", "Sieg auf Mäßig" },
+        { "Victoire en Violent", "Sieg auf Heftig" }, { "avec {0}", "mit {0}" },
     };
 }

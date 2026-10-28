@@ -44,6 +44,10 @@ public class EnemyBase : MonoBehaviour
 
     [Header("Scaling difficulté")]
     private float _healthMultiplier = 1f;
+    // AJOUTÉ (2026-10-27, retour utilisateur : "je veux qu'on doive mettre une attaque de plus pour en tuer un") - PV
+    // ajoutés tels quels après le multiplicateur (palier de temps x difficulté), environ un tir de base : le même
+    // "un tir de plus" pour un loup comme pour un golem, quelle que soit la difficulté. Posé par ObjectPool.Get.
+    private float _bonusHealth = 0f;
 
     // AJOUTÉ (2026-10-20, retour utilisateur : "il y a trop d'xp en difficulté 3, j'suis à 5min sur les 15min et je
     // suis déjà niveau 18") - _healthMultiplier inclut maintenant le palier DE DIFFICULTÉ (x1/1,25/1,5, voir
@@ -171,9 +175,10 @@ public class EnemyBase : MonoBehaviour
         if (_hitFlashTimer <= 0f) SetHitFlashIntensity(0f);
     }
 
-    public void SetHealthMultiplier(float multiplier)
+    public void SetHealthMultiplier(float multiplier, float bonusHealth = 0f)
     {
         _healthMultiplier = multiplier;
+        _bonusHealth = Mathf.Max(0f, bonusHealth);
     }
 
     public float CurrentHealth => _currentHealth;
@@ -294,7 +299,7 @@ public class EnemyBase : MonoBehaviour
 
         if (IsRangedAttacker) ActiveRangedCount++;
 
-        _currentHealth = _maxHealth * _healthMultiplier;
+        _currentHealth = _maxHealth * _healthMultiplier + _bonusHealth;
         _isDead = false; // nouvelle vie à la sortie du pool (voir TakeDamage/Die)
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
@@ -514,6 +519,20 @@ public class EnemyBase : MonoBehaviour
     {
         force.y = 0f;
         _knockbackVelocity = Vector3.ClampMagnitude(_knockbackVelocity + force, MaxKnockbackSpeed);
+    }
+
+    // AJOUTÉ (2026-10-27, fusion Tourbière Magnétique) - attire l'ennemi vers un point au sol, appelé chaque frame par
+    // la fusion tant qu'il est dans le rayon d'attraction. Déplacement direct (pas via _knockbackVelocity, plafonnée
+    // et amortie pour des chocs brefs) : la vitesse d'attraction dépasse celle de marche, l'ennemi est donc entraîné
+    // vers le centre même en marchant vers le joueur. S'arrête à minDistance du centre pour ne pas tout empiler.
+    public void PullTowards(Vector3 center, float speed, float minDistance)
+    {
+        Vector3 toCenter = center - transform.position;
+        toCenter.y = 0f;
+        float distance = toCenter.magnitude;
+        if (distance <= minDistance) return;
+        float step = Mathf.Min(distance - minDistance, speed * Time.deltaTime);
+        transform.position += toCenter / distance * step;
     }
 
     private void UpdateKnockback()
@@ -806,7 +825,9 @@ public class EnemyBase : MonoBehaviour
             XPGemSpawner.Instance.SpawnGems(transform.position, _xpValue * xpHealthMultiplier * _xpPacingMultiplier);
 
         GameManager.Instance.AddKill();
-        MetaProgressionManager.Instance.AddRunGold(_goldValue);
+        // MODIFIÉ (2026-10-27, refonte de l'économie) - seule une petite part de _goldValue est versée (voir
+        // MetaProgressionManager.AddKillGold) : l'or vient surtout des minutes, des boss et de la victoire.
+        MetaProgressionManager.Instance.AddKillGold(_goldValue);
 
         // MODIFIE - reset du dash reserve au noeud "Impulsion Nova" (branche Fantome/Lyra).
         // Avant, ce reset se declenchait pour n'importe quel joueur des qu'une Nova

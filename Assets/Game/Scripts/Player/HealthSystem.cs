@@ -238,6 +238,24 @@ public class HealthSystem : MonoBehaviour
         _projectileDamageTimer = _projectileDamageMergeWindow;
     }
 
+    // AJOUTÉ (2026-10-27) - carte Soin : +percent des PV max de DÉPART de la partie (bonus de méta inclus, figés à la
+    // première augmentation), additif d'un pick à l'autre comme Dégâts+ / Cadence+. Les PV courants gagnent la même
+    // quantité : le pourcentage de vie affiché ne baisse jamais.
+    private float _startMaxHealth;
+
+    public void AddMaxHealthPercent(float percent)
+    {
+        if (_isDead || percent <= 0f) return;
+        if (_startMaxHealth <= 0f) _startMaxHealth = _maxHealth;
+
+        float gain = _startMaxHealth * percent;
+        _maxHealth += gain;
+        _currentHealth = Mathf.Min(_currentHealth + gain, _maxHealth);
+
+        if (GameUI.Instance != null)
+            GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+    }
+
     public void Heal(float percent)
     {
         // AJOUTÉ (2026-10-01) - pas de soin sur un joueur déjà mort.

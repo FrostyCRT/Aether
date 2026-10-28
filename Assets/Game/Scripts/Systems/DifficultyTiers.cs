@@ -3,8 +3,8 @@ using UnityEngine;
 public enum DifficultyTier
 {
     Moderate = 0,    // palier de base - carte infinie sur les 2 axes, aucun décor de bordure
-    Violent = 1,     // tunnel : mur sur Z (±20), X infini. PV ennemis/boss x1,35, dégâts x1,2, spawn x1,3, récompenses x1,3
-    Apocalyptic = 2  // boîte fermée ±30 sur X et Z. PV ennemis/boss x1,8, dégâts x1,45, spawn x1,7, récompenses x1,7
+    Violent = 1,     // tunnel : mur sur Z (±20), X infini. PV ennemis/boss x1,35, dégâts x1,2, spawn x1,3, récompenses x1,5
+    Apocalyptic = 2  // boîte fermée ±30 sur X et Z. PV ennemis/boss x1,8, dégâts x1,45, spawn x1,7, récompenses x2
 }
 
 // AJOUTÉ (2026-10-18, diagnostic complet - "créer le niveau de difficulté dans le mode classique") - 3 paliers de
@@ -233,12 +233,15 @@ public static class DifficultyTiers
     // palier le plus dur (toujours au-dessus de Violent, avec le même écart proportionnel que les autres
     // multiplicateurs du palier - voir HealthMultiplier/DamageMultiplier ci-dessus, tous ~x1,15-1,2 par rapport à
     // Violent), sans permettre de rafler la quasi-totalité de l'arbre en une partie.
+    // MODIFIÉ (2026-10-27, refonte de l'économie, voir MetaProgressionManager) - x1,5 / x2 : le problème venait de l'or
+    // par ennemi tué, pas de ce multiplicateur. Maintenant que l'or vient surtout des minutes, des boss et de la
+    // victoire, la base est ~5 à 15 fois plus basse et un écart plus net récompense vraiment le risque du palier.
     public static float RewardMultiplier(DifficultyTier tier)
     {
         switch (tier)
         {
-            case DifficultyTier.Violent: return 1.3f;
-            case DifficultyTier.Apocalyptic: return 1.5f;
+            case DifficultyTier.Violent: return 1.5f;
+            case DifficultyTier.Apocalyptic: return 2f;
             default: return 1f;
         }
     }

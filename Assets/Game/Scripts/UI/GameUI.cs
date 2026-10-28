@@ -514,7 +514,7 @@ public class GameUI : MonoBehaviour
             {
                 string difficultyHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(def.difficulty));
                 string rewardText = ChallengeManager.Instance != null
-                    ? ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent())
+                    ? ChallengeManager.FormatRewardGold(ChallengeManager.Instance.GetCurrentRewardGold())
                     : "";
                 introTitle = Loc.F("{0} : Niv. {1}", challengeName, $"<color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>");
                 // MODIFIÉ (2026-10-16, retour utilisateur : "il y a de la place, [...] pour comprendre exactement
@@ -1013,7 +1013,7 @@ public class GameUI : MonoBehaviour
     // montant de base, puis si le defi est reussi, attend _challengeRevealDelay,
     // affiche le message de reussite (couleur vive), et reprend le comptage
     // jusqu'au montant final (base + bonus).
-    private IEnumerator PlayGoldSequence(TextMeshProUGUI goldText, TextMeshProUGUI challengeText, int baseGold, int totalGold, bool challengeCompleted, float rewardPercent)
+    private IEnumerator PlayGoldSequence(TextMeshProUGUI goldText, TextMeshProUGUI challengeText, int baseGold, int totalGold, bool challengeCompleted, int rewardGold)
     {
         // MODIFIE - le chip Victoire a un fond dedie (ChallengeChipBg, une Image
         // ajoutee en parent du texte lors de la refonte 3-temps) separe du texte
@@ -1053,7 +1053,7 @@ public class GameUI : MonoBehaviour
                 // utilisateur : plus parlant dans le vocabulaire jeu video).
                 // Voir ChallengeManager.FormatRewardMultiplier, partage avec
                 // PauseMenuUI.PullChallengeInfo().
-                challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardMultiplier(rewardPercent));
+                challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardGold(rewardGold));
             }
 
             yield return StartCoroutine(CountUpNumber(goldText, baseGold, totalGold, _bonusCountUpDuration));
@@ -1335,14 +1335,6 @@ public class GameUI : MonoBehaviour
 
     private static readonly Vector2 _arsenalCellSize = new Vector2(125f, 125f);
     private static readonly Vector2 _arsenalSpacing = new Vector2(20f, 20f);
-
-    // Compteur "×N" de la tuile Soin (Victoire/Défaite) : écart avec le bas et la droite de la tuile (le même que celui du
-    // losange de déblocage avec son coin), et corrections mesurées sur capture pour que cet écart soit celui des chiffres
-    // visibles : TextMeshPro laisse un vide sous les chiffres (place des jambages) et Bangers, penchée, dépasse à droite.
-    private const float HealCountMargin = 10f;
-    private const float HealCountSize = 24f;
-    private const float HealCountBaselineInset = -2.8f;
-    private const float HealCountSlantInset = 3.7f;
 
     // Agrandissement des cases de Victoire/Défaite par rapport au prefab (125 px), calculé par PopulateBuildGrid : leur
     // contenu (icônes) grandit d'autant, les pastilles et losanges gardent leur taille.
@@ -1763,11 +1755,11 @@ public class GameUI : MonoBehaviour
         // rester vrai sur Victoire/Défaite même sans le visuel dédié (icône simple + fond violet) ci-dessus.
         // (2026-10-26 : une pastille dorée a été essayée sous la fusion de Victoire/Défaite, puis retirée à la demande de
         // l'utilisateur, la tuile montrant désormais l'icône de fusion et ses 2 armes sources.)
-        // Soin (2026-10-26, même retour : "enlève les dots [...] et tu met à la place un indicateur chiffré en bas à
-        // droite") : un compteur "×N" (nombre de Soins pris) remplace ses pastilles, voir plus bas.
-        bool healCount = upgrade.upgradeType == UpgradeType.Heal && parchmentSober == null && refs.stackCountText != null;
+        // Soin : le compteur "×N" du 2026-10-26 est retiré le 2026-10-27 ("la compétence de soin devrait augmenter la
+        // santé maximum [...] remettre des dots") - chaque Soin augmente maintenant les PV max, donc une vraie
+        // progression sur 5 paliers, affichée en pastilles comme Dégâts+ / Cadence+.
         if (refs.tierDotsRow != null)
-            refs.tierDotsRow.gameObject.SetActive(!healCount && !isFusion);
+            refs.tierDotsRow.gameObject.SetActive(!isFusion);
 
         if (refs.nameText != null)
         {
@@ -1788,28 +1780,7 @@ public class GameUI : MonoBehaviour
             }
         }
         if (refs.stackCountText != null)
-        {
-            refs.stackCountText.gameObject.SetActive(healCount);
-            if (healCount)
-            {
-                // Coin bas-droit, même écart (HealCountMargin) avec le bas et la droite de la tuile.
-                TextMeshProUGUI count = refs.stackCountText;
-                RectTransform countRt = count.rectTransform;
-                countRt.anchorMin = countRt.anchorMax = countRt.pivot = new Vector2(1f, 0f);
-                countRt.sizeDelta = new Vector2(80f, 30f);
-                countRt.anchoredPosition = new Vector2(-HealCountMargin, HealCountMargin);
-                count.alignment = TextAlignmentOptions.BottomRight;
-                count.enableAutoSizing = false;
-                count.fontSize = HealCountSize;
-                count.margin = new Vector4(0f, 0f, HealCountSlantInset, HealCountBaselineInset);
-                count.text = "×" + currentLevel;
-                // MODIFIÉ (2026-10-26, retour utilisateur : "met le en couleur blanc, et rapetisse le un peu") - blanc au
-                // contour sombre, comme les montants Or / Éclats.
-                TextMeshProUGUI amountStyle = _gameOverGoldText != null ? _gameOverGoldText : _victoryGoldText;
-                if (amountStyle != null) count.fontSharedMaterial = amountStyle.fontSharedMaterial;
-                count.color = owned ? Color.white : new Color(1f, 1f, 1f, 0.55f);
-            }
-        }
+            refs.stackCountText.gameObject.SetActive(false);
 
         // Pastilles : une par palier (1 pour Double tir/Fusion, 3 pour les armes, 5 pour Dégâts / Cadence / Soin).
         int dotCount = Mathf.Clamp(maxLevel, 1, 5);
@@ -2249,9 +2220,9 @@ public class GameUI : MonoBehaviour
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
     // une fois terminee, revele l'apercu du prochain palier de progression -
     // le tout dans une seule coroutine pour garder ShowGameOver() simple.
-    private IEnumerator PlayGoldSequenceThenPreview(int baseGold, int totalGold, bool challengeCompleted, float challengeRewardPercent)
+    private IEnumerator PlayGoldSequenceThenPreview(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold)
     {
-        yield return StartCoroutine(PlayGoldSequence(_gameOverGoldText, _gameOverChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardPercent));
+        yield return StartCoroutine(PlayGoldSequence(_gameOverGoldText, _gameOverChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold));
         yield return StartCoroutine(PlayNextUnlockPreview());
 
         // AJOUTE - deverrouille le bouton Rejouer et signale a GameManager que
@@ -2549,9 +2520,12 @@ public class GameUI : MonoBehaviour
 
         string message = null;
 
-        if (!GameModes.IsClassic)
+        // MODIFIÉ (2026-10-27, refonte de l'économie) - en Classique, LastRunRecordMessage n'est rempli que par la prime de
+        // première victoire dans un palier ("Première victoire en Violent : +600 éclats") : elle passe avant les records.
+        string runMessage = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.LastRunRecordMessage : null;
+        if (!GameModes.IsClassic || runMessage != null)
         {
-            message = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.LastRunRecordMessage : null;
+            message = runMessage;
             _victoryRecordHighlight.SetActive(message != null);
             if (message != null && _victoryRecordHighlightText != null)
                 _victoryRecordHighlightText.text = message;
@@ -2625,7 +2599,7 @@ public class GameUI : MonoBehaviour
             _victoryPortraitImage.sprite = portrait;
     }
 
-    public void ShowVictory(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, float challengeRewardPercent)
+    public void ShowVictory(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, int challengeRewardGold)
     {
         Debug.Log($"[GameUI] ShowVictory sur {gameObject.name} (id {GetInstanceID()}) — GoldText null ? {_victoryGoldText == null} — EclatsText null ? {_victoryEclatsText == null}");
         if (_victoryPanel != null) _victoryPanel.SetActive(true);
@@ -2650,7 +2624,7 @@ public class GameUI : MonoBehaviour
         PopulateVictoryQuietLine(recordShown, chipShown);
         EndInfoBox victoryInfo = EnsureEndInfoBox(_victoryPanel, _victoryStatsText, _victoryChallengeText, _victoryRecordHighlightText, _victoryQuietLineText);
         FillEndInfoStats(victoryInfo, mins, secs, killCount, level, victoryBossKills);
-        PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardPercent);
+        PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardGold);
         LayoutEndInfoBox(_victoryPanel, victoryInfo);
         PopulateVictoryPortrait();
         int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
@@ -2669,7 +2643,7 @@ public class GameUI : MonoBehaviour
         // logique anti-skip que le Game Over.
         if (_victoryRetryButton != null) _victoryRetryButton.interactable = false;
 
-        StartCoroutine(PlayVictoryGoldSequenceThenReveal(baseGold, totalGold, challengeCompleted, challengeRewardPercent));
+        StartCoroutine(PlayVictoryGoldSequenceThenReveal(baseGold, totalGold, challengeCompleted, challengeRewardGold));
         StartCoroutine(CountUpNumber(_victoryEclatsText, 0, eclatsEarned, _eclatsCountUpDuration));
     }
 
@@ -2677,9 +2651,9 @@ public class GameUI : MonoBehaviour
     // (pas d'apercu de palier ici, volontairement) : deverrouille le bouton
     // Rejouer et signale a GameManager que le raccourci clavier peut s'activer,
     // uniquement une fois la sequence de comptage/reveal terminee.
-    private IEnumerator PlayVictoryGoldSequenceThenReveal(int baseGold, int totalGold, bool challengeCompleted, float challengeRewardPercent)
+    private IEnumerator PlayVictoryGoldSequenceThenReveal(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold)
     {
-        yield return StartCoroutine(PlayGoldSequence(_victoryGoldText, _victoryChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardPercent));
+        yield return StartCoroutine(PlayGoldSequence(_victoryGoldText, _victoryChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold));
 
         if (_victoryRetryButton != null) _victoryRetryButton.interactable = true;
         OnEndScreenRevealComplete?.Invoke();
@@ -3442,13 +3416,13 @@ public class GameUI : MonoBehaviour
 
     // Chip "Défi réussi" : présent dès l'ouverture (transparent) pour que le cadre ait déjà sa hauteur finale, puis
     // révélé par PlayGoldSequence au moment du bonus.
-    private static void PrepareChallengeChip(TextMeshProUGUI challengeText, bool show, float rewardPercent)
+    private static void PrepareChallengeChip(TextMeshProUGUI challengeText, bool show, int rewardGold)
     {
         GameObject chipRoot = ChallengeChipRoot(challengeText);
         if (chipRoot == null) return;
         chipRoot.SetActive(show);
         if (!show) return;
-        challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardMultiplier(rewardPercent));
+        challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardGold(rewardGold));
         CanvasGroup cg = chipRoot.GetComponent<CanvasGroup>();
         if (cg == null) cg = chipRoot.AddComponent<CanvasGroup>();
         cg.alpha = 0f;
@@ -3624,8 +3598,84 @@ public class GameUI : MonoBehaviour
         }
 
         _hudLevel = level;
-        if (_levelText != null)
+        if (_levelText != null && _levelGainRoutine == null)   // pendant l'animation du coffre, c'est elle qui l'écrit
             _levelText.text = Loc.F("Niv. {0}", level);
+    }
+
+    // AJOUTÉ (2026-10-27, retour utilisateur : "il faut que la barre d'xp augmente 2 fois et revienne au niveau où elle
+    // était avant d'avoir pris le coffre, mais que donc le niveau augmente de +2") - coffre de boss (voir
+    // XPSystem.GrantBonusLevels) : la barre se remplit jusqu'au bout `levels` fois, le niveau affiché monte d'un cran avec
+    // un petit rebond à chaque tour, puis la barre revient à son avancement d'avant (`fraction`). Temps réel : le jeu
+    // est figé pendant ce temps (voir BossChest.OpenRoutine). Renvoie la durée totale.
+    private const float LevelGainFillDuration = 0.34f;
+    private const float LevelGainWrapPause = 0.07f;
+    private const float LevelGainSettleDuration = 0.3f;
+    private const float LevelGainTextPunchDuration = 0.22f;
+    private Coroutine _levelGainRoutine;
+
+    public float PlayLevelGain(int fromLevel, int levels, float fraction)
+    {
+        if (_xpBar == null || levels <= 0) return 0f;
+        if (_levelGainRoutine != null) StopCoroutine(_levelGainRoutine);
+        _levelGainRoutine = StartCoroutine(LevelGainRoutine(fromLevel, levels, Mathf.Clamp01(fraction)));
+        return levels * (LevelGainFillDuration + LevelGainWrapPause) + LevelGainSettleDuration;
+    }
+
+    private IEnumerator LevelGainRoutine(int fromLevel, int levels, float fraction)
+    {
+        _xpBarPunchTimer = -1f;
+        _xpBar.transform.localScale = Vector3.one;
+        float start = _xpBarDisplayedValue;
+
+        for (int i = 0; i < levels; i++)
+        {
+            float from = i == 0 ? start : 0f;
+            // Durée proportionnelle au chemin restant : une barre déjà presque pleine ne "traîne" pas jusqu'au bout.
+            float duration = LevelGainFillDuration * Mathf.Lerp(0.45f, 1f, 1f - from);
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                SetXPBarImmediate(Mathf.Lerp(from, 1f, EaseInOutCubic(t / duration)));
+                yield return null;
+            }
+            SetXPBarImmediate(1f);
+
+            // Tour complet : niveau suivant, la barre repart de zéro.
+            if (_levelText != null) _levelText.text = Loc.F("Niv. {0}", fromLevel + i + 1);
+            StartCoroutine(LevelTextPunchRoutine());
+            yield return new WaitForSecondsRealtime(LevelGainWrapPause);
+            SetXPBarImmediate(0f);
+        }
+
+        for (float t = 0f; t < LevelGainSettleDuration; t += Time.unscaledDeltaTime)
+        {
+            SetXPBarImmediate(Mathf.Lerp(0f, fraction, FXSprites.EaseOutCubic(t / LevelGainSettleDuration)));
+            yield return null;
+        }
+        SetXPBarImmediate(fraction);
+        _xpBarTargetValue = fraction;
+        if (_levelText != null) _levelText.text = Loc.F("Niv. {0}", _hudLevel = fromLevel + levels);
+        _levelGainRoutine = null;
+    }
+
+    private void SetXPBarImmediate(float value)
+    {
+        _xpBarDisplayedValue = value;
+        _xpBar.value = value;
+    }
+
+    // Rebond du texte "Niv. X" à chaque niveau gagné (temps réel).
+    private IEnumerator LevelTextPunchRoutine()
+    {
+        if (_levelText == null) yield break;
+        Transform tr = _levelText.transform;
+        Vector3 baseScale = tr.localScale;   // les rebonds ne se chevauchent jamais (un par tour de barre, plus long qu'un rebond)
+        for (float t = 0f; t < LevelGainTextPunchDuration; t += Time.unscaledDeltaTime)
+        {
+            float p = t / LevelGainTextPunchDuration;
+            tr.localScale = baseScale * (1f + 0.35f * Mathf.Sin(p * Mathf.PI) * (1f - p * 0.3f));
+            yield return null;
+        }
+        tr.localScale = baseScale;
     }
 
     // AJOUTÉ (2026-10-04) - voir le commentaire sur _xpBarTargetValue. Lissage exponentiel (jamais de
@@ -3633,6 +3683,7 @@ public class GameUI : MonoBehaviour
     private void UpdateXPBarSmoothing()
     {
         if (_xpBar == null) return;
+        if (_levelGainRoutine != null) return;   // animation du coffre en cours : elle pilote la barre elle-même
 
         _xpBarDisplayedValue = Mathf.Lerp(_xpBarDisplayedValue, _xpBarTargetValue, 1f - Mathf.Exp(-XPBarFillLerpRate * Time.deltaTime));
         if (Mathf.Abs(_xpBarDisplayedValue - _xpBarTargetValue) < 0.0005f) _xpBarDisplayedValue = _xpBarTargetValue;
@@ -3862,7 +3913,7 @@ public class GameUI : MonoBehaviour
     // de la run ("Boss 1/3", "Boss 2/3"...) au lieu d'un "Boss 3/3" fige qui
     // n'aurait jamais eu de sens ici (contrairement a la Victoire, qui ne se
     // declenche QUE quand les 3 boss sont vaincus).
-    public void ShowGameOver(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, float challengeRewardPercent, string deathCause, int bossKillCount)
+    public void ShowGameOver(float runTimer, int killCount, int baseGold, int totalGold, int level, int eclatsEarned, bool challengeCompleted, int challengeRewardGold, string deathCause, int bossKillCount)
     {
         if (_gameOverPanel != null) _gameOverPanel.SetActive(true);
 
@@ -3894,7 +3945,7 @@ public class GameUI : MonoBehaviour
         // AJOUTÉ (2026-10-26) - cadre d'infos : stats, chip de défi, aperçu du prochain déblocage (voir EnsureEndInfoBox).
         EndInfoBox gameOverInfo = EnsureEndInfoBox(_gameOverPanel, _statsText, _gameOverChallengeText, _gameOverNextUnlockText);
         FillEndInfoStats(gameOverInfo, mins, secs, killCount, level, bossKillCount);
-        PrepareChallengeChip(_gameOverChallengeText, challengeCompleted && totalGold > baseGold, challengeRewardPercent);
+        PrepareChallengeChip(_gameOverChallengeText, challengeCompleted && totalGold > baseGold, challengeRewardGold);
         PrepareNextUnlockText();
         LayoutEndInfoBox(_gameOverPanel, gameOverInfo);
 
@@ -3909,7 +3960,7 @@ public class GameUI : MonoBehaviour
         // de la sequence de reveal (voir PlayGoldSequenceThenPreview).
         if (_gameOverRetryButton != null) _gameOverRetryButton.interactable = false;
 
-        StartCoroutine(PlayGoldSequenceThenPreview(baseGold, totalGold, challengeCompleted, challengeRewardPercent));
+        StartCoroutine(PlayGoldSequenceThenPreview(baseGold, totalGold, challengeCompleted, challengeRewardGold));
         StartCoroutine(CountUpNumber(_gameOverEclatsText, 0, eclatsEarned, _eclatsCountUpDuration));
     }
 

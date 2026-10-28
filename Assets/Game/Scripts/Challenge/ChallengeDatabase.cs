@@ -44,9 +44,9 @@ public static class ChallengeDatabase
         // "Terminer la partie avec au moins 3000 Or ramasse"). Le prefixe
         // "Terminer la partie"/"Atteindre le" est retire quand redondant (une
         // description de defi porte deja implicitement sur la partie entiere).
-        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", longDescription = "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "hp30never", displayName = "Sang-Froid", description = "Garder 30% de vie jusqu'au boss 2", longDescription = "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "boss2", displayName = "Double Chasse", description = "Vaincre 2 boss dans la même partie", difficulty = ChallengeDifficulty.Medium },
-        new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 18 avant la 10e minute", difficulty = ChallengeDifficulty.Medium },
+        new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 18 avant la 10ème minute", difficulty = ChallengeDifficulty.Medium },
 
         // CORRIGÉ (2026-10-21, retour utilisateur : "le défi sans ult jusqu'au boss 2 est presque impossible, ça
         // veut dire qu'il faut jamais ult pendant 10min c'est énorme") - BossSpawnInterval=300s (voir WaveManager) :
@@ -55,11 +55,11 @@ public static class ChallengeDatabase
         // ennemis montent déjà en puissance - nettement plus punitif que les autres défis "Medium" au même jalon
         // (ex. "Double Chasse"/"boss2", qui ne retire aucune capacité) et au moins aussi dur que les défis déjà
         // classés "Hard" ci-dessous. Reclassé Medium -> Hard, pas de changement du jalon lui-même (toujours boss 2).
-        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", longDescription = "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", longDescription = "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", difficulty = ChallengeDifficulty.Hard },
 
         new ChallengeDefinition { id = "hp50boss1", displayName = "Résilience", description = "Garder plus de 50% de vie jusqu'au boss 1", longDescription = "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", longDescription = "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 3000 Or ramassé", longDescription = "Ramasser au moins 3000 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 1200 Or ramassé", longDescription = "Ramasser au moins 1200 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
         new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 30 dans la même partie", difficulty = ChallengeDifficulty.Hard },
     };
 

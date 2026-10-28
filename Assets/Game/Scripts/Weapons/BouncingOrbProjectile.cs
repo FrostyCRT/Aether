@@ -251,12 +251,19 @@ public class BouncingOrbProjectile : MonoBehaviour
         otherOrb.transform.position += separation;
     }
 
+    private const float BodyHitMargin = 0.35f;
+
     private void TryHit(Collider other)
     {
         if (!other.CompareTag("Enemy")) return;
 
         int id = other.GetInstanceID();
         if (_recentHits.TryGetValue(id, out float lastHitTime) && Time.time - lastHitTime < _hitCooldown)
+            return;
+
+        // AJOUTÉ (2026-10-27, hitbox des boss) - la boîte d'un boss englobe son corps (voir BossBodyShape) : l'orbe ne
+        // touche que le corps lui-même (OnTriggerStay retente à chaque pas physique).
+        if (other.TryGetComponent(out BossBase bodyCheck) && !bodyCheck.IsOnBody(transform.position, BodyHitMargin))
             return;
 
         _recentHits[id] = Time.time;

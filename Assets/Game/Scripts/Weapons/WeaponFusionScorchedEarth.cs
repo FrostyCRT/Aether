@@ -32,7 +32,9 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     // sur un ennemi DIFFÉRENT, mais jamais plus que le nombre d'ennemis distincts réellement trouvés - contre un
     // boss seul (1 cible), ça retombe naturellement sur 1 météore qui prend tout le dégât, sans rien gaspiller au
     // sol pour rien (retour utilisateur : "contre les boss, 1 c'est bien").
-    [SerializeField] private int _maxSimultaneousMeteors = 3;
+    // MODIFIÉ (2026-10-27, retour utilisateur : "pluie de météorite est un peu trop fort [...] ça tire 2 et pas 3 en
+    // même temps, et c'est sur des ennemis aléatoire sur la map, pas les plus proche") - 3 -> 2.
+    [SerializeField] private int _maxSimultaneousMeteors = 2;
 
     // RENOMMÉ (2026-10-23) - ces 2 champs ne servent plus au ciblage lui-même (voir FindTargetEnemy, qui balaie
     // maintenant toute la scène sans limite de rayon) : uniquement le repli quand AUCUN ennemi n'existe nulle part.
@@ -103,17 +105,19 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     // MODIFIÉ (2026-10-23, retour utilisateur multi-météores : "faut pas qu'elles focus le même ennemi") - renvoie
     // maintenant jusqu'à maxCount ennemis/boss DISTINCTS triés du plus proche au plus loin du joueur (un seul tri,
     // pas un appel répété par météore) - chaque météore de la salve prend une entrée différente de cette liste.
+    //
+    // MODIFIÉ (2026-10-27, même retour que _maxSimultaneousMeteors) - ennemis DISTINCTS tirés au hasard sur toute la
+    // carte (tirage partiel de Fisher-Yates) au lieu des plus proches du joueur.
     private List<Transform> FindTargetEnemies(int maxCount)
     {
-        Vector3 origin = transform.position;
-        List<(Transform t, float distSq)> candidates = new List<(Transform, float)>();
+        List<Transform> candidates = new List<Transform>();
 
         EnemyBase[] enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
         for (int i = 0; i < enemies.Length; i++)
         {
             EnemyBase e = enemies[i];
             if (e == null || !e.gameObject.activeInHierarchy) continue;
-            candidates.Add((e.transform, (e.transform.position - origin).sqrMagnitude));
+            candidates.Add(e.transform);
         }
 
         BossBase[] bosses = FindObjectsByType<BossBase>(FindObjectsSortMode.None);
@@ -121,16 +125,17 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
         {
             BossBase b = bosses[i];
             if (b == null || !b.gameObject.activeInHierarchy) continue;
-            candidates.Add((b.transform, (b.transform.position - origin).sqrMagnitude));
+            candidates.Add(b.transform);
         }
 
-        candidates.Sort((a, b) => a.distSq.CompareTo(b.distSq));
-
-        List<Transform> result = new List<Transform>(maxCount);
-        for (int i = 0; i < candidates.Count && result.Count < maxCount; i++)
-            result.Add(candidates[i].t);
-
-        return result;
+        int count = Mathf.Min(maxCount, candidates.Count);
+        for (int i = 0; i < count; i++)
+        {
+            int j = Random.Range(i, candidates.Count);
+            (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
+        }
+        candidates.RemoveRange(count, candidates.Count - count);
+        return candidates;
     }
 
     private Vector3 RandomFallbackPosition()

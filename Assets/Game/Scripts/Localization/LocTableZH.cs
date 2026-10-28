@@ -24,7 +24,7 @@ public static class LocTableZH
         { "Carte n°3", "卡牌 3" }, { "Orbites : rapprocher", "轨道：收拢" }, { "Orbites : éloigner", "轨道：扩张" }, { "Pause", "暂停" },
         { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "冲刺：快速位移，短暂无敌，并能吸收投射物" }, { "Déclenche l'ultime quand le cristal est chargé", "水晶充能完毕后释放大招" },
         { "Invoque le clone spectral. Nécessite la compétence correspondante", "召唤幻影分身。需要习得对应技能" }, { "Choisit la 1re carte à la montée de niveau", "升级时选择第 1 张卡牌" },
-        { "Choisit la 2e carte à la montée de niveau", "升级时选择第 2 张卡牌" }, { "Choisit la 3e carte à la montée de niveau", "升级时选择第 3 张卡牌" },
+        { "Choisit la 2ème carte à la montée de niveau", "升级时选择第 2 张卡牌" }, { "Choisit la 3ème carte à la montée de niveau", "升级时选择第 3 张卡牌" },
         { "Réduit le rayon des orbes de l'arme orbitale", "缩小环绕弹的轨道半径" }, { "Augmente le rayon des orbes de l'arme orbitale", "扩大环绕弹的轨道半径" },
         { "Ouvre / ferme le menu pause", "打开 / 关闭暂停菜单" },
 
@@ -102,11 +102,11 @@ public static class LocTableZH
         { "Chasseur", "猎手" }, { "Tuer 150 ennemis", "击杀 150 名敌人" }, { "Montée en Puissance", "力量觉醒" }, { "Atteindre le niveau 10", "达到 10 级" },
         { "Premier Sang", "第一滴血" }, { "Vaincre 1 boss", "击败 1 名首领" }, { "Toujours en Mouvement", "永不停歇" }, { "Utiliser le Dash 20 fois", "冲刺 20 次" },
         { "Sang-Froid", "临危不乱" }, { "Garder 30% de vie jusqu'au boss 2", "在第 2 名首领之前保持 30% 以上生命值" }, { "Double Chasse", "双重狩猎" },
-        { "Vaincre 2 boss dans la même partie", "在同一局中击败 2 名首领" }, { "Ascension Rapide", "极速晋升" }, { "Niveau 18 avant la 10e minute", "第 10 分钟前达到 18 级" },
+        { "Vaincre 2 boss dans la même partie", "在同一局中击败 2 名首领" }, { "Ascension Rapide", "极速晋升" }, { "Niveau 18 avant la 10ème minute", "第 10 分钟前达到 18 级" },
         { "Sans Cristal", "禁用水晶" }, { "Sans Ultime jusqu'au boss 2", "第 2 名首领之前不使用大招" }, { "Résilience", "完美无伤" }, { "Garder plus de 50% de vie jusqu'au boss 1", "第 1 名首领之前不受任何伤害" },
-        { "Éclair", "闪电速攻" }, { "Vaincre un boss en moins de 30s", "在 30 秒内击败一名首领" }, { "Fortune", "财运亨通" }, { "Avec au moins 3000 Or ramassé", "拾取至少 3000 金币" },
-        { "Puissance Absolue", "绝对力量" }, { "Niveau 30 dans la même partie", "在同一局中达到 30 级" }, { "Or x{0}", "金币 x{0}" },
-        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "进行中" }, { "{0}/3000 Or", "{0}/3000 金币" }, { "Pas de défi dans ce mode", "此模式没有挑战" },
+        { "Éclair", "闪电速攻" }, { "Vaincre un boss en moins de 30s", "在 30 秒内击败一名首领" }, { "Fortune", "财运亨通" }, { "Avec au moins 1200 Or ramassé", "拾取至少 1200 金币" },
+        { "Puissance Absolue", "绝对力量" }, { "Niveau 30 dans la même partie", "在同一局中达到 30 级" }, { "+{0} or", "＋{0} 金币" },
+        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "进行中" }, { "{0}/{1} Or", "{0}/{1} 金币" }, { "Pas de défi dans ce mode", "此模式没有挑战" },
         { "Défi déjà réussi cette heure !", "本小时的挑战已完成！" }, { "Nouveau défi dans {0} min", "{0} 分钟后刷新挑战" }, { "Nouveau défi à ta prochaine partie !", "下一局将有新挑战！" },
         { "Réussi", "已完成" }, { "Statut", "状态" },
 
@@ -140,12 +140,12 @@ public static class LocTableZH
         { "Réputation : Dégâts", "声望：伤害" }, { "Réputation : Vitesse", "声望：速度" }, { "Réputation : Régénération", "声望：再生" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "诅咒沼泽" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "你的泥潭化为带电沼泽，电击其中逗留的敌人" },
-        { "Vortex de Mana", "法力漩涡" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "一道更宽广、更强大的法力晶片旋风环绕在你身边。" },
-        { "Lames Ricochet", "弹射飞刃" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "你的飞刀齐射既能穿透敌人，又能在敌人之间弹射" },
+        { "Tourbière Magnétique", "磁暴泥沼" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "带电的泥沼将敌人吸入，随后爆发成一场雷暴" },
+        { "Couronne Prismatique", "棱镜王冠" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "光束相连的水晶筑起屏障，随后以光柱横扫四周" },
+        { "Valse des Lames", "刀刃华尔兹" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "飞刃在屏幕边缘弹射，随后飞回你身边，斩断沿途的一切" },
         { "Pluie de Météores", "流星火雨" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "陨石砸向敌人，并留下使其减速的灼热泥潭" },
-        { "Orbes Foudroyants", "雷霆法球" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "环绕弹接触敌人时会释放连锁闪电" },
-        { "Sillage Boueux", "双子法球" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "你的法球会留下一道泥潭轨迹，使敌人减速并造成伤害" },
+        { "Constellation Orageuse", "雷暴星座" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "法球使敌人带电，随后闪电将它们连成一片星座" },
+        { "Sillage Boueux", "泥泞尾迹" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "你的法球会留下一道泥潭轨迹，使敌人减速并造成伤害" },
         { "Aura", "光环" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "光环区域" },
         { "Orbe Rebondissant", "弹跳法球" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "发射在竞技场中不停弹跳的法球，伤害每个被击中的敌人" },
         { "Dégâts +", "伤害＋" }, { "+20% de dégâts sur toutes tes armes", "所有武器伤害 +20%" }, { "Double Tir", "双重射击" }, { "Ton tir de base tire un second projectile juste après le premier", "普通攻击会在第一发之后紧接着发射第二枚投射物" },
@@ -158,7 +158,7 @@ public static class LocTableZH
         { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "解锁连锁闪电：连续击中 3 名敌人" }, { "+1 rebond de foudre supplémentaire", "闪电弹跳次数 +1" },
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "解锁 3 个泥潭，使敌人减速并受到伤害" }, { "+1 flaque de boue supplémentaire", "+1 个泥潭" },
         { "+{0}% de dégâts sur toutes tes armes", "所有武器伤害 +{0}%" }, { "+{0}% de cadence sur toutes tes armes de tir", "所有射击类武器射速 +{0}%" },
-        { "Restaure {0}% de tes PV max", "恢复最大生命值的 {0}%" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "解锁双重射击：普通攻击会连续发射两次" },
+        { "Augmente tes PV max de {0}% et en restaure {1}%", "最大生命值提高 {0}%，并恢复 {1}%" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "解锁双重射击：普通攻击会连续发射两次" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "解锁火球：Aether 的专属武器" }, { "Le rayon d'explosion est 2 fois plus grand", "爆炸范围扩大至 2 倍" },
         { "+{0}% dégâts", "伤害 +{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "解锁灼烧：被击中的敌人会持续燃烧" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "解锁光环：Kael 的专属武器" }, { "+{0}% rayon", "范围 +{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "减速强化：{0}%（原为 {1}%）" },
@@ -232,9 +232,9 @@ public static class LocTableZH
         { "Réinitialiser cette page", "重置本页" }, { "ASSIGNER UNE TOUCHE À", "为以下操作分配按键" }, { "Appuyez sur une touche pour commencer", "按任意键开始" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "融合" }, { "Éclat", "碎片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "从本局开始到第 2 名首领死亡，生命值始终不低于 30%。" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "击败第 2 名首领之前不使用大招（F 键）" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "从本局开始到第 1 名首领死亡，生命值始终不低于 50%。" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "在任意一名首领出现后 30 秒内将其击败" }, { "Ramasser au moins 3000 Or au total durant la partie", "本局累计拾取至少 3000 金币" },
+        { "FUSION", "融合" }, { "Éclat", "碎片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "从本局开始到第 2 名首领死亡，生命值始终不低于 30%。" },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "击败第 2 名首领之前不使用大招（F 键）" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "从本局开始到第 1 名首领死亡，生命值始终不低于 50%。" },
+        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "在任意一名首领出现后 30 秒内将其击败" }, { "Ramasser au moins 1200 Or au total durant la partie", "本局累计拾取至少 1200 金币" },
         { "MODÉRÉ", "温和" }, { "VIOLENT", "猛烈" }, { "APOCALYPTIQUE", "末日" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "地图没有边界，一如既往的经典体验。" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "隧道形地图，左右没有边界，敌人更耐打、更危险，但金币和碎片更丰厚。" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "四面受限的狭窄地图，敌人明显更耐打、更危险，金币和碎片达到最高。" },
@@ -246,5 +246,10 @@ public static class LocTableZH
         { "{0} éclats tournent autour de toi et frappent les ennemis au contact", "{0} 枚碎片环绕在你身边，碰到敌人即造成伤害" }, { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成 {0} 个泥潭，减速并伤害其中的敌人" },
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "连续齐射 {0} 把可穿透敌人的飞刀" }, { "Décharge électrique qui rebondit sur {0} ennemis proches", "在附近 {0} 名敌人之间跳跃的电流" },
         { "Survie", "生存" }, { "Éliminations", "击杀" }, { "Niveau", "等级" }, { "Boss", "首领" }, { "Titans", "泰坦" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "首次在温和难度获胜：＋{0} 碎片" }, { "Première victoire en Violent : +{0} éclats", "首次在猛烈难度获胜：＋{0} 碎片" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "首次在末日难度获胜：＋{0} 碎片" }, { "Victoire en Modéré", "在温和难度获胜" },
+        { "Victoire en Violent", "在猛烈难度获胜" }, { "avec {0}", "使用 {0}" },
     };
 }

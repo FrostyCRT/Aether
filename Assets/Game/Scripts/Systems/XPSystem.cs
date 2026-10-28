@@ -29,8 +29,16 @@ public class XPSystem : MonoBehaviour
     [SerializeField] private float _baseXP = 80f;
     public int CurrentLevel { get; private set; } = 1;
     public float CurrentXP { get; private set; } = 0f;
-    // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{2} \rfloor$
-    public float XPToNextLevel => Mathf.Floor(_baseXP * Mathf.Pow(CurrentLevel, 2f));
+    // AJOUTÉ (2026-10-27, retour utilisateur : "les coffres à la mort de boss ne donnent pas de vrai niveau [...] il faut
+    // que la barre d'xp augmente 2 fois et revienne au niveau où elle était [...] il faut adapter l'xp qu'on reçoit des
+    // ennemis après la mort du boss") - niveaux offerts par les coffres (GrantBonusLevels) : ils comptent dans le niveau
+    // affiché, mais PAS dans le coût des niveaux suivants. Sans ça, chaque coffre rendrait tous les niveaux suivants
+    // plus chers (80 x niveau², +28 % au niveau 10 après un coffre) et le joueur monterait bien moins vite après chaque
+    // boss qu'avec l'ancien coffre (2 choix sans niveau). Revient à adapter l'XP reçue, au plus juste, à tout niveau.
+    private int _bonusLevels;
+    public int BonusLevels => _bonusLevels;
+    // Utilisation de la formule mathématique simplifiée : $XP = \lfloor baseXP \times Level^{2} \rfloor$, Level = niveaux gagnés à l'XP
+    public float XPToNextLevel => Mathf.Floor(_baseXP * Mathf.Pow(Mathf.Max(1, CurrentLevel - _bonusLevels), 2f));
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -68,6 +76,30 @@ public class XPSystem : MonoBehaviour
             GameUI.Instance.UpdateXPBar(CurrentXP, XPToNextLevel, CurrentLevel);
         }
     }
+    // Coffre de boss : +count niveaux d'un coup, sans toucher à l'XP en cours (la barre revient à son avancement d'avant,
+    // XPToNextLevel ne dépendant pas des niveaux offerts). Les choix de cartes sont donnés à part par l'appelant
+    // (LevelUpManager.GrantFreePicks, voir BossChest), pas par ShowLevelUp : pas de fanfare de level-up en double.
+    // Renvoie la durée de l'animation de la barre (temps réel), 0 si rien n'a été accordé.
+    public float GrantBonusLevels(int count)
+    {
+        if (count <= 0) return 0f;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return 0f;
+
+        int fromLevel = CurrentLevel;
+        for (int i = 0; i < count; i++)
+        {
+            CurrentLevel++;
+            _bonusLevels++;
+            if (ChallengeManager.Instance != null)
+                ChallengeManager.Instance.NotifyLevelChanged(CurrentLevel);
+            if (XPGemSpawner.Instance != null)
+                XPGemSpawner.Instance.OnLevelUp(CurrentLevel);
+        }
+
+        if (GameUI.Instance == null) return 0f;
+        return GameUI.Instance.PlayLevelGain(fromLevel, count, CurrentXP / XPToNextLevel);
+    }
+
     private void LevelUp()
     {
         CurrentLevel++;

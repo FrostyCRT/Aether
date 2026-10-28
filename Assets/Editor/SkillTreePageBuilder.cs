@@ -753,8 +753,8 @@ public static class SkillTreePageBuilder
         RectTransform preLabel = NewRt("Label", pre);
         AddText(preLabel, "REQUIS", 22, Muted, TextAlignmentOptions.MidlineLeft);
         Le(preLabel.gameObject, 30, 30);
-        SkillDetailPanel.PrereqRow[] preRows = new SkillDetailPanel.PrereqRow[2];
-        for (int i = 0; i < 2; i++)
+        SkillDetailPanel.PrereqRow[] preRows = new SkillDetailPanel.PrereqRow[3]; // 3 : nœud du haut = 2 nœuds requis + victoire en Violent
+        for (int i = 0; i < 3; i++)
         {
             RectTransform pr = NewRt($"Prereq{i + 1}", pre);
             Le(pr.gameObject, 34, 34);

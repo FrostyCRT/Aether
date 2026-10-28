@@ -71,9 +71,17 @@ public class MudPuddleZone : MonoBehaviour
         _meshRenderer.SetPropertyBlock(null);
     }
 
+    // AJOUTÉ (2026-10-28, passe visuelle de Sillage Boueux) - une fusion qui dessine sa propre flaque (voir
+    // MudWakeVisual) garde la zone d'effet mais cache le disque du prefab. Réaffiché à chaque Init (pool partagé).
+    public void HideVisual()
+    {
+        if (_meshRenderer != null) _meshRenderer.enabled = false;
+    }
+
     public void Init(float duration, float radius, float slowMultiplier, float damagePerSecond)
     {
         ClearColorTint(); // remet la couleur d'origine à chaque réutilisation depuis le pool - les fusions la retintent juste après via SetColorTint()
+        if (_meshRenderer != null) _meshRenderer.enabled = true;
         _duration = duration;
         _radius = radius;
         _slowMultiplier = slowMultiplier;

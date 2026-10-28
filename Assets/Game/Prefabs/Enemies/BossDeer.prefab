@@ -98,7 +98,7 @@ MonoBehaviour:
   _maxHealth: 63000
   _moveSpeed: 4
   _xpValue: 2450
-  _goldValue: 70
+  _goldValue: 120
   _healPlayerOnDeath: 1
   _deathSequenceEnabled: 1
   _deathSequenceDuration: 1.4

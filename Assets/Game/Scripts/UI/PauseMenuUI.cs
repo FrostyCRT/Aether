@@ -529,7 +529,7 @@ public class PauseMenuUI : MonoBehaviour
     // AJOUTE - remplit le texte detaille du defi : nom, palier de difficulte
     // (colore selon _difficultyXxxColor - retour utilisateur, "montrer
     // vraiment si il est difficile ou pas"), description complete, recompense
-    // chiffree (via ChallengeManager.GetCurrentRewardPercent()). Le Statut vit
+    // chiffree (via ChallengeManager.GetCurrentRewardGold()). Le Statut vit
     // a part dans _challengeStatusText (voir PullChallengeStatus) - 3 lignes
     // ici au lieu de 4, plus de place par ligne dans l'espace dedie du
     // HeaderRow. Appele a chaque ouverture du menu pause, comme PullLiveStats().
@@ -574,7 +574,7 @@ public class PauseMenuUI : MonoBehaviour
         // MODIFIE (2026-09-13) - "Nom : Niv. Difficulte" au lieu de "Nom
         // (Difficulte)" (retour utilisateur) ; recompense en "Or xN" au lieu
         // de "+X%" (voir ChallengeManager.FormatRewardMultiplier).
-        string rewardText = ChallengeManager.FormatRewardMultiplier(ChallengeManager.Instance.GetCurrentRewardPercent());
+        string rewardText = ChallengeManager.FormatRewardGold(ChallengeManager.Instance.GetCurrentRewardGold());
 
         _challengeInfoText.color = _challengeInfoTextColor;
         _challengeInfoText.text =

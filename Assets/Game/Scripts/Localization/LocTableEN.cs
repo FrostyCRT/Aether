@@ -33,8 +33,8 @@ public static class LocTableEN
         { "Déclenche l'ultime quand le cristal est chargé", "Unleashes your Ultimate once the crystal is charged" },
         { "Invoque le clone spectral. Nécessite la compétence correspondante", "Summons the Spectral Clone. Requires the matching skill" },
         { "Choisit la 1re carte à la montée de niveau", "Picks the 1st card on level up" },
-        { "Choisit la 2e carte à la montée de niveau", "Picks the 2nd card on level up" },
-        { "Choisit la 3e carte à la montée de niveau", "Picks the 3rd card on level up" },
+        { "Choisit la 2ème carte à la montée de niveau", "Picks the 2nd card on level up" },
+        { "Choisit la 3ème carte à la montée de niveau", "Picks the 3rd card on level up" },
         { "Réduit le rayon des orbes de l'arme orbitale", "Shrinks the radius of the orbital weapon's orbs" },
         { "Augmente le rayon des orbes de l'arme orbitale", "Widens the radius of the orbital weapon's orbs" },
         { "Ouvre / ferme le menu pause", "Opens / closes the pause menu" },
@@ -154,13 +154,13 @@ public static class LocTableEN
         { "Toujours en Mouvement", "Always Moving" }, { "Utiliser le Dash 20 fois", "Dash 20 times" },
         { "Sang-Froid", "Cool Head" }, { "Garder 30% de vie jusqu'au boss 2", "Stay above 30% HP until boss 2" },
         { "Double Chasse", "Double Hunt" }, { "Vaincre 2 boss dans la même partie", "Defeat 2 bosses in one run" },
-        { "Ascension Rapide", "Fast Ascent" }, { "Niveau 18 avant la 10e minute", "Level 18 before minute 10" },
+        { "Ascension Rapide", "Fast Ascent" }, { "Niveau 18 avant la 10ème minute", "Level 18 before minute 10" },
         { "Sans Cristal", "Crystal-Free" }, { "Sans Ultime jusqu'au boss 2", "No Ultimate until boss 2" },
         { "Résilience", "Resilience" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Keep above 50% health until boss 1" },
         { "Éclair", "Lightning Fast" }, { "Vaincre un boss en moins de 30s", "Defeat a boss in under 30s" },
-        { "Fortune", "Fortune" }, { "Avec au moins 3000 Or ramassé", "Collect at least 3000 gold" },
+        { "Fortune", "Fortune" }, { "Avec au moins 1200 Or ramassé", "Collect at least 1200 gold" },
         { "Puissance Absolue", "Absolute Power" }, { "Niveau 30 dans la même partie", "Reach level 30 in one run" },
-        { "Or x{0}", "Gold x{0}" }, { "Niv. {0}/{1}", "Lv. {0}/{1}" }, { "En cours", "In progress" }, { "{0}/3000 Or", "{0}/3000 Gold" },
+        { "+{0} or", "+{0} gold" }, { "Niv. {0}/{1}", "Lv. {0}/{1}" }, { "En cours", "In progress" }, { "{0}/{1} Or", "{0}/{1} Gold" },
         { "Pas de défi dans ce mode", "No challenge in this mode" },
         { "Défi déjà réussi cette heure !", "Challenge already completed this hour!" },
         { "Nouveau défi dans {0} min", "New challenge in {0} min" }, { "Nouveau défi à ta prochaine partie !", "New challenge on your next run!" },
@@ -206,16 +206,16 @@ public static class LocTableEN
         { "Réputation : Dégâts", "Reputation: Damage" }, { "Réputation : Vitesse", "Reputation: Speed" }, { "Réputation : Régénération", "Reputation: Regeneration" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData) - fait
-        { "Marécage Maudit", "Cursed Swamp" },
-        { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "Your mud puddles become an electrified swamp that shocks enemies" },
-        { "Vortex de Mana", "Mana Vortex" },
-        { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "A wider, stronger whirlwind of mana shards spins around you." },
-        { "Lames Ricochet", "Ricochet Blades" },
-        { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "Your knife volley pierces and ricochets from enemy to enemy" },
+        { "Tourbière Magnétique", "Magnetic Bog" },
+        { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "Electrified bogs pull enemies in, then burst into a lightning storm" },
+        { "Couronne Prismatique", "Prismatic Crown" },
+        { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "Crystals linked by light beams form a barrier, then sweep the area with rays" },
+        { "Valse des Lames", "Blade Waltz" },
+        { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "Your blades ricochet off the screen edges, then fly back to you, cutting through everything" },
         { "Pluie de Météores", "Meteor Shower" },
         { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "Meteors crash down on enemies and leave burning mud that slows them down" },
-        { "Orbes Foudroyants", "Thundering Orbs" },
-        { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "Your orbitals set off chain lightning when they touch enemies" },
+        { "Constellation Orageuse", "Storm Constellation" },
+        { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "Your orbs ionize enemies, then lightning links them all into a constellation" },
         { "Sillage Boueux", "Muddy Wake" },
         { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Your orbs leave a trail of mud that slows and hurts enemies" },
         { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Creates a permanent field around you that damages and slows nearby enemies" },
@@ -235,7 +235,7 @@ public static class LocTableEN
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "Unlocks 3 mud puddles that slow and hurt enemies" }, { "+1 flaque de boue supplémentaire", "+1 extra mud puddle" },
         { "+{0}% de dégâts sur toutes tes armes", "+{0}% damage on all your weapons" },
         { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% fire rate on all your shooting weapons" },
-        { "Restaure {0}% de tes PV max", "Restores {0}% of your max HP" },
+        { "Augmente tes PV max de {0}% et en restaure {1}%", "Increases your max HP by {0}% and restores {1}%" },
         { "Débloque le Double Tir : ton tir de base tire deux fois", "Unlocks Double Shot: your basic attack fires twice" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "Unlocks Fireball: equips Aether's exclusive weapon" },
         { "Le rayon d'explosion est 2 fois plus grand", "The explosion radius is twice as large" }, { "+{0}% dégâts", "+{0}% damage" },
@@ -350,11 +350,11 @@ public static class LocTableEN
 
         // AJOUTÉ (2026-10-16) - descriptions longues de défi (annonce de lancement uniquement, voir ChallengeDatabase.longDescription).
         // Propagé aux 9 autres langues le 2026-10-24 (Tools/loc/tr_xx.txt, ids 580-590).
-        { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "Never drop below 30% health, from the start of the run until the 2nd boss dies." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Don't use the Ultimate (F key) before defeating the 2nd boss" },
+        { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Never drop below 30% health, from the start of the run until the 2nd boss dies." },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Don't use the Ultimate (F key) before defeating the 2nd boss" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Never drop below 50% health, from the start of the run until the 1st boss is defeated." },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Defeat any boss within 30 seconds of its appearance" },
-        { "Ramasser au moins 3000 Or au total durant la partie", "Collect at least 3000 Gold in total during the run" },
+        { "Ramasser au moins 1200 Or au total durant la partie", "Collect at least 1200 Gold in total during the run" },
 
         // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
         { "MODÉRÉ", "MODERATE" }, { "VIOLENT", "SEVERE" }, { "APOCALYPTIQUE", "APOCALYPTIC" },
@@ -381,6 +381,12 @@ public static class LocTableEN
 
         // AJOUTÉ (2026-10-26) - intitulés des cases de stats du cadre d'infos des écrans de fin (GameUI.FillEndInfoStats).
         { "Survie", "Survival" }, { "Éliminations", "Kills" }, { "Niveau", "Level" }, { "Boss", "Bosses" }, { "Titans", "Titans" },
+
+        // ==== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "First win on Moderate: +{0} Shards" },
+        { "Première victoire en Violent : +{0} éclats", "First win on Severe: +{0} Shards" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "First win on Apocalyptic: +{0} Shards" },
+        { "Victoire en Modéré", "Win on Moderate" }, { "Victoire en Violent", "Win on Severe" }, { "avec {0}", "with {0}" },
 
         // ==== SECTIONS SUIVANTES ====
     };

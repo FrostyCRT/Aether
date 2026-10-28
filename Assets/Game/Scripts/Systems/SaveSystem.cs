@@ -164,6 +164,11 @@ public class SaveData
     public int[] runsByCharacter = new int[3];
     public int[] winsByCharacter = new int[3];
     public float[] bestTimeByCharacter = new float[3];
+    // AJOUTÉ (2026-10-27, refonte de l'économie) - victoires du Classique par personnage ET par palier de difficulté,
+    // index = personnage * 3 + palier (DifficultyTier). Sert aux conditions de l'arbre (nœuds du milieu : une victoire
+    // en Modéré, nœud du haut : une victoire en Violent) et aux primes d'éclats de première victoire. Null sur une
+    // sauvegarde pré-existante : toujours passer par MetaProgressionManager.EnsureWinsByTierArray().
+    public int[] winsByCharacterTier;
     // Branche Guerrier
     public int cadenceLevel = 0;
     public int crystalDamageLevel = 0;

@@ -6,7 +6,8 @@ using UnityEngine;
 // l'XP qui pouvait être "gâchée" (XP partielle sans level-up visible) ou au contraire déclencher une cascade de
 // plusieurs cartes à la fois, peu lisible. Ce coffre accorde TOUJOURS exactement _freePicks tirages de carte
 // complets (3 choix à chaque fois, via LevelUpManager.GrantFreePicks) sans jamais donner d'XP - une récompense
-// fixe et cérémoniale plutôt qu'un gain variable. Instance poolée (ObjectPool, tag "BossChest"), suit le même
+// fixe et cérémoniale plutôt qu'un gain variable. Depuis le 2026-10-27, ces tirages sont aussi de vrais niveaux
+// (voir OpenRoutine et XPSystem.GrantBonusLevels). Instance poolée (ObjectPool, tag "BossChest"), suit le même
 // patron que MudPuddleZone/BouncingOrbProjectile (Get/Init/retour au pool par l'objet lui-même).
 public class BossChest : MonoBehaviour
 {
@@ -121,6 +122,20 @@ public class BossChest : MonoBehaviour
         yield return new WaitForSecondsRealtime(_hitstopDuration);
         if (Mathf.Approximately(Time.timeScale, _hitstopScale))
             Time.timeScale = 1f;
+
+        // AJOUTÉ (2026-10-27, retour utilisateur : "les coffres à la mort de boss ne donnent pas de vrai niveau dans la
+        // barre d'xp, alors que ça devrait le faire") - le coffre donne de VRAIS niveaux (+_freePicks au niveau affiché,
+        // voir XPSystem.GrantBonusLevels) : la barre d'XP se remplit une fois par niveau puis revient à son avancement
+        // d'avant. Jeu figé pendant cette animation (HUD visible), puis les choix de cartes s'ouvrent comme avant.
+        float levelGain = XPSystem.Instance != null ? XPSystem.Instance.GrantBonusLevels(_freePicks) : 0f;
+        if (levelGain > 0f)
+        {
+            Time.timeScale = 0f;
+            yield return new WaitForSecondsRealtime(levelGain);
+            // Remis à 1 avant GrantFreePicks, qui le repasse à 0 dans la même frame s'il ouvre les cartes : jamais de jeu
+            // figé pour de bon si rien n'est à proposer (build complet) ou si la partie s'est terminée entre-temps.
+            if (Time.timeScale == 0f) Time.timeScale = 1f;
+        }
 
         if (LevelUpManager.Instance != null)
             LevelUpManager.Instance.GrantFreePicks(_freePicks);

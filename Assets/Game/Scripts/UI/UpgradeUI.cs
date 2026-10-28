@@ -587,7 +587,9 @@ public class UpgradeUI : MonoBehaviour
         // chaque pick est un effet instantané identique (restaure 50% des PV max) : il n'y a pas de "palier" qui
         // monte en puissance d'un pick à l'autre, contrairement à Dégâts+/Cadence+ où les pastilles montrent une
         // vraie progression. Les pastilles n'avaient donc aucune information utile à transmettre sur cette carte.
-        bool showDots = maxLevel > 1 && upgrade.upgradeType != UpgradeType.Heal && card.tierDotsContainer != null && card.tierDots != null;
+        // MODIFIÉ (2026-10-27) - pastilles remises sur Soin : chaque pick augmente aussi les PV max (voir
+        // UpgradeData.HealMaxHealthBonus), il y a donc de nouveau une vraie progression d'un palier à l'autre.
+        bool showDots = maxLevel > 1 && card.tierDotsContainer != null && card.tierDots != null;
         int dotCount = Mathf.Clamp(maxLevel, 1, 5);
 
         if (card.tierDotsContainer != null)

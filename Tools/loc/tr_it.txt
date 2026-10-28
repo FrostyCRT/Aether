@@ -281,13 +281,13 @@
 266| Fulmineo
 267| Sconfiggi un boss in meno di 30 s
 268| Fortuna
-269| Raccogli almeno 3000 monete d'oro
+269| Raccogli almeno 1200 monete d'oro
 270| Potere assoluto
 271| Livello 30 nella stessa partita
-272| Oro x{0}
+272| +{0} oro
 273| Liv. {0}/{1}
 274| In corso
-275| {0}/3000 oro
+275| {0}/{1} oro
 276| Nessuna sfida in questa modalità
 277| Sfida già completata in quest'ora!
 278| Nuova sfida tra {0} min
@@ -367,17 +367,17 @@
 348| Reputazione: Rigenerazione
 
 ## Améliorations
-349| Palude maledetta
-350| Le tue pozze di fango diventano una palude che fulmina i nemici
-351| Vortice di mana
-352| Un vortice di frammenti di mana, più ampio e più potente, ti gira intorno.
-353| Lame di rimbalzo
-354| La tua raffica di coltelli perfora e rimbalza da un nemico all'altro
+349| Torbiera magnetica
+350| Torbiere elettrificate risucchiano i nemici, poi esplodono in una tempesta di fulmini
+351| Corona prismatica
+352| Cristalli uniti da raggi formano un baluardo, poi spazzano l'area con fasci di luce
+353| Valzer delle lame
+354| Le tue lame rimbalzano sui bordi dello schermo e poi tornano da te, tagliando tutto
 355| Pioggia di meteore
 356| Meteore si abbattono sui nemici e lasciano fango ardente che li rallenta
-357| Sfere folgoranti
-358| I tuoi orbitali scatenano un fulmine a catena a contatto con i nemici
-359| Sfere gemelle
+357| Costellazione tempestosa
+358| Le tue sfere ionizzano i nemici, poi un fulmine li unisce tutti in una costellazione
+359| Scia di fango
 360| Le tue sfere lasciano una scia di fango che rallenta e ferisce i nemici
 361| Aura
 362| Zona aura
@@ -409,7 +409,7 @@
 388| +1 pozza di fango aggiuntiva
 389| +{0}% ai danni di tutte le tue armi
 390| +{0}% alla cadenza di tutte le tue armi da tiro
-391| Ripristina il {0}% dei tuoi PS massimi
+391| Aumenta i tuoi PS massimi del {0}% e ne ripristina il {1}%
 392| Sblocca Colpo doppio: il tuo attacco base spara due volte
 393| Sblocca Palla di fuoco: equipaggia l'arma esclusiva di Aether
 394| Il raggio dell'esplosione è due volte più grande
@@ -618,7 +618,7 @@
 581| Non usare la suprema (tasto F) prima di aver sconfitto il 2° boss
 582| Non scendere mai sotto il 50% di salute, dall'inizio della partita fino alla morte del 1° boss.
 583| Sconfiggi un boss qualsiasi entro 30 secondi dalla sua comparsa
-584| Raccogli almeno 3000 monete d'oro in totale durante la partita
+584| Raccogli almeno 1200 monete d'oro in totale durante la partita
 585| MODERATA
 586| VIOLENTA
 587| APOCALITTICA
@@ -648,3 +648,9 @@
 609| Livello
 610| Boss
 611| Titani
+612| Prima vittoria a difficoltà Moderata: +{0} frammenti
+613| Prima vittoria a difficoltà Violenta: +{0} frammenti
+614| Prima vittoria a difficoltà Apocalittica: +{0} frammenti
+615| Vittoria a difficoltà Moderata
+616| Vittoria a difficoltà Violenta
+617| con {0}

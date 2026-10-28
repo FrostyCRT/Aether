@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 public class ProjectileBasic : MonoBehaviour
 {
     [Header("Stats")]
@@ -94,6 +95,7 @@ public class ProjectileBasic : MonoBehaviour
         _hasRicochet = false;
         _ricochetsLeft = 0;
         _hitInstanceIds.Clear();
+        _pendingBosses.Clear();
 
         _trail.Clear(); // sans ça, un projectile recyclé depuis le pool dessinerait une traînée depuis sa position précédente
         _trail.startColor = FXSprites.A(_damageColor, 0.7f);
@@ -114,12 +116,15 @@ public class ProjectileBasic : MonoBehaviour
     private const float TrailTime = 0.12f;
 
     // AJOUTÉ (2026-10-27, Fragmentation : 1 tir sur 4) - le projectile qui va exploser se distingue des autres : traînée
-    // plus large, plus longue et presque blanche. Remis à la normale par Init (projectile recyclé).
+    // plus large, plus longue. Remis à la normale par Init (projectile recyclé).
+    // MODIFIÉ (2026-10-27) - traînée aux couleurs d'Aether (or vers rubis, comme l'explosion, voir ArcaneBurstVFX) au lieu
+    // du cyan éclairci : on voit partir "le tir d'Aether" parmi les tirs normaux.
     public void MarkFragmentCharged()
     {
         _trail.widthMultiplier = TrailWidth * 2f;
         _trail.time = TrailTime * 1.8f;
-        _trail.startColor = FXSprites.A(Color.Lerp(_damageColor, Color.white, 0.55f), 0.95f);
+        _trail.startColor = FXSprites.A(Color.Lerp(ArcaneBurstVFX.AetherRuby, ArcaneBurstVFX.AetherGold, 0.45f), 0.95f);
+        _trail.endColor = FXSprites.A(ArcaneBurstVFX.AetherRuby, 0f);
     }
 
     public void SetFragmentation(float chance, float damage, float radius)
@@ -141,9 +146,28 @@ public class ProjectileBasic : MonoBehaviour
         _hasPiercing = active;
         _maxPierceCount = Mathf.Max(1, maxPierceCount);
     }
+    // AJOUTÉ (2026-10-27, retour utilisateur : "le boss 3 des fois quand on tire sur lui, il se prend l'impact à un
+    // endroit où il n'y a pas son corps") - le collider d'un boss est la boîte qui englobe son corps (voir BossBodyShape) :
+    // un projectile qui y entre sans toucher le corps lui-même attend ici (et continue sa route) jusqu'à toucher vraiment
+    // le corps, ou ressortir de la boîte sans l'avoir touché.
+    private const float BodyHitMargin = 0.25f;
+    private readonly List<Collider> _pendingBosses = new List<Collider>(2);
+
     private void Update()
     {
         transform.position += _direction * _speed * Time.deltaTime;
+        for (int i = _pendingBosses.Count - 1; i >= 0 && gameObject.activeSelf; i--)
+        {
+            Collider c = _pendingBosses[i];
+            if (c == null || !c.enabled || !c.CompareTag("Enemy")) { _pendingBosses.RemoveAt(i); continue; }
+            c.TryGetComponent(out BossBase boss);
+            if (boss != null && boss.IsOnBody(transform.position, BodyHitMargin))
+            {
+                _pendingBosses.RemoveAt(i);
+                HandleHit(c);
+            }
+        }
+        if (!gameObject.activeSelf) return;
         float distanceTravelledSqr = (transform.position - _startPosition).sqrMagnitude;
         if (distanceTravelledSqr >= _maxRangeSqr)
         {
@@ -153,6 +177,21 @@ public class ProjectileBasic : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Enemy")) return;
+        if (other.TryGetComponent(out BossBase boss) && !boss.IsOnBody(transform.position, BodyHitMargin))
+        {
+            if (!_pendingBosses.Contains(other)) _pendingBosses.Add(other);
+            return;
+        }
+        HandleHit(other);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        _pendingBosses.Remove(other);
+    }
+
+    private void HandleHit(Collider other)
+    {
         ApplyDamage(other, _damage, _damageColor, false);
         ApplyBurnIfNeeded(other);
         ImpactSparkVFX.Spawn(transform.position, _damageColor);
@@ -185,7 +224,7 @@ public class ProjectileBasic : MonoBehaviour
                 CameraShakeFX.Shake(0.35f);
             }
             else
-                ArcaneBurstVFX.Spawn(transform.position, _fragmentRadius, _damageColor);
+                ArcaneBurstVFX.Spawn(transform.position, _fragmentRadius, ArcaneBurstVFX.AetherRuby);
 
             int hitCount = Physics.OverlapSphereNonAlloc(transform.position, _fragmentRadius, _overlapBuffer, EnemyLayers.Mask);
             for (int i = 0; i < hitCount; i++)

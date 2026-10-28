@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
 
     // AJOUTE (2026-09-27) - DEBUG/TEST uniquement (voir DebugCheats.cs) : avance directement le chrono de la run, pour
     // atteindre instantanément l'heure d'un boss classique (5/10/15 min) sans attendre.
-    public void DebugSetRunTimer(float seconds) { _runTimer = Mathf.Max(0f, seconds); }
+    public void DebugSetRunTimer(float seconds) { _runTimer = Mathf.Max(0f, seconds); _survivalGoldMinutesPaid = Mathf.FloorToInt(_runTimer / 60f); }
 
     private int _bossKillCount = 0;
     public int BossKillCount => _bossKillCount;
@@ -332,7 +332,17 @@ public class GameManager : MonoBehaviour
         // Choc des titans : les boss sont là dès le début, le chrono (= temps de victoire) doit tourner pendant le combat.
         if (WaveManager.Instance != null && WaveManager.Instance.BossAlive && !GameModes.IsTitans) return;
         _runTimer += Time.deltaTime;
+
+        // AJOUTÉ (2026-10-27, refonte de l'économie) - or de survie, versé à chaque minute pleine du chrono (voir
+        // MetaProgressionManager.GoldPerMinute ; le chrono ne tourne pas pendant les combats de boss).
+        while (_runTimer >= (_survivalGoldMinutesPaid + 1) * 60f)
+        {
+            _survivalGoldMinutesPaid++;
+            if (MetaProgressionManager.Instance != null) MetaProgressionManager.Instance.AddSurvivalMinuteGold();
+        }
     }
+
+    private int _survivalGoldMinutesPaid;
 
     public void TogglePause()
     {
@@ -435,13 +445,13 @@ public class GameManager : MonoBehaviour
         int baseGold = MetaProgressionManager.Instance.RunGold;
 
         bool challengeCompleted = false;
-        float challengeRewardPercent = 0f;
+        int challengeRewardGold = 0;
 
         if (ChallengeManager.Instance != null)
         {
             ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, baseGold);
             challengeCompleted = ChallengeManager.Instance.IsCompleted;
-            challengeRewardPercent = ChallengeManager.Instance.GetCurrentRewardPercent();
+            challengeRewardGold = ChallengeManager.Instance.GetCurrentRewardGold();
         }
 
         int totalGold = MetaProgressionManager.Instance.RunGold;
@@ -451,7 +461,7 @@ public class GameManager : MonoBehaviour
 
         // MODIFIE - ajout de levelReached, meme ordre de parametres que ShowVictory
         // desormais que GameUI.ShowGameOver() affiche aussi le niveau atteint.
-        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardPercent, _deathCause, _bossKillCount);
+        GameUI.Instance.ShowGameOver(_runTimer, _killCount, baseGold, totalGold, levelReached, eclatsEarned, challengeCompleted, challengeRewardGold, _deathCause, _bossKillCount);
     }
 
     // AJOUTÉ (2026-10-26, retour utilisateur : "quand le game over panel arrive, les animations jouées sont les même
@@ -502,18 +512,21 @@ public class GameManager : MonoBehaviour
 
         int levelReached = XPSystem.Instance != null ? XPSystem.Instance.CurrentLevel : 1;
 
+        // AJOUTÉ (2026-10-27, refonte de l'économie) - prime de victoire, comptée dans l'or de la partie AVANT le défi.
+        MetaProgressionManager.Instance.AddVictoryGold();
+
         // MODIFIE - meme logique que ShowGameOver() : baseGold/totalGold separes
         // pour l'animation en 2 temps.
         int baseGold = MetaProgressionManager.Instance.RunGold;
 
         bool challengeCompleted = false;
-        float challengeRewardPercent = 0f;
+        int challengeRewardGold = 0;
 
         if (ChallengeManager.Instance != null)
         {
             ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, baseGold);
             challengeCompleted = ChallengeManager.Instance.IsCompleted;
-            challengeRewardPercent = ChallengeManager.Instance.GetCurrentRewardPercent();
+            challengeRewardGold = ChallengeManager.Instance.GetCurrentRewardGold();
         }
 
         int totalGold = MetaProgressionManager.Instance.RunGold;
@@ -529,7 +542,7 @@ public class GameManager : MonoBehaviour
             levelReached,
             eclatsEarned,
             challengeCompleted,
-            challengeRewardPercent
+            challengeRewardGold
         );
     }
 }

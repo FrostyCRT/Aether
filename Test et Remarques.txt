@@ -14,8 +14,5 @@ Mode coop ? deux joueurs dans la partie.
 
 
 
+revoir xp fps, faire différents types d'xp ? Il y a forcément une solution, que font les meilleurs jeux du genre quand l'écran est blindé d'xp sur le sol ?
 
-petite explosion pouvoir de l'arbre de compétence de Aether revoir la compétence dans l'arbre de compétence
-
-
-10eme -> 10e

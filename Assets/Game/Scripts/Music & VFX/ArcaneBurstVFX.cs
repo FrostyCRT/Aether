@@ -5,8 +5,12 @@ using System.Collections.Generic;
 // AJOUTÉ (2026-10-27, retour utilisateur sur le nœud Réputation "Fragmentation" : "je veux que ce soit visible, parce que
 // là c'est juste un prefab moche qui grossit, tu peux faire une animation de la même qualité que [...] la déflagration de
 // la boule de feu") - explosion du tir de base (1 projectile sur 4, voir WeaponBase.FireProjectile), qui remplace
-// l'anneau orange générique d'ExpandingRingVFX. Identité "cristal d'aether" (teinte du tir de base, cyan), pour ne
-// jamais se confondre avec la déflagration de la Boule de feu (FireExplosionVFX).
+// l'anneau orange générique d'ExpandingRingVFX.
+// MODIFIÉ (2026-10-27, retour utilisateur : "la couleur de base de Aether c'est le rouge/orange, le bleu est plutôt réservé
+// à Lyra") - Fragmentation n'existe que dans l'arbre d'Aether : l'effet prend ses couleurs (AetherRuby, cristal ardent
+// rouge rubis aux reflets or) au lieu du cyan du tir de base, commun aux trois personnages. Distinct de la Boule de feu
+// (FireExplosionVFX, aussi à Aether) par la FORME (cristal dur et facetté, jamais de flamme ni de fumée) et par la teinte
+// (rouge rubis profond, pas l'orange flamme).
 // MODIFIÉ (2026-10-27, retour utilisateur : "elle ressemble beaucoup à ce qui a déjà été vu dans les autres télégraphes")
 // - la 1re version reprenait l'anneau fin (ThinRing) et le cercle gradué (TickRing) des TÉLÉGRAPHES ENNEMIS
 // (GroundTelegraphFX), qui veulent dire "danger, sors de là" : un tir du joueur ne doit jamais envoyer ce signal. Plus
@@ -45,6 +49,10 @@ public static class ArcaneBurstVFX
         _activeCount = 0;
         _pool.Clear();
     }
+
+    // Rouge rubis d'Aether : plus profond et plus froid que l'orange flamme de la Boule de feu (1 / 0,42 / 0,08).
+    public static readonly Color AetherRuby = new Color(0.93f, 0.16f, 0.2f);
+    public static readonly Color AetherGold = new Color(1f, 0.78f, 0.38f);   // reflets du cristal
 
     public static void Spawn(Vector3 position, float radius, Color tint)
     {
@@ -118,7 +126,8 @@ public class ArcaneBurstRunner : MonoBehaviour
 
     // Teintes dérivées de la couleur du tir : cœur presque blanc, teinte franche, bleu profond en fin de vie.
     private Color _flashColor, _hotColor, _midColor, _deepColor;
-    private static readonly Color ShadeColor = new Color(0.03f, 0.08f, 0.3f);
+    private Color _shadeColor;
+    private static readonly Color WarmWhite = new Color(1f, 0.96f, 0.86f);
 
     private float _radius;
     private float _waveSpin;
@@ -131,11 +140,12 @@ public class ArcaneBurstRunner : MonoBehaviour
         _radius = Mathf.Max(0.5f, radius);
         _onComplete = onComplete;
 
-        // Teinte du tir un peu plus saturée vers le bleu : sur l'herbe claire, le cyan pur paraissait délavé.
-        _midColor = Color.Lerp(new Color(tint.r, tint.g, tint.b, 1f), new Color(0.1f, 0.55f, 1f), 0.35f);
-        _flashColor = Color.Lerp(_midColor, Color.white, 0.85f);
-        _hotColor = Color.Lerp(_midColor, Color.white, 0.5f);
-        _deepColor = Color.Lerp(_midColor, new Color(0.12f, 0.2f, 0.75f), 0.65f);
+        // Cœur blanc chaud, reflets or, teinte franche, rouge sombre en fin de vie, ombre lie-de-vin.
+        _midColor = new Color(tint.r, tint.g, tint.b, 1f);
+        _flashColor = Color.Lerp(_midColor, WarmWhite, 0.88f);
+        _hotColor = Color.Lerp(_midColor, ArcaneBurstVFX.AetherGold, 0.6f);
+        _deepColor = Color.Lerp(_midColor, new Color(0.3f, 0.02f, 0.06f), 0.6f);
+        _shadeColor = Color.Lerp(_midColor, new Color(0.12f, 0.01f, 0.03f), 0.85f);
 
         EnsureBuilt();
 
@@ -257,9 +267,9 @@ public class ArcaneBurstRunner : MonoBehaviour
         Color c = Color.Lerp(_hotColor, _deepColor, Mathf.Clamp01(p * 1.2f));
         _core.color = FXSprites.A(c, Mathf.Lerp(1f, 0f, FXSprites.Smooth(fadeP)));
 
-        // Ombre bleu nuit sous l'étoile : donne du contraste sur le sol clair (sans elle, le cyan se fond dans l'herbe).
+        // Ombre sombre sous l'étoile : donne du contraste sur le sol clair (sans elle, la teinte se fond dans le décor).
         FXSprites.SetFlat(_shade, diameter * 1.15f, 0f);
-        _shade.color = FXSprites.A(ShadeColor, 0.5f * (1f - FXSprites.Smooth(fadeP)));
+        _shade.color = FXSprites.A(_shadeColor, 0.5f * (1f - FXSprites.Smooth(fadeP)));
     }
 
     // Rayon de l'onde (fraction du rayon de dégâts) à l'instant t, et instant où elle atteint une fraction donnée
@@ -319,7 +329,7 @@ public class ArcaneBurstRunner : MonoBehaviour
             // Né blanc (cristallisé par l'onde), prend la teinte, puis s'illumine juste avant de se briser.
             Color c = Color.Lerp(_flashColor, _midColor, FXSprites.Smooth(Mathf.Clamp01(local / 0.14f)));
             float glint = Mathf.Clamp01(1f - Mathf.Abs(t - _fragmentBreak[i]) / 0.05f);
-            c = Color.Lerp(c, Color.white, 0.75f * glint);
+            c = Color.Lerp(c, Color.Lerp(ArcaneBurstVFX.AetherGold, WarmWhite, 0.5f), 0.8f * glint);
             sr.color = FXSprites.A(c, 0.92f * (1f - FXSprites.Smooth(breakP)));   // légèrement translucide : du cristal
         }
     }
@@ -336,7 +346,8 @@ public class ArcaneBurstRunner : MonoBehaviour
             sr.transform.localPosition = _splinterDirs[i] * (eased * _radius * _splinterReach[i]) + Vector3.up * (0.08f + lift);
             // Long et fin au départ (vitesse), se raccourcit en ralentissant.
             FXSprites.SetFlat(sr, Mathf.Lerp(2.3f, 0.9f, eased) * Mathf.Clamp(_radius / 4f, 0.6f, 1.4f), _splinterAngles[i]);
-            Color c = Color.Lerp(_flashColor, _midColor, Mathf.Clamp01(p * 1.5f));
+            // Étincelles : blanc chaud, puis or, puis rubis en ralentissant.
+            Color c = p < 0.4f ? Color.Lerp(_flashColor, _hotColor, p / 0.4f) : Color.Lerp(_hotColor, _midColor, (p - 0.4f) / 0.6f);
             sr.color = FXSprites.A(c, p < 0.08f ? p / 0.08f : Mathf.Lerp(1f, 0f, (p - 0.08f) * (p - 0.08f) / 0.846f));
         }
     }
@@ -352,7 +363,7 @@ public class ArcaneBurstRunner : MonoBehaviour
             float twinkle = 0.65f + 0.35f * Mathf.Sin(t * 30f + _motePhase[i]);
             FXSprites.SetFlat(sr, Mathf.Lerp(0.45f, 0.15f, p), 0f);
             float alpha = FXSprites.Smooth(Mathf.Clamp01(t / 0.1f)) * (1f - FXSprites.Smooth(Mathf.Clamp01((p - 0.35f) / 0.65f)));
-            sr.color = FXSprites.A(Color.Lerp(_flashColor, _midColor, p), alpha * twinkle);
+            sr.color = FXSprites.A(Color.Lerp(_flashColor, _hotColor, p), alpha * twinkle);   // poussières dorées
         }
     }
 }

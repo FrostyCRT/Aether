@@ -5076,21 +5076,6 @@ MonoBehaviour:
   _trimColor: {r: 0.8, g: 0.61, b: 0.27, a: 1}
   _playColor: {r: 1, g: 0.79, b: 0.3, a: 1}
   _pillBackdropColor: {r: 0.07, g: 0.05, b: 0.03, a: 0.65}
---- !u!115 &120956427
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: FusionProbe
-  m_Namespace: Unity.AI.Assistant.Agent.Dynamic.Extension.Editor
-  m_AssemblyName: Unity.AI.Assistant.RunCommand.Dynamic.bb53e5fbe3084809b87838a59e3a5ebb
 --- !u!1 &133248248
 GameObject:
   m_ObjectHideFlags: 0
@@ -48664,50 +48649,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1699006119}
   m_CullTransparentMesh: 1
---- !u!1 &1700575463
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1700575465}
-  - component: {fileID: 1700575464}
-  m_Layer: 0
-  m_Name: FusionProbe
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1700575464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1700575463}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 120956427}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1700575465
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1700575463}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1706597799
 GameObject:
   m_ObjectHideFlags: 0
@@ -49786,9 +49727,6 @@ MonoBehaviour:
   - {fileID: 1021830163797081717, guid: ba56af6436b397848bc45096deb11c3c, type: 3}
   - {fileID: 2360155309410710616, guid: fe1bee29f9e382f4fafc28e01b456c9d, type: 3}
   - {fileID: 3829602211802709019, guid: d36b2d33d194df649bbf5efc8c4f0d6d, type: 3}
-  _eclatsPerLevel: 15
-  _eclatsPerBossKill: 60
-  _eclatsVictoryBonus: 200
   _kaelUnlockEclatsCost: 500
   _lyraUnlockEclatsCost: 1200
 --- !u!4 &1733454758
@@ -64296,4 +64234,3 @@ SceneRoots:
   - {fileID: 1175492974}
   - {fileID: 1733454758}
   - {fileID: 1885891800}
-  - {fileID: 1700575465}

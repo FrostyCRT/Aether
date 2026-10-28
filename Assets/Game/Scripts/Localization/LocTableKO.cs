@@ -24,8 +24,8 @@ public static class LocTableKO
         { "Ultime", "궁극기" }, { "Clone spectral", "환영 분신" }, { "Carte n°1", "카드 1" }, { "Carte n°2", "카드 2" }, { "Carte n°3", "카드 3" },
         { "Orbites : rapprocher", "궤도： 좁히기" }, { "Orbites : éloigner", "궤도： 넓히기" }, { "Pause", "일시정지" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "대시： 빠르게 이동하며 잠깐 무적이 되고， 적의 탄환을 흡수합니다" },
         { "Déclenche l'ultime quand le cristal est chargé", "크리스탈이 충전되면 궁극기를 발동합니다" }, { "Invoque le clone spectral. Nécessite la compétence correspondante", "환영 분신을 소환합니다． 해당 스킬이 필요합니다" },
-        { "Choisit la 1re carte à la montée de niveau", "레벨 업 시 첫 번째 카드를 선택합니다" }, { "Choisit la 2e carte à la montée de niveau", "레벨 업 시 두 번째 카드를 선택합니다" },
-        { "Choisit la 3e carte à la montée de niveau", "레벨 업 시 세 번째 카드를 선택합니다" }, { "Réduit le rayon des orbes de l'arme orbitale", "오비탈의 궤도 반경을 줄입니다" },
+        { "Choisit la 1re carte à la montée de niveau", "레벨 업 시 첫 번째 카드를 선택합니다" }, { "Choisit la 2ème carte à la montée de niveau", "레벨 업 시 두 번째 카드를 선택합니다" },
+        { "Choisit la 3ème carte à la montée de niveau", "레벨 업 시 세 번째 카드를 선택합니다" }, { "Réduit le rayon des orbes de l'arme orbitale", "오비탈의 궤도 반경을 줄입니다" },
         { "Augmente le rayon des orbes de l'arme orbitale", "오비탈의 궤도 반경을 늘립니다" }, { "Ouvre / ferme le menu pause", "일시정지 메뉴를 열거나 닫습니다" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -106,11 +106,11 @@ public static class LocTableKO
         { "Chasseur", "사냥꾼" }, { "Tuer 150 ennemis", "적 150마리 처치" }, { "Montée en Puissance", "힘의 각성" }, { "Atteindre le niveau 10", "레벨 10 달성" },
         { "Premier Sang", "퍼스트 블러드" }, { "Vaincre 1 boss", "보스 1마리 처치" }, { "Toujours en Mouvement", "멈추지 마" }, { "Utiliser le Dash 20 fois", "대시 20회 사용" },
         { "Sang-Froid", "냉정함" }, { "Garder 30% de vie jusqu'au boss 2", "보스 2까지 HP 30% 이상 유지" }, { "Double Chasse", "더블 헌트" },
-        { "Vaincre 2 boss dans la même partie", "한 판에서 보스 2마리 처치" }, { "Ascension Rapide", "초고속 성장" }, { "Niveau 18 avant la 10e minute", "10분 전에 레벨 18 달성" },
+        { "Vaincre 2 boss dans la même partie", "한 판에서 보스 2마리 처치" }, { "Ascension Rapide", "초고속 성장" }, { "Niveau 18 avant la 10ème minute", "10분 전에 레벨 18 달성" },
         { "Sans Cristal", "크리스탈 봉인" }, { "Sans Ultime jusqu'au boss 2", "보스 2까지 궁극기 사용 금지" }, { "Résilience", "무결점" }, { "Garder plus de 50% de vie jusqu'au boss 1", "보스 1까지 피해 받지 않기" },
-        { "Éclair", "번개처럼" }, { "Vaincre un boss en moins de 30s", "보스를 30초 안에 처치" }, { "Fortune", "일확천금" }, { "Avec au moins 3000 Or ramassé", "골드 3000 이상 획득" },
-        { "Puissance Absolue", "절대적인 힘" }, { "Niveau 30 dans la même partie", "한 판에서 레벨 30 달성" }, { "Or x{0}", "골드 x{0}" },
-        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "진행 중" }, { "{0}/3000 Or", "{0}/3000 골드" }, { "Pas de défi dans ce mode", "이 모드에는 도전이 없습니다" },
+        { "Éclair", "번개처럼" }, { "Vaincre un boss en moins de 30s", "보스를 30초 안에 처치" }, { "Fortune", "일확천금" }, { "Avec au moins 1200 Or ramassé", "골드 1200 이상 획득" },
+        { "Puissance Absolue", "절대적인 힘" }, { "Niveau 30 dans la même partie", "한 판에서 레벨 30 달성" }, { "+{0} or", "+{0} 골드" },
+        { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "진행 중" }, { "{0}/{1} Or", "{0}/{1} 골드" }, { "Pas de défi dans ce mode", "이 모드에는 도전이 없습니다" },
         { "Défi déjà réussi cette heure !", "이번 시간의 도전은 이미 성공했어요！" }, { "Nouveau défi dans {0} min", "{0}분 후 새 도전" }, { "Nouveau défi à ta prochaine partie !", "다음 판에서 새 도전！" },
         { "Réussi", "성공" }, { "Statut", "상태" },
 
@@ -146,12 +146,12 @@ public static class LocTableKO
         { "Réputation : Dégâts", "명성： 피해" }, { "Réputation : Vitesse", "명성： 속도" }, { "Réputation : Régénération", "명성： 재생" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "저주받은 늪" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "진흙 웅덩이가 전기가 흐르는 늪으로 바뀌어 그 안에 머무는 적을 감전시킵니다" },
-        { "Vortex de Mana", "마나 소용돌이" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "더 넓고 더 강력한 마나 파편의 소용돌이가 주위를 맴돕니다．" },
-        { "Lames Ricochet", "도탄 칼날" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "단검 일제 투척이 적을 관통하고 적에게서 적으로 튕겨 다닙니다" },
+        { "Tourbière Magnétique", "자기 늪" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "전기가 흐르는 늪이 적을 끌어당긴 뒤 번개 폭풍으로 폭발합니다" },
+        { "Couronne Prismatique", "프리즘 왕관" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "광선으로 이어진 수정들이 방벽을 이룬 뒤， 빛줄기로 주변을 휩씁니다" },
+        { "Valse des Lames", "칼날 왈츠" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "칼날이 화면 가장자리에서 튕긴 뒤， 모든 것을 베며 당신에게 돌아옵니다" },
         { "Pluie de Météores", "유성우" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "운석이 적에게 쏟아져 적을 느리게 만드는 불타는 진흙을 남깁니다" },
-        { "Orbes Foudroyants", "뇌격 구체" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "오비탈이 적에게 닿으면 연쇄 번개를 방출합니다" },
-        { "Sillage Boueux", "쌍둥이 구체" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "구체가 진흙 자국을 남겨 적을 느리게 하고 피해를 줍니다" },
+        { "Constellation Orageuse", "폭풍 별자리" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "구체가 적을 이온화한 뒤， 번개가 모두를 별자리처럼 잇습니다" },
+        { "Sillage Boueux", "진흙 자국" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "구체가 진흙 자국을 남겨 적을 느리게 하고 피해를 줍니다" },
         { "Aura", "오라" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "오라 영역" },
         { "Orbe Rebondissant", "튕기는 구체" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "경기장 안을 끊임없이 튕겨 다니며 맞힌 적에게 피해를 주는 구체를 발사합니다" },
         { "Dégâts +", "피해＋" }, { "+20% de dégâts sur toutes tes armes", "모든 무기의 피해 +20%" }, { "Double Tir", "더블 샷" }, { "Ton tir de base tire un second projectile juste après le premier", "기본 공격이 첫 번째 탄환 직후 두 번째 탄환을 발사합니다" },
@@ -165,7 +165,7 @@ public static class LocTableKO
         { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "연쇄 번개를 해금합니다． 적 3명을 연달아 맞힙니다" }, { "+1 rebond de foudre supplémentaire", "번개 튕김 횟수 +1" },
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "적을 느리게 하고 피해를 주는 진흙 웅덩이 3개를 해금합니다" }, { "+1 flaque de boue supplémentaire", "진흙 웅덩이 +1" },
         { "+{0}% de dégâts sur toutes tes armes", "모든 무기의 피해 +{0}%" }, { "+{0}% de cadence sur toutes tes armes de tir", "모든 사격 무기의 연사 속도 +{0}%" },
-        { "Restaure {0}% de tes PV max", "최대 HP의 {0}%를 회복합니다" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "더블 샷을 해금합니다． 기본 공격이 두 번 발사됩니다" },
+        { "Augmente tes PV max de {0}% et en restaure {1}%", "최대 HP가 {0}% 증가하고 {1}%를 회복합니다" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "더블 샷을 해금합니다． 기본 공격이 두 번 발사됩니다" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "파이어볼 해금： Aether의 전용 무기" }, { "Le rayon d'explosion est 2 fois plus grand", "폭발 범위가 2배로 커집니다" },
         { "+{0}% dégâts", "피해 +{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "화상 해금： 맞은 적이 한동안 불탑니다" },
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "오라 해금： Kael의 전용 무기" }, { "+{0}% rayon", "범위 +{0}%" }, { "Ralentissement renforcé : {0}% au lieu de {1}%", "둔화 강화： {0}% （기존 {1}%）" },
@@ -242,9 +242,10 @@ public static class LocTableKO
         { "ASSIGNER UNE TOUCHE À", "키 할당" }, { "Appuyez sur une touche pour commencer", "아무 키나 눌러 시작하세요" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "융합" }, { "Éclat", "파편" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "판 시작부터 2번째 보스가 쓰러질 때까지 HP 30% 아래로 떨어지지 않기．" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "2번째 보스를 처치하기 전에는 궁극기(F 키) 사용 금지" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "판 시작부터 1번째 보스가 쓰러질 때까지 HP 50% 아래로 떨어지지 않기．" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "아무 보스나 등장 후 30초 안에 처치" }, { "Ramasser au moins 3000 Or au total durant la partie", "한 판 동안 골드를 총 3000 이상 줍기" },
+        { "FUSION", "융합" }, { "Éclat", "파편" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "판 시작부터 2번째 보스가 쓰러질 때까지 HP 30% 아래로 떨어지지 않기．" },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "2번째 보스를 처치하기 전에는 궁극기(F 키) 사용 금지" },
+        { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "판 시작부터 1번째 보스가 쓰러질 때까지 HP 50% 아래로 떨어지지 않기．" },
+        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "아무 보스나 등장 후 30초 안에 처치" }, { "Ramasser au moins 1200 Or au total durant la partie", "한 판 동안 골드를 총 1200 이상 줍기" },
         { "MODÉRÉ", "보통" }, { "VIOLENT", "격렬" }, { "APOCALYPTIQUE", "종말" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "경계 없는 맵， 언제나 그랬던 클래식 그대로．" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "좌우 경계가 없는 터널형 맵， 더 단단하고 위험한 적， 대신 골드와 파편이 더 많음．" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "사방이 막힌 좁은 맵， 훨씬 단단하고 위험한 적， 골드와 파편 최대．" },
@@ -256,5 +257,10 @@ public static class LocTableKO
         { "{0} éclats tournent autour de toi et frappent les ennemis au contact", "파편 {0}개가 주위를 돌며 닿은 적을 공격" }, { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "진흙 웅덩이 {0}개를 만들어， 그 안의 적을 느리게 하고 피해를 줍니다" },
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "적을 관통하는 단검을 {0}개씩 연달아 던짐" }, { "Décharge électrique qui rebondit sur {0} ennemis proches", "주변 적 {0}명 사이를 튕겨 다니는 전격" },
         { "Survie", "생존" }, { "Éliminations", "처치" }, { "Niveau", "레벨" }, { "Boss", "보스" }, { "Titans", "타이탄" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "보통 난이도 첫 승리： 파편 +{0}" }, { "Première victoire en Violent : +{0} éclats", "격렬 난이도 첫 승리： 파편 +{0}" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "종말 난이도 첫 승리： 파편 +{0}" }, { "Victoire en Modéré", "보통 난이도 승리" },
+        { "Victoire en Violent", "격렬 난이도 승리" }, { "avec {0}", "캐릭터： {0}" },
     };
 }

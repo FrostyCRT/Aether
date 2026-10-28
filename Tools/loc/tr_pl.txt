@@ -282,13 +282,13 @@
 266| Błyskawica
 267| Pokonaj bossa w mniej niż 30 s
 268| Fortuna
-269| Zbierz co najmniej 3000 złota
+269| Zbierz co najmniej 1200 złota
 270| Absolutna potęga
 271| 30. poziom w jednej rozgrywce
-272| Złoto x{0}
+272| +{0} złota
 273| Poz. {0}/{1}
 274| W toku
-275| {0}/3000 złota
+275| {0}/{1} złota
 276| W tym trybie nie ma wyzwania
 277| Wyzwanie w tej godzinie już zaliczone!
 278| Nowe wyzwanie za {0} min
@@ -368,17 +368,17 @@
 348| Reputacja: Regeneracja
 
 ## Améliorations
-349| Przeklęte bagno
-350| Twoje kałuże błota zmieniają się w bagno, które poraża wrogów
-351| Wir many
-352| Wokół ciebie krąży wir odłamków many, szerszy i potężniejszy.
-353| Ostrza rykoszetu
-354| Twoja salwa noży przebija wrogów i odbija się od jednego do drugiego
+349| Magnetyczne torfowisko
+350| Naelektryzowane torfowiska wciągają wrogów, a potem wybuchają burzą piorunów
+351| Pryzmatyczna korona
+352| Kryształy połączone promieniami tworzą barierę, a potem omiatają obszar wiązkami światła
+353| Walc ostrzy
+354| Twoje ostrza odbijają się od krawędzi ekranu, a potem wracają do ciebie, tnąc wszystko po drodze
 355| Deszcz meteorów
 356| Meteory spadają na wrogów i zostawiają płonące błoto, które ich spowalnia
-357| Gromowe kule
-358| Twoje satelity wyzwalają łańcuch błyskawic przy kontakcie z wrogami
-359| Bliźniacze kule
+357| Burzowa konstelacja
+358| Twoje kule jonizują wrogów, a potem błyskawica łączy ich wszystkich w konstelację
+359| Błotny ślad
 360| Twoje kule zostawiają smugę błota, która spowalnia i rani wrogów
 361| Aura
 362| Strefa aury
@@ -410,7 +410,7 @@
 388| +1 dodatkowa kałuża błota
 389| +{0}% do obrażeń wszystkich broni
 390| +{0}% szybkostrzelności wszystkich broni strzelających
-391| Przywraca {0}% twoich maksymalnych PŻ
+391| Zwiększa twoje maksymalne PŻ o {0}% i przywraca {1}%
 392| Odblokowuje Podwójny strzał: twój podstawowy atak strzela dwa razy
 393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera
 394| Promień wybuchu jest dwa razy większy
@@ -622,7 +622,7 @@
 581| Nie używaj supermocy (klawisz F) przed pokonaniem 2. bossa
 582| Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa.
 583| Pokonaj dowolnego bossa w ciągu 30 sekund od jego pojawienia się
-584| Zbierz łącznie co najmniej 3000 złota w trakcie rozgrywki
+584| Zbierz łącznie co najmniej 1200 złota w trakcie rozgrywki
 585| UMIARKOWANY
 586| BRUTALNY
 587| APOKALIPTYCZNY
@@ -655,3 +655,9 @@
 609| Poziom
 610| Bossowie
 611| Tytani
+612| Pierwsze zwycięstwo na poziomie Umiarkowany: +{0} odłamków
+613| Pierwsze zwycięstwo na poziomie Brutalny: +{0} odłamków
+614| Pierwsze zwycięstwo na poziomie Apokaliptyczny: +{0} odłamków
+615| Zwycięstwo na poziomie Umiarkowany
+616| Zwycięstwo na poziomie Brutalny
+617| postać: {0}

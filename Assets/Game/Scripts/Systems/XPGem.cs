@@ -192,8 +192,8 @@ public class XPGem : MonoBehaviour
     // de gemmes au sol. Toute gemme laissée derrière soi restait active jusqu'à la fin de la partie (Update chaque
     // frame : billboard + respiration + SetPropertyBlock, un draw call chacune) - partie mesurée en Apocalyptique,
     // ennemis stables (~20 à l'écran) : 135 gemmes -> 123 fps, 892 -> 70 fps, 1776 -> 44 fps, 2570 -> 32 fps.
-    // Registre des gemmes actives (ajout/retrait en O(1) par échange avec la dernière) : sert à XPGemSpawner pour
-    // plafonner leur nombre (voir XPGemSpawner.MaxGemsOnGround / MergeFarthestIdleGem).
+    // Registre des gemmes actives (ajout/retrait en O(1) par échange avec la dernière). Le plafond qu'il servait à
+    // appliquer a été retiré le 2026-10-27 (voir XPGemSpawner) : il ne sert plus qu'à compter les gemmes (ActiveCount).
     private static readonly List<XPGem> _activeGems = new List<XPGem>();
     private int _activeIndex = -1;
     public static int ActiveCount => _activeGems.Count;
@@ -220,61 +220,6 @@ public class XPGem : MonoBehaviour
     }
 
     private void OnDisable() => Unregister();
-
-    // Fusionne la gemme posée la plus éloignée du joueur dans sa voisine posée la plus proche (qui récupère toute son
-    // XP et grossit si besoin, voir AbsorbXP) : jamais d'XP perdue, et elle reste là où elle est tombée - le joueur
-    // la retrouve en revenant, simplement en moins d'objets. Seules les gemmes Idle (posées) sont concernées : jamais
-    // une gemme en plein saut d'apparition ni une gemme déjà aimantée vers le joueur. Renvoie false si aucune paire
-    // n'est disponible (l'appelant laisse alors simplement le plafond être dépassé).
-    public static bool MergeFarthestIdleGem(Vector3 playerPosition)
-    {
-        XPGem farthest = null;
-        float farthestSqr = -1f;
-        for (int i = 0; i < _activeGems.Count; i++)
-        {
-            XPGem gem = _activeGems[i];
-            if (gem._state != GemState.Idle) continue;
-            Vector3 d = gem._popTarget - playerPosition;
-            d.y = 0f;
-            float sqr = d.sqrMagnitude;
-            if (sqr > farthestSqr) { farthestSqr = sqr; farthest = gem; }
-        }
-        if (farthest == null) return false;
-
-        XPGem nearest = null;
-        float nearestSqr = float.MaxValue;
-        for (int i = 0; i < _activeGems.Count; i++)
-        {
-            XPGem gem = _activeGems[i];
-            if (gem == farthest || gem._state != GemState.Idle) continue;
-            float sqr = (gem._popTarget - farthest._popTarget).sqrMagnitude;
-            if (sqr < nearestSqr) { nearestSqr = sqr; nearest = gem; }
-        }
-        if (nearest == null) return false;
-
-        nearest.AbsorbXP(farthest._xpValue);
-        farthest.DespawnSilently();
-        return true;
-    }
-
-    private void AbsorbXP(float xp)
-    {
-        _xpValue += xp;
-        GemType visual = _xpValue >= 50f ? GemType.Large : _xpValue >= 20f ? GemType.Medium : GemType.Small;
-        if (visual > _gemType)
-        {
-            ApplyVisual(visual);
-            if (_state == GemState.Idle) transform.localScale = Vector3.one * _gemScale;
-        }
-    }
-
-    // Retour au pool sans éclat ni XP : son XP a déjà été transférée (voir MergeFarthestIdleGem).
-    private void DespawnSilently()
-    {
-        if (_trail != null) { _trail.emitting = false; _trail.Clear(); }
-        gameObject.SetActive(false);
-        if (ObjectPool.Instance != null) ObjectPool.Instance.ReturnToPool(_poolKey, gameObject);
-    }
 
     private void Awake()
     {

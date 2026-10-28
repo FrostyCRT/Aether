@@ -26,8 +26,8 @@ public static class LocTablePT
         { "Carte n°1", "Carta 1" }, { "Carte n°2", "Carta 2" }, { "Carte n°3", "Carta 3" }, { "Orbites : rapprocher", "Órbita: aproximar" },
         { "Orbites : éloigner", "Órbita: afastar" }, { "Pause", "Pausa" }, { "Dash : déplacement rapide, invincible un court instant, absorbe les projectiles", "Dash: deslocamento rápido, invencível por um instante, absorve projéteis" },
         { "Déclenche l'ultime quand le cristal est chargé", "Ativa a suprema quando o cristal estiver carregado" }, { "Invoque le clone spectral. Nécessite la compétence correspondante", "Invoca o clone espectral. Exige a habilidade correspondente" },
-        { "Choisit la 1re carte à la montée de niveau", "Escolhe a 1ª carta ao subir de nível" }, { "Choisit la 2e carte à la montée de niveau", "Escolhe a 2ª carta ao subir de nível" },
-        { "Choisit la 3e carte à la montée de niveau", "Escolhe a 3ª carta ao subir de nível" }, { "Réduit le rayon des orbes de l'arme orbitale", "Diminui o raio de giro dos seus orbitais" },
+        { "Choisit la 1re carte à la montée de niveau", "Escolhe a 1ª carta ao subir de nível" }, { "Choisit la 2ème carte à la montée de niveau", "Escolhe a 2ª carta ao subir de nível" },
+        { "Choisit la 3ème carte à la montée de niveau", "Escolhe a 3ª carta ao subir de nível" }, { "Réduit le rayon des orbes de l'arme orbitale", "Diminui o raio de giro dos seus orbitais" },
         { "Augmente le rayon des orbes de l'arme orbitale", "Aumenta o raio de giro dos seus orbitais" }, { "Ouvre / ferme le menu pause", "Abre / fecha o menu de pausa" },
 
         // ======================================================== Paramètres : page (SettingsSchema)
@@ -123,11 +123,11 @@ public static class LocTablePT
         { "Toujours en Mouvement", "Sempre em Movimento" }, { "Utiliser le Dash 20 fois", "Use o dash 20 vezes" }, { "Sang-Froid", "Sangue-Frio" },
         { "Garder 30% de vie jusqu'au boss 2", "Mantenha mais de 30% de vida até o chefe 2" }, { "Double Chasse", "Caçada Dupla" },
         { "Vaincre 2 boss dans la même partie", "Derrote 2 chefes na mesma partida" }, { "Ascension Rapide", "Ascensão Rápida" },
-        { "Niveau 18 avant la 10e minute", "Nível 18 antes do minuto 10" }, { "Sans Cristal", "Sem Cristal" }, { "Sans Ultime jusqu'au boss 2", "Sem suprema até o chefe 2" },
+        { "Niveau 18 avant la 10ème minute", "Nível 18 antes do minuto 10" }, { "Sans Cristal", "Sem Cristal" }, { "Sans Ultime jusqu'au boss 2", "Sem suprema até o chefe 2" },
         { "Résilience", "Impecável" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Nenhum dano até o chefe 1" }, { "Éclair", "Relâmpago" },
-        { "Vaincre un boss en moins de 30s", "Derrote um chefe em menos de 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 3000 Or ramassé", "Colete pelo menos 3000 de ouro" },
-        { "Puissance Absolue", "Poder Absoluto" }, { "Niveau 30 dans la même partie", "Nível 30 na mesma partida" }, { "Or x{0}", "Ouro x{0}" },
-        { "Niv. {0}/{1}", "Nv. {0}/{1}" }, { "En cours", "Em andamento" }, { "{0}/3000 Or", "{0}/3000 de ouro" }, { "Pas de défi dans ce mode", "Não há desafio neste modo" },
+        { "Vaincre un boss en moins de 30s", "Derrote um chefe em menos de 30 s" }, { "Fortune", "Fortuna" }, { "Avec au moins 1200 Or ramassé", "Colete pelo menos 1200 de ouro" },
+        { "Puissance Absolue", "Poder Absoluto" }, { "Niveau 30 dans la même partie", "Nível 30 na mesma partida" }, { "+{0} or", "+{0} de ouro" },
+        { "Niv. {0}/{1}", "Nv. {0}/{1}" }, { "En cours", "Em andamento" }, { "{0}/{1} Or", "{0}/{1} de ouro" }, { "Pas de défi dans ce mode", "Não há desafio neste modo" },
         { "Défi déjà réussi cette heure !", "Desafio já concluído nesta hora!" }, { "Nouveau défi dans {0} min", "Novo desafio em {0} min" },
         { "Nouveau défi à ta prochaine partie !", "Novo desafio na sua próxima partida!" }, { "Réussi", "Concluído" }, { "Statut", "Status" },
 
@@ -167,12 +167,12 @@ public static class LocTablePT
         { "Réputation : Vitesse", "Reputação: Velocidade" }, { "Réputation : Régénération", "Reputação: Regeneração" },
 
         // ======================================================== Améliorations (ScriptableObjects + UpgradeData)
-        { "Marécage Maudit", "Pântano Amaldiçoado" }, { "Tes flaques de boue deviennent un marécage qui foudroie les ennemis", "Suas poças de lama viram um pântano que eletrocuta os inimigos" },
-        { "Vortex de Mana", "Vórtice de Mana" }, { "Un tourbillon de mana, plus large et plus puissant, tourne autour de toi.", "Um redemoinho de mana, mais largo e mais forte, gira ao seu redor." },
-        { "Lames Ricochet", "Lâminas Ricocheteantes" }, { "Ta salve de couteaux perfore et ricoche d'ennemi en ennemi", "Sua rajada de facas perfura e ricocheteia de inimigo em inimigo" },
+        { "Tourbière Magnétique", "Turfeira Magnética" }, { "Des tourbières électrisées aspirent les ennemis, puis explosent en orage de foudre", "Turfeiras eletrificadas puxam os inimigos e depois explodem em uma tempestade de raios" },
+        { "Couronne Prismatique", "Coroa Prismática" }, { "Des cristaux reliés par des rayons forment un rempart, puis balaient la zone de faisceaux", "Cristais ligados por raios formam uma muralha e depois varrem a área com feixes de luz" },
+        { "Valse des Lames", "Valsa das Lâminas" }, { "Tes lames ricochent sur les bords de l'écran puis reviennent vers toi en tranchant tout", "Suas lâminas ricocheteiam nas bordas da tela e depois voltam até você, cortando tudo" },
         { "Pluie de Météores", "Chuva de Meteoros" }, { "Des météores s'écrasent sur les ennemis et laissent une boue brûlante qui les ralentit", "Meteoros caem sobre os inimigos e deixam lama ardente que os retarda" },
-        { "Orbes Foudroyants", "Orbes Fulminantes" }, { "Tes orbitaux déclenchent la foudre en chaîne au contact des ennemis", "Seus orbitais soltam raios em cadeia ao tocar os inimigos" },
-        { "Sillage Boueux", "Orbes Gêmeos" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Seus orbes deixam um rastro de lama que retarda e fere os inimigos" },
+        { "Constellation Orageuse", "Constelação Tempestuosa" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "Seus orbes ionizam os inimigos e depois um raio liga todos eles em uma constelação" },
+        { "Sillage Boueux", "Rastro de Lama" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Seus orbes deixam um rastro de lama que retarda e fere os inimigos" },
         { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Zona de Aura" },
         { "Orbe Rebondissant", "Orbe Quicante" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Lança orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos" },
         { "Dégâts +", "Dano +" }, { "+20% de dégâts sur toutes tes armes", "+20% de dano em todas as suas armas" }, { "Double Tir", "Tiro Duplo" },
@@ -188,7 +188,7 @@ public static class LocTablePT
         { "+1 orbital supplémentaire", "+1 orbital extra" }, { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "Desbloqueia o raio em cadeia: atinge 3 inimigos" },
         { "+1 rebond de foudre supplémentaire", "+1 salto de raio extra" }, { "Débloque 3 flaques de boue qui ralentissent et blessent", "Desbloqueia 3 poças de lama que desaceleram e ferem" },
         { "+1 flaque de boue supplémentaire", "+1 poça de lama extra" }, { "+{0}% de dégâts sur toutes tes armes", "+{0}% de dano em todas as suas armas" },
-        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% de cadência em todas as suas armas de disparo" }, { "Restaure {0}% de tes PV max", "Restaura {0}% da sua vida máxima" },
+        { "+{0}% de cadence sur toutes tes armes de tir", "+{0}% de cadência em todas as suas armas de disparo" }, { "Augmente tes PV max de {0}% et en restaure {1}%", "Aumenta sua vida máxima em {0}% e restaura {1}%" },
         { "Débloque le Double Tir : ton tir de base tire deux fois", "Desbloqueia o Tiro Duplo: seu ataque básico dispara duas vezes" },
         { "Débloque Boule de feu : équipe l'arme exclusive d'Aether", "Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether" },
         { "Le rayon d'explosion est 2 fois plus grand", "O raio de explosão fica duas vezes maior" }, { "+{0}% dégâts", "+{0}% de dano" },
@@ -278,11 +278,11 @@ public static class LocTablePT
         { "ASSIGNER UNE TOUCHE À", "ATRIBUIR UMA TECLA A" }, { "Appuyez sur une touche pour commencer", "Pressione qualquer tecla para começar" },
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
-        { "FUSION", "FUSÃO" }, { "Éclat", "fragmento" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2e boss.", "Nunca fique abaixo de 30% de vida, do início da partida até a morte do 2º chefe." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2e boss", "Não use a suprema (tecla F) antes de derrotar o 2º chefe" },
+        { "FUSION", "FUSÃO" }, { "Éclat", "fragmento" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Nunca fique abaixo de 30% de vida, do início da partida até a morte do 2º chefe." },
+        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Não use a suprema (tecla F) antes de derrotar o 2º chefe" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Nunca fique abaixo de 50% de vida, do início da partida até a morte do 1º chefe." },
         { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Derrote qualquer chefe em menos de 30 segundos após o seu surgimento" },
-        { "Ramasser au moins 3000 Or au total durant la partie", "Colete pelo menos 3000 de ouro no total durante a partida" },
+        { "Ramasser au moins 1200 Or au total durant la partie", "Colete pelo menos 1200 de ouro no total durante a partida" },
         { "MODÉRÉ", "MODERADO" }, { "VIOLENT", "VIOLENTO" }, { "APOCALYPTIQUE", "APOCALÍPTICO" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "Mapa sem limites, a experiência Clássica de sempre." },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "Mapa em túnel sem limites laterais, inimigos mais resistentes e perigosos, mas mais ouro e fragmentos." },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "Mapa fechado nos 4 lados, inimigos bem mais resistentes e perigosos, ouro e fragmentos no máximo." },
@@ -297,5 +297,10 @@ public static class LocTablePT
         { "Lance des salves de {0} couteaux qui transpercent les ennemis", "Lança rajadas de {0} facas que atravessam os inimigos" },
         { "Décharge électrique qui rebondit sur {0} ennemis proches", "Descarga elétrica que salta para {0} inimigos próximos" },
         { "Survie", "Sobrevivência" }, { "Éliminations", "Abates" }, { "Niveau", "Nível" }, { "Boss", "Chefes" }, { "Titans", "Titãs" },
+
+        // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
+        { "Première victoire en Modéré : +{0} éclats", "Primeira vitória no Moderado: +{0} fragmentos" }, { "Première victoire en Violent : +{0} éclats", "Primeira vitória no Violento: +{0} fragmentos" },
+        { "Première victoire en Apocalyptique : +{0} éclats", "Primeira vitória no Apocalíptico: +{0} fragmentos" }, { "Victoire en Modéré", "Vitória no Moderado" },
+        { "Victoire en Violent", "Vitória no Violento" }, { "avec {0}", "com {0}" },
     };
 }

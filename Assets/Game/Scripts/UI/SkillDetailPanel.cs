@@ -174,18 +174,34 @@ public class SkillDetailPanel : MonoBehaviour
         // --- prérequis ---
         List<string> pre = new List<string>();
         if (data.prerequisites != null) pre.AddRange(data.prerequisites);
-        _prereqGroup.SetActive(pre.Count > 0);
+        // AJOUTÉ (2026-10-27, refonte de l'économie) - condition de victoire (SkillTreeData.requiredWinTier) affichée comme
+        // un prérequis de plus, sous les nœuds requis : nœuds du milieu, une victoire en Modéré ; nœud du haut, en Violent.
+        bool winRow = data.requiredWinTier >= 0;
+        int rowCount = pre.Count + (winRow ? 1 : 0);
+        EnsurePrereqRows(rowCount);
+        _prereqGroup.SetActive(rowCount > 0);
         for (int i = 0; i < _prereqs.Length; i++)
         {
             PrereqRow row = _prereqs[i];
-            bool used = i < pre.Count;
+            bool used = i < rowCount;
             row.root.SetActive(used);
             if (!used) continue;
 
-            SkillTreeData.NodeData p = SkillTreeData.Get(pre[i]);
-            bool met = SkillTreeStyle.CurrentLevel(pre[i]) >= 1;
-            string what = p == null ? pre[i] : Loc.T(p.displayName);
-            string detail = p != null && p.isUnique ? Loc.T("débloqué") : Loc.T("niveau 1");
+            bool met;
+            string what, detail;
+            if (i < pre.Count)
+            {
+                SkillTreeData.NodeData p = SkillTreeData.Get(pre[i]);
+                met = SkillTreeStyle.CurrentLevel(pre[i]) >= 1;
+                what = p == null ? pre[i] : Loc.T(p.displayName);
+                detail = p != null && p.isUnique ? Loc.T("débloqué") : Loc.T("niveau 1");
+            }
+            else
+            {
+                met = meta.IsNodeWinRequirementMet(nodeId);
+                what = data.requiredWinTier >= (int)DifficultyTier.Violent ? Loc.T("Victoire en Violent") : Loc.T("Victoire en Modéré");
+                detail = Loc.F("avec {0}", owner.Substring(0, 1) + owner.Substring(1).ToLowerInvariant());
+            }
             row.text.text = $"{what}  <size=80%><color=#{SkillTreeStyle.Hex(SkillTreeStyle.Muted)}>{detail}</color></size>";
             row.text.color = met ? SkillTreeStyle.Body : SkillTreeStyle.Warn;
             row.pipRing.color = met ? accent : SkillTreeStyle.Warn;
@@ -195,6 +211,41 @@ public class SkillDetailPanel : MonoBehaviour
 
         // --- achat ---
         FillPurchase(data, cost, gold, maxed, unlockable, activeBranch, owner, accent);
+    }
+
+    // La scène ne contient que 2 lignes de prérequis (SkillTreePageBuilder) ; le nœud du haut en demande 3 (ses 2 nœuds
+    // requis + la victoire en Violent). Les lignes manquantes sont des copies de la dernière, juste en dessous (le groupe
+    // est en mise en page verticale automatique).
+    private void EnsurePrereqRows(int count)
+    {
+        if (_prereqs == null || _prereqs.Length == 0 || _prereqs.Length >= count) return;
+        PrereqRow template = _prereqs[_prereqs.Length - 1];
+        List<PrereqRow> rows = new List<PrereqRow>(_prereqs);
+        while (rows.Count < count)
+        {
+            GameObject clone = Instantiate(template.root, template.root.transform.parent);
+            clone.name = "Prereq" + (rows.Count + 1);
+            clone.transform.SetSiblingIndex(rows[rows.Count - 1].root.transform.GetSiblingIndex() + 1);
+            rows.Add(new PrereqRow
+            {
+                root = clone,
+                pipRing = Twin(template.root, clone, template.pipRing),
+                pipFill = Twin(template.root, clone, template.pipFill),
+                text = Twin(template.root, clone, template.text)
+            });
+        }
+        _prereqs = rows.ToArray();
+    }
+
+    // Même composant que "original" (enfant de "source"), retrouvé dans la copie "clone" par son chemin relatif.
+    private static T Twin<T>(GameObject source, GameObject clone, T original) where T : Component
+    {
+        if (original == null) return null;
+        string path = "";
+        for (Transform t = original.transform; t != null && t != source.transform; t = t.parent)
+            path = path.Length == 0 ? t.name : t.name + "/" + path;
+        Transform found = path.Length == 0 ? clone.transform : clone.transform.Find(path);
+        return found != null ? found.GetComponent<T>() : null;
     }
 
     private static void SetChip(Chip chip, string text, Color color)
