@@ -677,3 +677,5 @@
 638| Desplazar
 639| Dejar de desplazar
 640| Aumenta tu vida máxima un {0}% y la restaura por completo
+641| Manual
+642| Automático: los disparos apuntan al enemigo más cercano. Manual: apuntas con el ratón o el stick derecho del mando

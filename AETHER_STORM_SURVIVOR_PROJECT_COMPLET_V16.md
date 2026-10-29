@@ -1,6 +1,6 @@
 # AETHER STORM SURVIVOR — Documentation projet (V16)
 
-> **Mise à jour : 2026-10-23** (retours utilisateur traités en lot : gemmes d'XP qui flottaient, défi "Niveau 20 avant la 10e minute" qui ne pouvait jamais échouer, PV du boss 2 -30%, pleine croissance de l'XP par kill restaurée, Surpuissance 5 s → 10 s, fusion "Terre Calcinée" entièrement refondue en bombardement de météorites multi-cibles - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
+> **Mise à jour : 2026-10-29** (depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -28,9 +28,10 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Modèles 3D | 🟡 Personnages, ennemis et boss faits ; projectiles, zones au sol, Bulbe, décor de l'arène encore en primitives (voir `A_MODELISER_3D.md`) |
 | **Sons (SFX)** | 🔴 **Aucun bruitage en jeu** (seules les musiques existent) |
 | Trailer Steam + version verticale | ✅ Validés (2026-10-14, projet Remotion `../Aether Storm Trailer`) |
-| Audit « version finale » | 🟡 Étapes 1 (bugs) et 2 (équilibrage) faites le 2026-10-16 ; étapes 3 (sortie) et 4 (pro) à faire |
+| Audit « version finale » | 🟡 Étapes 1 (bugs) et 2 (équilibrage) faites le 2026-10-16 ; étape 3 presque faite (restent nom de société, IL2CPP, Steam Cloud, reportés) ; étape 4 entamée (manette, performances) |
 | Intégration Steam (SDK, succès, Cloud) | ⏳ Pas commencée |
-| Manette / accessibilité | 🟡 Manette partielle (Input Manager legacy), pas d'option secousses/flashs |
+| Manette | ✅ Complète (2026-10-28/29) : nouvel Input System, boutons modifiables, icônes Xbox/PlayStation/Switch, curseur rond dans les menus, visée au stick droit, vibrations |
+| Accessibilité | 🟡 Pause automatique à la perte de focus ; pas encore d'option secousses d'écran / flashs |
 
 ---
 
@@ -57,8 +58,17 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 ## 2. Armes, améliorations et fusions
 
 - **Armes** : tir de base, Boule de feu (Aether), Aura (Kael), Couteaux (Lyra), Orbitaux, Chaîne de foudre, Boue, Orbe rebondissant, Double tir.
-- **Améliorations universelles** : Dégâts+ et Cadence+ (+20 % par prise, 5 prises), Soin. Depuis le 2026-10-16, elles sont **additives et identiques sur toutes les armes** (5 × 20 % = ×2) et s'appliquent aussi aux armes obtenues plus tard.
-- **6 fusions** (deux armes au palier max → une arme fusionnée plus forte) : Terre Calcinée (Boule de feu + Boue - refondue le 2026-10-23 en bombardement de météorites, jusqu'à 3 simultanées ciblant chacune un ennemi différent, nombre adaptatif selon les ennemis distincts trouvés), Vortex de Mana (Aura + Orbitaux, Kael), Lames Ricochet (Couteaux + Orbe, Lyra), Orbes Foudroyants (Orbitaux + Foudre), Marécage Maudit (Boue + Foudre), Sillage Boueux (Orbe rebondissant + Boue). Proposées en Classique et Sans fin uniquement. (Remplace depuis le 2026-10-18 l'ancienne fusion "Orbes Jumeaux", Double tir + Orbe, jugée incohérente et retirée.)
+- **Améliorations universelles** : Dégâts+ et Cadence+ (+20 % par prise, 5 prises), Soin (+15 % de PV max et soin complet, depuis le 2026-10-28). Depuis le 2026-10-16, elles sont **additives et identiques sur toutes les armes** (5 × 20 % = ×2) et s'appliquent aussi aux armes obtenues plus tard.
+- **6 fusions** (deux armes au palier max → une arme fusionnée), **toutes refaites le 2026-10-27/28** avec une vraie mécanique nouvelle, leurs propres visuels en cristal et une puissance mesurée à ×2,2-2,9 les deux armes sources au max (validées par l'utilisateur le 2026-10-28) :
+  - **Pluie de Météores** (Boule de feu + Boue, ex-Terre Calcinée) : jusqu'à 3 météorites par salve sur des ennemis différents, télégraphe, chute visible, déflagration, cratère.
+  - **Tourbière Magnétique** (Boue + Foudre, ex-Marécage Maudit) : seul contrôle de foule du jeu, des tourbières électrisées aspirent les groupes d'ennemis puis déchargent.
+  - **Couronne Prismatique** (Aura + Orbitaux, Kael, ex-Vortex de Mana) : cristaux reliés par des rayons qui brûlent et repoussent, rempart polygonal réglé avec A/E (« la meilleure fusion du jeu » pour l'utilisateur).
+  - **Constellation Orageuse** (Orbitaux + Foudre, ex-Orbes Foudroyants) : les orbes ionisent les ennemis, la Foudre vise les ionisés, une Surcharge périodique les frappe tous.
+  - **Valse des Lames** (Couteaux + Orbe rebondissant, Lyra, ex-Lames Ricochet) : lames de cristal qui rebondissent sur les bords de l'écran puis reviennent ; les lames rattrapées chargent une salve circulaire « Kaléidoscope ».
+  - **Sillage Boueux** (Orbe rebondissant + Boue) : orbes qui rebondissent sur les bords de l'écran en semant des flaques ; l'orbe sera remplacé par un modèle Tripo3D de l'utilisateur.
+  Les identifiants internes (noms de classe, id de fusion) sont restés les anciens : l'asset de fusion et les sauvegardes y font référence. Proposées en Classique et Sans fin uniquement.
+- **Fragmentation** (nœud d'Aether, refait le 2026-10-27) : 1 tir de base sur 4 explose à coup sûr avec tous ses dégâts (rayon 4), explosion de cristal rubis (`ArcaneBurstVFX`).
+- **Visée** : automatique par défaut ; en visée manuelle, les tirs partent vers la souris ou dans la direction du stick droit, avec un viseur à l'écran (2026-10-29).
 - **Dash / Absorption / Nova / Ultime** : le Dash (invincible) absorbe un projectile → Nova (dégâts + ralentissement) + charge de Cristal. Cristal plein = 1 Ultime stocké (max 2, la 2e charge donne un Ultime renforcé). Dégâts de l'Ultime ×1 → ×4 sur 15 min.
 - Bonus de dégâts dynamiques centralisés dans `PlayerBuffs.OutgoingDamageMultiplier` (Concentration × Surpuissance), lu par toutes les armes.
 
@@ -95,9 +105,10 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 
 ## 5. Progression méta
 
-- **Or** : finance les arbres de compétences et les skins Classique.
-- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés en fin de partie selon la performance.
-- **Réputation** (onglet du menu) : 3 bonus permanents, Dégâts (jusqu'à +42 %), Vitesse (jusqu'à +25 %), Régénération (jusqu'à 70), 5 paliers chacun.
+- **Économie refondue le 2026-10-27** (une partie Apocalyptique rapportait ~40 000 or pour un arbre complet à 14 000) : l'or vient surtout des minutes de jeu (20/min), des boss et de la victoire (250 en Classique), très peu des ennemis (2 % de leur valeur). Objectifs de l'utilisateur : premier achat dès la 1re partie, une branche maxée en ~30-40 parties, les 3 branches en ~100, toute la Réputation en ~150.
+- **Or** : finance les arbres de compétences (paliers 150 / 600 / 1 800, nœuds uniques 1 000 à 12 000 ; les 2 nœuds du bas sont libres, ceux du milieu demandent une victoire en Modéré, celui du haut une victoire en Violent avec le personnage de la branche) et les skins Classique.
+- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés aux boss (10 / 20 / 30), à la victoire (+40) et lors de la 1re victoire de chaque personnage dans chaque palier (300 / 600 / 1 000).
+- **Réputation** (onglet du menu) : 3 bonus permanents, Dégâts (jusqu'à +60 %), Vitesse (jusqu'à +30 %), Régénération (jusqu'à 70 PV/s), 5 paliers chacun. Un bonus au maximum affiche un bouton « MAX » grisé, comme « Équipé » / « Sélectionné ».
 - **Skins** (même onglet) : par personnage, une rangée Classique (Or) et une rangée Prestige (Éclats) de 4 emplacements. Seule la tenue d'origine existe ; les emplacements vides affichent « BIENTÔT ». Ajouter un skin = une ligne dans `Resources/SkinCatalog.asset` (aucun code), mais il faut le modèle 3D, le prefab et le portrait (**21 skins prévus**, voir `A_MODELISER_3D.md`).
 
 ---
@@ -115,19 +126,25 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 
 ## 7. Interface
 
-- **Menu principal** : onglets Jouer (avec sélecteur de mode), Personnages, Compétences, Réputation, Paramètres ; décors 2D illustrés animés (vent, feuilles, lumière), curseur gantelet personnalisé.
+- **Menu principal** : onglets Jouer (avec sélecteur de mode et carrousel de difficulté), Personnages, Compétences, Réputation, Paramètres ; décors 2D illustrés animés (vent, feuilles, lumière), curseur gantelet personnalisé.
+  - Fond de l'Accueil selon le héros (illustrations V2) **et** la difficulté : Modéré = jour, Violent = crépuscule, Apocalyptique = nuit, fondu par-dessus l'ancien fond (2026-10-29).
+  - **Apparition des pages** (2026-10-29) : en ouvrant un onglet, on voit d'abord le décor seul (ce sont de vraies illustrations du lore), puis le contenu apparaît en fondu 0,5 s plus tard. Chaque page a son propre minuteur, qui démarre quand on la quitte : l'animation ne se rejoue que si l'on revient au moins 1 minute plus tard (ou à la 1re ouverture) ; rester sur une page ne la relance jamais.
+  - Tous les boutons du jeu grossissent légèrement au survol (`ButtonHoverFX`) ; Alt+F4 ou la croix de la fenêtre demandent confirmation (`QuitConfirm`).
 - **HUD** construit en code (`HudStyler`) : barres vie/XP/boss, chrono, or, kills, défi, Dash, Clone, Ultime, Concentration, légende des touches adaptative.
-- **Level-up** : 3 cartes parchemin animées (couleur par personnage, violet pour les fusions), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3.
+- **Level-up** : temps fort de 0,3 s en jeu avant l'ouverture des cartes, une ascension de cristal doré autour du héros (fragments qui montent en spirale, étoile au-dessus de lui ; remplace l'anneau doré au sol le 2026-10-29). Puis 3 cartes parchemin animées (couleur par personnage, violet pour les fusions, léger grossissement au survol), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3 ou au curseur de la manette.
 - **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation.
 - **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
-- **Paramètres** : affichage, graphismes, audio, jeu, interface, commandes (2 touches par action, préréglages AZERTY/QWERTY, manette), langue.
+- **Paramètres** : affichage, graphismes, audio, jeu (visée automatique ou manuelle, pause automatique), interface, commandes (2 touches clavier/souris + 1 bouton de manette par action, préréglages AZERTY/QWERTY, vibrations), langue.
+- **Manette** (2026-10-28/29) : curseur rond au stick dans tous les menus (souris virtuelle : survol, clic, glisser), mode défilement dans les zones déroulantes (A pour entrer, B pour sortir), LB/RB = onglets, LT/RT = catégories des Paramètres, B = retour. Légende du HUD et icônes au style de la manette branchée. Le jeu bascule tout seul entre souris et manette selon le dernier appareil touché.
+- Durées affichées partout au format « 03 : 24 » (espace fine autour des deux-points, chrono, records, écrans de fin).
 - **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu.
 
 ---
 
 ## 8. DA, musique et marketing
 
-- Logo : texte ornemental doré + cristal bleu. Police des chiffres et titres : Bangers retouchée (cyrillique ajouté) ; polices Noto Sans pour le chinois, le japonais et le coréen.
+- Logo : texte ornemental doré + cristal bleu. **Deux polices** (2026-10-25) : Bangers retouchée (cyrillique ajouté) pour les titres, noms, boutons et chiffres ; **Fira Sans SemiBold** pour toutes les phrases (descriptions, infobulles, sous-titres). Polices Noto Sans pour le chinois, le japonais et le coréen. Les lignes des textes centrés sont équilibrées automatiquement (`TextBalancer`).
+- **Grammaire des effets** : les anneaux lisses ou gradués et les disques pleins sont réservés aux télégraphes ennemis (« danger, sors de là ») ; les effets du joueur utilisent des formes de cristal facettées (étoile, couronne brisée, fragments, éclats).
 - Modèles 3D générés avec Tripo3D, squelettes passés en Mixamo (`SkeletonSwapTool`).
 - Musiques : menu, chargement, en jeu, boss (Suno + retouches de boucle). **Aucun SFX** pour l'instant (chantier repoussé à la fin, désormais prioritaire, voir `A_MODELISER_3D.md` §9).
 - Trailer Steam (≈68 s) + version verticale (40 s) validés le 2026-10-14 : vrai gameplay, DA du jeu, musique CC0.
@@ -146,9 +163,9 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 6. Repasse visuelle "niveau triple A" / comparaison aux meilleurs jeux du genre par captures d'écran, demandée le 2026-10-19 mais pas encore menée (le temps en direct dans Unity a servi à vérifier que le nouveau code fonctionne réellement, pas à un audit esthétique comparatif).
 
 **Niveau « jeu pro »**
-- Manette complète (nouvel Input System, navigation des menus, icônes de boutons) et accessibilité (désactiver secousses et flashs).
+- Accessibilité : désactiver les secousses d'écran et réduire les flashs. (La manette est faite.)
 - 21 skins.
-- Effets visuels dédiés (télégraphes, impacts, morts par dissolution).
+- Effets visuels dédiés restants (impacts, morts par dissolution) : les fusions, la Fragmentation et le level-up ont déjà les leurs.
 - Profilage des performances (cible 60 FPS stables, Steam Deck).
 - Nettoyage du projet (prefabs en double dans `Resources/`, scripts et assets inutilisés).
 
@@ -161,6 +178,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ---
 
 ## 10. Principaux bugs corrigés récemment
+
+**2026-10-24 → 2026-10-29** : gels de 250-360 ms toutes les ~3 min (ramasse-miettes incrémental désactivé) et chute d'images/s avec beaucoup de gemmes au sol (gemmes passées en données) · hitbox des boss sans rapport avec leur modèle (impacts dans le vide sur le Boss 3) · chaîne de foudre qui pouvait viser un ennemi mort et recyclé par le pool · nombres de dégâts à moitié cachés sous les grands ennemis (gobelin, golem) · cartes de Réputation : libellés invisibles après un redémarrage, « Éclats insuffisants » mal placé et trop sombre, bouton qui sortait de la carte au survol · bord de la barre d'XP qui clignotait et tremblait au ramassage · vibrations de manette bloquées après un changement de fenêtre.
 
 **2026-10-23** (grosse liste de retours utilisateur traitée en un lot, capture à l'appui) : gemmes d'XP qui flottaient en l'air pour certains ennemis (atterrissage calé sur la racine de l'ennemi mort au lieu d'être aplati au sol) · défi "Niveau 20 avant la 10e minute" qui ne pouvait jamais passer en Échoué (aucune réévaluation en dehors d'un évènement de jeu pour un défi purement temporel) · PV du boss 2 (Cerf Ancestral) baissés de 30% sur les 3 paliers de difficulté (90 000 → 63 000) · amortissement de l'XP par kill (plafonné à ×3 en fin de partie) retiré, pleine croissance restaurée (jusqu'à ×5) · Surpuissance 5 s → 10 s · fusion "Terre Calcinée" entièrement refondue : d'un simple reskin orange de la Boue à un vrai bombardement de météorites (télégraphe + chute visible + déflagration + cratère résiduel), avec un ciblage qui vise vraiment les ennemis les plus proches (et non plus une zone aléatoire à 6 unités autour du joueur) et jusqu'à 3 météores simultanés sur des cibles différentes contre une horde (1 seul contre un boss, sans rien gaspiller).
 

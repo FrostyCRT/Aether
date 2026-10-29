@@ -102,9 +102,8 @@ public class WeaponBase : MonoBehaviour
             {
                 // AJOUTÉ (2026-10-28, session manette) - visée manuelle au stick droit ; stick relâché = on continue
                 // de tirer dans la dernière direction visée (au départ : devant le joueur).
-                Vector2 aim = GameInput.Aim();
-                if (aim.sqrMagnitude > 0f) _lastPadAim = new Vector3(aim.x, 0f, aim.y).normalized;
-                fireDirection = _lastPadAim.sqrMagnitude > 0f ? _lastPadAim : transform.forward;
+                Vector2 aim = GameInput.PadAimDirection;
+                fireDirection = aim.sqrMagnitude > 0f ? new Vector3(aim.x, 0f, aim.y) : transform.forward;
                 canShoot = true;
             }
             else
@@ -126,8 +125,6 @@ public class WeaponBase : MonoBehaviour
             }
         }
     }
-
-    private Vector3 _lastPadAim;
 
     private Vector3 GetMouseWorldPosition()
     {

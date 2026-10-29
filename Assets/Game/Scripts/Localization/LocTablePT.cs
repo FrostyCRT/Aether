@@ -310,5 +310,6 @@ public static class LocTablePT
         { "Intensité des vibrations", "Intensidade da vibração" }, { "Force des vibrations de la manette.", "Força da vibração do controle." },
         { "Navigation", "Navegar" }, { "Clavier / souris", "Teclado / mouse" }, { "Aucune manette détectée : branche-en une", "Nenhum controle detectado: conecte um" },
         { "Faire défiler", "Rolar" }, { "Quitter le défilement", "Parar de rolar" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Aumenta sua vida máxima em {0}% e a restaura por completo" },
+        { "Manuelle", "Manual" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automática: os disparos miram no inimigo mais próximo. Manual: você mira com o mouse ou com o analógico direito do controle" },
     };
 }

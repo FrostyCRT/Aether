@@ -677,3 +677,5 @@
 638| Scorri
 639| Smetti di scorrere
 640| Aumenta i tuoi PS massimi del {0}% e li ripristina del tutto
+641| Manuale
+642| Automatica: i colpi puntano al nemico più vicino. Manuale: miri con il mouse o con lo stick destro del controller

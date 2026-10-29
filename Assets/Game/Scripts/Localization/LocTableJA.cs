@@ -268,5 +268,6 @@ public static class LocTableJA
         { "Intensité des vibrations", "振動の強さ" }, { "Force des vibrations de la manette.", "パッドの振動の強さ。" }, { "Navigation", "カーソル移動" },
         { "Clavier / souris", "キーボード／マウス" }, { "Aucune manette détectée : branche-en une", "パッドが見つからない。接続してください" }, { "Faire défiler", "スクロール" },
         { "Quitter le défilement", "スクロールを終了" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大HPが{0}%増え、HPが全回復する" },
+        { "Manuelle", "マニュアル" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "オート：最も近い敵を自動で狙う。マニュアル：マウスかパッドの右スティックで狙う" },
     };
 }

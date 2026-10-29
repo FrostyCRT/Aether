@@ -71,6 +71,10 @@ public static class GameInput
         return g != null ? Stick(g.rightStick) : Vector2.zero;
     }
 
+    // Dernière direction visée au stick droit (normalisée ; zéro tant que le joueur n'a jamais visé) : stick relâché, les
+    // tirs continuent dans cette direction et le viseur en partie y reste (WeaponBase, AimReticle).
+    public static Vector2 PadAimDirection { get; private set; }
+
     // Zone morte radiale sur la valeur BRUTE (sans le traitement par défaut d'Input System), sortie remise à l'échelle.
     internal static Vector2 Stick(StickControl stick)
     {
@@ -146,6 +150,9 @@ public static class GameInput
 
     internal static void TrackDevice()
     {
+        Vector2 aim = Aim();
+        if (aim.sqrMagnitude > 0.04f) PadAimDirection = aim.normalized;
+
         bool pad = UsingGamepad;
         PadKind style = PadStyle;
 
@@ -208,6 +215,7 @@ public static class GameInput
     {
         UsingGamepad = false;
         PadStyle = PadKind.Xbox;
+        PadAimDirection = Vector2.zero;
         _styledPad = null;
         _styledKind = PadKind.Xbox;
         DeviceChanged = null;

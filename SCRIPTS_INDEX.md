@@ -6,7 +6,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 - Pour la vue d'ensemble du design du jeu et l'état d'avancement (personnages, armes, modes, progression méta, ce qui reste à faire) : **`AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V16.md`** (remis à jour le 2026-10-19, version V16 - le nom du fichier suit maintenant le numéro de version). En cas de doute, `NOTES.md` fait foi.
 - Pour la liste des bugs / points à régler avant la sortie et leur avancement : **`AUDIT_VERSION_FINALE.md`**. Pour tout ce qui reste à modéliser en 3D (skins compris) et les sons manquants : **`A_MODELISER_3D.md`**.
 
-*Index vérifié le 2026-10-19 contre les fichiers réels : tous les scripts du jeu y figurent (diagnostic complet - `DifficultyTiers.cs`, `BossChest.cs`, `DifficultySelector.cs`, `DevOnly.cs` ajoutés).*
+*Index vérifié le 2026-10-29 contre les fichiers réels : tous les scripts du jeu y figurent (ajoutés depuis le 2026-10-19 : refonte des fusions et leurs visuels, manette, typographie, gemmes d'XP en données, apparition des pages du menu, effet de level-up...).*
 
 ## Comment naviguer
 
@@ -32,14 +32,16 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `DifficultyTiers.cs` | Classe statique (2026-10-19) : les 3 paliers de difficulté du mode Classique (Modéré/Violent/Apocalyptique, persisté par `PlayerPrefs`) - taille de carte, PV/dégâts ennemis, plafonds de spawn, Or/Éclats, nombre de décors de bordure. |
 | `GameModes.cs` | Classe statique : définit les modes de jeu (Classique/Sans fin/Ruée de boss, + Titans conservé mais retiré de la sélection via `IsShippable` depuis le 2026-10-19), leurs règles d'échelle et si les fusions sont activées pour ce mode. |
 | `GameSceneSettingsApplier.cs` | Applique le réglage Ombres (Paramètres) à la lumière directionnelle de la scène Game au démarrage. |
-| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. Retient aussi le total des bonus « Dégâts+ » / « Cadence+ » pris (`DamageBonusTotal` / `FireRateBonusTotal`), pour qu'ils soient additifs et identiques sur toutes les armes. Depuis le 2026-10-19, `GrantFreePicks(int)` accorde des paliers directement (coffre de boss), sans passer par l'XP. |
+| `InfiniteDecorStreamer.cs` | Décor de bordure du palier Violent (tunnel infini sur X) : génère/retire arbres et rochers par tronçons le long des murs, au fil des déplacements du joueur. |
+| `LevelUpManager.cs` | Singleton qui gère les niveaux d'upgrade obtenus, présente les 3 cartes de choix (`UpgradeUI`) à chaque montée de niveau, garantit l'apparition de l'arme exclusive du personnage tôt dans la run. Retient aussi le total des bonus « Dégâts+ » / « Cadence+ » pris (`DamageBonusTotal` / `FireRateBonusTotal`), pour qu'ils soient additifs et identiques sur toutes les armes. Depuis le 2026-10-19, `GrantFreePicks(int)` accorde des paliers directement (coffre de boss), sans passer par l'XP. Bref temps fort jouable (0,3 s) avant l'ouverture des cartes : `LevelUpAscensionVFX` depuis le 2026-10-29 (remplace l'anneau doré). |
 | `MapBoundaryUtils.cs` | Classe statique utilitaire : borne une position à la zone de jeu carrée. `ZoneHalfSize` n'est plus une constante depuis le 2026-10-19 (varie selon le palier de difficulté du Classique, fixée une fois par `GameManager.Awake()`) ; l'ancienne copie imbriquée dans `WaveManager` a été supprimée (doublon, voir `AUDIT_VERSION_FINALE.md` §10). |
 | `MetaProgressionManager.cs` | Singleton persistant (`DontDestroyOnLoad`) : progression méta complète — Or/Éclats, sauvegarde (`SaveSystem`), déblocage de personnages, bonus de Réputation, aperçu du prochain palier pour le Game Over. |
 | `ObjectPool.cs` | Singleton générique de pooling d'objets par tag (ennemis, projectiles, VFX...), pré-instanciés à taille fixe. |
 | `SaveSystem.cs` | Classe statique : lecture/écriture de `save.json` (+ backup automatique), avec `SuppressWrites` pour tester sans toucher à la vraie sauvegarde. |
 | `SkinCatalog.cs` | ScriptableObject : catalogue des skins de personnage (Classique=Or / Prestige=Éclats), un skin = une ligne éditable dans l'Inspector, aucun code à toucher pour en ajouter un. |
 | `WaveManager.cs` | Singleton pilotant l'apparition des 3 boss classiques (ou la logique Sans fin/Ruée de boss/Titans selon le mode courant). La densité d'ennemis est réglée par les phases de l'`EnemySpawner` ; `WaveManager` n'y ajoute que la montée du mode Sans fin après 15 min (cadence jusqu'à 0,3 s, plafond 160 → 200). |
-| `XPGem.cs` | Gemme d'XP ramassable poolée (3 tailles), attirée vers le joueur une fois dans son rayon d'attraction. |
+| `XPGem.cs` | Ancienne gemme d'XP en GameObject. **Remplacée le 2026-10-28 par `XPGemField`** (gemmes = données) ; voir ce script avant d'y toucher. |
+| `XPGemField.cs` | Singleton (2026-10-28) : TOUTES les gemmes d'XP de la partie, gérées comme des données (un tableau, un seul maillage trié, seules les gemmes à l'écran dessinées, traînées réutilisées). Aucun plafond ni fusion de gemmes (choix de l'utilisateur), aimant passif conservé. 2 500 gemmes au sol : 114 → 233 images/s. `DebugClear()` / `Count` pour les sondes de test. |
 | `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère le rayon d'attraction global (débloqué niveau 3). Atterrissage toujours aplati au sol (`GemLandY=0`, 2026-10-23) plutôt que sur la position racine de l'ennemi mort - certains ennemis ont une racine haute (pose VAT), leurs gemmes flottaient sinon. La gerbe de gemmes (`SpawnBossGemBurst`) ne sert plus qu'aux mini-boss invoqués depuis le 2026-10-19 (un vrai boss fait apparaître un `BossChest`, voir Weapons). |
 | `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau²`, baseXP=70 depuis le 2026-10-21 - était `55 × niveau^1,5`), déclenche les montées de niveau. |
 
@@ -60,6 +62,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | Script | Rôle |
 |---|---|
 | `BossBase.cs` | Classe de base de tous les boss : PV/dégâts, charge télégraphiée (zone rouge au sol), musique dédiée, visuel de charge de mana, rotation vers la cible (suit le Clone de Lyra s'il existe). |
+| `BossBodyShape.cs` | (2026-10-27) Hitbox des boss calée sur le modèle animé : plusieurs volumes qui suivent les os (le Boss 3 serpent avait une capsule posée en travers de son corps, le Boss 1 une boîte de 10 m de haut). |
 | `BossCorruptedSource.cs` | Boss 3 (hérite `BossBase`) : serpent ancré à son rift, machine à séquence d'attaques (Pulse de cristaux, Frappe, Onde de corruption, Invocation, Implosion), une seule attaque active à la fois. |
 | `BossDeer.cs` | Boss 2 (hérite `BossBase`) : Cerf — saut d'attaque, spirale de projectiles, régénération, 2 phases (rage sous 30% PV). |
 | `EnemyBase.cs` | Classe de base de tous les ennemis normaux : PV, dégâts de contact, drops (XP/or), scaling de difficulté, système de Brûlure (palier 3 Fireball), flag "vole" (immunité Boue). |
@@ -87,12 +90,12 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `WeaponBase.cs` | Attaque de base commune à tous les personnages : tir automatique vers l'ennemi le plus proche détecté, gère Double Tir et les modificateurs de dégâts/cadence des upgrades. |
 | `WeaponBouncingOrb.cs` | Orbe Rebondissant : crée/gère les instances de `BouncingOrbProjectile`. |
 | `WeaponFireball.cs` | Boule de feu (Aether) : explosion garantie à l'impact, palier 2 = dégâts, palier 3 = Brûlure. |
-| `WeaponFusionCursedSwamp.cs` | Fusion "Marécage Maudit" (Boue + Foudre, universelle) : flaques de Boue qui déclenchent aussi une décharge de foudre en chaîne. |
-| `WeaponFusionManaVortex.cs` | Fusion "Vortex de Mana" (Aura + Orbitaux, Kael) : champ de l'Aura + éclats en orbite des Orbitaux réunis, plus forts que la somme des deux. |
-| `WeaponFusionMudOrb.cs` | Fusion "Sillage Boueux" (Orbe rebondissant + Boue, universelle, créée le 2026-10-18 en remplacement d'"Orbes Jumeaux") : les orbes rebondissants laissent derrière eux un sillage continu de flaques de Boue (déposées à la position réelle de chaque orbe, jamais à distance fixe du joueur). |
-| `WeaponFusionRicochetBlades.cs` | Fusion "Lames Ricochet" (Couteaux + Orbe rebondissant, Lyra) : salve en éventail dont les lames ricochent vers l'ennemi non touché le plus proche une fois leur perforation épuisée. |
-| `WeaponFusionScorchedEarth.cs` | Fusion "Terre Calcinée" (Boule de feu + Boue, universelle, refondue le 2026-10-23 — n'est plus un simple reskin de la Boue) : bombardement de météorites, jusqu'à 3 simultanées par salve (nombre ADAPTATIF selon le nombre d'ennemis/boss distincts trouvés sur toute la carte, jamais 2 météores sur le même ennemi, dégât total de la salve réparti entre elles) — télégraphe au sol + chute visible (`GroundTelegraphFX`/`MeteorFallVFX`) puis déflagration (`FireExplosionVFX`) et cratère de lave résiduel (`MudPuddleZone`, teinte marron boueux). |
-| `WeaponFusionThunderingOrbs.cs` | Fusion "Orbes Foudroyants" (Orbitaux + Foudre, universelle) : orbes en orbite qui déclenchent une chaîne de foudre à chaque impact. |
+| `WeaponFusionCursedSwamp.cs` | Fusion **Tourbière Magnétique** (Boue + Foudre, ex-« Marécage Maudit », refaite le 2026-10-27, id conservé) : le seul contrôle de foule du jeu. Des tourbières électrisées apparaissent sur les groupes d'ennemis, les ASPIRENT pendant leur charge (`EnemyBase.PullTowards`) puis déchargent. Visuel : `MagneticBogVFX`. |
+| `WeaponFusionManaVortex.cs` | Fusion **Couronne Prismatique** (Aura + Orbitaux, Kael, ex-« Vortex de Mana », refaite le 2026-10-27, id conservé) : les cristaux des Orbitaux (un de plus) sont reliés par des rayons de lumière qui brûlent et repoussent les ennemis, un rempart polygonal réglé avec A/E. Visuel : `PrismaticCrownVFX`. |
+| `WeaponFusionMudOrb.cs` | Fusion **Sillage Boueux** (Orbe rebondissant + Boue, universelle) : les orbes rebondissent sur les bords de l'écran et laissent un sillage de flaques de Boue. Passe du 2026-10-28 : orbes dessinés en propre (plus de `BouncingOrbProjectile`), orbes qui ne longent plus un bord, puissance mesurée. Visuel : `MudWakeVFX`. |
+| `WeaponFusionRicochetBlades.cs` | Fusion **Valse des Lames** (Couteaux + Orbe rebondissant, Lyra, ex-« Lames Ricochet », refaite le 2026-10-27/28, id conservé) : salve en éventail de lames de cristal qui rebondissent 2 fois sur les bords de l'écran en grandissant puis reviennent vers le joueur ; les lames rattrapées chargent une salve circulaire « Kaléidoscope ». Visuel : `BladeWaltzVFX`. |
+| `WeaponFusionScorchedEarth.cs` | Fusion **Pluie de Météores** (Boule de feu + Boue, universelle, ex-« Terre Calcinée », refondue le 2026-10-23, renommée le 2026-10-24, id conservé) : bombardement de météorites, jusqu'à 3 simultanées par salve sur des ennemis différents (nombre adaptatif, 1 seule contre un boss) : télégraphe au sol + chute visible (`GroundTelegraphFX`/`MeteorFallVFX`), déflagration (`FireExplosionVFX`) et cratère résiduel (`MudPuddleZone`). |
+| `WeaponFusionThunderingOrbs.cs` | Fusion **Constellation Orageuse** (Orbitaux + Foudre, universelle, ex-« Orbes Foudroyants », refaite le 2026-10-27, id conservé) : les orbes IONISENT les ennemis (jusqu'à 3 charges), la Foudre vise d'abord les ionisés, et une Surcharge périodique frappe tous les ennemis ionisés le long d'un arbre d'éclairs. Visuel : `StormConstellationVFX`. |
 | `WeaponLightningChain.cs` | Chaîne de Foudre : tir qui saute d'ennemi en ennemi (dégâts dégressifs par saut), utilise `LightningChainUtility`/`LightningBoltVFX` pour le rendu. |
 | `WeaponMudPuddle.cs` | Boue : fait apparaître des flaques (`MudPuddleZone`) en anneau autour du joueur à intervalle régulier. |
 | `WeaponOrbital.cs` | Orbitaux : éclats en orbite autour du joueur, rayon ajustable en jeu (touches A/E). |
@@ -115,9 +118,11 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 
 | Script | Rôle |
 |---|---|
-| `GameInput.cs` | Classe statique : point de lecture UNIQUE des commandes du joueur (`Held`/`Down`/`Move`) à travers `InputBindings`, clavier + manette. |
+| `GameInput.cs` | Classe statique : point de lecture UNIQUE des commandes du joueur (`Held`/`Down`/`Move`) à travers `InputBindings`, clavier/souris (ancien Input Manager) + manette (nouvel Input System, `Gamepad.current`). Depuis le 2026-10-28 : `UsingGamepad` / `PadStyle` (Xbox, PlayStation, Switch), `PadAimDirection` (visée au stick droit), `PointerPosition` / `PointerClickDown` (vraie souris ou curseur de la manette), `BackDown` / `PadBackDown`, `PadLabel`, `PadDown`. |
 | `GameSettings.cs` | Classe statique : table de toutes les clés de réglages (audio, affichage, graphismes, jeu, interface) avec valeurs par défaut, événement `Changed`, écriture PlayerPrefs différée. |
+| `InputDeviceTracker.cs` | (2026-10-28) Objet persistant auto-créé : met à jour chaque image, avant tous les autres scripts, le dernier appareil utilisé (`GameInput.UsingGamepad` / `PadStyle`). La souris virtuelle de `PadCursor` ne compte pas comme une vraie souris. |
 | `InputBindings.cs` | Classe statique : configuration des touches (2 emplacements par action), défauts AZERTY (QWERTY/ZQSD→WASD si Windows n'est pas en français), préréglages, détection de conflits (échange automatique). |
+| `PadRumble.cs` | (2026-10-28) Vibrations de la manette : `PadRumble.Pulse(grave, aigu, durée)`, plusieurs secousses fusionnées, coupées hors partie, en pause et au changement de focus. Réglages Vibrations + Intensité. Branchées sur les coups reçus, le dash, l'Ultime, la mort et la mort des boss. |
 | `SettingsAmbientFX.cs` | Ambiance procédurale du fond de la page Paramètres (lueurs de bougies/cristaux, poussière), respecte le réglage "Effets d'ambiance des menus". |
 | `SettingsApplier.cs` | Singleton persistant auto-créé au boot : applique EN DIRECT tous les réglages (`GameSettings`) dans toutes les scènes — audio, affichage, résolution, V-Sync, FPS, qualité, ombres, pause au perte de focus. |
 | `SettingsDropdown.cs` | Liste déroulante générique utilisée par les lignes "Choix" de la page Paramètres (défilement à la molette au-delà de 8 valeurs). |
@@ -145,6 +150,8 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | Script | Rôle |
 |---|---|
 | `AbandonConfirmReturnToPause.cs` | Posé sur la fenêtre de confirmation d'abandon : « Non » rouvre le menu Pause au lieu de laisser le jeu figé sans menu. |
+| `AimReticle.cs` | (2026-10-29) Viseur affiché en partie quand la visée est manuelle : suit la souris, ou tourne autour du héros dans la direction du stick droit (manette). Caché en visée automatique, en pause et sur les panneaux. |
+| `ButtonHoverFX.cs` | (2026-10-28) Posé tout seul sur chaque bouton du jeu (balayage léger) : petit grossissement au survol, enfoncement à l'appui, en temps réel. `Exclude` pour les boutons qui ont leur propre animation. |
 | `CharacterAmbientFX.cs` | Ambiance magique procédurale de l'onglet Personnage (brume, bokeh, poussières, éclats), teintée à la couleur du personnage actif. |
 | `CharacterInfoPanel.cs` | Remplit la fiche personnage de l'onglet Personnage (épithète, arme exclusive, progression réelle de l'arbre, parcours) — ne construit pas la hiérarchie. |
 | `CharacterLockOverlay.cs` | Habillage visuel d'un personnage verrouillé (voile, chaînes, cadenas dans un médaillon), teinté à sa couleur. |
@@ -153,20 +160,29 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `CustomCursor.cs` | Remplace le curseur système par le gantelet fantasy (`Resources/Cursor_Gauntlet`) via une Image UI qui suit la souris ; objet auto-créé dans toutes les scènes (comme `SettingsApplier`), masqué pendant le jeu actif et affiché sur les panneaux (pause/paramètres/level-up/Game Over) via `GameManager.NeedsCursor`. |
 | `DamageNumber.cs` | Instance poolée d'un nombre de dégâts flottant (texte 3D, contour, montée + fondu). |
 | `DifficultySelector.cs` | Sélecteur du palier de difficulté du Classique (2026-10-19), sous `GameModeSelector` dans l'onglet Jouer : rangée fixe de 3 boutons toujours cliquables (jamais verrouillé, contrairement au mode de jeu), visible seulement en Classique. |
+| `DifficultyCarousel.cs` | (2026-10-20) Carrousel du palier de difficulté de la page Accueil (remplace `DifficultySelector`) : flèches, nom du palier, emplacement du futur diorama (dégradé de ciel teinté à la lumière du palier en attendant). |
 | `GameModeSelector.cs` | Sélecteur de mode de jeu du menu principal (flèches, nom, description, record), verrouille JOUER si le mode choisi n'est pas débloqué. Saute les modes non commercialisés (`GameModes.IsShippable`) depuis le 2026-10-19. |
 | `GameOverMessagePool.cs` | Classe statique : pool de messages contextuels de Game Over selon la cause de mort et le temps de survie (ton "dur mais motivant"). |
 | `GameUI.cs` | **Le plus gros script UI.** HUD complet (vie/XP/boss/dash/ultime), grille d'armes 3×3 partagée par le menu Pause ET les écrans Victoire/Défaite (`ConfigureBuildGridSlot`, `PopulatePauseGrid`, `PopulateBuildGrid`), messages de fin de run, records. |
+| `GameFonts.cs` | (2026-10-25) Classe statique des deux polices : Bangers (titres, noms, boutons, chiffres) et Fira Sans SemiBold (`Body`, toutes les phrases), avec `ToBody` / `Outline` pour les textes créés en code. |
+| `HintPill.cs` | (2026-10-25) Pastille sombre derrière un message de page (Réputation, Personnages), largeur calée sur le texte. |
+| `HomeCommandPanelFX.cs` | (2026-10-20) Habille le panneau de commande de la page Accueil (mode, difficulté, Jouer) dans le même langage que la barre d'onglets. |
 | `HudBar.cs` | Une barre du HUD habillée (vie/boss/XP/esquive) : cadre, remplissage animé, traînée de dégâts, flash au coup reçu, pulsation vie basse. |
 | `HudKeyLegend.cs` | Légende des touches à gauche du HUD (Dash/Ultime/Clone/Orbites/Pause), adaptative selon les compétences du personnage et les touches réellement assignées. |
 | `HudSprites.cs` | Classe statique : génère en code tous les sprites du HUD (cadres biseautés, capsules, cœur, éclair, gemme, losange...) — zéro asset à importer. |
 | `HudStyler.cs` | Pose sur l'objet `HUD` de la scène Game : construit et positionne tout le HUD au lancement selon ses champs Inspector (marges, tailles, palette de couleurs). |
-| `MainMenuManager.cs` | Contrôleur des onglets du menu principal (Jouer/Personnages/Compétences/Réputation/Paramètres). |
-| `MenuBackgroundController.cs` | Fond du menu principal selon le personnage sélectionné, avec effet de vent procédural (shader `Aether/UI/WindSway`) sur des zones de l'illustration. |
+| `MainMenuManager.cs` | Contrôleur des onglets du menu principal (Jouer/Personnages/Compétences/Réputation/Paramètres). LB/RB à la manette. Pose `MenuPageReveal` sur chaque page (2026-10-29). |
+| `MenuBackgroundController.cs` | Fond de la page Accueil selon le personnage sélectionné ET la difficulté (2026-10-29 : Modéré = jour, Violent = crépuscule, Apocalyptique = nuit ; 6 emplacements, le nouveau fond apparaît en fondu par-dessus l'ancien), avec effet de vent procédural (shader `Aether/UI/WindSway`) sur des zones de l'illustration. |
 | `MenuLeavesFX.cs` | Feuilles/oiseaux/poussière du décor du menu principal, poussés par le vent de `MenuBackgroundController`. |
+| `MenuPageReveal.cs` | (2026-10-29) Apparition d'une page du menu : le décor seul pendant 0,5 s, puis le contenu en fondu. Rejouée à la 1re ouverture et quand on revient sur la page au moins 60 s après l'avoir QUITTÉE (un minuteur par page, conservé entre les scènes). |
 | `MenuSprites.cs` | Classe statique : sprites générés en code pour le décor du menu (feuilles, ailes d'oiseau, poussière). |
 | `MenuTabAnimator.cs` | Grossissement doux au survol/actif d'un onglet de la barre de navigation du menu principal. |
 | `MenuTabBarFX.cs` | Fond "planche de bois + laiton" de la barre d'onglets du menu principal, ajoute automatiquement un `MenuTabAnimator` à chaque onglet. |
+| `PadCursor.cs` | (2026-10-28) Curseur rond de la manette dans les menus : stick gauche (croix = lent), A clique, via une SOURIS VIRTUELLE Input System (survol, clic, glisser natifs). Mode défilement des zones déroulantes (A sur le fond, B pour sortir). Actif seulement à la manette et quand le jeu affiche un curseur. |
+| `PadGlyph.cs` | (2026-10-28) Icônes des boutons de manette dessinées en code, au style de la marque branchée (Xbox, PlayStation, Switch) : HUD, pastille du clone, page Commandes. |
 | `PauseMenuUI.cs` | Contrôleur du menu Pause : grille d'armes (via `GameUI.PopulatePauseGrid`), infos du défi en cours, tooltip de description au clic sur une carte. |
+| `PixelSnapRule.cs` | (2026-10-26) Cale un filet fin mis à l'échelle sur la grille de pixels (même épaisseur sur toutes les cartes du menu Pause). |
+| `QuitConfirm.cs` | (2026-10-28) Alt+F4 / croix de la fenêtre : demande confirmation partout (en partie, met d'abord en pause). Fenêtre construite par `QuitConfirmBuilder`. |
 | `ReputationHallFX.cs` | Ambiance procédurale de l'onglet Réputation (flammes de torches, braises, poussières). |
 | `ReputationStatCardUI.cs` | Une carte de bonus permanent (Dégâts/Vitesse/Régénération) de l'onglet Réputation : palier, coût en Éclats, achat. |
 | `ReputationStyle.cs` | Classe statique : palette de couleurs de l'onglet Réputation. |
@@ -184,9 +200,18 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `UpgradeCardHover.cs` | Transmet les événements de survol souris d'une carte d'arme vers `PauseMenuUI` (fermeture en fondu du tooltip de description). |
 | `CloseButtonHover.cs` | Survol de la croix de fermeture (panneau de description de l'arbre de compétences) : fond rond qui passe au rouge, croix en blanc, bouton qui grossit. |
 | `TextBalancer.cs` | Global, sans composant à poser : équilibre la longueur des lignes des textes centrés sur plusieurs lignes, passe en Justifié les paragraphes alignés à gauche (Fira) de 3 lignes ou plus, et rend insécables (balises <nobr>) les espaces dans les parenthèses et avant « : ; ! ? % » ; FitToLines cale la police pour tenir en N lignes (descriptions des cartes classiques : 2 lignes). |
+| `TimeText.cs` | (2026-10-28) Format unique des durées « 03 : 24 » (espace fine de chaque côté des deux-points) : HUD, pause, écrans de fin, records, compte à rebours du boss. |
 | `UpgradeSlotRefs.cs` | **Références du prefab de carte d'arme**, partagées par `UpgradeSlot` (menu Pause, style parchemin) et `UpgradeGridSlot` (Victoire/Défaite, tuile teintée) : icône, nom, pastilles de palier, losange de déblocage, et le visuel dédié de Fusion (icône + 2 sources + séparateur + "+", Pause uniquement). |
-| `UpgradeUI.cs` | Contrôleur des 3 cartes de choix de level-up : remplit nom/description/icône/pastilles, anime le pick, et gère la disposition spéciale + le bandeau "FUSION DISPONIBLE !" quand une fusion fait partie du choix. |
+| `UpgradeUI.cs` | Contrôleur des 3 cartes de choix de level-up : remplit nom/description/icône/pastilles, anime le pick, et gère la disposition spéciale + le bandeau "FUSION DISPONIBLE !" quand une fusion fait partie du choix. `CardsBusy` pendant l'apparition et le choix. |
+| `LevelUpCardHoverFX.cs` | (2026-10-28, simplifié le 2026-10-29) Survol d'une carte de level-up : léger grossissement (×1,04), en douceur et en temps réel. |
 | `WheelToHorizontal.cs` | Convertit le défilement molette (vertical) en défilement horizontal, posé sur les rangées de skins de l'onglet Réputation. |
+
+## Environment (`Assets/Game/Scripts/Environment`)
+
+| Script | Rôle |
+|---|---|
+| `GroundPropScatterer.cs` | (2026-10-20) Petits décors de sol (herbe, fleurs, cailloux, éclats de mana...) dispersés à l'intérieur de la zone jouable, rendus en GPU instancing. |
+| `GroundPropMeshFactory.cs` | (2026-10-20) Maillages provisoires de ces décors, générés en code ; un modèle Tripo3D se branche par le champ `meshOverride` de l'entrée. |
 
 ## Animation (`Assets/Game/Scripts/Animation`)
 
@@ -204,6 +229,7 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 |---|---|
 | `AmbientDustUI.cs` | Particules de poussière ambiante flottantes, confinées à une bande verticale de l'écran de chargement. |
 | `LoadingBarShimmerFX.cs` | Reflet lumineux qui balaie la barre de chargement. |
+| `LoadingBarStyle.cs` | (2026-10-29) Habillage de la barre de l'écran de chargement dans la DA du logo, dessiné en code et posé tout seul par `LoadingScreenController` : plaque de bronze aux bouts pointus, liseré cuivre/or, petits losanges sur le liseré, losanges dorés sertis d'un cristal aux deux bouts, remplissage en cristal de mana facetté, pointe de cristal qui avance et reflet. Remplace visuellement l'ancien cadre/fond/remplissage (et `LoadingBarShimmerFX`, masqué avec eux) ; le Slider reste la source de la progression. |
 | `LoadingScreenController.cs` | Contrôleur de la scène de chargement — réservée au tout premier démarrage du jeu (scène de boot), pas aux transitions en cours de jeu. |
 | `ProceduralGlowUI.cs` | Halo procédural réutilisable (pulsation + dérive optionnelle) — utilisé sur l'écran de chargement et les portraits de sélection de personnage. |
 | `SceneLoader.cs` | Classe statique : point d'entrée unique pour changer de scène en cours de jeu, délègue à `SceneTransitionFader`. |
@@ -215,6 +241,9 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | Script | Rôle |
 |---|---|
 | `BossFX.cs` | Effets d'ARRIVÉE et de MORT des boss, construits en code (flash, ondes de choc, pilier de lumière, braises, court ralenti global qui ne se bat jamais avec la pause). |
+| `AmbientManaMotes.cs` | Poussière de mana flottante autour du joueur, teintée selon le palier de difficulté (purement visuel). |
+| `ArcaneBurstVFX.cs` | (2026-10-27) Explosion de Fragmentation (Aether) en cristal rubis : étoile, onde brisée au rayon exact, fragments, éclats. Pool statique. |
+| `BladeWaltzVFX.cs` | (2026-10-28) Visuel de la Valse des Lames : lames de cristal 3D avec traînée, charge du Kaléidoscope. |
 | `CameraShakeFX.cs` | Tremblement de caméra (« trauma ») réservé aux gros impacts (explosion de Boule de feu, arrivée/mort de boss), figé en pause. Pas encore d'option pour le désactiver (voir audit). |
 | `ChargeLaneFX.cs` | Couloir de charge d'un boss construit en code : couloir entier visible, remplissage selon le windup, chevrons qui défilent. |
 | `EndScreenIntro.cs` | Animation d'arrivée des panneaux Victoire/Défaite (fondu, carte qui monte, éléments en cascade). |
@@ -222,10 +251,15 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `FireExplosionVFX.cs` | Déflagration enflammée poolée en plusieurs couches (flash, 2 `FlameBurst` superposés, braises qui jaillissent/montent, fumée qui traîne) : impact de la Boule de feu, réutilisée telle quelle pour l'impact de la fusion "Terre Calcinée" (météorites). |
 | `FXSprites.cs` | Bibliothèque partagée des effets de combat : sprites générés en code (blancs, teintés par le `SpriteRenderer`), matériau commun, courbes d'animation. |
 | `GroundTelegraphFX.cs` | Signal de danger au sol construit en code (zone à rayon fixe qui se remplit, ou onde), utilisé par toutes les attaques télégraphiées des boss et par la fusion "Terre Calcinée". |
+| `LevelUpAscensionVFX.cs` | (2026-10-29) Temps fort du passage de niveau : halo doux aux pieds, trait de lumière, fragments de cristal dorés qui montent en spirale, étoile de cristal au-dessus du héros, éclats et poussières. Tout monte, rien ne s'étale au sol (l'ancien anneau se lisait comme une zone). Temps réel, suit le héros. |
+| `MagneticBogVFX.cs` | (2026-10-27) Visuel de la Tourbière Magnétique : voile d'orage, aspiration et arcs pendant la charge, décharge. |
 | `ImpactSparkVFX.cs` | Éclat d'impact générique poolé (4 traits, 0,18 s) à la couleur de l'arme qui frappe ; compteur remis à zéro à chaque scène. |
 | `ExpandingRingVFX.cs` | Fonction statique : anneau procédural (`LineRenderer`) qui s'agrandit puis s'estompe — utilisé par la Nova, le souffle de départ du Dash, etc. |
 | `MeteorFallVFX.cs` | Objet qui tombe du ciel pendant la fenêtre de télégraphe (billboard caméra, pool statique de Runner réutilisés), utilisé uniquement par la fusion "Terre Calcinée" — `UpdateLandPosition` permet de recaler la chute en vol tant que l'ennemi ciblé reste vivant. |
+| `MudWakeVFX.cs` | (2026-10-28) Visuel de Sillage Boueux : orbes de cristal 3D azur à cœur ambré (`OrbMesh`, à remplacer par un modèle Tripo3D), taches de boue semées d'éclats. |
 | `MusicStarter.cs` | Singleton : lance/change la musique avec fondus courts, attend que les volumes sauvegardés soient appliqués avant de démarrer. |
+| `PrismaticCrownVFX.cs` | (2026-10-27) Visuel de la Couronne Prismatique : cristaux 3D taillés reliés par des faisceaux de lumière. |
+| `StormConstellationVFX.cs` | (2026-10-27) Visuel de la Constellation Orageuse : orbes d'orage 3D, éclats d'ionisation sous les ennemis, Surcharge. |
 | `XPGemCollectFX.cs` | Petit éclat (~0,22 s) au ramassage d'une gemme d'XP. |
 
 ---
@@ -240,6 +274,7 @@ Scripts `[MenuItem]` sous le menu **Aether >**, jamais exécutés en jeu — ils
 | `LanguageFontsSetup.cs` | **Aether > Rebuild Language Fonts** : atlas TMP statiques des polices chinoise, japonaise et coréenne (`Assets/Game/Fonts/Lang/NotoSans<SC|JP|KR>-Black SDF`) depuis les polices réduites et leurs listes de caractères (`.chars.txt`), inscrits en polices de repli globales (TMP Settings). À chaque compilation : erreur console si un caractère de ces langues manque à la fois à Bangers et à l'atlas de sa langue. |
 | `InputAxesSetup.cs` | **Aether > Setup Input Axes** : crée les axes manette `PadMoveX`/`PadMoveY` dans les Input Settings du projet (déjà exécuté une fois). |
 | `MenuBackgroundBuilder.cs` | **Aether > Rebuild Menu Background** : construit le fond vivant du menu principal (3 illustrations + effet de vent + feuilles/oiseaux). |
+| `QuitConfirmBuilder.cs` | **Aether > Rebuild Quit Confirm Dialog** : construit le prefab de la fenêtre de confirmation de fermeture (même style que les fenêtres des Paramètres), rangé dans `Resources`. |
 | `ReputationPageBuilder.cs` | **Aether > Rebuild Reputation Page** : construit l'onglet Réputation complet (bonus + boutique de skins), crée `SkinCatalog.asset` s'il n'existe pas. |
 | `SettingsPageBuilder.cs` | **Aether > Rebuild Settings Page** : construit la page Paramètres complète (carrousel de catégories, lignes). |
 | `SkeletonSwapTool.cs` | Fenêtre d'éditeur (`EditorWindow`) : remplace le squelette d'un modèle Tripo3D par un squelette Mixamo en conservant mesh/texture/poids. |

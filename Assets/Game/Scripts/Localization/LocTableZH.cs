@@ -258,5 +258,6 @@ public static class LocTableZH
         { "Intensité des vibrations", "震动强度" }, { "Force des vibrations de la manette.", "手柄震动的强弱。" }, { "Navigation", "导航" },
         { "Clavier / souris", "键盘／鼠标" }, { "Aucune manette détectée : branche-en une", "未检测到手柄：请连接手柄" }, { "Faire défiler", "滚动" },
         { "Quitter le défilement", "停止滚动" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大生命值提高 {0}%，并完全恢复生命值" },
+        { "Manuelle", "手动" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "自动：自动瞄准最近的敌人。手动：用鼠标或手柄右摇杆瞄准" },
     };
 }

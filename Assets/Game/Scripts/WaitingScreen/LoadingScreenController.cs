@@ -40,6 +40,10 @@ public class LoadingScreenController : MonoBehaviour
         if (_pressKeyGroup != null)
             _pressKeyGroup.alpha = 0f;
 
+        // AJOUTE (2026-10-29) - habillage de la barre dans la DA du logo (plaque dorée, losanges sertis, cristal de mana)
+        if (_loadingBar != null && _loadingBar.GetComponent<LoadingBarStyle>() == null)
+            _loadingBar.gameObject.AddComponent<LoadingBarStyle>();
+
         StartCoroutine(LoadRoutine());
     }
 

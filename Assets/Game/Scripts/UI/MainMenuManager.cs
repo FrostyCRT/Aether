@@ -80,6 +80,8 @@ public class MainMenuManager : MonoBehaviour
 
         // Déjà sur cette page (et elle est bien affichée) : on ne touche à rien, elle garde son état et ses animations.
         if (panel == _currentPanel && panel.activeInHierarchy) return;
+        // AJOUTÉ (2026-10-29) - apparition différée de la page (décor seul, puis contenu en fondu), voir MenuPageReveal.
+        if (_currentPanel != null) Reveal(_currentPanel).OnLeave();
         _currentPanel = panel;
 
         _upgradesPanel.SetActive(false);
@@ -90,6 +92,7 @@ public class MainMenuManager : MonoBehaviour
         if (_reputationPanel != null) _reputationPanel.SetActive(false);
 
         panel.SetActive(true);
+        Reveal(panel).OnEnter();
         SetTabState(_upgradesTabImage, panel == _upgradesPanel);
         SetTabState(_menuTabImage, panel == _menuPanel);
         SetTabState(_settingsTabImage, panel == _settingsPanel);
@@ -108,6 +111,18 @@ public class MainMenuManager : MonoBehaviour
         }
         _firstShow = false;
     }
+
+    private static MenuPageReveal Reveal(GameObject panel)
+    {
+        return panel.TryGetComponent(out MenuPageReveal reveal) ? reveal : panel.AddComponent<MenuPageReveal>();
+    }
+
+    // Lancement d'une partie (changement de scène) : la page affichée est quittée, son minuteur démarre.
+    private void OnDestroy()
+    {
+        if (_currentPanel != null && _currentPanel.TryGetComponent(out MenuPageReveal reveal)) reveal.OnLeave();
+    }
+
     private void SetTabState(Image tabImage, bool isActive)
     {
         if (tabImage == null) return;

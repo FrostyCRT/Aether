@@ -676,3 +676,5 @@
 638| Rolar
 639| Parar de rolar
 640| Aumenta sua vida máxima em {0}% e a restaura por completo
+641| Manual
+642| Automática: os disparos miram no inimigo mais próximo. Manual: você mira com o mouse ou com o analógico direito do controle

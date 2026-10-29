@@ -310,6 +310,7 @@ public static class LocTablePL
         { "Intensité des vibrations", "Siła wibracji" }, { "Force des vibrations de la manette.", "Jak mocno wibruje pad." },
         { "Navigation", "Nawigacja" }, { "Clavier / souris", "Klawiatura / mysz" }, { "Aucune manette détectée : branche-en une", "Nie wykryto pada: podłącz go" },
         { "Faire défiler", "Przewiń" }, { "Quitter le défilement", "Zakończ przewijanie" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca" },
+        { "Manuelle", "Ręczne" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatyczne: strzały lecą w najbliższego wroga. Ręczne: celujesz myszą albo prawą gałką pada" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

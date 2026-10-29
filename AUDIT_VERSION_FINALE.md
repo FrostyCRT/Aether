@@ -29,6 +29,14 @@ Ce document ne change rien au code : c'est une liste de travail. Chaque point do
 > - Les 12 défis horaires sont maintenant répartis **4 Faciles / 3 Moyens / 5 Difficiles** ("Sans Cristal" reclassé Moyen → Difficile le 2026-10-21) et le défi temporel "Ascension Rapide" (niveau 20 avant 10 min) peut enfin échouer réellement (`ChallengeManager.Update`, manquait toute réévaluation hors évènement de jeu, 2026-10-23).
 > - La fusion **Terre Calcinée** (citée dans plusieurs sections comme simple zone de Boue reteintée) a été entièrement refondue le 2026-10-23 en bombardement de météorites multi-cibles (voir `AETHER_STORM_SURVIVOR_PROJECT_COMPLET_V16.md` §2 et `SCRIPTS_INDEX.md`).
 
+> ### ✅ Avancement du 2026-10-24 au 2026-10-29 : étape 4 bien entamée (détail `NOTES.md`)
+> - **§5 Manette : faite** (2026-10-28/29). Nouvel Input System 1.19 (Active Input Handling = Both : le clavier/souris reste sur l'ancien système et ses touches, la manette passe par `Gamepad.current`). Un bouton par action, modifiable dans Paramètres > Commandes (3e colonne « Manette », icônes au style de la manette branchée : Xbox, PlayStation, Switch). Défauts : A Dash, Y Ultime, X Clone, LB/RB orbites, Start Pause ; cartes de level-up choisies au curseur. Menus : **curseur rond** piloté au stick (souris virtuelle, `PadCursor`) au lieu d'une navigation bouton par bouton (demande de l'utilisateur après essai), mode défilement des zones déroulantes, LB/RB = onglets, B = retour. **Visée manuelle au stick droit** avec viseur en jeu (`AimReticle`, aussi à la souris). **Vibrations** (`PadRumble`, réglages Vibrations + Intensité). Curseur, vibrations et changement souris ↔ manette validés par l'utilisateur sur une vraie manette ; la visée au stick droit (2026-10-29) reste à valider, et le style PlayStation n'a été vérifié que sur planche.
+> - §5 restant : **désactiver les secousses d'écran / réduire les flashs** (aucun réglage encore), et la détection AZERTY toujours basée sur la langue de Windows. La pause quand la fenêtre perd le focus existe (Paramètres > Jeu > Pause automatique).
+> - **§8 Performance** (mesures en partie longue le 2026-10-24 et 2026-10-28) : ramasse-miettes incrémental activé (gels de 250-360 ms toutes les ~3 min), package `com.unity.sequences` retiré (~20 ms/image côté éditeur), gemmes d'XP passées en **données** (`XPGemField`, 2 500 gemmes au sol : 114 → 233 images/s, aucun GC). **2.13** tranché par l'utilisateur : jamais de fusion ni de suppression des gemmes, ni de plafond.
+> - Divers : hitbox des boss calées sur leur modèle (`BossBodyShape`) · confirmation avant de quitter sur Alt+F4 / croix (`QuitConfirm`) · refonte de l'économie (or surtout aux minutes, boss et victoire ; ~30-40 parties pour une branche) · les 6 fusions refaites avec une vraie mécanique et leurs propres visuels · typographie Bangers + Fira Sans · animation au survol de tous les boutons · apparition des pages du menu (décor d'abord) · effet de level-up en cristal à la place de l'anneau au sol.
+>
+> Reste à faire : fin de l'étape 3 (nom de société, IL2CPP, Steam Cloud : reportés par l'utilisateur), secousses/flashs (§5), textures 4K des boss et prefabs en double de `Resources/` (§8, §10), sons.
+
 Légende :
 - 🔴 **Bug confirmé** : vérifié dans le code (et en jeu quand c'était possible). Effet visible pour le joueur.
 - 🟠 **Probable / à confirmer en jeu** : le code le permet, l'effet dépend du contexte.
@@ -157,13 +165,13 @@ Légende :
 ## 5. Manette, clavier, accessibilité 🟠
 
 Un jeu Steam de ce genre sera joué à la manette (et sur Steam Deck). C'est le chantier « pro » le plus important après le son.
-- **Input Manager legacy** (`activeInputHandler: 0`) : les gâchettes ne sont pas assignables, la détection de manette est limitée, il n'y a pas d'icônes de boutons, et les libellés affichent « Manette N ». Le **nouveau Input System** règle tout ça (et Steam Input aussi).
-- Pas de **bouton manette par défaut** pour les cartes de level-up 1-3, ni pour les orbites.
-- Pas de **visée au stick droit** (si le jeu en a besoin : les armes visent toutes seules, donc c'est peut-être inutile).
-- **Navigation des menus à la manette** : à tester sur toutes les pages (menu, Compétences, Réputation, Paramètres, pause, level-up, fin de partie). Il faut un `Selectable` sélectionné par défaut sur chaque panneau, et des `Navigation` explicites.
+- ✅ *(fait le 2026-10-28, voir l'encadré en tête)* **Input Manager legacy** (`activeInputHandler: 0`) : les gâchettes ne sont pas assignables, la détection de manette est limitée, il n'y a pas d'icônes de boutons, et les libellés affichent « Manette N ». Le **nouveau Input System** règle tout ça (et Steam Input aussi).
+- ✅ *(fait)* Pas de **bouton manette par défaut** pour les cartes de level-up 1-3, ni pour les orbites.
+- ✅ *(fait le 2026-10-29 : stick droit + viseur)* Pas de **visée au stick droit** (si le jeu en a besoin : les armes visent toutes seules, donc c'est peut-être inutile).
+- ✅ *(fait autrement : curseur rond `PadCursor`, sur demande de l'utilisateur)* **Navigation des menus à la manette** : à tester sur toutes les pages (menu, Compétences, Réputation, Paramètres, pause, level-up, fin de partie). Il faut un `Selectable` sélectionné par défaut sur chaque panneau, et des `Navigation` explicites.
 - Le **clavier AZERTY** est détecté d'après la **langue de Windows**, pas d'après la disposition du clavier. Un Belge ou un Suisse en Windows anglais aura du ZQSD affiché en WASD. Le nouveau Input System lit la vraie disposition.
 - **Accessibilité manquante** : option pour **désactiver les secousses d'écran** (`CameraShakeFX` n'a aucun réglage) et **réduire les flashs** (mort des boss, Ultime, `EnemyDeathFX`). C'est demandé par beaucoup de joueurs, et c'est un point de vigilance pour la photosensibilité.
-- Option **« mettre en pause quand la fenêtre perd le focus »**.
+- ✅ *(existe : Paramètres > Jeu > Pause automatique)* Option **« mettre en pause quand la fenêtre perd le focus »**.
 
 ---
 

@@ -270,5 +270,6 @@ public static class LocTableKO
         { "Intensité des vibrations", "진동 세기" }, { "Force des vibrations de la manette.", "게임패드 진동의 세기입니다．" }, { "Navigation", "이동" },
         { "Clavier / souris", "키보드 / 마우스" }, { "Aucune manette détectée : branche-en une", "게임패드가 감지되지 않았습니다． 연결해 주세요" },
         { "Faire défiler", "스크롤" }, { "Quitter le défilement", "스크롤 종료" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "최대 HP가 {0}% 증가하고 HP를 모두 회복합니다" },
+        { "Manuelle", "수동" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "자동： 가장 가까운 적을 자동으로 조준합니다． 수동： 마우스나 게임패드 오른쪽 스틱으로 조준합니다" },
     };
 }

@@ -32,10 +32,8 @@ public class LevelUpManager : MonoBehaviour
     // à l'endroit même où le joueur vient de se battre, (2) puis seulement le choix se fige. _preShowTimer tourne
     // en temps RÉEL NON affecté (Time.deltaTime normal, le jeu n'est pas encore en pause à ce stade).
     [Header("Fanfare avant l'ouverture du panel (temps réel, jeu pas encore en pause)")]
-    [Tooltip("Durée du temps fort jouable avant que l'écran de choix ne se fige (anneau doré + étincelles au joueur).")]
+    [Tooltip("Durée du temps fort jouable avant que l'écran de choix ne se fige (ascension de cristal doré au joueur).")]
     [SerializeField] private float _preShowFanfareDuration = 0.3f;
-    [SerializeField] private float _preShowRingRadius = 2.4f;
-    [SerializeField] private float _preShowRingDuration = 0.4f;
     private static readonly Color FanfareGold = new Color(1f, 0.788f, 0.302f); // même or que _dotColorMax (UpgradeUI) - identité "palier franchi"
     private bool _preShowPending = false;
     private float _preShowTimer = 0f;
@@ -203,11 +201,11 @@ public class LevelUpManager : MonoBehaviour
     // ImpactSparkVFX) que BossChest.OnTriggerEnter, pour la même identité visuelle "récompense" dans tout le jeu.
     private void BeginPreShowFanfare()
     {
+        // MODIFIÉ (2026-10-29, retour utilisateur : "enlever la zone ronde qui apparait autour du joueur quand il y a un
+        // level up, ou sinon [...] quelque chose de graphique") - l'anneau doré au sol se lisait comme une zone (forme des
+        // télégraphes ennemis) : remplacé par une ascension de cristal doré, voir LevelUpAscensionVFX.
         GameObject playerGO = GameObject.FindWithTag("Player");
-        Vector3 origin = playerGO != null ? playerGO.transform.position + Vector3.up * 0.3f : Vector3.zero;
-
-        ExpandingRingVFX.Spawn(origin, _preShowRingRadius, FanfareGold, _preShowRingDuration);
-        ImpactSparkVFX.Spawn(origin, FanfareGold, 1.6f);
+        if (playerGO != null) LevelUpAscensionVFX.Spawn(playerGO.transform, FanfareGold);
 
         _preShowPending = true;
         _preShowTimer = _preShowFanfareDuration;

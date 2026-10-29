@@ -311,5 +311,6 @@ public static class LocTableDE
         { "Intensité des vibrations", "Vibrationsstärke" }, { "Force des vibrations de la manette.", "Wie stark der Controller vibriert." },
         { "Navigation", "Navigieren" }, { "Clavier / souris", "Tastatur / Maus" }, { "Aucune manette détectée : branche-en une", "Kein Controller erkannt: Schließ einen an" },
         { "Faire défiler", "Scrollen" }, { "Quitter le défilement", "Scrollen beenden" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Erhöht deine maximalen LP um {0} % und stellt alle LP wieder her" },
+        { "Manuelle", "Manuell" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Manuell: Du zielst mit der Maus oder dem rechten Stick des Controllers" },
     };
 }

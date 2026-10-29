@@ -1,6 +1,9 @@
 # Aether Storm Survivor : ce qu'il reste à modéliser en 3D (et à habiller)
 
 Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, rayon d'apparition des ennemis corrigé), le 2026-10-18 (fusion "Orbes Jumeaux" retirée, remplacée par "Sillage Boueux" — voir §4.1 et §5), le 2026-10-19 (§7.1/§7.2 : diagnostic du sol + liste de nouveaux modèles 3D proposés pour Tripo3D, en remplacement des arbres/rochers de bordure actuels que l'utilisateur juge hors DA), puis le 2026-10-20 (§7.2 confirmée comme LA liste active après l'abandon d'une tentative de props de sol procéduraux, jugés trop pauvres visuellement ; §13 ajoutée : diorama du nouveau carrousel de difficulté de la page Accueil du menu ; §8.1 ajoutée : le coffre de boss, système déjà fonctionnel en jeu, oublié de cette liste jusqu'ici). Rien de cette liste n'est encore produit. J'ai parcouru tout le jeu (prefabs, scènes, `Resources/`, scripts qui créent des objets en code) et lancé des parties pour voir ce qui s'affiche vraiment à l'écran.
+
+> **Mise à jour du 2026-10-29** : les 6 fusions ont toutes été refaites (2026-10-27/28) avec leurs **propres visuels procéduraux en cristal** (`PrismaticCrownVFX`, `StormConstellationVFX`, `BladeWaltzVFX`, `MagneticBogVFX`, `MudWakeVFX`, `MeteorFallVFX`) : elles ne réutilisent plus les sphères/cylindres de leurs armes sources (§4.1 et §5 mis à jour). Les gros éléments (orbe de Sillage Boueux en premier) seront remplacés par des modèles Tripo3D de l'utilisateur : brancher le modèle à la place du maillage construit en code (`MudWakeVFX` → `OrbMesh`), ne pas repolir le procédural. Le level-up a maintenant son effet (`LevelUpAscensionVFX`, §6).
+
 Le principe : **tout ce que le joueur voit en partie et qui est encore une primitive Unity (cube, sphère, cylindre, capsule) avec un simple matériau de couleur** doit être remplacé par un vrai modèle, un vrai effet visuel ou une vraie texture.
 
 Légende des priorités :
@@ -20,7 +23,7 @@ Rappel de la DA (direction artistique) : les modèles actuels viennent de Tripo3
 | Ennemis encore en placeholder | 1 (Bulbe cracheur) + 1 modèle existant non intégré (Sanglier) | 🔴 P1 |
 | Projectiles du joueur en sphères | 5 (tir de base, couteaux, boule de feu, orbitaux, orbe rebondissant) | 🔴 P1 |
 | Projectiles ennemis / boss en sphères | 1 prefab partagé par 6 sources + cristaux du boss 3 | 🔴 P1 |
-| Zones au sol en cylindres | Boue + 3 fusions | 🔴 P1 |
+| Zones au sol en cylindres | Boue (+ cratère de Pluie de Météores) | 🔴 P1 |
 | Effets en cylindres/capsules | Nova, Ultime, Bouclier de Mana, prefabs du boss 3 | 🟠 P2 |
 | Environnement de l'arène | Sol plat unique, aucun décor dans l'aire de jeu | 🔴 P1 |
 | Effets procéduraux « génériques » à remplacer par de vrais VFX | ~10 | 🟡 P3 |
@@ -135,10 +138,10 @@ C'est le placeholder **le plus visible du jeu** : des sphères unies partout, to
 | Projectile | Prefab | Aujourd'hui | À produire |
 |---|---|---|---|
 | **Tir de base** | `Projectile.prefab` | Sphère **grise** avec le matériau Lit par défaut (#808080) : le pire cas, on dirait un objet oublié | Projectile de mana/eau (petit cœur lumineux + traînée). Peut changer de couleur selon le personnage. |
-| **Couteaux de Lyra** | `ProjectileShuriken` | Sphères violettes (`MAT_EnemyShooter`, le matériau d'un ennemi !) | Modèle de **lame/couteau de lancer** qui tourne sur lui-même, avec une traînée bleu-violet. Également utilisé par la fusion **Lames Ricochet**. |
+| **Couteaux de Lyra** | `ProjectileShuriken` | Sphères violettes (`MAT_EnemyShooter`, le matériau d'un ennemi !) | Modèle de **lame/couteau de lancer** qui tourne sur lui-même, avec une traînée bleu-violet. (La fusion **Valse des Lames**, ex-Lames Ricochet, a ses propres lames de cristal 3D construites en code depuis le 2026-10-28, `BladeWaltzVFX`.) |
 | **Boule de feu (Aether)** | `ProjectileFireball` | Sphère orange (`MAT_RougeOrange`) | Boule de feu : cœur émissif + particules de flammes + traînée de fumée. L'explosion à l'impact doit être un vrai VFX (aujourd'hui anneau générique). |
-| **Orbitaux** | `Resources/OrbitalProjectile` | Petites sphères cyan (`MAT_Orbital`) | **Éclats de mana / cristaux** qui tournent. Également utilisés par les fusions **Vortex de Mana** et **Orbes Foudroyants**. |
-| **Orbe rebondissant** | `Resources/BouncingOrbProjectile` | Grosse sphère jaune unie (`MAT_PulseAOE`) | **Orbe de cristal** avec halo intérieur. La fusion **Sillage Boueux** (remplace "Orbes Jumeaux", retirée le 2026-10-18) réutilise le même orbe tel quel, sans lien visuel entre orbes ; voir plutôt la flaque de boue qu'il laisse derrière lui, ligne "Fusion Sillage Boueux" ci-dessous (§5). |
+| **Orbitaux** | `Resources/OrbitalProjectile` | Petites sphères cyan (`MAT_Orbital`) | **Éclats de mana / cristaux** qui tournent. Les fusions **Couronne Prismatique** (ex-Vortex de Mana) et **Constellation Orageuse** (ex-Orbes Foudroyants) ont leurs propres cristaux 3D construits en code depuis le 2026-10-27 (`PrismaticCrownVFX`, `StormConstellationVFX`). |
+| **Orbe rebondissant** | `Resources/BouncingOrbProjectile` | Grosse sphère jaune unie (`MAT_PulseAOE`) | **Orbe de cristal** avec halo intérieur. La fusion **Sillage Boueux** a ses propres orbes de cristal construits en code depuis le 2026-10-28 (`MudWakeVFX`), jugés encore trop faibles par l'utilisateur : **il modélisera l'orbe lui-même avec Tripo3D** (à brancher à la place de `OrbMesh`). |
 | **Éclair en chaîne** | `LightningBoltVFX` (LineRenderer procédural) | Fonctionnel | 🟡 Texture d'éclair animée + flash d'impact. |
 | **Météorite** (fusion **Pluie de Météores**, Boule de feu + Boue — ajoutée le 2026-10-24 à la demande) | `MeteorFallVFX` (construit en code, pas de prefab) | Sprite **billboard** tourné vers la caméra qui tombe du ciel pendant le signal au sol | **Vrai modèle 3D de météorite** : roche irrégulière à fissures incandescentes (émissif orange), traînée de feu et de fumée derrière elle. L'impact garde `FireExplosionVFX`, déjà validé. |
 
@@ -158,10 +161,10 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 |---|---|---|---|
 | **Flaques de boue** | `Resources/MudPuddleZone` | Cylindres plats **marron** (`Maron.mat`) | **Décal** ou maillage plat avec texture de boue animée (bulles, reflets), bord irrégulier. |
 | Fusion **Pluie de Météores** (ex-« Terre Calcinée », refondue le 2026-10-23, renommée le 2026-10-24) | même prefab, pour le cratère résiduel seulement | Cylindres marron boueux (même teinte que la Boue normale, avant c'était orange) | Sol brûlé : braises, fissures incandescentes, petites flammes. **Le visuel principal de cette fusion n'est plus ce cratère** mais le météore qui tombe du ciel (`MeteorFallVFX`) - entièrement procédural (sprites générés en code, aucun modèle/texture requis), donc rien à produire pour cette partie. |
-| Fusion **Marécage Maudit** | même prefab | Cylindres verts | Marécage toxique : eau verte, bulles, brume. |
-| Fusion **Sillage Boueux** (nouvelle, 2026-10-18) | même prefab | Cylindres bleu-gris délavé (teinte « boue limoneuse ») | Même traitement que les 2 fusions ci-dessus : sillage continu de petites flaques déposées par les orbes en mouvement plutôt qu'un anneau fixe. |
+| Fusion **Tourbière Magnétique** (ex-Marécage Maudit, refaite le 2026-10-27) | même prefab, visuel masqué | ✅ Effet procédural dédié (`MagneticBogVFX` : voile d'orage, aspiration, décharge) | Rien d'obligatoire. |
+| Fusion **Sillage Boueux** (repassée le 2026-10-28) | même prefab, disque masqué (`MudPuddleZone.HideVisual`) | ✅ Taches de boue aux bords doux semées d'éclats azur (`MudWakeVFX`) | Seul l'orbe reste à modéliser (§4.1). |
 | **Aura de Kael** | LineRenderer + disque | Fonctionnel mais générique | 🟡 Cercle runique au sol qui tourne, particules vertes. |
-| **Vortex de Mana** (fusion) | LineRenderer | Anneau simple, ramené au sol le 2026-10-16 | Tourbillon au sol animé. |
+| **Couronne Prismatique** (fusion, ex-Vortex de Mana, refaite le 2026-10-27) | construit en code | ✅ Cristaux 3D reliés par des faisceaux (`PrismaticCrownVFX`) | Rien d'obligatoire. |
 
 ---
 
@@ -174,7 +177,7 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 | **Bouclier de Mana** (Kael, `ManaShield.BuildBubble`) | **Capsule primitive** verte translucide | Bulle d'énergie avec effet de Fresnel (bords lumineux), hexagones, flash quand elle absorbe un projectile. |
 | **Clone fantôme** (Lyra) | Copie du maillage (OK) ; repli = capsule si aucun modèle | Ajouter un shader « spectral » (transparence + bord lumineux) s'il n'existe pas encore. Le repli en capsule ne devrait jamais être vu. |
 | **Dash** | ? | Traînée/afterimage visible (aujourd'hui dépend du personnage). |
-| **Montée de niveau** | Panneau UI | Petit effet au sol autour du joueur au moment du level-up. |
+| **Montée de niveau** | ✅ Fait le 2026-10-29 (`LevelUpAscensionVFX`) : fragments de cristal dorés qui montent en spirale autour du héros, étoile de cristal au-dessus de lui, éclats et poussières. Remplace l'anneau doré au sol (il se lisait comme une zone / un télégraphe ennemi). | Rien d'obligatoire. |
 | `PulseVisual` (cylindre) | **Inutilisé** | À supprimer. |
 
 ---
@@ -297,7 +300,7 @@ Ils fonctionnent et sont lisibles, mais ce sont des sprites ou des `LineRenderer
 - `GroundTelegraphFX` (zones d'attaque au sol) : runes/fissures animées.
 - `ChargeLaneFX` (couloir de charge du Dragon) : traînée de griffes / énergie.
 - `ImpactSparkVFX` (impacts) : variantes par type de dégât (feu, glace, mana, physique).
-- `ExpandingRingVFX` (anneaux) : onde avec distorsion.
+- `ExpandingRingVFX` (anneaux, aujourd'hui seulement côté ennemis/boss : le level-up et la Fragmentation ne l'utilisent plus) : onde avec distorsion.
 - `EnemyDeathFX` : dissolution par shader (*dissolve*) au lieu d'un flash + étincelles. C'est le standard du genre.
 - `BossFX` (arrivée/mort des boss) : déjà travaillé, à enrichir.
 - `SummonPortalFX` (invocation de mini-boss) : portail 3D.

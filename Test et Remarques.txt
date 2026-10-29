@@ -7,8 +7,3 @@ restyliser la barre de chargement dans le loading screen, mettre des éléments 
 Mode coop ? deux joueurs dans la partie.
 
 revoir les lueurs dans les fonds d'écran
-
-Quand on clique sur un onglet, on voit d'abord le fond d'écran puis les éléments spawn la seconde d'après en fondue, cette animation recommence toutes les minutes uniquement si il y a un changement de page, ça permet de voir le fond d'écran entier, car c'est des vrai backgrounds du lore et des beaux paysages.
-Si on sort de l'onglet et qu'on revient, il n'y a pas l'animation, elle revient toutes les minutes, mais si on reste dans la page pendant 1 minutes ou plus, ça ne fait pas l'animation, le timer commence que quand on sort de la page, donc chaque page à son propre timer.
-
-enlever la zone ronde qui apparait autour du joueur quand il y a un level up, ou sinon il faut que tu fasse quelque chose de graphique, comme tu as fait pour le rework des fusions.

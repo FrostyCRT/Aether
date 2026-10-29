@@ -676,3 +676,5 @@
 638| Scrollen
 639| Scrollen beenden
 640| Erhöht deine maximalen LP um {0} % und stellt alle LP wieder her
+641| Manuell
+642| Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Manuell: Du zielst mit der Maus oder dem rechten Stick des Controllers

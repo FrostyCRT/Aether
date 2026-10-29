@@ -684,3 +684,5 @@
 638| Przewiń
 639| Zakończ przewijanie
 640| Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca
+641| Ręczne
+642| Automatyczne: strzały lecą w najbliższego wroga. Ręczne: celujesz myszą albo prawą gałką pada

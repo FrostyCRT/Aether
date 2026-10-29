@@ -408,6 +408,8 @@ public static class LocTableEN
         { "Aucune manette détectée : branche-en une", "No gamepad detected: plug one in" },
         { "Faire défiler", "Scroll" }, { "Quitter le défilement", "Stop scrolling" },
         { "Augmente tes PV max de {0}% et restaure tous tes PV", "Increases your max HP by {0}% and fully restores your HP" },
+        { "Manuelle", "Manual" },
+        { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatic: shots target the nearest enemy. Manual: aim with the mouse or the gamepad's right stick" },
 
         // ==== SECTIONS SUIVANTES ====
     };

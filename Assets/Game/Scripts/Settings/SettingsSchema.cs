@@ -171,8 +171,9 @@ public static class SettingsSchema
         game.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Visée", key = GameSettings.AutoAim,
-            description = "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle",
-            options = new[] { "À la souris", "Automatique" },
+            // MODIFIÉ (2026-10-29) - la visée manuelle se fait aussi au stick droit de la manette (viseur en partie : AimReticle)
+            description = "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette",
+            options = new[] { "Manuelle", "Automatique" },
             getIndex = () => GameSettings.GetBool(GameSettings.AutoAim) ? 1 : 0,
             setIndex = i => GameSettings.SetBool(GameSettings.AutoAim, i == 1)
         });

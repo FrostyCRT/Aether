@@ -308,6 +308,7 @@ public static class LocTableRU
         { "Intensité des vibrations", "Сила вибрации" }, { "Force des vibrations de la manette.", "Насколько сильно вибрирует геймпад." },
         { "Navigation", "Навигация" }, { "Clavier / souris", "Клавиатура / мышь" }, { "Aucune manette détectée : branche-en une", "Геймпад не обнаружен: подключи его" },
         { "Faire défiler", "Прокрутить" }, { "Quitter le défilement", "Закончить прокрутку" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Увеличивает максимальный запас здоровья на {0}% и полностью его восстанавливает" },
+        { "Manuelle", "Ручное" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Автоматическое: выстрелы летят в ближайшего врага. Ручное: целься мышью или правым стиком геймпада" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },
