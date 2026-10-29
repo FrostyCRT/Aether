@@ -49,6 +49,8 @@ public static class GameSettings
     public const string ShowKeyLegend = "settings_show_keylegend";   // légende des touches à gauche du HUD
     // Manette
     public const string PadDeadZone = "settings_pad_deadzone";
+    public const string PadRumble = "settings_pad_rumble";              // vibrations (AJOUTÉ 2026-10-28, voir PadRumble)
+    public const string PadRumbleStrength = "settings_pad_rumble_strength";
     // Langue (AJOUTÉ 2026-10-14) : 0 français, 1 anglais - défaut = langue de Windows (voir Loc)
     public const string Language = "settings_language";
 
@@ -112,6 +114,8 @@ public static class GameSettings
         { ShowKeyLegend,    B(true) },
 
         { PadDeadZone,      F(0.20f, 0.05f, 0.50f) },
+        { PadRumble,        B(true) },
+        { PadRumbleStrength, F(1.00f, 0.20f, 1.00f) },
 
         { Language,         I((int)Loc.SystemDefault, 0, Loc.LanguageCount - 1) },
     };

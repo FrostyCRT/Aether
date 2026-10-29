@@ -302,5 +302,13 @@ public static class LocTableES
         { "Première victoire en Modéré : +{0} éclats", "Primera victoria en Moderado: +{0} fragmentos" }, { "Première victoire en Violent : +{0} éclats", "Primera victoria en Violento: +{0} fragmentos" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Primera victoria en Apocalíptico: +{0} fragmentos" }, { "Victoire en Modéré", "Victoria en Moderado" },
         { "Victoire en Violent", "Victoria en Violento" }, { "avec {0}", "con {0}" }, { "Ta partie en cours sera perdue", "Perderás la partida en curso" },
+        { "Croix", "Cruz" }, { "Rond", "Círculo" }, { "Carré", "Cuadrado" }, { "Triangle", "Triángulo" }, { "Stick", "Stick" },
+        { "Échap : annuler", "Esc: cancelar" }, { "Appuie sur un bouton de la manette", "Pulsa un botón del mando" }, { "Appuie sur une touche ou un bouton de souris", "Pulsa una tecla o un botón del ratón" },
+        { "Stick gauche / croix", "Stick izquierdo / cruceta" }, { "Navigation + {0}", "Navegar + {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "«{0}» estaba asignado a «{1}»: intercambian sus botones («{2}»)" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "«{0}» estaba asignado a «{1}»: se le ha quitado" },
+        { "Vibrations", "Vibración" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Hace vibrar el mando al recibir golpes, al hacer un dash, al usar la Definitiva y cuando cae un jefe." },
+        { "Intensité des vibrations", "Intensidad de la vibración" }, { "Force des vibrations de la manette.", "Fuerza de la vibración del mando." },
+        { "Navigation", "Navegar" }, { "Clavier / souris", "Teclado / ratón" }, { "Aucune manette détectée : branche-en une", "No se detecta ningún mando: conecta uno" },
+        { "Faire défiler", "Desplazar" }, { "Quitter le défilement", "Dejar de desplazar" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Aumenta tu vida máxima un {0}% y la restaura por completo" },
     };
 }

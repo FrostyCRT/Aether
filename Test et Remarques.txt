@@ -4,17 +4,11 @@ C:\Users\jules\My project\Aether
 
 restyliser la barre de chargement dans le loading screen, mettre des éléments comme les caractères du texte du titre, pour retrouver un peu la DA
 
-adapter les fonds d'écran, jour/crépuscule/nuit, avec MetaIA
-
-ajuster les fonds d'écran Aether et Lyra
-
-Main Aether et visage Lyra
-
 Mode coop ? deux joueurs dans la partie.
 
-l'indicateur de dégâts sur les ennemis doit être plus proche de lui. Sauf pour les boss
+revoir les lueurs dans les fonds d'écran
 
-j'ai l'impression que je prend moins de dégâts physique avec Kael, quand je cours dans une horde je me prends presque pas de dégâts
+Quand on clique sur un onglet, on voit d'abord le fond d'écran puis les éléments spawn la seconde d'après en fondue, cette animation recommence toutes les minutes uniquement si il y a un changement de page, ça permet de voir le fond d'écran entier, car c'est des vrai backgrounds du lore et des beaux paysages.
+Si on sort de l'onglet et qu'on revient, il n'y a pas l'animation, elle revient toutes les minutes, mais si on reste dans la page pendant 1 minutes ou plus, ça ne fait pas l'animation, le timer commence que quand on sort de la page, donc chaque page à son propre timer.
 
-le texte de la dernière amélioration de la compétence Aura de Kael dit 60% de ralentissement au lieu de 15%. On garde vraiment ce 'Au lieu de X' ? Je ne vois pas ça souvent dans les jeux pro.
-60% de ralentissement en jeu c'est trop, baisse le à 40%
+enlever la zone ronde qui apparait autour du joueur quand il y a un level up, ou sinon il faut que tu fasse quelque chose de graphique, comme tu as fait pour le rework des fusions.

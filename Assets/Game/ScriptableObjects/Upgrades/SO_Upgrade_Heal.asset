@@ -16,7 +16,7 @@ MonoBehaviour:
   description: Restaure 50% de tes PV max
   icon: {fileID: 21300000, guid: ea8ae58ddc2b8b64eae536dda9d68836, type: 3}
   upgradeType: 2
-  value: 0.5
+  value: 1
   _fusionSource1: 0
   _fusionSource2: 0
   _fusionResultId: 

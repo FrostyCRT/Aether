@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // AJOUTE (2026-09-20) - une carte de bonus de Réputation (Dégâts / Vitesse / Régénération) : icône, bonus actuel,
@@ -12,14 +11,14 @@ using UnityEngine.UI;
 // États : à améliorer (bouton parchemin qui respire) / Éclats insuffisants (bouton grisé, coût en rouge) /
 // palier maximum (cadre et paliers dorés). L'achat fait éclater un flash sur la carte, "pop" le palier gagné et
 // fait rebondir le bonus. Tout tourne en temps réel (menus).
-public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ReputationStatCardUI : MonoBehaviour
 {
     [Header("Identité")]
     [Tooltip("Identifiant MetaProgressionManager : reputationDamage / reputationSpeed / reputationRegen")]
     [SerializeField] private string _nodeId;
 
     [Header("Cadre")]
-    [SerializeField] private RectTransform _body;         // monte légèrement au survol
+    [SerializeField] private RectTransform _body;
     [SerializeField] private Image _frame;
     [SerializeField] private Image _accentBar;
     [SerializeField] private Image _glow;                 // halo additif derrière l'icône
@@ -47,8 +46,6 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
     public event Action<ReputationStatCardUI> BuyClicked;
 
     private Color _accent;
-    private bool _hover;
-    private float _hoverT;
     private float _phase;
     private Vector2 _iconBase;
     private int _shownLevel = -1;
@@ -64,26 +61,22 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
         if (_buy != null) _buy.onClick.AddListener(() => BuyClicked?.Invoke(this));
         if (_flash != null) _flash.color = new Color(1f, 1f, 1f, 0f);
         if (_name != null) _name.text = ReputationStyle.StatName(_nodeId);
+        SetupBuyLayout();
     }
 
     private void OnEnable()
     {
-        _hover = false; _hoverT = 0f;
         if (_body != null) _body.localScale = Vector3.one;
         _shownLevel = -1;          // pas de "pop" au premier affichage
         ResetFx();
     }
 
-    public void OnPointerEnter(PointerEventData e) => _hover = true;
-    public void OnPointerExit(PointerEventData e) => _hover = false;
-
+    // MODIFIÉ (2026-10-29, retour utilisateur : "au survol il y a une animation sur le panel de l'upgrade de réputation,
+    // enlève cette animation au survol") - la carte ne grossit plus et son cadre ne s'éclaire plus au survol ; seul le
+    // bouton d'achat réagit (ButtonHoverFX, comme tous les boutons du jeu).
     private void Update()
     {
-        float dt = Time.unscaledDeltaTime;
-        _hoverT = Mathf.MoveTowards(_hoverT, _hover ? 1f : 0f, dt * 6f);
-        float k = _hoverT * _hoverT * (3f - 2f * _hoverT);
-        if (_body != null) _body.localScale = Vector3.one * (1f + 0.018f * k);
-        if (_frame != null) _frame.color = FrameColor(k);
+        if (_frame != null) _frame.color = FrameColor();
 
         float t = Time.unscaledTime;
         if (_icon != null) _icon.anchoredPosition = _iconBase + new Vector2(0f, Mathf.Sin(t * 1.1f + _phase) * 5f);
@@ -94,7 +87,7 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
             // suit maintenant _accent comme le reste de la carte, plus aucune bascule vers l'or sur cette carte.
             float g = _maxed ? 0.30f : 0.20f;
             _glow.color = new Color(_accent.r, _accent.g, _accent.b,
-                                    (g + 0.12f * Mathf.Sin(t * 1.6f + _phase)) * (0.85f + 0.3f * k));
+                                    (g + 0.12f * Mathf.Sin(t * 1.6f + _phase)) * 0.85f);
         }
         if (_buyGlow != null)
         {
@@ -103,13 +96,12 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
         }
     }
 
-    private Color FrameColor(float hover)
+    private Color FrameColor()
     {
         // CORRIGÉ (2026-10-18) - même changement que le halo ci-dessus : le cadre garde la couleur de la stat
         // même maîtrisée, il ne bascule plus en or.
         Color c = _accent;
         float a = _maxed ? 0.85f : (_affordable ? 0.9f : 0.55f);
-        a = Mathf.Lerp(a, 1f, hover);
         return new Color(c.r, c.g, c.b, a);
     }
 
@@ -127,6 +119,7 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
         // exactement le symptôme des captures (nombre de pastilles visibles = 5 - niveau, soit uniquement les vides).
         // Recalculé ici à chaque appel : plus aucune dépendance à l'ordre Awake/OnEnable entre composants.
         _accent = ReputationStyle.StatAccent(_nodeId);
+        SetupBuyLayout();
         // Titre réécrit à chaque rafraîchissement (et pas seulement à l'Awake) : suit les changements de langue.
         if (_name != null) _name.text = ReputationStyle.StatName(_nodeId);
         MetaProgressionManager meta = MetaProgressionManager.Instance;
@@ -191,23 +184,111 @@ public class ReputationStatCardUI : MonoBehaviour, IPointerEnterHandler, IPointe
             _costText.text = cost.ToString();
             _costText.color = _affordable ? Color.white : ReputationStyle.Warn;
         }
+        if (_costRow != null && !_maxed) LayoutRebuilder.ForceRebuildLayoutImmediate(_costRow);   // largeur du prix connue tout de suite
 
         if (_buy != null)
         {
             _buy.interactable = _affordable;
-            if (_buyImage != null) _buyImage.color = _affordable ? Color.white : new Color(0.62f, 0.56f, 0.54f, _maxed ? 0.7f : 1f);
-            if (_buyLabel != null)
-            {
-                _buyLabel.text = _maxed ? "MAX" : (_affordable ? Loc.T("AMÉLIORER") : Loc.T("ÉCLATS INSUFFISANTS"));
-                _buyLabel.rectTransform.offsetMax = new Vector2(_maxed ? -16f : -150f, 0f);
-                // CORRIGÉ (2026-10-18, retour utilisateur, capture à l'appui : "le texte Max on le voit à peine") -
-                // l'ancien brun (0x6B551E) se fondait dans le bouton teinté gris-brun (0.62, 0.56, 0.54) à 70%
-                // d'opacité. Passé en blanc-crème neutre (Body) : l'or reste réservé au cadre/halo de la carte,
-                // voir le commentaire plus haut sur "trop de doré".
-                _buyLabel.color = _affordable ? ReputationStyle.ButtonText : (_maxed ? ReputationStyle.Body : new Color32(0x8A, 0x2E, 0x24, 0xFF));
-            }
+            // MODIFIÉ (2026-10-29, retour utilisateur : "je veux que le Max soit de la même couleur que quand c'est
+            // indisponible, donc comme équipé ou sélectionné") - MAX = même traitement que « ÉQUIPÉ » (Réputation) et
+            // « SÉLECTIONNÉ » (Personnages) : parchemin grisé par la teinte « désactivé » de leur bouton (gris 0,784 à 50 %,
+            // valeur par défaut de Unity ; celui-ci a une teinte désactivée blanche, d'où la couleur posée ici), texte gris foncé.
+            if (_buyImage != null)
+                _buyImage.color = _affordable ? Color.white : _maxed ? new Color(0.784f, 0.784f, 0.784f, 0.502f) : new Color(0.62f, 0.56f, 0.54f, 1f);
+            if (_buyLabel != null) LayoutBuyLabel();
         }
         _shownLevel = level;
+    }
+
+    // ---- bouton d'achat ------------------------------------------------------------------------------------------
+    // AJOUTÉ (2026-10-29, retour utilisateur sur la carte de Réputation) :
+    //  - le prix (icône d'Éclat + montant) est une rangée automatique calée à droite : un montant plus long l'élargit
+    //    vers la gauche, l'icône suit au lieu d'être recouverte ;
+    //  - « ÉCLATS INSUFFISANTS » : plus petit, rouge vif lisible (même rouge que le prix), calé à gauche avec la même
+    //    marge que le prix à droite ;
+    //  - le bouton grossit au survol depuis son bord DROIT (pivot à droite) : il s'élargit vers la gauche sans sortir
+    //    de la carte.
+    private const float ButtonMargin = 22f;   // marge intérieure du prix à droite, reprise à gauche pour le texte
+    private const float LabelGap = 12f;       // écart entre le texte et le prix
+    private float _labelMaxSize = -1f;
+    private bool _buyLayoutReady;
+
+    // Appelé par Awake ET par Refresh : la page peut rafraîchir la carte avant son Awake (voir le commentaire de
+    // Refresh sur l'ordre d'activation). Une seule fois.
+    private void SetupBuyLayout()
+    {
+        if (_buyLayoutReady) return;
+        _buyLayoutReady = true;
+        if (_buy != null)
+        {
+            RectTransform b = (RectTransform)_buy.transform;
+            Vector2 size = b.rect.size;
+            Vector2 shift = new Vector2((1f - b.pivot.x) * size.x, (0.5f - b.pivot.y) * size.y);
+            b.pivot = new Vector2(1f, 0.5f);
+            b.anchoredPosition += shift;   // même place à l'écran, seul le point d'ancrage du grossissement change
+        }
+
+        if (_costRow != null && _costRow.GetComponent<HorizontalLayoutGroup>() == null)
+        {
+            HorizontalLayoutGroup row = _costRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            row.childAlignment = TextAnchor.MiddleRight;
+            row.spacing = 6f;
+            row.childControlWidth = true;
+            row.childControlHeight = false;
+            row.childForceExpandWidth = false;
+            row.childForceExpandHeight = false;
+            ContentSizeFitter fit = _costRow.gameObject.AddComponent<ContentSizeFitter>();
+            fit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            foreach (RectTransform child in _costRow)
+            {
+                if (!child.TryGetComponent(out LayoutElement le)) le = child.gameObject.AddComponent<LayoutElement>();
+                if (child.GetComponent<Image>() != null) le.preferredWidth = child.sizeDelta.x;   // icône : taille d'origine
+                else child.sizeDelta = new Vector2(child.sizeDelta.x, _costRow.sizeDelta.y);       // montant : hauteur de la rangée
+            }
+            if (_costText != null)
+            {
+                _costText.enableAutoSizing = false;
+                _costText.textWrappingMode = TextWrappingModes.NoWrap;
+                _costText.alignment = TextAlignmentOptions.MidlineLeft;
+                TextBalancer.Ignore(_costText);
+            }
+        }
+        if (_buyLabel != null && _labelMaxSize < 0f) _labelMaxSize = _buyLabel.fontSizeMax;
+    }
+
+    private void LayoutBuyLabel()
+    {
+        RectTransform l = _buyLabel.rectTransform;
+        float priceWidth = _costRow != null && _costRow.gameObject.activeSelf ? _costRow.rect.width : 0f;
+        float right = priceWidth > 0f ? ButtonMargin + priceWidth + LabelGap : 16f;
+
+        if (_maxed)
+        {
+            _buyLabel.text = "MAX";
+            _buyLabel.color = CharacterSelectUI.SelectedLabelColor;
+            _buyLabel.alignment = TextAlignmentOptions.Center;
+            _buyLabel.fontSizeMax = _labelMaxSize;
+            l.offsetMin = new Vector2(16f, l.offsetMin.y);
+            l.offsetMax = new Vector2(-16f, l.offsetMax.y);
+        }
+        else if (_affordable)
+        {
+            _buyLabel.text = Loc.T("AMÉLIORER");
+            _buyLabel.color = ReputationStyle.ButtonText;
+            _buyLabel.alignment = TextAlignmentOptions.Center;
+            _buyLabel.fontSizeMax = _labelMaxSize;
+            l.offsetMin = new Vector2(16f, l.offsetMin.y);
+            l.offsetMax = new Vector2(-right, l.offsetMax.y);
+        }
+        else
+        {
+            _buyLabel.text = Loc.T("ÉCLATS INSUFFISANTS");
+            _buyLabel.color = ReputationStyle.Warn;
+            _buyLabel.alignment = TextAlignmentOptions.MidlineLeft;
+            _buyLabel.fontSizeMax = Mathf.Min(_labelMaxSize, 22f);
+            l.offsetMin = new Vector2(ButtonMargin, l.offsetMin.y);
+            l.offsetMax = new Vector2(-right, l.offsetMax.y);
+        }
     }
 
     // ---- retour d'achat -----------------------------------------------------------------------------------------

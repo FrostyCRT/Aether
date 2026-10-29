@@ -27,6 +27,7 @@ public class RowDef
     public string disabledHint;                 // explication affichée à la place de la description
 
     public GameAction action;                   // Keybind
+    public bool keyColumns;                     // Header : titres des colonnes de touches (Clavier / souris, Manette)
     public bool affectsDisplay;                 // change l'écran : déclenche la confirmation "conserver ?"
 
     public Func<bool> isDefault;                // par défaut : GameSettings.IsDefault(key)
@@ -197,7 +198,7 @@ public static class SettingsSchema
         CategoryDef controls = new CategoryDef { id = "controls", title = "COMMANDES", subtitle = "Clavier, souris et manette" };
         controls.rows.Add(Note("Cliquez sur une touche pour la modifier.   Échap : annuler   •   Retour arrière : effacer."));
         controls.rows.Add(new RowDef { kind = RowKind.Presets, label = "Disposition du clavier", description = "Règle le déplacement et les orbites. Les autres touches ne changent pas" });
-        controls.rows.Add(Header("Déplacement"));
+        RowDef move = Header("Déplacement"); move.keyColumns = true; controls.rows.Add(move);   // titres des colonnes de touches
         controls.rows.Add(Key(GameAction.MoveUp));
         controls.rows.Add(Key(GameAction.MoveDown));
         controls.rows.Add(Key(GameAction.MoveLeft));
@@ -217,6 +218,8 @@ public static class SettingsSchema
         controls.rows.Add(Key(GameAction.Pause));
         controls.rows.Add(Header("Manette"));
         controls.rows.Add(Slider("Zone morte du stick", "Ignore les petits mouvements du stick. À augmenter si le personnage bouge sans action.", GameSettings.PadDeadZone, 0.05f, 0.50f));
+        controls.rows.Add(Toggle("Vibrations", "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", GameSettings.PadRumble));
+        controls.rows.Add(Slider("Intensité des vibrations", "Force des vibrations de la manette.", GameSettings.PadRumbleStrength, 0.20f, 1.00f));
         cats.Add(controls);
 
         // ---------------------------------------------------------------- LANGUE (AJOUTÉ 2026-10-14)

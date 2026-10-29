@@ -141,7 +141,10 @@ public static class TextBalancer
         string text = t.text;
         if (text == s.lastText && Mathf.Abs(width - s.lastWidth) < 0.5f) return;
 
-        string fixedText = ProtectSpaces(text, t.richText);
+        // CORRIGÉ (2026-10-28) - un texte sans retour à la ligne n'a rien à protéger : les balises <nobr> y faisaient
+        // même disparaître certains libellés à taille automatique (titres « Orbites : rapprocher / éloigner » de la
+        // page Commandes, entièrement invisibles).
+        string fixedText = t.textWrappingMode == TextWrappingModes.NoWrap ? text : ProtectSpaces(text, t.richText);
         s.lastText = fixedText;
         s.lastWidth = width;
         // Cas le plus courant (compteurs, chrono, libellés courts) : la génération qui vient d'avoir lieu tient déjà sur
@@ -209,6 +212,16 @@ public static class TextBalancer
             else s.lastText = null;   // équilibré à sa prochaine génération (activation du panneau)
         }
         finally { _busy = false; }
+    }
+
+    // AJOUTÉ (2026-10-29) - texte placé APRÈS coup dans une mise en page qui pilote sa largeur (ex. le prix d'une carte de
+    // Réputation, passé dans une rangée automatique) : son état a pu être mémorisé avant, avec des marges d'équilibrage
+    // qui décalaient le texte. Il n'est plus jamais touché, marges remises à zéro.
+    public static void Ignore(TextMeshProUGUI t)
+    {
+        if (t == null) return;
+        GetState(t).skip = true;
+        t.margin = Vector4.zero;
     }
 
     private static bool IsWidthContentDriven(TextMeshProUGUI t)

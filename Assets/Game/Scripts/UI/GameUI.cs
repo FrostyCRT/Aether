@@ -33,13 +33,15 @@ public class GameUI : MonoBehaviour
     // AJOUTÉ (2026-10-04) - retour utilisateur sur le ramassage d'XP : "pas le côté satisfaisant". La barre
     // sautait instantanément à la nouvelle valeur à chaque gemme ramassée - aucun lien visuel entre "une gemme
     // vient de voler jusqu'au joueur" et "la barre bouge". Remplit maintenant en douceur vers la cible (lissage
-    // exponentiel, indépendant du framerate) + un petit "punch" d'échelle à chaque gain, pour que le ramassage se
-    // ressente jusque dans la barre elle-même.
+    // exponentiel, indépendant du framerate).
+    // MODIFIÉ (2026-10-28, retour utilisateur : "il ne faut pas faire trembler la barre d'xp quand on en prend, parce que
+    // quand on prend plein, ça tremble tout le temps et ça déstabilise" + "la barre horizontale supérieure de la barre
+    // d'xp disparaît et réapparaît") - le petit « punch » d'échelle verticale à chaque gemme est supprimé : relancé à
+    // chaque ramassage, il faisait trembler la barre en continu, et sa hauteur changeante faisait clignoter le fin
+    // liseré du haut. Seul le remplissage progressif reste.
     private float _xpBarTargetValue;
     private float _xpBarDisplayedValue;
-    private float _xpBarPunchTimer = -1f;
     private const float XPBarFillLerpRate = 9f;
-    private const float XPBarPunchDuration = 0.16f;
 
     [Header("HP")]
     [SerializeField] private Slider _hpBar;
@@ -333,6 +335,7 @@ public class GameUI : MonoBehaviour
         GameSettings.Changed += OnUserSettingChanged;
         SettingsPage.InGameClosed += OnSettingsClosed;
         InputBindings.Changed += OnBindingChanged;
+        GameInput.DeviceChanged += RefreshCloneKey;      // manette <-> clavier : la pastille du clone change de libellé
         Loc.Changed += OnLanguageChanged;
     }
 
@@ -341,6 +344,7 @@ public class GameUI : MonoBehaviour
         GameSettings.Changed -= OnUserSettingChanged;
         SettingsPage.InGameClosed -= OnSettingsClosed;
         InputBindings.Changed -= OnBindingChanged;
+        GameInput.DeviceChanged -= RefreshCloneKey;
         Loc.Changed -= OnLanguageChanged;
     }
 
@@ -852,7 +856,7 @@ public class GameUI : MonoBehaviour
     // ce que promet l'invite affichée en bas à droite.
     private static bool ChallengeIntroSkipRequested()
     {
-        return Input.anyKeyDown;
+        return GameInput.AnyDown();
     }
 
     // AJOUTÉ (2026-10-25, retour utilisateur : "en bas à droite pendant cette animation tu mets un message qui dit
@@ -1067,7 +1071,7 @@ public class GameUI : MonoBehaviour
     {
         int mins = Mathf.FloorToInt(seconds / 60f);
         int secs = Mathf.FloorToInt(seconds % 60f);
-        return $"{mins:00}:{secs:00}";
+        return TimeText.Clock(mins, secs);
     }
 
     // AJOUTE - determine le message affiche sur le Game Over : priorite a un
@@ -2434,7 +2438,7 @@ public class GameUI : MonoBehaviour
     private string BuildStatLine(int mins, int secs, int killCount, int level, int bossKills)
     {
         // Choc des titans : ni ennemis ni niveaux, seulement le temps et les titans abattus.
-        if (GameModes.IsTitans) return Loc.F("Survie {0:00}:{1:00}    ·    Titans {2}/3", mins, secs, bossKills);
+        if (GameModes.IsTitans) return TimeText.SpaceColons(Loc.F("Survie {0:00}:{1:00}    ·    Titans {2}/3", mins, secs, bossKills));
 
         string boss;
         if (GameModes.IsEndless) boss = Loc.F("Boss {0}", bossKills);
@@ -2446,7 +2450,7 @@ public class GameUI : MonoBehaviour
         }
         else boss = Loc.F("Boss {0}/{1}", bossKills, 3);
 
-        return Loc.F("Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", mins, secs, killCount, level, boss);
+        return TimeText.SpaceColons(Loc.F("Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", mins, secs, killCount, level, boss));
     }
 
     // Le titre est du texte de scène (CenterCard/Crown/TitleText) : réécrit à CHAQUE affichage pour ne jamais garder
@@ -3451,8 +3455,23 @@ public class GameUI : MonoBehaviour
             _cloneKeyText.fontSizeMin = Mathf.Max(8f, max * 0.4f);
             _cloneKeyText.textWrappingMode = TextWrappingModes.NoWrap;
         }
-        _cloneKeyText.text = GameInput.ShortBindingLabel(GameAction.PhantomClone);
+        // manette (2026-10-28) : icône du bouton à la place du texte (voir PadGlyph)
+        PadButton pad = InputBindings.GetPad(GameAction.PhantomClone);
+        bool glyph = GameInput.UsingGamepad && pad != PadButton.None;
+        if (glyph)
+        {
+            Rect r = _cloneKeyText.rectTransform.rect;
+            float h = Mathf.Min(r.width, r.height);
+            if (h < 8f) h = 32f;
+            if (_cloneGlyph == null) _cloneGlyph = PadGlyph.Create(_cloneKeyText.rectTransform, h);
+            _cloneGlyph.Rect.sizeDelta = new Vector2(h, h);
+            _cloneGlyph.Show(pad, GameInput.PadStyle);
+        }
+        else if (_cloneGlyph != null) _cloneGlyph.gameObject.SetActive(false);
+        _cloneKeyText.text = glyph ? "" : GameInput.ShortBindingLabel(GameAction.PhantomClone);
     }
+
+    private PadGlyph _cloneGlyph;
 
     public void UpdateCloneCooldown(float percent)
     {
@@ -3594,7 +3613,6 @@ public class GameUI : MonoBehaviour
         if (_xpBar != null)
         {
             _xpBarTargetValue = (xpToNextLevel > 0) ? currentXP / xpToNextLevel : 0f;
-            _xpBarPunchTimer = 0f; // relance le petit "punch" a chaque gain - voir LateUpdate
         }
 
         _hudLevel = level;
@@ -3623,8 +3641,6 @@ public class GameUI : MonoBehaviour
 
     private IEnumerator LevelGainRoutine(int fromLevel, int levels, float fraction)
     {
-        _xpBarPunchTimer = -1f;
-        _xpBar.transform.localScale = Vector3.one;
         float start = _xpBarDisplayedValue;
 
         for (int i = 0; i < levels; i++)
@@ -3679,7 +3695,7 @@ public class GameUI : MonoBehaviour
     }
 
     // AJOUTÉ (2026-10-04) - voir le commentaire sur _xpBarTargetValue. Lissage exponentiel (jamais de
-    // Time.deltaTime brut multiplié - indépendant du framerate) + petit punch d'échelle synchronisé.
+    // Time.deltaTime brut multiplié - indépendant du framerate).
     private void UpdateXPBarSmoothing()
     {
         if (_xpBar == null) return;
@@ -3688,19 +3704,6 @@ public class GameUI : MonoBehaviour
         _xpBarDisplayedValue = Mathf.Lerp(_xpBarDisplayedValue, _xpBarTargetValue, 1f - Mathf.Exp(-XPBarFillLerpRate * Time.deltaTime));
         if (Mathf.Abs(_xpBarDisplayedValue - _xpBarTargetValue) < 0.0005f) _xpBarDisplayedValue = _xpBarTargetValue;
         _xpBar.value = _xpBarDisplayedValue;
-
-        if (_xpBarPunchTimer >= 0f)
-        {
-            _xpBarPunchTimer += Time.deltaTime;
-            float p = Mathf.Clamp01(_xpBarPunchTimer / XPBarPunchDuration);
-            float punch = 1f + 0.1f * (1f - p) * Mathf.Sin(p * Mathf.PI); // part a 1, bombe, revient a 1
-            _xpBar.transform.localScale = new Vector3(1f, punch, 1f);
-            if (_xpBarPunchTimer >= XPBarPunchDuration)
-            {
-                _xpBarPunchTimer = -1f;
-                _xpBar.transform.localScale = Vector3.one;
-            }
-        }
     }
 
     public void UpdateHPBar(float currentHP, float maxHP)
@@ -3740,7 +3743,7 @@ public class GameUI : MonoBehaviour
         _lastTimerSecond = total;
         int mins = Mathf.FloorToInt(seconds / 60f);
         int secs = Mathf.FloorToInt(seconds % 60f);
-        _timerText.text = $"{mins:00}:{secs:00}";
+        _timerText.text = TimeText.Clock(mins, secs);
     }
 
     public void ShowBossHP(string bossName)
@@ -3991,7 +3994,7 @@ public class GameUI : MonoBehaviour
             {
                 // CORRIGÉ (2026-10-18, diagnostic complet - audit §9 "la pause affiche Gold : dans une clé
                 // française, un anglicisme") - "Gold" -> "Or", et Loc.Int pour le séparateur de milliers.
-                _pauseStatsText.text = Loc.F("Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", mins, secs, kills, Loc.Int(gold));
+                _pauseStatsText.text = TimeText.SpaceColons(Loc.F("Temps : {0:00}:{1:00}\nEnnemis tués : {2}\nOr : {3}", mins, secs, kills, Loc.Int(gold)));
             }
 
             if (_pauseUpgradesText != null && LevelUpManager.Instance != null)
@@ -4009,4 +4012,6 @@ public class GameUI : MonoBehaviour
         if (_abandonConfirmPanel != null)
             _abandonConfirmPanel.SetActive(show);
     }
+
+    public bool IsAbandonConfirmOpen => _abandonConfirmPanel != null && _abandonConfirmPanel.activeInHierarchy;
 }

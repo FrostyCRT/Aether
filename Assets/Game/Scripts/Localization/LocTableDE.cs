@@ -302,5 +302,14 @@ public static class LocTableDE
         { "Première victoire en Modéré : +{0} éclats", "Erster Sieg auf Mäßig: +{0} Splitter" }, { "Première victoire en Violent : +{0} éclats", "Erster Sieg auf Heftig: +{0} Splitter" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Erster Sieg auf Apokalyptisch: +{0} Splitter" }, { "Victoire en Modéré", "Sieg auf Mäßig" },
         { "Victoire en Violent", "Sieg auf Heftig" }, { "avec {0}", "mit {0}" }, { "Ta partie en cours sera perdue", "Dein aktueller Run geht verloren" },
+        { "Croix", "Kreuz" }, { "Rond", "Kreis" }, { "Carré", "Quadrat" }, { "Triangle", "Dreieck" }, { "Stick", "Stick" },
+        { "Échap : annuler", "Esc: abbrechen" }, { "Appuie sur un bouton de la manette", "Drücke eine Controllertaste" },
+        { "Appuie sur une touche ou un bouton de souris", "Drücke eine Taste oder eine Maustaste" }, { "Stick gauche / croix", "Linker Stick / Steuerkreuz" },
+        { "Navigation + {0}", "Navigieren + {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "„{0}“ war „{1}“ zugewiesen: Die beiden tauschen ihre Tasten („{2}“)" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "„{0}“ war „{1}“ zugewiesen: Die Zuweisung wurde dort entfernt" },
+        { "Vibrations", "Vibration" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Lässt den Controller vibrieren, wenn du getroffen wirst, beim Dash, beim Ultimate und wenn ein Boss fällt." },
+        { "Intensité des vibrations", "Vibrationsstärke" }, { "Force des vibrations de la manette.", "Wie stark der Controller vibriert." },
+        { "Navigation", "Navigieren" }, { "Clavier / souris", "Tastatur / Maus" }, { "Aucune manette détectée : branche-en une", "Kein Controller erkannt: Schließ einen an" },
+        { "Faire défiler", "Scrollen" }, { "Quitter le défilement", "Scrollen beenden" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Erhöht deine maximalen LP um {0} % und stellt alle LP wieder her" },
     };
 }

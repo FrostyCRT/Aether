@@ -301,7 +301,15 @@ public static class LocTablePL
         { "Première victoire en Modéré : +{0} éclats", "Pierwsze zwycięstwo na poziomie Umiarkowany: +{0} odłamków" }, { "Première victoire en Violent : +{0} éclats", "Pierwsze zwycięstwo na poziomie Brutalny: +{0} odłamków" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Pierwsze zwycięstwo na poziomie Apokaliptyczny: +{0} odłamków" },
         { "Victoire en Modéré", "Zwycięstwo na poziomie Umiarkowany" }, { "Victoire en Violent", "Zwycięstwo na poziomie Brutalny" },
-        { "avec {0}", "postać: {0}" }, { "Ta partie en cours sera perdue", "Bieżąca rozgrywka zostanie utracona" },
+        { "avec {0}", "postać: {0}" }, { "Ta partie en cours sera perdue", "Bieżąca rozgrywka zostanie utracona" }, { "Croix", "Krzyżyk" },
+        { "Rond", "Kółko" }, { "Carré", "Kwadrat" }, { "Triangle", "Trójkąt" }, { "Stick", "Gałka" }, { "Échap : annuler", "Esc: anuluj" },
+        { "Appuie sur un bouton de la manette", "Naciśnij przycisk pada" }, { "Appuie sur une touche ou un bouton de souris", "Naciśnij klawisz albo przycisk myszy" },
+        { "Stick gauche / croix", "Lewa gałka / krzyżak" }, { "Navigation + {0}", "Nawigacja + {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "Przycisk „{0}” był przypisany do akcji „{1}”: akcje zamieniają się przyciskami („{2}”)" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "Przycisk „{0}” był przypisany do akcji „{1}”: przypisanie usunięto" },
+        { "Vibrations", "Wibracje" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Pad wibruje przy otrzymanych ciosach, zrywie, użyciu Supermocy i pokonaniu bossa." },
+        { "Intensité des vibrations", "Siła wibracji" }, { "Force des vibrations de la manette.", "Jak mocno wibruje pad." },
+        { "Navigation", "Nawigacja" }, { "Clavier / souris", "Klawiatura / mysz" }, { "Aucune manette détectée : branche-en une", "Nie wykryto pada: podłącz go" },
+        { "Faire défiler", "Przewiń" }, { "Quitter le défilement", "Zakończ przewijanie" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

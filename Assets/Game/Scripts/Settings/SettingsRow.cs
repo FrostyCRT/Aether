@@ -76,6 +76,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private string[] _options;
     private float _knobT = -1f;       // 0 = éteint, 1 = allumé (animé)
     private bool _hover;
+    private PadGlyph _padGlyph;       // icône du bouton de manette (ligne de touche, affichée à la manette)
     //private int _lastCaptureSlot = -1;
 
     // ---- liaison ------------------------------------------------------------------------------------------
@@ -120,12 +121,15 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
         if (def.kind == RowKind.Keybind)
         {
+            EnsurePadColumn();
             for (int s = 0; s < _keyButtons.Length; s++)
             {
                 int slot = s;
                 _keyButtons[s].onClick.RemoveAllListeners();
                 _keyButtons[s].onClick.AddListener(() => _page.BeginCapture(Def.action, slot, this));
             }
+            _padButton.onClick.RemoveAllListeners();
+            _padButton.onClick.AddListener(() => _page.BeginCapture(Def.action, PadSlot, this));
         }
         if (def.kind == RowKind.Presets)
         {
@@ -233,6 +237,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                     _keyTexts[s].color = k == KeyCode.None ? SettingsStyle.Muted : Color.white;
                     _keyBorders[s].color = SettingsStyle.AccentSoft;
                 }
+                RefreshPadColumn();
                 break;
             }
             case RowKind.Swatches:
@@ -416,7 +421,111 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (_keyBorders == null) return;
         for (int s = 0; s < _keyBorders.Length; s++)
             _keyBorders[s].color = (on && s == slot) ? SettingsStyle.Gold : SettingsStyle.AccentSoft;
+        if (_padBorder != null) _padBorder.color = (on && slot == PadSlot) ? SettingsStyle.Gold : SettingsStyle.AccentSoft;
         if (on && slot >= 0 && slot < _keyTexts.Length) _keyTexts[slot].text = "…";
+        else if (on && slot == PadSlot && _padText != null)
+        {
+            _padText.text = "…";
+            if (_padGlyph != null) _padGlyph.gameObject.SetActive(false);
+        }
         else Refresh();
+    }
+
+    // ---- colonne Manette (AJOUTÉ 2026-10-28) -------------------------------------------------------------------
+    // Chaque ligne de touche a 3 colonnes toujours visibles : 2 emplacements clavier / souris + le bouton de manette
+    // (InputBindings.GetPad), modifiable à la souris comme à la manette (clic -> appuyer sur un bouton de la manette).
+    // La colonne est ajoutée en code (copie du 2e bouton du modèle) : pas besoin de reconstruire la page. L'icône suit
+    // la marque de la manette branchée (GameInput.PadStyle, Xbox par défaut). Déplacement et cartes : pas de bouton
+    // de manette (stick / croix, navigation), case grisée.
+    public const int PadSlot = 2;
+    private const float ColWidth = 128f, ColGap = 8f;
+    private Button _padButton;
+    private TextMeshProUGUI _padText;
+    private Image _padBorder;
+
+    private void EnsurePadColumn()
+    {
+        if (_padButton != null) return;
+        _padButton = Instantiate(_keyButtons[_keyButtons.Length - 1], _keyButtons[0].transform.parent);
+        _padButton.name = "KeyPad";
+        _padText = _padButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        Transform border = _padButton.transform.Find("Border");
+        _padBorder = border != null ? border.GetComponent<Image>() : null;
+
+        Button[] cols = { _keyButtons[0], _keyButtons[1], _padButton };
+        for (int i = 0; i < cols.Length; i++)
+        {
+            RectTransform rt = (RectTransform)cols[i].transform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
+            rt.anchoredPosition = new Vector2(i * (ColWidth + ColGap), 0f);
+            rt.sizeDelta = new Vector2(ColWidth, rt.sizeDelta.y);
+            TextMeshProUGUI t = cols[i].GetComponentInChildren<TextMeshProUGUI>(true);
+            if (t != null && !t.enableAutoSizing)
+            {
+                t.fontSizeMax = t.fontSize;
+                t.fontSizeMin = 14f;
+                t.enableAutoSizing = true;   // « Maj gauche », « Flèche droite »... tiennent dans la colonne plus étroite
+            }
+        }
+        RectTransform root = (RectTransform)_keyButtons[0].transform.parent;
+        root.sizeDelta = new Vector2(3f * ColWidth + 2f * ColGap, root.sizeDelta.y);
+    }
+
+    private void RefreshPadColumn()
+    {
+        if (_padButton == null) return;
+        bool bindable = InputBindings.PadBindable(Def.action);
+        PadButton b = InputBindings.GetPad(Def.action);
+        _padButton.interactable = bindable;
+        if (_padBorder != null) _padBorder.color = SettingsStyle.AccentSoft;
+
+        bool glyph = bindable && b != PadButton.None;
+        if (glyph)
+        {
+            if (_padGlyph == null)
+                _padGlyph = PadGlyph.Create(_padButton.transform, ((RectTransform)_padButton.transform).rect.height * 0.78f);
+            _padGlyph.Show(b, GameInput.PadStyle);
+            _padText.text = "";
+        }
+        else
+        {
+            if (_padGlyph != null) _padGlyph.gameObject.SetActive(false);
+            bool card = Def.action == GameAction.Card1 || Def.action == GameAction.Card2 || Def.action == GameAction.Card3;
+            _padText.text = bindable ? "—" : card ? Loc.T("Navigation") : Loc.T("Stick");
+            _padText.color = SettingsStyle.Muted;
+        }
+    }
+
+    // Titres au-dessus des colonnes (« Clavier / souris », « Manette »), posés sur une rubrique de la page Commandes
+    // (RowDef.keyColumns, voir SettingsPage) : mêmes positions que les colonnes des lignes, prises sur ce modèle.
+    public void AddColumnTitles(RectTransform header)
+    {
+        RectTransform keys = (RectTransform)_keysRoot.transform;
+        RectTransform root = new GameObject("ColumnTitles", typeof(RectTransform)).GetComponent<RectTransform>();
+        root.SetParent(header, false);
+        root.anchorMin = root.anchorMax = keys.anchorMin;
+        root.pivot = keys.pivot;
+        root.anchoredPosition = keys.anchoredPosition;
+        root.sizeDelta = new Vector2(3f * ColWidth + 2f * ColGap, keys.sizeDelta.y);
+        ColumnTitle(root, Loc.T("Clavier / souris"), 0f, 2f * ColWidth + ColGap);
+        ColumnTitle(root, Loc.T("Manette"), 2f * (ColWidth + ColGap), ColWidth);
+    }
+
+    private void ColumnTitle(RectTransform parent, string text, float x, float width)
+    {
+        TextMeshProUGUI t = new GameObject("Title", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+        t.text = text;
+        RectTransform rt = t.rectTransform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
+        rt.anchoredPosition = new Vector2(x, 0f);
+        rt.sizeDelta = new Vector2(width, parent.sizeDelta.y);
+        t.font = _label.font;
+        t.fontSharedMaterial = _label.fontSharedMaterial;
+        t.fontSize = 22f;
+        t.color = SettingsStyle.Muted;
+        t.alignment = TextAlignmentOptions.Center;
+        t.textWrappingMode = TextWrappingModes.NoWrap;
+        t.raycastTarget = false;
     }
 }

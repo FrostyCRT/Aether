@@ -91,7 +91,7 @@ public class LoadingScreenController : MonoBehaviour
         bool keyPressed = false;
         while (!keyPressed)
         {
-            if (Input.anyKeyDown)
+            if (GameInput.AnyDown())
                 keyPressed = true;
 
             yield return null;

@@ -306,6 +306,14 @@ public static class LocTableIT
         { "Première victoire en Modéré : +{0} éclats", "Prima vittoria a difficoltà Moderata: +{0} frammenti" }, { "Première victoire en Violent : +{0} éclats", "Prima vittoria a difficoltà Violenta: +{0} frammenti" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Prima vittoria a difficoltà Apocalittica: +{0} frammenti" },
         { "Victoire en Modéré", "Vittoria a difficoltà Moderata" }, { "Victoire en Violent", "Vittoria a difficoltà Violenta" },
-        { "avec {0}", "con {0}" }, { "Ta partie en cours sera perdue", "La partita in corso andrà persa" },
+        { "avec {0}", "con {0}" }, { "Ta partie en cours sera perdue", "La partita in corso andrà persa" }, { "Croix", "Croce" },
+        { "Rond", "Cerchio" }, { "Carré", "Quadrato" }, { "Triangle", "Triangolo" }, { "Stick", "Stick" }, { "Échap : annuler", "Esc: annulla" },
+        { "Appuie sur un bouton de la manette", "Premi un pulsante del controller" }, { "Appuie sur une touche ou un bouton de souris", "Premi un tasto o un pulsante del mouse" },
+        { "Stick gauche / croix", "Stick sinistro / croce direzionale" }, { "Navigation + {0}", "Naviga + {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "«{0}» era usato da «{1}»: le due azioni si scambiano i pulsanti («{2}»)" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "«{0}» era usato da «{1}»: è stato tolto da quell'azione" },
+        { "Vibrations", "Vibrazione" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Fa vibrare il controller quando subisci colpi, con lo scatto, con la Suprema e quando cade un boss." },
+        { "Intensité des vibrations", "Intensità della vibrazione" }, { "Force des vibrations de la manette.", "Quanto forte vibra il controller." },
+        { "Navigation", "Naviga" }, { "Clavier / souris", "Tastiera / mouse" }, { "Aucune manette détectée : branche-en une", "Nessun controller rilevato: collegane uno" },
+        { "Faire défiler", "Scorri" }, { "Quitter le défilement", "Smetti di scorrere" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Aumenta i tuoi PS massimi del {0}% e li ripristina del tutto" },
     };
 }

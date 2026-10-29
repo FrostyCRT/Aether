@@ -80,6 +80,10 @@ public class SettingsPage : MonoBehaviour
     public static event Action InGameClosed;                // levé quand la page (mode partie) se ferme : le menu pause se réaffiche
     public static int ClosedFrame { get; private set; } = -1;
 
+    // AJOUTÉ (2026-10-28, session manette) - une fenêtre (confirmation, capture de touche, liste déroulante) est
+    // ouverte sur cette page : les raccourcis de manette des écrans autour (onglets du menu principal) attendent.
+    public static bool ModalOpen { get; private set; }
+
     // Mettre à vrai pour tester la fenêtre "conserver ?" dans l'éditeur (où l'affichage ne change pas vraiment).
     public static bool AlwaysConfirmDisplay;
 
@@ -91,6 +95,7 @@ public class SettingsPage : MonoBehaviour
 
     // capture d'une touche
     private bool _capturing;
+    private bool _capPad;          // capture d'un bouton de manette (colonne affichée à la manette)
     private GameAction _capAction;
     private int _capSlot;
     private SettingsRow _capRow;
@@ -127,6 +132,7 @@ public class SettingsPage : MonoBehaviour
         GameSettings.Changed += OnAnySettingChanged;
         Loc.Changed += RequestRebuild;
         InputBindings.Changed += OnBindingChanged;
+        GameInput.DeviceChanged += OnDeviceChanged;
 
         if (_inGame) InGameOpen = true;
 
@@ -138,11 +144,13 @@ public class SettingsPage : MonoBehaviour
     {
         GameSettings.Changed -= OnAnySettingChanged;
         InputBindings.Changed -= OnBindingChanged;
+        GameInput.DeviceChanged -= OnDeviceChanged;
         Loc.Changed -= RequestRebuild;
         // fenêtre d'affichage encore ouverte quand on quitte la page : on garde ce que le joueur voit (pas de retour surprise)
         _hasSnapshot = false;
         CancelCapture();
         CloseDialogs();
+        ModalOpen = false;
         GameSettings.Flush();
         InputBindings.Flush();
         if (_inGame) { InGameOpen = false; ClosedFrame = Time.frameCount; InGameClosed?.Invoke(); }
@@ -218,6 +226,14 @@ public class SettingsPage : MonoBehaviour
     private void RefreshRows()
     {
         foreach (SettingsRow r in _rows) if (r != null) r.Refresh();
+    }
+
+    // Manette branchée / changée : les icônes de la colonne Manette suivent sa marque (voir SettingsRow). Pendant une
+    // capture, la ligne en attente garde son « … » : tout est rafraîchi à la fin de la capture.
+    private void OnDeviceChanged()
+    {
+        if (_capturing) return;
+        RefreshRows();
     }
 
     // ---- carrousel -----------------------------------------------------------------------------------------
@@ -300,6 +316,7 @@ public class SettingsPage : MonoBehaviour
                 RectTransform h = Instantiate(_headerTemplate, _content);
                 h.gameObject.SetActive(true);
                 h.GetComponentInChildren<TextMeshProUGUI>().text = def.label;
+                if (def.keyColumns && _rowTemplate != null) _rowTemplate.AddColumnTitles(h);
             }
             else if (def.kind == RowKind.Note)
             {
@@ -401,7 +418,15 @@ public class SettingsPage : MonoBehaviour
 
     private void Update()
     {
+        ModalOpen = DialogOpen || (_dropdown != null && (_dropdown.IsOpen || _dropdown.ClosedFrame == Time.frameCount));
         if (_capturing) { UpdateCapture(); return; }
+
+        // manette (2026-10-28) : B ferme la fenêtre ouverte comme son bouton « Non » / « Annuler »
+        if (GameInput.PadBackDown())
+        {
+            if (_revertOpen) { UndoDisplay(); return; }
+            if (_confirmRoot != null && _confirmRoot.activeSelf) { CloseConfirm(); return; }
+        }
 
         if (_revertOpen)
         {
@@ -414,16 +439,16 @@ public class SettingsPage : MonoBehaviour
         if (DialogOpen) return;
 
         // en partie : Échap (ou la touche Pause) referme la page, sauf si une liste vient de se fermer avec cette même frappe
-        if (_inGame && (Input.GetKeyDown(KeyCode.Escape) || GameInput.Down(GameAction.Pause))
+        if (_inGame && (GameInput.BackDown() || GameInput.Down(GameAction.Pause))
             && !(_dropdown != null && (_dropdown.IsOpen || _dropdown.ClosedFrame == Time.frameCount)))
         {
             gameObject.SetActive(false);
             return;
         }
 
-        // raccourcis : PageHaut / PageBas, gâchettes LB / RB
-        if (Input.GetKeyDown(KeyCode.PageUp) || Input.GetKeyDown(KeyCode.JoystickButton4)) Step(-1);
-        else if (Input.GetKeyDown(KeyCode.PageDown) || Input.GetKeyDown(KeyCode.JoystickButton5)) Step(+1);
+        // raccourcis : PageHaut / PageBas, gâchettes LT / RT (LB / RB changent d'onglet dans le menu principal)
+        if (Input.GetKeyDown(KeyCode.PageUp) || GameInput.PadDown(PadButton.LeftTrigger)) Step(-1);
+        else if (Input.GetKeyDown(KeyCode.PageDown) || GameInput.PadDown(PadButton.RightTrigger)) Step(+1);
     }
 
     // ---- notification d'une ligne ------------------------------------------------------------------------------------
@@ -481,9 +506,13 @@ public class SettingsPage : MonoBehaviour
         _capturing = true;
         _capAction = action; _capSlot = slot; _capRow = row;
         _capFrame = Time.frameCount;
+        _capPad = slot == SettingsRow.PadSlot;   // colonne Manette : on attend un bouton de manette, quel que soit l'appareil qui a cliqué
 
         _captureTitle.text = GameInput.ActionLabel(action).ToUpperInvariant();
-        _captureHint.text = Loc.T("Appuie sur une touche, un bouton de souris ou de manette") + "\n<color=#9C93AE>" + Loc.T("Échap : annuler     Retour arrière : effacer") + "</color>";
+        _captureHint.text = _capPad
+            ? (UnityEngine.InputSystem.Gamepad.current != null ? Loc.T("Appuie sur un bouton de la manette") : Loc.T("Aucune manette détectée : branche-en une"))
+              + "\n<color=#9C93AE>" + Loc.T("Échap : annuler     Retour arrière : effacer") + "</color>"
+            : Loc.T("Appuie sur une touche ou un bouton de souris") + "\n<color=#9C93AE>" + Loc.T("Échap : annuler     Retour arrière : effacer") + "</color>";
         _captureRoot.SetActive(true);
         if (row != null) row.SetCaptureVisual(slot, true);
     }
@@ -501,6 +530,8 @@ public class SettingsPage : MonoBehaviour
     {
         if (Time.frameCount <= _capFrame) return;            // la frappe qui a ouvert la capture ne compte pas
         if (Input.GetMouseButtonDown(0)) { CancelCapture(); return; }
+        if (_capPad) { UpdatePadCapture(); return; }
+        if (GameInput.PadBackDown()) { CancelCapture(); return; }   // joueur à la manette sur une case clavier : B annule
 
         GameInput.Capture c = GameInput.PollCapture(out KeyCode key);
         if (c == GameInput.Capture.None) return;
@@ -532,6 +563,34 @@ public class SettingsPage : MonoBehaviour
         {
             Toast(Loc.F("« {0} » : {1}", GameInput.ActionLabel(action), GameInput.KeyLabel(key)));
         }
+        RefreshRows();
+    }
+
+    // AJOUTÉ (2026-10-28, session manette) - un bouton de manette par action (InputBindings.RebindPad) ; Échap annule,
+    // Retour arrière / Suppr vide la case (l'action n'a alors plus de bouton de manette).
+    private void UpdatePadCapture()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) { CancelCapture(); return; }
+        if (Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Delete))
+        {
+            InputBindings.RebindPad(_capAction, PadButton.None);
+            CancelCapture();
+            RefreshRows();
+            return;
+        }
+        if (!GameInput.PollPadCapture(out PadButton button)) return;
+
+        GameAction action = _capAction;
+        PadButton previous = InputBindings.GetPad(action);
+        GameAction? displaced = InputBindings.RebindPad(action, button);
+        CancelCapture();
+
+        if (displaced.HasValue && previous != PadButton.None)
+            Toast(Loc.F("« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", GameInput.PadLabel(button), GameInput.ActionLabel(displaced.Value), GameInput.PadLabel(previous)));
+        else if (displaced.HasValue)
+            Toast(Loc.F("« {0} » était utilisé par « {1} » : il lui est retiré", GameInput.PadLabel(button), GameInput.ActionLabel(displaced.Value)));
+        else
+            Toast(Loc.F("« {0} » : {1}", GameInput.ActionLabel(action), GameInput.PadLabel(button)));
         RefreshRows();
     }
 

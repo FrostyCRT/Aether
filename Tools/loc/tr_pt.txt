@@ -654,3 +654,25 @@
 616| Vitória no Violento
 617| com {0}
 618| Sua partida atual será perdida
+619| X
+620| Círculo
+621| Quadrado
+622| Triângulo
+623| Analógico
+624| Esc: cancelar
+625| Pressione um botão do controle
+626| Pressione uma tecla ou um botão do mouse
+627| Analógico esquerdo / direcional
+628| Navegar + {0}
+629| “{0}” estava sendo usado por “{1}”: as duas ações trocam de botão (“{2}”)
+630| “{0}” estava sendo usado por “{1}”: ele foi removido dessa ação
+631| Vibração
+632| Faz o controle vibrar ao receber golpes, ao usar o dash, ao usar a Suprema e quando um chefe cai.
+633| Intensidade da vibração
+634| Força da vibração do controle.
+635| Navegar
+636| Teclado / mouse
+637| Nenhum controle detectado: conecte um
+638| Rolar
+639| Parar de rolar
+640| Aumenta sua vida máxima em {0}% e a restaura por completo

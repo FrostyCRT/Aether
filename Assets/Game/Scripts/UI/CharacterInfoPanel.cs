@@ -125,6 +125,9 @@ public class CharacterInfoPanel : MonoBehaviour
         {
             _treeButton.onClick.RemoveAllListeners();
             _treeButton.onClick.AddListener(OpenSkillTree);
+            // toute la zone de l'arbre est le bouton : agrandie au survol, elle débordait (retour utilisateur) ;
+            // son fond qui s'éclaircit au survol suffit
+            ButtonHoverFX.Exclude(_treeButton);
         }
     }
 
@@ -321,7 +324,7 @@ public class CharacterInfoPanel : MonoBehaviour
         // Jamais de tiret vide : un vrai 0 / --:-- grisé se lit comme un compteur qui n'a pas
         // encore bougé, pas comme une donnée manquante.
         SetRecord(_recordValues[0], runs.ToString(), runs > 0);
-        SetRecord(_recordValues[1], best > 0f ? $"{Mathf.FloorToInt(best / 60f):00}:{Mathf.FloorToInt(best % 60f):00}" : "--:--", best > 0f);
+        SetRecord(_recordValues[1], best > 0f ? TimeText.Clock(Mathf.FloorToInt(best / 60f), Mathf.FloorToInt(best % 60f)) : TimeText.Empty, best > 0f);
         SetRecord(_recordValues[2], wins.ToString(), wins > 0);
     }
 

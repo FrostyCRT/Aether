@@ -391,6 +391,24 @@ public static class LocTableEN
         // AJOUTÉ (2026-10-28) - confirmation de fermeture du jeu (Alt+F4, croix de la fenêtre) pendant une partie (QuitConfirm).
         { "Ta partie en cours sera perdue", "Your current run will be lost" },
 
+        // AJOUTÉ (2026-10-28) - manette (GameInput.PadLabel, page Commandes, légende du HUD).
+        { "Croix", "Cross" }, { "Rond", "Circle" }, { "Carré", "Square" }, { "Triangle", "Triangle" }, { "Stick", "Stick" },
+        { "Échap : annuler", "Esc: cancel" },
+        { "Appuie sur un bouton de la manette", "Press a gamepad button" },
+        { "Appuie sur une touche ou un bouton de souris", "Press a key or a mouse button" },
+        { "Stick gauche / croix", "Left stick / D-pad" },
+        { "Navigation + {0}", "Navigate + {0}" },
+        { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "\"{0}\" was used by \"{1}\": they swap buttons (\"{2}\")" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "\"{0}\" was used by \"{1}\": it has been removed from it" },
+        { "Vibrations", "Vibration" },
+        { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Makes the gamepad vibrate when you take hits, dash, use your ultimate and when a boss falls." },
+        { "Intensité des vibrations", "Vibration strength" },
+        { "Force des vibrations de la manette.", "How strongly the gamepad vibrates." },
+        { "Navigation", "Navigate" }, { "Clavier / souris", "Keyboard / mouse" },
+        { "Aucune manette détectée : branche-en une", "No gamepad detected: plug one in" },
+        { "Faire défiler", "Scroll" }, { "Quitter le défilement", "Stop scrolling" },
+        { "Augmente tes PV max de {0}% et restaure tous tes PV", "Increases your max HP by {0}% and fully restores your HP" },
+
         // ==== SECTIONS SUIVANTES ====
     };
 }

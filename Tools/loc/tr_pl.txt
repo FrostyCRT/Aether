@@ -662,3 +662,25 @@
 616| Zwycięstwo na poziomie Brutalny
 617| postać: {0}
 618| Bieżąca rozgrywka zostanie utracona
+619| Krzyżyk
+620| Kółko
+621| Kwadrat
+622| Trójkąt
+623| Gałka
+624| Esc: anuluj
+625| Naciśnij przycisk pada
+626| Naciśnij klawisz albo przycisk myszy
+627| Lewa gałka / krzyżak
+628| Nawigacja + {0}
+629| Przycisk „{0}” był przypisany do akcji „{1}”: akcje zamieniają się przyciskami („{2}”)
+630| Przycisk „{0}” był przypisany do akcji „{1}”: przypisanie usunięto
+631| Wibracje
+632| Pad wibruje przy otrzymanych ciosach, zrywie, użyciu Supermocy i pokonaniu bossa.
+633| Siła wibracji
+634| Jak mocno wibruje pad.
+635| Nawigacja
+636| Klawiatura / mysz
+637| Nie wykryto pada: podłącz go
+638| Przewiń
+639| Zakończ przewijanie
+640| Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca

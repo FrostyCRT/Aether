@@ -646,6 +646,7 @@ public class BossBase : MonoBehaviour
 
         if (!IsSummoned)
         {
+            PadRumble.Pulse(0.9f, 0.5f, 0.6f);   // manette : le boss tombe
             GameUI.Instance.HideBossHP();   // (Choc des titans : ne masque la barre qu'à la mort du dernier titan, voir GameUI)
             WaveManager.Instance.OnBossDied();
 

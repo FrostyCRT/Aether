@@ -123,7 +123,7 @@ public class GameModeSelector : MonoBehaviour
     private static string Clock(float seconds)
     {
         int total = Mathf.FloorToInt(seconds);
-        return (total / 60).ToString("00") + ":" + (total % 60).ToString("00");
+        return TimeText.Clock(total / 60, total % 60);
     }
 
     private void RefreshRecord(GameMode mode, SaveData data, bool unlocked)

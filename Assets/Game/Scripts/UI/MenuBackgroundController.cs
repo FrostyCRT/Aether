@@ -12,13 +12,22 @@ using UnityEngine.UI;
 //   l'illustration (1920 x 1280), propres à chaque fond (les personnages n'ont pas les mêmes bannières / capes).
 // - Expose Gust (rafale, 0..1) : les feuilles (MenuLeavesFX) l'utilisent aussi, pour que tout réagisse ensemble.
 //
+// - AJOUTÉ (2026-10-29, demande utilisateur) - l'heure du décor suit la difficulté choisie : Modéré = jour, Violent =
+//   crépuscule, Apocalyptique = nuit (3 illustrations par personnage, même cadrage). Changer de difficulté ou de
+//   personnage fait apparaître le nouveau fond en fondu PAR-DESSUS l'ancien (aucun creux sombre pendant le fondu).
+//   Les images de la scène (_layers) servent de modèles : 6 emplacements au total, chacun reçoit le fond demandé.
+//
 // Respecte Paramètres > Graphismes > Effets d'ambiance des menus : désactivé = image immobile.
 [RequireComponent(typeof(RectTransform))]
 public class MenuBackgroundController : MonoBehaviour
 {
     public const float ArtWidth = 1920f, ArtHeight = 1280f;
 
-    [SerializeField] private Image[] _layers = new Image[3];          // Aether, Kael, Lyra
+    [SerializeField] private Image[] _layers = new Image[3];          // Aether, Kael, Lyra (modèles des emplacements)
+    [Header("Fonds selon la difficulté (Aether, Kael, Lyra)")]
+    [SerializeField] private Sprite[] _day = new Sprite[3];           // Modéré
+    [SerializeField] private Sprite[] _dusk = new Sprite[3];          // Violent
+    [SerializeField] private Sprite[] _night = new Sprite[3];         // Apocalyptique
     [SerializeField] private Shader _windShader;
     [SerializeField] private float _fadeSeconds = 0.9f;
     [Tooltip("Part du rognage vertical retirée EN BAS (0 = on garde tout le bas de l'image, 1 = tout le haut).")]
@@ -47,7 +56,8 @@ public class MenuBackgroundController : MonoBehaviour
     // propres à chaque personnage : [0] Aether, [1] Kael, [2] Lyra
     private static readonly Zone[][] PerCharacter =
     {
-        new[] { new Zone(575f, 1070f, 80f, 60f, 4f, 1.5f, 1.7f, 1.2f) },                                             // cape d'Aether
+        // MODIFIÉ (2026-10-29, fond MenuAetherV2 : Aether plus petit et plus à gauche) - zone recalée sur le pan de cape
+        new[] { new Zone(370f, 1050f, 55f, 45f, 3f, 1.2f, 1.7f, 1.2f) },                                             // cape d'Aether
         new[] { new Zone(495f, 955f, 45f, 62f, 6f, 2f, 2.0f, 1.5f), new Zone(235f, 880f, 45f, 40f, 2f, 1f, 1.4f, 1.0f) },   // bannière + écharpe de Kael
         new[] { new Zone(495f, 950f, 45f, 62f, 6f, 2f, 2.0f, 1.5f) },                                              // bannière (Lyra reste immobile)
     };
@@ -66,11 +76,16 @@ public class MenuBackgroundController : MonoBehaviour
     private static readonly int GustId = Shader.PropertyToID("_Gust");
     private static readonly int SwayId = Shader.PropertyToID("_Sway");
 
+    private const int SlotCount = 6;
+    private readonly System.Collections.Generic.List<Transform> _front = new System.Collections.Generic.List<Transform>();
+
     private RectTransform _rect;
-    private readonly float[] _alpha = new float[3];
-    private readonly Material[] _mats = new Material[3];
+    private Image[] _slots;
+    private Material[] _mats;
+    private float[] _alpha;
+    private int[] _slotKey;            // fond affiché par chaque emplacement : personnage * 3 + difficulté (-1 = aucun)
+    private int _currentKey = -1;
     private Vector2 _lastSize;
-    private int _current = -1;
     private bool _dirtyLayout = true;
 
     // Rafale courante (0..1), lue par MenuLeavesFX.
@@ -97,33 +112,51 @@ public class MenuBackgroundController : MonoBehaviour
     private void Awake()
     {
         _rect = (RectTransform)transform;
-        for (int i = 0; i < _layers.Length; i++)
+
+        // emplacements : les 3 images de la scène + 3 copies (un fondu peut croiser deux fonds du même personnage)
+        Image model = null;
+        foreach (Image l in _layers) if (l != null) { model = l; break; }
+        _slots = new Image[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
         {
-            if (_layers[i] == null) continue;
-            Material m = _windShader != null ? new Material(_windShader) : null;
-            _mats[i] = m;
-            if (m != null)
+            Image img = i < _layers.Length ? _layers[i] : null;
+            if (img == null && model != null)
             {
-                _layers[i].material = m;
-                ApplyZones(m, i);
+                img = Instantiate(model, model.transform.parent);
+                img.name = "Layer_Slot" + i;
             }
-            _alpha[i] = 0f;
+            _slots[i] = img;
+        }
+        _mats = new Material[SlotCount];
+        _alpha = new float[SlotCount];
+        _slotKey = new int[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
+        {
+            _slotKey[i] = -1;
+            if (_slots[i] == null) continue;
+            if (_windShader != null)
+            {
+                _mats[i] = new Material(_windShader);
+                _slots[i].material = _mats[i];
+            }
             SetLayerAlpha(i, 0f);
+        }
+        // les images de la scène gardent leur fond d'origine (crépuscule), utilisé si un fond manque
+        for (int c = 0; c < 3; c++)
+        {
+            if (c < _layers.Length && _layers[c] != null && _dusk[c] == null) _dusk[c] = _layers[c].sprite;
         }
     }
 
     private void OnEnable()
     {
-        int wanted = SelectedIndex();
-        // 1re ouverture : instantané. Ouvertures suivantes : fondu si le personnage a changé.
-        if (_current < 0)
+        // 1re ouverture : instantané. Ouvertures suivantes : fondu si le personnage ou la difficulté a changé.
+        if (_currentKey < 0)
         {
-            _current = wanted;
-            for (int i = 0; i < _layers.Length; i++) { _alpha[i] = i == wanted ? 1f : 0f; SetLayerAlpha(i, _alpha[i]); }
-        }
-        else
-        {
-            _current = wanted;
+            int key = WantedKey();
+            int slot = Assign(key);
+            for (int i = 0; i < SlotCount; i++) { _alpha[i] = i == slot ? 1f : 0f; SetLayerAlpha(i, _alpha[i]); }
+            _currentKey = key;
         }
         _dirtyLayout = true;
     }
@@ -134,20 +167,65 @@ public class MenuBackgroundController : MonoBehaviour
         return meta != null ? Mathf.Clamp(meta.GetSelectedCharacterIndex(), 0, 2) : 0;
     }
 
+    private static int WantedKey() => SelectedIndex() * 3 + Mathf.Clamp((int)DifficultyTiers.Current, 0, 2);
+
+    private Sprite SpriteFor(int key)
+    {
+        int c = key / 3, tier = key % 3;
+        Sprite[] set = tier == 0 ? _day : tier == 1 ? _dusk : _night;
+        Sprite s = set != null && c < set.Length ? set[c] : null;
+        return s != null ? s : (_dusk != null && c < _dusk.Length ? _dusk[c] : null);
+    }
+
+    // Emplacement qui affiche `key` ; à défaut, le plus effacé reçoit ce fond et passe au-dessus des autres.
+    private int Assign(int key)
+    {
+        int best = -1;
+        for (int i = 0; i < SlotCount; i++)
+        {
+            if (_slots[i] == null) continue;
+            if (_slotKey[i] == key) return i;
+            if (best < 0 || _alpha[i] < _alpha[best]) best = i;
+        }
+        if (best < 0) return -1;
+        _slotKey[best] = key;
+        _slots[best].sprite = SpriteFor(key);
+        if (_mats[best] != null) ApplyZones(_mats[best], key / 3);
+        _slots[best].transform.SetAsLastSibling();
+        // les éléments posés sur le décor (feuilles...) restent devant les fonds
+        _front.Clear();
+        foreach (Transform child in transform)
+            if (!child.TryGetComponent(out Image img) || System.Array.IndexOf(_slots, img) < 0) _front.Add(child);
+        foreach (Transform child in _front) child.SetAsLastSibling();
+        _dirtyLayout = true;
+        return best;
+    }
+
     private void Update()
     {
         float dt = Time.unscaledDeltaTime;
         float t = Time.unscaledTime;
 
-        // ---- fond du personnage (fondu enchaîné) ----
-        int wanted = SelectedIndex();
-        if (wanted != _current) _current = wanted;
-        for (int i = 0; i < _layers.Length; i++)
+        // ---- fond du personnage et de la difficulté : le nouveau apparaît en fondu PAR-DESSUS l'ancien ----
+        int wanted = WantedKey();
+        int top = -1;
+        for (int i = 0; i < SlotCount; i++) if (_slotKey[i] == wanted && _slots[i] != null) top = i;
+        if (wanted != _currentKey || top < 0)
         {
-            if (_layers[i] == null) continue;
-            float target = i == _current ? 1f : 0f;
-            _alpha[i] = Mathf.MoveTowards(_alpha[i], target, dt / Mathf.Max(0.05f, _fadeSeconds));
-            SetLayerAlpha(i, _alpha[i]);
+            _currentKey = wanted;
+            if (top < 0) top = Assign(wanted);
+            else _slots[top].transform.SetAsLastSibling();
+        }
+        if (top >= 0)
+        {
+            _alpha[top] = Mathf.MoveTowards(_alpha[top], 1f, dt / Mathf.Max(0.05f, _fadeSeconds));
+            SetLayerAlpha(top, _alpha[top]);
+            bool covered = _alpha[top] >= 1f;   // le nouveau fond couvre tout : les autres peuvent disparaître
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (i == top || _slots[i] == null || _alpha[i] <= 0f) continue;
+                if (covered) { _alpha[i] = 0f; SetLayerAlpha(i, 0f); }
+            }
         }
 
         // ---- cadrage « cover » quand la taille de la page change ----
@@ -156,10 +234,10 @@ public class MenuBackgroundController : MonoBehaviour
             _lastSize = _rect.rect.size;
             _dirtyLayout = false;
             Rect art = ArtRect();
-            for (int i = 0; i < _layers.Length; i++)
+            for (int i = 0; i < SlotCount; i++)
             {
-                if (_layers[i] == null) continue;
-                RectTransform lr = _layers[i].rectTransform;
+                if (_slots[i] == null) continue;
+                RectTransform lr = _slots[i].rectTransform;
                 lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
                 lr.sizeDelta = art.size;
                 lr.anchoredPosition = art.center;
@@ -182,7 +260,7 @@ public class MenuBackgroundController : MonoBehaviour
 
     private void SetLayerAlpha(int i, float a)
     {
-        Image img = _layers[i];
+        Image img = _slots[i];
         if (img == null) return;
         Color c = img.color; c.a = a; img.color = c;
         if (img.enabled != a > 0.001f) img.enabled = a > 0.001f;

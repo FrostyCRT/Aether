@@ -19,6 +19,8 @@ public class HudKeyLegend : MonoBehaviour
         public RectTransform cap;
         public RectTransform root;
         public Func<bool> available;   // null = toujours affichée
+        public Image fill, frame;
+        public readonly List<PadGlyph> glyphs = new List<PadGlyph>();   // icônes de manette (créées à la demande)
     }
 
     private readonly List<Row> _rows = new List<Row>();
@@ -130,7 +132,7 @@ public class HudKeyLegend : MonoBehaviour
         lrt.pivot = new Vector2(0f, 0.5f);
         lrt.sizeDelta = new Vector2(200f, RowHeight);
 
-        _rows.Add(new Row { actions = actions, label = label, keyText = keyText, cap = capRt, root = rowRt, available = available });
+        _rows.Add(new Row { actions = actions, label = label, keyText = keyText, cap = capRt, root = rowRt, available = available, fill = fill, frame = frame });
     }
 
     private TextMeshProUGUI NewText(string name, Transform parent, float size, Color color, TextAlignmentOptions align, float outline)
@@ -202,11 +204,15 @@ public class HudKeyLegend : MonoBehaviour
     {
         foreach (var r in _rows)
         {
+            if (GameInput.UsingGamepad && ShowGlyphs(r)) continue;
+            SetCapVisible(r, true);
+            foreach (PadGlyph g in r.glyphs) g.gameObject.SetActive(false);
+
             string txt = "";
             foreach (var a in r.actions)
             {
                 string k = GameInput.ShortBindingLabel(a);
-                if (string.IsNullOrEmpty(k)) continue;
+                if (string.IsNullOrEmpty(k) || txt == k || txt.EndsWith(" / " + k)) continue;   // manette : « Stick » une seule fois
                 txt += (txt.Length > 0 ? " / " : "") + k;
             }
             if (txt.Length == 0) txt = "—";
@@ -220,6 +226,45 @@ public class HudKeyLegend : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-10-28, session manette) - à la manette, la pastille laisse place aux icônes des boutons (voir
+    // PadGlyph), côte à côte (orbites : LB puis RB). Seulement si chaque action de la ligne a un bouton de manette.
+    private const float GlyphGap = 6f;
+
+    private bool ShowGlyphs(Row r)
+    {
+        foreach (GameAction a in r.actions)
+            if (InputBindings.GetPad(a) == PadButton.None) return false;
+
+        while (r.glyphs.Count < r.actions.Length)
+        {
+            PadGlyph g = PadGlyph.Create(r.cap, RowHeight - 4f);
+            g.Rect.anchorMin = g.Rect.anchorMax = g.Rect.pivot = new Vector2(0f, 0.5f);
+            r.glyphs.Add(g);
+        }
+        SetCapVisible(r, false);
+        float x = 0f;
+        for (int i = 0; i < r.glyphs.Count; i++)
+        {
+            PadGlyph g = r.glyphs[i];
+            if (i >= r.actions.Length) { g.gameObject.SetActive(false); continue; }
+            float w = g.Show(InputBindings.GetPad(r.actions[i]), GameInput.PadStyle);
+            g.Rect.anchoredPosition = new Vector2(x, 0f);
+            x += w + GlyphGap;
+        }
+        float total = Mathf.Max(0f, x - GlyphGap);
+        r.cap.sizeDelta = new Vector2(total, RowHeight);
+        var label = r.cap.parent.Find("Label") as RectTransform;
+        if (label != null) label.anchoredPosition = new Vector2(total + LabelGap, 0f);
+        return true;
+    }
+
+    private static void SetCapVisible(Row r, bool on)
+    {
+        if (r.fill != null) r.fill.enabled = on;
+        if (r.frame != null) r.frame.enabled = on;
+        r.keyText.enabled = on;
+    }
+
     private void ApplyVisibility()
     {
         if (_content != null) _content.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowKeyLegend));
@@ -228,6 +273,7 @@ public class HudKeyLegend : MonoBehaviour
     private void OnEnable()
     {
         InputBindings.Changed += OnBindingChanged;
+        GameInput.DeviceChanged += Refresh;               // manette <-> clavier : les pastilles changent de libellé
         GameSettings.Changed += OnSettingChanged;
         ApplyVisibility();
         Refresh();
@@ -236,6 +282,7 @@ public class HudKeyLegend : MonoBehaviour
     private void OnDisable()
     {
         InputBindings.Changed -= OnBindingChanged;
+        GameInput.DeviceChanged -= Refresh;
         GameSettings.Changed -= OnSettingChanged;
     }
 

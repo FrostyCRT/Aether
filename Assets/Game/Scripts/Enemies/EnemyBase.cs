@@ -306,6 +306,7 @@ public class EnemyBase : MonoBehaviour
         _currentHealth = _maxHealth * _healthMultiplier + _bonusHealth;
         _nextContactHitTime = 0f;
         _isDead = false; // nouvelle vie à la sortie du pool (voir TakeDamage/Die)
+        Life++;
         _speedMultiplier = 1f;
         _speedMultiplierTarget = 1f;
 
@@ -655,6 +656,12 @@ public class EnemyBase : MonoBehaviour
     public static bool DebugInvincible = false;
 
     private bool _isDead;
+
+    // AJOUTÉ (2026-10-28) - numéro de vie, +1 à chaque sortie du pool : un effet qui garde une référence vers un ennemi
+    // pendant un moment (saut de la Chaîne de foudre) vérifie qu'il frappe toujours LE MÊME ennemi, et non l'objet
+    // recyclé entre-temps en un nouvel ennemi apparu ailleurs.
+    public int Life { get; private set; }
+    public bool IsDead => _isDead;
 
     public void TakeDamage(float damage, Color color = default, bool fromNova = false)
     {

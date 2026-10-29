@@ -262,5 +262,13 @@ public static class LocTableKO
         { "Première victoire en Modéré : +{0} éclats", "보통 난이도 첫 승리： 파편 +{0}" }, { "Première victoire en Violent : +{0} éclats", "격렬 난이도 첫 승리： 파편 +{0}" },
         { "Première victoire en Apocalyptique : +{0} éclats", "종말 난이도 첫 승리： 파편 +{0}" }, { "Victoire en Modéré", "보통 난이도 승리" },
         { "Victoire en Violent", "격렬 난이도 승리" }, { "avec {0}", "캐릭터： {0}" }, { "Ta partie en cours sera perdue", "진행 중인 게임이 사라집니다" },
+        { "Croix", "엑스" }, { "Rond", "동그라미" }, { "Carré", "네모" }, { "Triangle", "세모" }, { "Stick", "스틱" }, { "Échap : annuler", "Esc: 취소" },
+        { "Appuie sur un bouton de la manette", "게임패드 버튼을 누르세요" }, { "Appuie sur une touche ou un bouton de souris", "키 또는 마우스 버튼을 누르세요" },
+        { "Stick gauche / croix", "왼쪽 스틱 / 방향 패드" }, { "Navigation + {0}", "이동 ＋ {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "{0} 버튼은 {1}에 사용 중이었습니다． 두 동작의 버튼을 맞바꿨습니다（{2}）" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "{0} 버튼은 {1}에 사용 중이었습니다． 해당 할당을 해제했습니다" }, { "Vibrations", "진동" },
+        { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "피격， 대시， 궁극기 사용， 보스 처치 때 게임패드가 진동합니다．" },
+        { "Intensité des vibrations", "진동 세기" }, { "Force des vibrations de la manette.", "게임패드 진동의 세기입니다．" }, { "Navigation", "이동" },
+        { "Clavier / souris", "키보드 / 마우스" }, { "Aucune manette détectée : branche-en une", "게임패드가 감지되지 않았습니다． 연결해 주세요" },
+        { "Faire défiler", "스크롤" }, { "Quitter le défilement", "스크롤 종료" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "최대 HP가 {0}% 증가하고 HP를 모두 회복합니다" },
     };
 }

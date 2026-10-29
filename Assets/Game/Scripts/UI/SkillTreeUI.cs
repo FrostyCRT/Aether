@@ -160,7 +160,7 @@ public class SkillTreeUI : MonoBehaviour
         _tabWasVisible = visible;
         if (!visible) return;
 
-        if (_isPanelOpen && Input.GetKeyDown(KeyCode.Escape)) ClosePanel();
+        if (_isPanelOpen && GameInput.BackDown()) ClosePanel();
 
         AnimateGold();
         AnimatePanelIn();

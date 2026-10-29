@@ -375,6 +375,7 @@ public class PlayerController : MonoBehaviour
 
     private void StartDash(Vector3 direction)
     {
+        PadRumble.Pulse(0.12f, 0.25f, 0.08f);   // manette : petit coup sec au dash
         _dashDirection = direction.normalized;
         _isDashing = true;
         _isInvincible = true;

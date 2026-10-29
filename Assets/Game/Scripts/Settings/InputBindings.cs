@@ -27,9 +27,12 @@ public static class InputBindings
     // Ordre d'affichage dans la page Commandes.
     public static readonly GameAction[] All = (GameAction[])Enum.GetValues(typeof(GameAction));
 
-    // ---- défauts (= comportement d'origine du jeu, plus quelques boutons de manette) ----------------------
-    // Manette : numéros "Xbox" (0 = A, 1 = B, 2 = X, 3 = Y, 7 = Menu). Unity legacy numérote autrement sur
-    // PlayStation : le joueur peut les reprendre dans la page Commandes (les boutons y sont détectés à l'appui).
+    // ---- défauts (= comportement d'origine du jeu) -----------------------------------------------------------
+    // MODIFIÉ (2026-10-28, session manette) - les 2 emplacements sont maintenant réservés au clavier / à la souris :
+    // la manette a son propre emplacement (PadButton, voir plus bas), lu par le package Input System, qui reconnaît
+    // les boutons de la même façon sur Xbox, PlayStation et Switch (l'ancien système numérotait JoystickButtonN
+    // différemment selon la marque). Les anciens défauts manette (JoystickButton0/1/2/7) sont devenus Espace (dash) ou
+    // vides ; une touche JoystickButton encore enregistrée est ignorée au chargement.
     //
     // MODIFIÉ (2026-10-14, demande utilisateur) : la disposition par défaut suit la langue de Windows - Windows en
     // français -> AZERTY (ZQSD, orbites A/E), sinon QWERTY (WASD, orbites Q/E). Seuls le déplacement et les orbites
@@ -56,15 +59,15 @@ public static class InputBindings
         { GameAction.MoveDown,     new[] { KeyCode.S,          KeyCode.DownArrow } },
         { GameAction.MoveLeft,     new[] { KeyCode.Q,          KeyCode.LeftArrow } },
         { GameAction.MoveRight,    new[] { KeyCode.D,          KeyCode.RightArrow } },
-        { GameAction.Dash,         new[] { KeyCode.LeftShift,  KeyCode.JoystickButton0 } },
-        { GameAction.Ultimate,     new[] { KeyCode.F,          KeyCode.JoystickButton2 } },
-        { GameAction.PhantomClone, new[] { KeyCode.C,          KeyCode.JoystickButton1 } },
+        { GameAction.Dash,         new[] { KeyCode.LeftShift,  KeyCode.Space } },
+        { GameAction.Ultimate,     new[] { KeyCode.F,          KeyCode.None } },
+        { GameAction.PhantomClone, new[] { KeyCode.C,          KeyCode.None } },
         { GameAction.Card1,        new[] { KeyCode.Alpha1,     KeyCode.Keypad1 } },
         { GameAction.Card2,        new[] { KeyCode.Alpha2,     KeyCode.Keypad2 } },
         { GameAction.Card3,        new[] { KeyCode.Alpha3,     KeyCode.Keypad3 } },
         { GameAction.OrbitShrink,  new[] { KeyCode.A,          KeyCode.None } },
         { GameAction.OrbitGrow,    new[] { KeyCode.E,          KeyCode.None } },
-        { GameAction.Pause,        new[] { KeyCode.Escape,     KeyCode.JoystickButton7 } },
+        { GameAction.Pause,        new[] { KeyCode.Escape,     KeyCode.None } },
     };
 
     // Déclaré APRÈS AzertyDefaults / PresetActionsStatic : les initialiseurs statiques s'exécutent dans l'ordre du fichier.
@@ -115,6 +118,7 @@ public static class InputBindings
 
     // ---- état ----------------------------------------------------------------------------------------------
     private static KeyCode[][] _current;      // [action][slot], chargé paresseusement
+    private static readonly PadButton[] _pad = new PadButton[All.Length];   // emplacement manette, chargé avec _current
     public static event Action<GameAction> Changed;
 
     private static string PrefKey(GameAction a, int slot) => "bind_" + a + "_" + slot;
@@ -132,10 +136,14 @@ public static class InputBindings
                 string k = PrefKey(a, s);
                 // absent = défaut ; présent (même 0) = choix explicite du joueur ("effacé" = None)
                 v[s] = PlayerPrefs.HasKey(k) ? (KeyCode)PlayerPrefs.GetInt(k) : d[s];
+                if (IsJoystickKey(v[s])) v[s] = KeyCode.None;   // ancien bouton de manette : remplacé par l'emplacement manette
             }
             _current[(int)a] = v;
+            _pad[(int)a] = PlayerPrefs.HasKey(PadPrefKey(a)) ? (PadButton)PlayerPrefs.GetInt(PadPrefKey(a)) : PadDefaults[a];
         }
     }
+
+    public static bool IsJoystickKey(KeyCode k) => k >= KeyCode.JoystickButton0 && k <= KeyCode.Joystick8Button19;
 
     public static KeyCode Get(GameAction a, int slot)
     {
@@ -149,7 +157,7 @@ public static class InputBindings
     {
         for (int s = 0; s < Slots; s++)
             if (Get(a, s) != Defaults[a][s]) return false;
-        return true;
+        return GetPad(a) == PadDefaults[a];
     }
 
     // ---- écriture --------------------------------------------------------------------------------------------
@@ -249,6 +257,7 @@ public static class InputBindings
             if (d == KeyCode.None) Store(a, s, KeyCode.None);
             else Rebind(a, s, d);
         }
+        RebindPad(a, PadDefaults[a]);
         Changed?.Invoke(a);
     }
 
@@ -262,6 +271,11 @@ public static class InputBindings
                 PlayerPrefs.DeleteKey(PrefKey(a, s));
                 _current[(int)a][s] = Defaults[a][s];
             }
+        foreach (GameAction a in All)
+        {
+            PlayerPrefs.DeleteKey(PadPrefKey(a));
+            _pad[(int)a] = PadDefaults[a];
+        }
         _dirty = true;
         foreach (GameAction a in All) Changed?.Invoke(a);
     }
@@ -323,4 +337,81 @@ public static class InputBindings
         }
         return null;
     }
+
+    // ---- manette ------------------------------------------------------------------------------------------------
+    // AJOUTÉ (2026-10-28, session manette) - UN bouton de manette par action, à part des 2 emplacements clavier/souris.
+    // Le déplacement n'en a pas : stick gauche + croix directionnelle, fixes (GameInput.Move). Les cartes de montée
+    // de niveau non plus : à la manette on les choisit en naviguant (croix/stick + A), comme tous les menus.
+    // Défauts au format Xbox (A = bas, B = droite, X = gauche, Y = haut) : sur PlayStation c'est la même position
+    // physique (Croix, Rond, Carré, Triangle), l'icône affichée suit la manette branchée (GameInput.PadStyle).
+    private static readonly Dictionary<GameAction, PadButton> PadDefaults = new Dictionary<GameAction, PadButton>
+    {
+        { GameAction.MoveUp,       PadButton.None },
+        { GameAction.MoveDown,     PadButton.None },
+        { GameAction.MoveLeft,     PadButton.None },
+        { GameAction.MoveRight,    PadButton.None },
+        { GameAction.Dash,         PadButton.South },
+        { GameAction.Ultimate,     PadButton.North },
+        { GameAction.PhantomClone, PadButton.West },
+        { GameAction.Card1,        PadButton.None },
+        { GameAction.Card2,        PadButton.None },
+        { GameAction.Card3,        PadButton.None },
+        { GameAction.OrbitShrink,  PadButton.LeftShoulder },
+        { GameAction.OrbitGrow,    PadButton.RightShoulder },
+        { GameAction.Pause,        PadButton.Start },
+    };
+
+    // Actions qui acceptent un bouton de manette (page Commandes : les autres affichent « — » sans capture).
+    public static bool PadBindable(GameAction a) =>
+        a != GameAction.MoveUp && a != GameAction.MoveDown && a != GameAction.MoveLeft && a != GameAction.MoveRight
+        && a != GameAction.Card1 && a != GameAction.Card2 && a != GameAction.Card3;
+
+    private static string PadPrefKey(GameAction a) => "padbind_" + a;
+
+    public static PadButton GetPad(GameAction a)
+    {
+        EnsureLoaded();
+        return _pad[(int)a];
+    }
+
+    public static PadButton GetPadDefault(GameAction a) => PadDefaults[a];
+
+    // Même règle que le clavier : un bouton ne sert qu'à une action ; s'il était pris, l'autre action récupère
+    // l'ancien bouton de celle-ci (échange). Renvoie l'action déplacée, s'il y en a une.
+    public static GameAction? RebindPad(GameAction action, PadButton button)
+    {
+        EnsureLoaded();
+        PadButton previous = _pad[(int)action];
+        if (previous == button) return null;
+        GameAction? displaced = null;
+        if (button != PadButton.None)
+            foreach (GameAction b in All)
+            {
+                if (b == action || _pad[(int)b] != button) continue;
+                StorePad(b, previous);
+                displaced = b;
+                Changed?.Invoke(b);
+            }
+        StorePad(action, button);
+        Changed?.Invoke(action);
+        return displaced;
+    }
+
+    private static void StorePad(GameAction a, PadButton b)
+    {
+        _pad[(int)a] = b;
+        PlayerPrefs.SetInt(PadPrefKey(a), (int)b);
+        _dirty = true;
+    }
+}
+
+// Boutons de manette assignables (positions physiques, indépendantes de la marque). La croix directionnelle n'en
+// fait pas partie : elle déplace le personnage et navigue dans les menus.
+public enum PadButton
+{
+    None,
+    South, East, West, North,
+    LeftShoulder, RightShoulder, LeftTrigger, RightTrigger,
+    Start, Select,
+    LeftStickPress, RightStickPress,
 }

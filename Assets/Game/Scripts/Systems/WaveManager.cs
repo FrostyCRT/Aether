@@ -173,7 +173,7 @@ public class WaveManager : MonoBehaviour
             float remaining = Mathf.Max(0f, BossSpawnInterval * (_bossCount + 1) - runTimer);
             string progress = _bossAlive
                 ? Loc.F("Boucle {0} · boss en cours", loop)
-                : Loc.F("Boucle {0} · boss dans {1:0}:{2:00}", loop, Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f));
+                : TimeText.SpaceColons(Loc.F("Boucle {0} · boss dans {1:0}:{2:00}", loop, Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f)));
             GameUI.Instance.UpdateChallengeDisplay(Loc.T("Sans fin"), progress, false);
         }
     }

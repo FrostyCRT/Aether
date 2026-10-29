@@ -251,5 +251,12 @@ public static class LocTableZH
         { "Première victoire en Modéré : +{0} éclats", "首次在温和难度获胜：＋{0} 碎片" }, { "Première victoire en Violent : +{0} éclats", "首次在猛烈难度获胜：＋{0} 碎片" },
         { "Première victoire en Apocalyptique : +{0} éclats", "首次在末日难度获胜：＋{0} 碎片" }, { "Victoire en Modéré", "在温和难度获胜" },
         { "Victoire en Violent", "在猛烈难度获胜" }, { "avec {0}", "使用 {0}" }, { "Ta partie en cours sera perdue", "当前对局将会丢失" },
+        { "Croix", "叉键" }, { "Rond", "圆圈键" }, { "Carré", "方块键" }, { "Triangle", "三角键" }, { "Stick", "摇杆" }, { "Échap : annuler", "Esc：取消" },
+        { "Appuie sur un bouton de la manette", "请按下手柄按键" }, { "Appuie sur une touche ou un bouton de souris", "请按下键盘按键或鼠标按键" },
+        { "Stick gauche / croix", "左摇杆／十字键" }, { "Navigation + {0}", "导航＋{0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "「{0}」原本用于「{1}」：两者已互换按键（「{2}」）" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "「{0}」原本用于「{1}」：已解除其绑定" }, { "Vibrations", "震动" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "受到攻击、冲刺、释放大招以及击败首领时手柄会震动。" },
+        { "Intensité des vibrations", "震动强度" }, { "Force des vibrations de la manette.", "手柄震动的强弱。" }, { "Navigation", "导航" },
+        { "Clavier / souris", "键盘／鼠标" }, { "Aucune manette détectée : branche-en une", "未检测到手柄：请连接手柄" }, { "Faire défiler", "滚动" },
+        { "Quitter le défilement", "停止滚动" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大生命值提高 {0}%，并完全恢复生命值" },
     };
 }

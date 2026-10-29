@@ -54,6 +54,26 @@ public class MainMenuManager : MonoBehaviour
     {
         ShowPanel(_menuPanel);
     }
+
+    // ---- manette (2026-10-28) ------------------------------------------------------------------------------------
+    // LB / RB : onglet précédent / suivant, dans l'ordre de la barre (Compétences, Personnages, Accueil, Réputation,
+    // Paramètres). En attente tant qu'une fenêtre est ouverte (confirmation des Paramètres, fenêtre Quitter).
+    private void Update()
+    {
+        int dir = GameInput.PadDown(PadButton.LeftShoulder) ? -1 : GameInput.PadDown(PadButton.RightShoulder) ? 1 : 0;
+        if (dir == 0 || SettingsPage.ModalOpen || QuitConfirm.IsOpen) return;
+
+        GameObject[] order = { _upgradesPanel, _characterSelectPanel, _menuPanel, _reputationPanel, _settingsPanel };
+        int i = System.Array.IndexOf(order, _currentPanel);
+        if (i < 0) return;
+        for (int step = 1; step < order.Length; step++)
+        {
+            GameObject next = order[(i + dir * step + order.Length * step) % order.Length];
+            if (next == null) continue;
+            ShowPanel(next);
+            return;
+        }
+    }
     public void ShowPanel(GameObject panel)
     {
         if (panel == null) return;

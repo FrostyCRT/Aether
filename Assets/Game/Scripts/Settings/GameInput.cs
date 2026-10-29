@@ -1,19 +1,23 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 // AJOUTE (2026-09-19) - lecture des commandes du joueur À TRAVERS la configuration des touches (InputBindings).
 // Le code du jeu n'appelle plus Input.GetKey(KeyCode.X) : il demande GameInput.Down(GameAction.Dash), etc.
 //
-//   GameInput.Held(action)   touche maintenue (l'un ou l'autre des 2 emplacements)
+//   GameInput.Held(action)   touche maintenue (l'un ou l'autre des 2 emplacements, ou le bouton de manette)
 //   GameInput.Down(action)   touche enfoncée CETTE image
-//   GameInput.Move()         vecteur de déplacement (clavier + stick de manette), norme <= 1
+//   GameInput.Move()         vecteur de déplacement (clavier + stick gauche + croix), norme <= 1
+//   GameInput.Aim()          visée au stick droit (zéro sous la zone morte)
 //
-// Stick de manette : axes "PadMoveX/PadMoveY" (créés par Aether > Setup Input Axes ; à défaut, le stick est
-// simplement ignoré, jamais d'exception). La zone morte est un réglage du joueur (GameSettings.PadDeadZone).
+// MODIFIÉ (2026-10-28, session manette) - la manette passe par le package Input System (Gamepad.current) au lieu des
+// axes "PadMoveX/PadMoveY" et des JoystickButtonN de l'ancien système : mêmes boutons sur Xbox, PlayStation et
+// Switch, et on sait quelle manette est branchée (PadStyle, pour les icônes). Le clavier et la souris restent lus par
+// l'ancien système (Active Input Handling = Both), leurs KeyCode sont ceux de la page Commandes.
+// La zone morte des sticks est un réglage du joueur (GameSettings.PadDeadZone), appliquée sur la valeur brute.
 public static class GameInput
 {
-    private static bool _padAxesMissing;
-
     // AJOUTÉ (2026-10-03) - même esprit que DebugCheats.cs (F6/F8) : permet à un script de test (ex. un "bot" de
     // playtest automatisé pour juger l'équilibrage) de piloter le déplacement sans clavier, sans toucher à
     // PlayerController. Ignoré par défaut (null) ; jamais actif en dehors de l'Éditeur/d'un build de développement.
@@ -26,7 +30,8 @@ public static class GameInput
             KeyCode k = InputBindings.Get(action, s);
             if (k != KeyCode.None && Input.GetKey(k)) return true;
         }
-        return false;
+        ButtonControl b = PadControl(InputBindings.GetPad(action));
+        return b != null && b.isPressed;
     }
 
     public static bool Down(GameAction action)
@@ -36,7 +41,8 @@ public static class GameInput
             KeyCode k = InputBindings.Get(action, s);
             if (k != KeyCode.None && Input.GetKeyDown(k)) return true;
         }
-        return false;
+        ButtonControl b = PadControl(InputBindings.GetPad(action));
+        return b != null && b.wasPressedThisFrame;
     }
 
     public static Vector2 Move()
@@ -48,28 +54,163 @@ public static class GameInput
         float y = (Held(GameAction.MoveUp) ? 1f : 0f) - (Held(GameAction.MoveDown) ? 1f : 0f);
         Vector2 v = new Vector2(x, y);
 
-        Vector2 pad = ReadPad();
-        if (pad.sqrMagnitude > 0f) v += pad;
+        Gamepad g = Gamepad.current;
+        if (g != null)
+        {
+            v += Stick(g.leftStick);
+            v += g.dpad.ReadValue();
+        }
 
         return v.sqrMagnitude > 1f ? v.normalized : v;
     }
 
-    private static Vector2 ReadPad()
+    // Visée manuelle à la manette (WeaponBase, quand la visée automatique est coupée).
+    public static Vector2 Aim()
     {
-        if (_padAxesMissing) return Vector2.zero;
-        try
+        Gamepad g = Gamepad.current;
+        return g != null ? Stick(g.rightStick) : Vector2.zero;
+    }
+
+    // Zone morte radiale sur la valeur BRUTE (sans le traitement par défaut d'Input System), sortie remise à l'échelle.
+    internal static Vector2 Stick(StickControl stick)
+    {
+        Vector2 raw = stick.ReadUnprocessedValue();
+        float dz = GameSettings.GetFloat(GameSettings.PadDeadZone);
+        float mag = raw.magnitude;
+        if (mag <= dz) return Vector2.zero;
+        return raw / mag * Mathf.Clamp01((mag - dz) / (1f - dz));
+    }
+
+    public static ButtonControl PadControl(PadButton b)
+    {
+        Gamepad g = Gamepad.current;
+        if (g == null) return null;
+        switch (b)
         {
-            Vector2 raw = new Vector2(Input.GetAxisRaw("PadMoveX"), Input.GetAxisRaw("PadMoveY"));
-            float dz = GameSettings.GetFloat(GameSettings.PadDeadZone);
-            float mag = raw.magnitude;
-            if (mag <= dz) return Vector2.zero;
-            return raw / mag * Mathf.Clamp01((mag - dz) / (1f - dz));    // zone morte radiale, sortie remise à l'échelle
+            case PadButton.South: return g.buttonSouth;
+            case PadButton.East: return g.buttonEast;
+            case PadButton.West: return g.buttonWest;
+            case PadButton.North: return g.buttonNorth;
+            case PadButton.LeftShoulder: return g.leftShoulder;
+            case PadButton.RightShoulder: return g.rightShoulder;
+            case PadButton.LeftTrigger: return g.leftTrigger;
+            case PadButton.RightTrigger: return g.rightTrigger;
+            case PadButton.Start: return g.startButton;
+            case PadButton.Select: return g.selectButton;
+            case PadButton.LeftStickPress: return g.leftStickButton;
+            case PadButton.RightStickPress: return g.rightStickButton;
         }
-        catch (ArgumentException)
+        return null;
+    }
+
+    public static bool PadDown(PadButton b)
+    {
+        ButtonControl c = PadControl(b);
+        return c != null && c.wasPressedThisFrame;
+    }
+
+    // N'importe quelle touche, bouton de souris ou bouton de manette (écrans « appuie sur une touche »). L'ancien
+    // système ne voit pas toutes les manettes lues par Input System : les deux sont interrogés.
+    public static bool AnyDown()
+    {
+        if (Input.anyKeyDown) return true;
+        for (int i = 1; i < AllPadButtons.Length; i++)
+            if (PadDown(AllPadButtons[i])) return true;
+        return false;
+    }
+
+    // « Retour » dans les menus : Échap au clavier, B (Rond sur PlayStation) à la manette. Le B qui fait sortir du mode
+    // défilement (voir PadCursor) ne compte pas : il ne doit pas aussi fermer la page.
+    public static bool BackDown() => Input.GetKeyDown(KeyCode.Escape) || PadBackDown();
+    public static bool PadBackDown() => PadDown(PadButton.East) && PadCursor.BackConsumedFrame != Time.frameCount;
+
+    // Position du pointeur à l'écran (pixels) : le curseur rond de la manette quand il est actif, sinon la souris.
+    public static Vector2 PointerPosition => PadCursor.Active ? PadCursor.Position : (Vector2)Input.mousePosition;
+
+    // Clic gauche de la souris ou clic du curseur de la manette (A), cette image.
+    public static bool PointerClickDown() => Input.GetMouseButtonDown(0) || PadCursor.ClickedThisFrame;
+
+    // ---- appareil utilisé ---------------------------------------------------------------------------------------
+    // AJOUTÉ (2026-10-28, session manette) - dernier appareil touché par le joueur : manette ou clavier/souris.
+    // Sert aux icônes de touches (HUD, légendes), au curseur (masqué à la manette) et à la visée manuelle.
+    // Mis à jour une fois par image par InputDeviceTracker.
+    public enum PadKind { Xbox, PlayStation, Nintendo }
+
+    public static bool UsingGamepad { get; private set; }
+    public static PadKind PadStyle { get; private set; }
+    public static event Action DeviceChanged;
+
+    private static readonly PadButton[] AllPadButtons = (PadButton[])Enum.GetValues(typeof(PadButton));
+    private const float StickWake = 0.5f;   // un stick ne « prend la main » qu'au-delà de ce seuil (dérive)
+    private const float MouseWake = 4f;     // pixels de déplacement souris par image pour revenir au clavier/souris
+
+    internal static void TrackDevice()
+    {
+        bool pad = UsingGamepad;
+        PadKind style = PadStyle;
+
+        // Style des icônes : celui de la manette branchée, dès sa détection (au lancement, au branchement, au
+        // changement de manette), sans attendre qu'on la touche ; Xbox par défaut s'il n'y en a aucune.
+        Gamepad g = Gamepad.current;
+        if (g != _styledPad)
         {
-            _padAxesMissing = true;      // axes non configurés : on n'insiste pas (une seule tentative)
-            return Vector2.zero;
+            _styledPad = g;
+            _styledKind = g != null ? StyleOf(g) : PadKind.Xbox;
         }
+        style = _styledKind;
+        if (g != null)
+        {
+            bool touched = g.leftStick.ReadUnprocessedValue().sqrMagnitude > StickWake * StickWake
+                || g.rightStick.ReadUnprocessedValue().sqrMagnitude > StickWake * StickWake
+                || g.dpad.ReadValue().sqrMagnitude > 0f;
+            for (int i = 1; !touched && i < AllPadButtons.Length; i++)
+                touched = PadControl(AllPadButtons[i]).wasPressedThisFrame;
+            if (touched) pad = true;
+        }
+
+        Keyboard kb = Keyboard.current;
+        if ((kb != null && kb.anyKey.wasPressedThisFrame) || RealMouseUsed())
+            pad = false;
+
+        if (pad == UsingGamepad && style == PadStyle) return;
+        UsingGamepad = pad;
+        PadStyle = style;
+        DeviceChanged?.Invoke();
+    }
+
+    // Vraie souris seulement : la souris virtuelle du curseur de manette (PadCursor) bouge aussi, elle ne doit pas
+    // faire repasser le jeu en mode clavier / souris.
+    private static bool RealMouseUsed()
+    {
+        Mouse virtualMouse = PadCursor.VirtualMouse;
+        foreach (InputDevice d in InputSystem.devices)
+        {
+            if (!(d is Mouse m) || m == virtualMouse) continue;
+            if (m.delta.ReadValue().sqrMagnitude > MouseWake * MouseWake
+                || m.leftButton.wasPressedThisFrame || m.rightButton.wasPressedThisFrame) return true;
+        }
+        return false;
+    }
+
+    private static Gamepad _styledPad;
+    private static PadKind _styledKind = PadKind.Xbox;
+
+    private static PadKind StyleOf(Gamepad g)
+    {
+        if (g is UnityEngine.InputSystem.DualShock.DualShockGamepad) return PadKind.PlayStation;   // DualShock 4 + DualSense
+        string layout = g.layout ?? "";
+        if (layout.IndexOf("Switch", StringComparison.OrdinalIgnoreCase) >= 0) return PadKind.Nintendo;
+        return PadKind.Xbox;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        UsingGamepad = false;
+        PadStyle = PadKind.Xbox;
+        _styledPad = null;
+        _styledKind = PadKind.Xbox;
+        DeviceChanged = null;
     }
 
     // ---- capture d'une touche (page Commandes) ------------------------------------------------------------
@@ -89,12 +230,87 @@ public static class GameInput
 
         foreach (KeyCode k in AllKeys)
         {
-            if (k == KeyCode.None || k == KeyCode.Mouse0) continue;
+            if (k == KeyCode.None || k == KeyCode.Mouse0 || InputBindings.IsJoystickKey(k)) continue;   // manette : PollPadCapture
             if (!Input.GetKeyDown(k)) continue;
             key = k;
             return Capture.Key;
         }
         return Capture.None;
+    }
+
+    // Capture d'un bouton de manette (colonne Manette de la page Commandes) : le premier bouton assignable pressé.
+    public static bool PollPadCapture(out PadButton button)
+    {
+        for (int i = 1; i < AllPadButtons.Length; i++)
+        {
+            if (!PadDown(AllPadButtons[i])) continue;
+            button = AllPadButtons[i];
+            return true;
+        }
+        button = PadButton.None;
+        return false;
+    }
+
+    // Nom d'un bouton de manette selon la marque branchée (positions physiques : South = A Xbox = Croix PS = B Switch).
+    public static string PadLabel(PadButton b) => PadLabel(b, PadStyle);
+
+    public static string PadLabel(PadButton b, PadKind kind)
+    {
+        switch (kind)
+        {
+            case PadKind.PlayStation:
+                switch (b)
+                {
+                    case PadButton.South: return Loc.T("Croix");
+                    case PadButton.East: return Loc.T("Rond");
+                    case PadButton.West: return Loc.T("Carré");
+                    case PadButton.North: return Loc.T("Triangle");
+                    case PadButton.LeftShoulder: return "L1";
+                    case PadButton.RightShoulder: return "R1";
+                    case PadButton.LeftTrigger: return "L2";
+                    case PadButton.RightTrigger: return "R2";
+                    case PadButton.Start: return "Options";
+                    case PadButton.Select: return "Create";
+                    case PadButton.LeftStickPress: return "L3";
+                    case PadButton.RightStickPress: return "R3";
+                }
+                break;
+            case PadKind.Nintendo:
+                switch (b)
+                {
+                    case PadButton.South: return "B";
+                    case PadButton.East: return "A";
+                    case PadButton.West: return "Y";
+                    case PadButton.North: return "X";
+                    case PadButton.LeftShoulder: return "L";
+                    case PadButton.RightShoulder: return "R";
+                    case PadButton.LeftTrigger: return "ZL";
+                    case PadButton.RightTrigger: return "ZR";
+                    case PadButton.Start: return "+";
+                    case PadButton.Select: return "−";
+                    case PadButton.LeftStickPress: return "L3";
+                    case PadButton.RightStickPress: return "R3";
+                }
+                break;
+            default:
+                switch (b)
+                {
+                    case PadButton.South: return "A";
+                    case PadButton.East: return "B";
+                    case PadButton.West: return "X";
+                    case PadButton.North: return "Y";
+                    case PadButton.LeftShoulder: return "LB";
+                    case PadButton.RightShoulder: return "RB";
+                    case PadButton.LeftTrigger: return "LT";
+                    case PadButton.RightTrigger: return "RT";
+                    case PadButton.Start: return "Menu";
+                    case PadButton.Select: return "View";
+                    case PadButton.LeftStickPress: return "LS";
+                    case PadButton.RightStickPress: return "RS";
+                }
+                break;
+        }
+        return "—";
     }
 
     // ---- libellés (français, traduits par Loc) ---------------------------------------------------------------------------------
@@ -197,8 +413,13 @@ public static class GameInput
     }
 
     // Touche à afficher pour une action : celle du 1er emplacement, sinon celle du 2e.
+    // À la manette (UsingGamepad), le bouton de manette de l'action s'il en a un.
     public static string ShortBindingLabel(GameAction a)
     {
+        if (UsingGamepad && !InputBindings.PadBindable(a))
+            return a == GameAction.MoveUp || a == GameAction.MoveDown || a == GameAction.MoveLeft || a == GameAction.MoveRight
+                ? Loc.T("Stick") : "";
+        if (UsingGamepad && InputBindings.GetPad(a) != PadButton.None) return PadLabel(InputBindings.GetPad(a));
         KeyCode k0 = InputBindings.Get(a, 0), k1 = InputBindings.Get(a, 1);
         return ShortKeyLabel(k0 != KeyCode.None ? k0 : k1);
     }
@@ -244,6 +465,7 @@ public static class GameInput
     // "F  /  Manette 2" : texte des touches d'une action (pour des indices d'interface).
     public static string BindingText(GameAction a)
     {
+        if (UsingGamepad && InputBindings.GetPad(a) != PadButton.None) return PadLabel(InputBindings.GetPad(a));
         KeyCode k0 = InputBindings.Get(a, 0), k1 = InputBindings.Get(a, 1);
         if (k0 != KeyCode.None && k1 != KeyCode.None) return KeyLabel(k0) + " / " + KeyLabel(k1);
         return KeyLabel(k0 != KeyCode.None ? k0 : k1);

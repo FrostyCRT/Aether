@@ -655,3 +655,25 @@
 616| Victoria en Violento
 617| con {0}
 618| Perderás la partida en curso
+619| Cruz
+620| Círculo
+621| Cuadrado
+622| Triángulo
+623| Stick
+624| Esc: cancelar
+625| Pulsa un botón del mando
+626| Pulsa una tecla o un botón del ratón
+627| Stick izquierdo / cruceta
+628| Navegar + {0}
+629| «{0}» estaba asignado a «{1}»: intercambian sus botones («{2}»)
+630| «{0}» estaba asignado a «{1}»: se le ha quitado
+631| Vibración
+632| Hace vibrar el mando al recibir golpes, al hacer un dash, al usar la Definitiva y cuando cae un jefe.
+633| Intensidad de la vibración
+634| Fuerza de la vibración del mando.
+635| Navegar
+636| Teclado / ratón
+637| No se detecta ningún mando: conecta uno
+638| Desplazar
+639| Dejar de desplazar
+640| Aumenta tu vida máxima un {0}% y la restaura por completo

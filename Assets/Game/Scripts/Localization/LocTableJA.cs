@@ -260,5 +260,13 @@ public static class LocTableJA
         { "Première victoire en Modéré : +{0} éclats", "難易度「ふつう」で初勝利：欠片＋{0}" }, { "Première victoire en Violent : +{0} éclats", "難易度「はげしい」で初勝利：欠片＋{0}" },
         { "Première victoire en Apocalyptique : +{0} éclats", "難易度「アポカリプス」で初勝利：欠片＋{0}" }, { "Victoire en Modéré", "難易度「ふつう」で勝利" },
         { "Victoire en Violent", "難易度「はげしい」で勝利" }, { "avec {0}", "{0}で" }, { "Ta partie en cours sera perdue", "現在のプレイは失われます" },
+        { "Croix", "バツ" }, { "Rond", "マル" }, { "Carré", "シカク" }, { "Triangle", "サンカク" }, { "Stick", "スティック" }, { "Échap : annuler", "Esc：キャンセル" },
+        { "Appuie sur un bouton de la manette", "パッドのボタンを押してください" }, { "Appuie sur une touche ou un bouton de souris", "キーまたはマウスボタンを押してください" },
+        { "Stick gauche / croix", "左スティック／十字キー" }, { "Navigation + {0}", "カーソル移動＋{0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "「{0}」は「{1}」に使われていました。ボタンを入れ替えました（「{2}」）" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "「{0}」は「{1}」に使われていました。そちらの割り当てを外しました" }, { "Vibrations", "振動" },
+        { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "被弾、ダッシュ、必殺技の発動、ボス撃破のときにパッドが振動する。" },
+        { "Intensité des vibrations", "振動の強さ" }, { "Force des vibrations de la manette.", "パッドの振動の強さ。" }, { "Navigation", "カーソル移動" },
+        { "Clavier / souris", "キーボード／マウス" }, { "Aucune manette détectée : branche-en une", "パッドが見つからない。接続してください" }, { "Faire défiler", "スクロール" },
+        { "Quitter le défilement", "スクロールを終了" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大HPが{0}%増え、HPが全回復する" },
     };
 }

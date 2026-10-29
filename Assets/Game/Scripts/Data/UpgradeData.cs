@@ -141,8 +141,12 @@ public class UpgradeData : ScriptableObject
 
             // MODIFIÉ (2026-10-27, retour utilisateur : "la compétence de soin devrait augmenter la santé maximum [...]
             // on pourrait soigner, et augmenter la vie max de quelques pourcentage, genre 25%") - voir Apply.
+            // MODIFIÉ (2026-10-28, retour utilisateur : "baisse le pourcentage de vie max, passe de +25% à +15%, et met
+            // que ça restaure la vie entière, pas 50%") - soin complet (value = 1 dans SO_Upgrade_Heal).
             case UpgradeType.Heal:
-                return Loc.F("Augmente tes PV max de {0}% et en restaure {1}%", PercentOf(HealMaxHealthBonus), PercentOf(value));
+                return value >= 0.999f
+                    ? Loc.F("Augmente tes PV max de {0}% et restaure tous tes PV", PercentOf(HealMaxHealthBonus))
+                    : Loc.F("Augmente tes PV max de {0}% et en restaure {1}%", PercentOf(HealMaxHealthBonus), PercentOf(value));
 
             case UpgradeType.DoubleShot:
                 // CORRIGÉ (2026-10-25) - le second tir n'est pas simultané : il part _doubleShotDelay (0,1 s) après le premier.
@@ -179,8 +183,9 @@ public class UpgradeData : ScriptableObject
     // que "Débloque la Brûlure" juste en dessous (effet décrit en mots, pas en chiffre).
     private const float FireballBaseFragmentRadius = 2.25f;
 
-    // Carte Soin (2026-10-27) : PV max gagnés à chaque pick, en fraction des PV max de départ (5 picks = +125 %).
-    public const float HealMaxHealthBonus = 0.25f;
+    // Carte Soin (2026-10-27) : PV max gagnés à chaque pick, en fraction des PV max de départ (5 picks = +75 %).
+    // MODIFIÉ (2026-10-28) - 0,25 -> 0,15 (retour utilisateur), le soin devenant complet.
+    public const float HealMaxHealthBonus = 0.15f;
 
     private string FormatFireballDescription(int level)
     {
@@ -775,7 +780,7 @@ public class UpgradeData : ScriptableObject
                     break;
                 }
 
-            // PV max d'abord (+25 % des PV max de départ), puis le soin (value, 50 %) sur les nouveaux PV max.
+            // PV max d'abord (+15 % des PV max de départ), puis le soin (value, 100 %) sur les nouveaux PV max.
             case UpgradeType.Heal:
                 if (health != null)
                 {

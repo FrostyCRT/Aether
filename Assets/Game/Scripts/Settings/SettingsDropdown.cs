@@ -120,14 +120,14 @@ public class SettingsDropdown : MonoBehaviour
     {
         if (!IsOpen) return;
         if (_anchor == null || !_anchor.gameObject.activeInHierarchy) { Close(); return; }
-        if (Input.GetKeyDown(KeyCode.Escape)) { Close(); return; }
+        if (GameInput.BackDown()) { Close(); return; }
         if (Time.unscaledTime - _openedAt < 0.12f) return;
 
         // le curseur s'éloigne du bouton ET de la liste (marge de 14 px, qui couvre l'espace entre les deux)
         RectTransform parent = (RectTransform)transform.parent;
         Canvas canvas = parent.GetComponentInParent<Canvas>();
         Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, Input.mousePosition, cam, out Vector2 local)) { Close(); return; }
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, GameInput.PointerPosition, cam, out Vector2 local)) { Close(); return; }
 
         if (!Contains(parent, _anchor, local) && !Contains(parent, _panel, local)) Close();
     }

@@ -654,3 +654,25 @@
 616| Sieg auf Heftig
 617| mit {0}
 618| Dein aktueller Run geht verloren
+619| Kreuz
+620| Kreis
+621| Quadrat
+622| Dreieck
+623| Stick
+624| Esc: abbrechen
+625| Drücke eine Controllertaste
+626| Drücke eine Taste oder eine Maustaste
+627| Linker Stick / Steuerkreuz
+628| Navigieren + {0}
+629| „{0}“ war „{1}“ zugewiesen: Die beiden tauschen ihre Tasten („{2}“)
+630| „{0}“ war „{1}“ zugewiesen: Die Zuweisung wurde dort entfernt
+631| Vibration
+632| Lässt den Controller vibrieren, wenn du getroffen wirst, beim Dash, beim Ultimate und wenn ein Boss fällt.
+633| Vibrationsstärke
+634| Wie stark der Controller vibriert.
+635| Navigieren
+636| Tastatur / Maus
+637| Kein Controller erkannt: Schließ einen an
+638| Scrollen
+639| Scrollen beenden
+640| Erhöht deine maximalen LP um {0} % und stellt alle LP wieder her

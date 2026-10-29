@@ -655,3 +655,25 @@
 616| Vittoria a difficoltà Violenta
 617| con {0}
 618| La partita in corso andrà persa
+619| Croce
+620| Cerchio
+621| Quadrato
+622| Triangolo
+623| Stick
+624| Esc: annulla
+625| Premi un pulsante del controller
+626| Premi un tasto o un pulsante del mouse
+627| Stick sinistro / croce direzionale
+628| Naviga + {0}
+629| «{0}» era usato da «{1}»: le due azioni si scambiano i pulsanti («{2}»)
+630| «{0}» era usato da «{1}»: è stato tolto da quell'azione
+631| Vibrazione
+632| Fa vibrare il controller quando subisci colpi, con lo scatto, con la Suprema e quando cade un boss.
+633| Intensità della vibrazione
+634| Quanto forte vibra il controller.
+635| Naviga
+636| Tastiera / mouse
+637| Nessun controller rilevato: collegane uno
+638| Scorri
+639| Smetti di scorrere
+640| Aumenta i tuoi PS massimi del {0}% e li ripristina del tutto

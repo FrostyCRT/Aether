@@ -284,7 +284,7 @@ public class MetaProgressionManager : MonoBehaviour
     private static string FormatClock(float seconds)
     {
         int total = Mathf.FloorToInt(seconds);
-        return (total / 60).ToString("00") + ":" + (total % 60).ToString("00");
+        return TimeText.Clock(total / 60, total % 60);
     }
 
     // =====================

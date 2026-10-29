@@ -25,6 +25,7 @@ public class QuitConfirm : MonoBehaviour
     private static bool _quitConfirmed;
 
     public static bool IsOpen => _instance != null && _instance._dialogRoot != null && _instance._dialogRoot.activeSelf;
+    public static int ClosedFrame { get; private set; } = -1;   // le B qui ferme la fenêtre ne doit pas aussi reprendre la partie
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -97,11 +98,13 @@ public class QuitConfirm : MonoBehaviour
     private void Close()
     {
         _dialogRoot.SetActive(false);
+        ClosedFrame = Time.frameCount;
     }
 
     private void Update()
     {
         if (!_dialogRoot.activeSelf) return;
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) QuitNow();
+        else if (GameInput.BackDown()) Close();   // Échap / B : annuler
     }
 }

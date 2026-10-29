@@ -193,6 +193,13 @@ public class HealthSystem : MonoBehaviour
             GameUI.Instance.FlashDamageVignette(damage / Mathf.Max(1f, _maxHealth));
         }
 
+        // AJOUTÉ (2026-10-28, session manette) - vibration proportionnelle à la part des PV perdue ; longue secousse au
+        // coup fatal.
+        float lost = damage / Mathf.Max(1f, _maxHealth);
+        if (_currentHealth <= 0f) PadRumble.Pulse(1f, 0.8f, 0.7f);
+        else PadRumble.Pulse(Mathf.Clamp(0.25f + lost * 4f, 0.25f, 0.8f), Mathf.Clamp(0.15f + lost * 3f, 0.15f, 0.6f),
+                             Mathf.Clamp(0.1f + lost * 1.5f, 0.1f, 0.3f));
+
         // AJOUTE - tracke le minimum de vie atteint pour le defi "Sang-Froid"
         // (ne jamais descendre sous 30%).
         if (ChallengeManager.Instance != null)

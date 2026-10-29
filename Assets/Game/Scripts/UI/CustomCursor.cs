@@ -104,7 +104,9 @@ public class CustomCursor : MonoBehaviour
         // totalement le curseur pendant le jeu actif et ne le réaffichait que sur un panneau (pause, paramètres,
         // level-up, Game Over). GameManager.NeedsCursor porte maintenant cette même logique ; absent de la scène
         // (MainMenu, LoadingScreen...), on affiche le gantelet par défaut, comme un curseur de menu normal.
-        bool shouldShow = GameManager.Instance == null || GameManager.Instance.NeedsCursor;
+        // MODIFIÉ (2026-10-28, session manette) - masqué tant que le joueur utilise la manette (on navigue à la
+        // croix/au stick, un curseur immobile au milieu de l'écran gênerait) ; revient au premier mouvement de souris.
+        bool shouldShow = (GameManager.Instance == null || GameManager.Instance.NeedsCursor) && !GameInput.UsingGamepad;
         if (_image.enabled != shouldShow) _image.enabled = shouldShow;
 
         // Conversion écran -> espace local du Canvas Overlay (le CanvasScaler change le facteur d'échelle selon la

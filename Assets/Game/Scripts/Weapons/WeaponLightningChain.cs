@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public class WeaponLightningChain : MonoBehaviour
 {
@@ -53,49 +51,9 @@ public class WeaponLightningChain : MonoBehaviour
             Transform nearest = FindNearestEnemy();
             if (nearest != null)
             {
-                StartCoroutine(ChainLightning(nearest));
+                LightningChainUtility.Trigger(this, nearest, _damage, _maxChains, _chainRange);   // cibles vérifiées entre deux sauts (voir l'utilitaire)
                 _cooldownTimer = 0f;
             }
-        }
-    }
-
-    // AJOUTE (2026-09-27, retour utilisateur) - couleur électrique jaune-blanc pâle, volontairement indépendante
-    // de la couleur de branche de l'upgrade (la foudre doit se reconnaître d'un coup d'œil, peu importe l'arme
-    // qui la déclenche - voir aussi LightningChainUtility, qui reprend la même teinte pour les fusions).
-    // MODIFIÉ (2026-10-04) - l'icône "Foudre" (bleue) avait fait passer cette couleur au bleu pour correspondre.
-    // RE-MODIFIÉ (2026-10-04, suite) - retour utilisateur après coup d'œil sur l'ensemble des couleurs : "il y a
-    // beaucoup de bleu, pas assez de couleur chaude... peut-être qu'il faudrait repasser la foudre en jaune et
-    // qu'on change l'icône". Redevient jaune/or électrique (teinte d'origine du projet) - l'icône sera régénérée
-    // pour correspondre (prompt MetaIA fourni à l'utilisateur), donc la règle "couleur = icône" reste respectée
-    // une fois le nouvel icône en place, juste dans l'autre sens (l'icône s'aligne sur la couleur voulue).
-    private static readonly Color _lightningVfxColor = new Color(1f, 0.95f, 0.55f);
-
-    private IEnumerator ChainLightning(Transform firstTarget)
-    {
-        List<GameObject> hit = new List<GameObject>();
-        Transform current = firstTarget;
-        // Buffs dynamiques (Concentration) figés au déclenchement de la chaîne.
-        float buffedBase = _damage * PlayerBuffs.OutgoingDamageMultiplier;
-        for (int i = 0; i <= _maxChains; i++)
-        {
-            if (current == null) break;
-            float damage = buffedBase * Mathf.Pow(0.7f, i);
-            current.TryGetComponent(out EnemyBase eb);
-            if (eb != null) eb.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
-            current.TryGetComponent(out BossBase boss);
-            if (boss != null) boss.TakeDamage(damage, DamageNumberSpawner.ColorLightning);
-            hit.Add(current.gameObject);
-            // MODIFIE (2026-09-27, retour utilisateur : "un effet... qu'on voit quand la foudre frappe, et
-            // qu'on voit le ricochet entre ennemis") - remplace le Debug.DrawLine (invisible hors Scene view de
-            // l'éditeur) par un vrai éclair visible en jeu (LightningBoltVFX) + un flash au point d'impact.
-            LightningBoltVFX.SpawnBolt(
-                i == 0 ? transform.position : hit[i - 1].transform.position,
-                current.position,
-                _lightningVfxColor
-            );
-            LightningBoltVFX.SpawnStrikeFlash(current.position, _lightningVfxColor);
-            current = FindNextChainTarget(current.position, hit);
-            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -109,26 +67,6 @@ public class WeaponLightningChain : MonoBehaviour
             Collider col = _detectionBuffer[i];
             if (col == null || !col.CompareTag("Enemy")) continue;
             float distSqr = (col.transform.position - transform.position).sqrMagnitude;
-            if (distSqr < minDistSqr)
-            {
-                minDistSqr = distSqr;
-                nearest = col.transform;
-            }
-        }
-        return nearest;
-    }
-
-    private Transform FindNextChainTarget(Vector3 from, List<GameObject> alreadyHit)
-    {
-        int count = Physics.OverlapSphereNonAlloc(from, _chainRange, _detectionBuffer, EnemyLayers.Mask);
-        Transform nearest = null;
-        float minDistSqr = _chainRange * _chainRange;
-        for (int i = 0; i < count; i++)
-        {
-            Collider col = _detectionBuffer[i];
-            if (col == null || !col.CompareTag("Enemy")) continue;
-            if (alreadyHit.Contains(col.gameObject)) continue;
-            float distSqr = (col.transform.position - from).sqrMagnitude;
             if (distSqr < minDistSqr)
             {
                 minDistSqr = distSqr;

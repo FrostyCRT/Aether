@@ -299,7 +299,15 @@ public static class LocTableRU
         { "Première victoire en Modéré : +{0} éclats", "Первая победа на сложности «Умеренный»: +{0} осколков" }, { "Première victoire en Violent : +{0} éclats", "Первая победа на сложности «Жестокий»: +{0} осколков" },
         { "Première victoire en Apocalyptique : +{0} éclats", "Первая победа на сложности «Апокалипсис»: +{0} осколков" },
         { "Victoire en Modéré", "Победа на сложности «Умеренный»" }, { "Victoire en Violent", "Победа на сложности «Жестокий»" },
-        { "avec {0}", "персонаж: {0}" }, { "Ta partie en cours sera perdue", "Текущий забег будет потерян" },
+        { "avec {0}", "персонаж: {0}" }, { "Ta partie en cours sera perdue", "Текущий забег будет потерян" }, { "Croix", "Крестик" },
+        { "Rond", "Кружок" }, { "Carré", "Квадрат" }, { "Triangle", "Треугольник" }, { "Stick", "Стик" }, { "Échap : annuler", "Esc: отмена" },
+        { "Appuie sur un bouton de la manette", "Нажми кнопку геймпада" }, { "Appuie sur une touche ou un bouton de souris", "Нажми клавишу или кнопку мыши" },
+        { "Stick gauche / croix", "Левый стик / крестовина" }, { "Navigation + {0}", "Навигация + {0}" }, { "« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)", "Кнопка «{0}» была назначена на «{1}»: действия поменялись кнопками («{2}»)" },
+        { "« {0} » était utilisé par « {1} » : il lui est retiré", "Кнопка «{0}» была назначена на «{1}»: назначение снято" },
+        { "Vibrations", "Вибрация" }, { "Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.", "Геймпад вибрирует при получении урона, рывке, применении ульты и гибели босса." },
+        { "Intensité des vibrations", "Сила вибрации" }, { "Force des vibrations de la manette.", "Насколько сильно вибрирует геймпад." },
+        { "Navigation", "Навигация" }, { "Clavier / souris", "Клавиатура / мышь" }, { "Aucune manette détectée : branche-en une", "Геймпад не обнаружен: подключи его" },
+        { "Faire défiler", "Прокрутить" }, { "Quitter le défilement", "Закончить прокрутку" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Увеличивает максимальный запас здоровья на {0}% и полностью его восстанавливает" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },

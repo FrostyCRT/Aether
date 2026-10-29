@@ -332,7 +332,7 @@ public class PauseMenuUI : MonoBehaviour
         _descriptionTooltip.sizeDelta = new Vector2(Mathf.Min(preferred.x, TooltipMaxTextWidth) + TooltipPadding.x, preferred.y + TooltipPadding.y);
 
         RectTransform parentRt = _descriptionTooltip.parent as RectTransform;
-        if (parentRt != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRt, Input.mousePosition, null, out Vector2 localPoint))
+        if (parentRt != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRt, GameInput.PointerPosition, null, out Vector2 localPoint))
         {
             Vector2 pos = localPoint + TooltipCursorOffset;
 
@@ -422,8 +422,8 @@ public class PauseMenuUI : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(0) && !_tooltipJustUpdatedThisFrame
-            && !RectTransformUtility.RectangleContainsScreenPoint(_descriptionTooltip, Input.mousePosition, null))
+        if (GameInput.PointerClickDown() && !_tooltipJustUpdatedThisFrame
+            && !RectTransformUtility.RectangleContainsScreenPoint(_descriptionTooltip, GameInput.PointerPosition, null))
         {
             HideTooltip();
         }
@@ -459,7 +459,7 @@ public class PauseMenuUI : MonoBehaviour
         {
             int minutes = Mathf.FloorToInt(elapsedSeconds / 60f);
             int seconds = Mathf.FloorToInt(elapsedSeconds % 60f);
-            _timeText.text = $"{minutes:00}:{seconds:00}";
+            _timeText.text = TimeText.Clock(minutes, seconds);
         }
 
         if (_killsText != null)

@@ -308,6 +308,12 @@ public class UpgradeUI : MonoBehaviour
                 int index = i;
                 _cards[i].chooseButton.onClick.RemoveAllListeners();
                 _cards[i].chooseButton.onClick.AddListener(() => OnCardSelected(index));
+
+                // survol animé de la carte (voir LevelUpCardHoverFX)
+                if (!_cards[i].chooseButton.TryGetComponent(out LevelUpCardHoverFX fx))
+                    fx = _cards[i].chooseButton.gameObject.AddComponent<LevelUpCardHoverFX>();
+                GameObject root = _cards[i].cardRoot != null ? _cards[i].cardRoot : _cards[i].chooseButton.gameObject;
+                fx.Init(this, (RectTransform)root.transform);
             }
 
             // CORRIGÉ (2026-10-07, retour utilisateur : "il faut trouver une autre couleur de texte qui vient sur
@@ -694,6 +700,15 @@ public class UpgradeUI : MonoBehaviour
     // StopIntro) - vérifié dans OnCardSelected(), le point d'entrée COMMUN à la souris et au clavier.
     private bool _introPlaying = false;
 
+    // Apparition ou animation de choix en cours : le survol des cartes (LevelUpCardHoverFX) ne doit rien toucher.
+    public bool CardsBusy => _introPlaying || _pickInProgress;
+
+    private void ResetCardHovers()
+    {
+        foreach (UpgradeCard c in _cards)
+            if (c.chooseButton != null && c.chooseButton.TryGetComponent(out LevelUpCardHoverFX fx)) fx.ResetNow();
+    }
+
     // MODIFIÉ (2026-10-20, 2e retour utilisateur - voir le commentaire sur _iconSpinEnabled plus haut) : chaque
     // étape du défilement porte maintenant une upgrade COMPLÈTE (icône + nom + description + parchemin), pas
     // qu'un sprite isolé - classe (pas struct) : lastStepShown/tickStartTime sont modifiés en place chaque frame
@@ -788,6 +803,7 @@ public class UpgradeUI : MonoBehaviour
         }
 
         _introPending = false;
+        ResetCardHovers();   // les cartes repartent de leur état de repos (l'intro mémorise leur taille / position)
         StopIntro();
         _introRoutine = StartCoroutine(PlayIntro());
         _introPlaying = true;
@@ -1082,6 +1098,7 @@ public class UpgradeUI : MonoBehaviour
 
         if (gameObject.activeInHierarchy)
         {
+            ResetCardHovers();   // l'animation de choix part de l'état de repos de la carte (taille, icône)
             _pickInProgress = true;
 
             // Les autres cartes ne doivent plus rien capter pendant l'animation de la carte choisie.

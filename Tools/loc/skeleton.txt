@@ -649,3 +649,25 @@
 616	Victoire en Violent	Win on Severe
 617	avec {0}	with {0}
 618	Ta partie en cours sera perdue	Your current run will be lost
+619	Croix	Cross
+620	Rond	Circle
+621	Carré	Square
+622	Triangle	Triangle
+623	Stick	Stick
+624	Échap : annuler	Esc: cancel
+625	Appuie sur un bouton de la manette	Press a gamepad button
+626	Appuie sur une touche ou un bouton de souris	Press a key or a mouse button
+627	Stick gauche / croix	Left stick / D-pad
+628	Navigation + {0}	Navigate + {0}
+629	« {0} » était utilisé par « {1} » : ils échangent leurs boutons (« {2} »)	"{0}" was used by "{1}": they swap buttons ("{2}")
+630	« {0} » était utilisé par « {1} » : il lui est retiré	"{0}" was used by "{1}": it has been removed from it
+631	Vibrations	Vibration
+632	Fait vibrer la manette aux coups reçus, au dash, à l'ultime et à la mort d'un boss.	Makes the gamepad vibrate when you take hits, dash, use your ultimate and when a boss falls.
+633	Intensité des vibrations	Vibration strength
+634	Force des vibrations de la manette.	How strongly the gamepad vibrates.
+635	Navigation	Navigate
+636	Clavier / souris	Keyboard / mouse
+637	Aucune manette détectée : branche-en une	No gamepad detected: plug one in
+638	Faire défiler	Scroll
+639	Quitter le défilement	Stop scrolling
+640	Augmente tes PV max de {0}% et restaure tous tes PV	Increases your max HP by {0}% and fully restores your HP

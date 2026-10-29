@@ -121,6 +121,7 @@ public class CrystalSystem : MonoBehaviour
 
     private void TriggerUlt()
     {
+        PadRumble.Pulse(0.7f, 0.9f, 0.45f);   // manette : grosse secousse à l'ultime
         // AJOUTE - notifie le systeme de defis a chaque VRAI declenchement de
         // l'Ultime (defi "Sans Cristal" = ne jamais l'utiliser).
         if (ChallengeManager.Instance != null)
