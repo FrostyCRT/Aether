@@ -56,7 +56,9 @@ public class HudStyler : MonoBehaviour
     [SerializeField] private float _hpBarInset = 44f;
     [SerializeField] private float _hpFontSize = 26f;
     [Tooltip("Marge gauche (Left) du texte « 1850 / 2000 » dans la barre.")]
-    [SerializeField] private float _hpTextLeft = 42f;
+    // MODIFIÉ (2026-10-29, retour utilisateur : "recentrer en X l'affichage du nombre de vie") - 42 -> 54 : le texte est centré
+    // sur la partie VISIBLE de la barre (le cœur, 64 px, en cache le début), plus sur la barre entière.
+    [SerializeField] private float _hpTextLeft = 54f;
     [Tooltip("Marge droite (Right) du texte : comme dans l'inspecteur de Unity, une valeur négative fait dépasser le texte à droite.")]
     [SerializeField] private float _hpTextRight = -10f;
     [Tooltip("Coché : la barre de vie change de couleur selon les points de vie (vert, vert clair, orange, rouge), comme à l'origine. Décoché : couleur fixe « Life Color » de la palette.")]

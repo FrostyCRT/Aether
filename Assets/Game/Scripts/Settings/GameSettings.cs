@@ -25,6 +25,7 @@ public static class GameSettings
     // Affichage
     public const string DisplayMode = "settings_displaymode";     // 0 plein écran, 1 fenêtré sans bordure, 2 fenêtré
     public const string Resolution = "settings_resolution";       // "1920x1080" ("" = celle du bureau)
+    public const string Monitor = "settings_monitor";             // AJOUTÉ 2026-10-29 : n° d'écran ("" = celui où le jeu s'ouvre)
     public const string VSync = "settings_vsync";
     public const string FpsCap = "settings_fpscap";               // index dans FpsCaps
     public const string Brightness = "settings_brightness";
@@ -90,6 +91,7 @@ public static class GameSettings
 
         { DisplayMode,      I(1, 0, 2) },
         { Resolution,       S("") },
+        { Monitor,          S("") },
         { VSync,            B(true) },
         { FpsCap,           I(0, 0, 7) },
         { Brightness,       F(1.00f, 0.50f, 1.20f) },

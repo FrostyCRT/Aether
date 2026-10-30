@@ -52,7 +52,7 @@ public static class LocTablePL
         { "Couper le son en arrière-plan", "Wycisz w tle" }, { "Coupe tout le son quand la fenêtre du jeu n'est pas active.", "Wycisza cały dźwięk, gdy okno gry nie jest aktywne." },
         { "JEU", "ROZGRYWKA" }, { "Visée, pause et retours de combat", "Celowanie, pauza i wskaźniki walki" }, { "Visée", "Celowanie" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Automatyczne: strzały lecą w najbliższego wroga. Mysz: celujesz samodzielnie" },
-        { "À la souris", "Myszą" }, { "Automatique", "Automatyczne" }, { "Pause automatique", "Automatyczna pauza" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Wstrzymuje rozgrywkę, gdy okno gry traci fokus." },
+        { "À la souris", "Myszą" }, { "Automatique", "Automatyczne" }, { "Pause automatique", "Automatyczna pauza" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Wstrzymuje rozgrywkę, gdy okno gry traci fokus." },
         { "Nombres de dégâts", "Liczby obrażeń" }, { "Dégâts infligés", "Zadane obrażenia" }, { "Affiche les dégâts infligés aux ennemis.", "Pokazuje obrażenia, które zadajesz wrogom." },
         { "Dégâts subis", "Otrzymane obrażenia" }, { "Affiche les dégâts que reçoit le joueur.", "Pokazuje obrażenia, które otrzymujesz." },
         { "Taille des nombres", "Rozmiar liczb" }, { "Taille des chiffres qui apparaissent au-dessus des cibles.", "Rozmiar liczb pojawiających się nad celami." },
@@ -311,6 +311,9 @@ public static class LocTablePL
         { "Navigation", "Nawigacja" }, { "Clavier / souris", "Klawiatura / mysz" }, { "Aucune manette détectée : branche-en une", "Nie wykryto pada: podłącz go" },
         { "Faire défiler", "Przewiń" }, { "Quitter le défilement", "Zakończ przewijanie" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca" },
         { "Manuelle", "Ręczne" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatyczne: strzały lecą w najbliższego wroga. Ręczne: celujesz myszą albo prawą gałką pada" },
+        { "Écran", "Ekran" }, { "Écran {0}", "Ekran {0}" }, { "Écran sur lequel le jeu s'affiche", "Ekran, na którym wyświetlana jest gra" },
+        { "Un seul écran est branché.", "Podłączony jest tylko jeden ekran." }, { "Remporte une partie en {0} pour débloquer cette difficulté", "Wygraj rozgrywkę na poziomie {0}, aby odblokować ten poziom trudności" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Wygraj rozgrywkę w trybie Klasycznym na poziomie {0}, aby grać w trybie Nieskończonym na tym poziomie trudności" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

@@ -105,6 +105,7 @@ public class SettingsPage : MonoBehaviour
     private bool _hasSnapshot;
     private int _snapMode;
     private string _snapResolution;
+    private string _snapMonitor;
     private float _revertTimer;
     private bool _revertOpen;
 
@@ -465,6 +466,7 @@ public class SettingsPage : MonoBehaviour
         _hasSnapshot = true;
         _snapMode = GameSettings.GetInt(GameSettings.DisplayMode);
         _snapResolution = GameSettings.GetString(GameSettings.Resolution);
+        _snapMonitor = GameSettings.GetString(GameSettings.Monitor);
     }
 
     private void OpenRevertIfNeeded()
@@ -492,6 +494,7 @@ public class SettingsPage : MonoBehaviour
         {
             GameSettings.SetInt(GameSettings.DisplayMode, _snapMode);
             GameSettings.SetString(GameSettings.Resolution, _snapResolution);
+            GameSettings.SetString(GameSettings.Monitor, _snapMonitor);
             _hasSnapshot = false;
             Toast(Loc.T("Ancien affichage rétabli"));
         }

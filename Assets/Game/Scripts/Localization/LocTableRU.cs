@@ -51,7 +51,7 @@ public static class LocTableRU
         { "Couper le son en arrière-plan", "Без звука в фоне" }, { "Coupe tout le son quand la fenêtre du jeu n'est pas active.", "Отключает весь звук, когда окно игры неактивно." },
         { "JEU", "ИГРА" }, { "Visée, pause et retours de combat", "Прицеливание, пауза и боевые индикаторы" }, { "Visée", "Прицеливание" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Автоматическое: выстрелы летят в ближайшего врага. Мышью: ручное прицеливание" },
-        { "À la souris", "Мышью" }, { "Automatique", "Автоматическое" }, { "Pause automatique", "Автопауза" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Ставит забег на паузу, когда окно игры теряет фокус." },
+        { "À la souris", "Мышью" }, { "Automatique", "Автоматическое" }, { "Pause automatique", "Автопауза" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Ставит забег на паузу, когда окно игры теряет фокус." },
         { "Nombres de dégâts", "Числа урона" }, { "Dégâts infligés", "Нанесённый урон" }, { "Affiche les dégâts infligés aux ennemis.", "Показывает урон, который ты наносишь врагам." },
         { "Dégâts subis", "Полученный урон" }, { "Affiche les dégâts que reçoit le joueur.", "Показывает получаемый тобой урон." },
         { "Taille des nombres", "Размер чисел" }, { "Taille des chiffres qui apparaissent au-dessus des cibles.", "Размер чисел, появляющихся над целями." },
@@ -309,6 +309,9 @@ public static class LocTableRU
         { "Navigation", "Навигация" }, { "Clavier / souris", "Клавиатура / мышь" }, { "Aucune manette détectée : branche-en une", "Геймпад не обнаружен: подключи его" },
         { "Faire défiler", "Прокрутить" }, { "Quitter le défilement", "Закончить прокрутку" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Увеличивает максимальный запас здоровья на {0}% и полностью его восстанавливает" },
         { "Manuelle", "Ручное" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Автоматическое: выстрелы летят в ближайшего врага. Ручное: целься мышью или правым стиком геймпада" },
+        { "Écran", "Экран" }, { "Écran {0}", "Экран {0}" }, { "Écran sur lequel le jeu s'affiche", "Экран, на котором отображается игра" },
+        { "Un seul écran est branché.", "Подключён только один экран." }, { "Remporte une partie en {0} pour débloquer cette difficulté", "Выиграй забег на уровне «{0}», чтобы открыть эту сложность" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Выиграй забег в режиме «Классика» на уровне «{0}», чтобы играть в «Бесконечный» режим на этой сложности" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },

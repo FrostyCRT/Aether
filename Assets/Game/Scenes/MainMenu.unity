@@ -39707,6 +39707,9 @@ MonoBehaviour:
   _previewImage: {fileID: 1965535969}
   _contentRoot: {fileID: 650056909}
   _activeColor: {r: 1, g: 0.79, b: 0.3, a: 1}
+  _lockIcon: {fileID: 21300000, guid: f767c4e0bcef65d46adf4c36dac05688, type: 3}
+  _lockDisc: {fileID: 21300000, guid: 5c8c118aa2ac89849bf05d6f5ecdf38b, type: 3}
+  _lockedColor: {r: 0.6, g: 0.58, b: 0.55, a: 1}
 --- !u!1 &1379225668
 GameObject:
   m_ObjectHideFlags: 0

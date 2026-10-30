@@ -686,3 +686,9 @@
 640| Zwiększa twoje maksymalne PŻ o {0}% i w pełni je przywraca
 641| Ręczne
 642| Automatyczne: strzały lecą w najbliższego wroga. Ręczne: celujesz myszą albo prawą gałką pada
+643| Ekran
+644| Ekran {0}
+645| Ekran, na którym wyświetlana jest gra
+646| Podłączony jest tylko jeden ekran.
+647| Wygraj rozgrywkę na poziomie {0}, aby odblokować ten poziom trudności
+648| Wygraj rozgrywkę w trybie Klasycznym na poziomie {0}, aby grać w trybie Nieskończonym na tym poziomie trudności

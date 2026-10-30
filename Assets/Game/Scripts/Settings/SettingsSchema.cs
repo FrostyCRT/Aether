@@ -90,6 +90,26 @@ public static class SettingsSchema
         GameSettings.SetString(GameSettings.Resolution, SettingsApplier.ResolutionKey(list[i]));
     }
 
+    // AJOUTÉ (2026-10-29, retour utilisateur : "choisir sur quel écran le joueur veut que le jeu s'affiche, dans les
+    // paramètres") - un choix par écran branché, dans l'ordre de Windows (« Écran 1 », « Écran 2 »... + sa définition).
+    private static string[] MonitorNames()
+    {
+        List<DisplayInfo> list = SettingsApplier.Monitors();
+        string[] n = new string[Mathf.Max(1, list.Count)];
+        if (list.Count == 0) { n[0] = Loc.F("Écran {0}", 1); return n; }
+        for (int i = 0; i < list.Count; i++)
+            n[i] = Loc.F("Écran {0}", i + 1) + "  ·  " + list[i].width + " × " + list[i].height;
+        return n;
+    }
+
+    private static int MonitorIndex() => SettingsApplier.CurrentMonitorIndex();
+
+    private static void SetMonitorIndex(int i)
+    {
+        if (i < 0 || i >= SettingsApplier.Monitors().Count) return;
+        GameSettings.SetString(GameSettings.Monitor, i.ToString());
+    }
+
     private static RowDef Header(string label) => new RowDef { kind = RowKind.Header, label = label };
     private static RowDef Note(string text) => new RowDef { kind = RowKind.Note, label = text };
 
@@ -115,6 +135,15 @@ public static class SettingsSchema
         {
             kind = RowKind.Choice, label = "Mode d'affichage", key = GameSettings.DisplayMode, options = DisplayModeNames,
             description = "Plein écran, fenêtre sans bordure ou fenêtre classique",
+            affectsDisplay = true
+        });
+        display.rows.Add(new RowDef
+        {
+            kind = RowKind.Choice, label = "Écran", key = GameSettings.Monitor,
+            description = "Écran sur lequel le jeu s'affiche",
+            dynamicOptions = MonitorNames, getIndex = MonitorIndex, setIndex = SetMonitorIndex,
+            isEnabled = () => SettingsApplier.Monitors().Count > 1,
+            disabledHint = "Un seul écran est branché.",
             affectsDisplay = true
         });
         display.rows.Add(new RowDef
@@ -177,7 +206,7 @@ public static class SettingsSchema
             getIndex = () => GameSettings.GetBool(GameSettings.AutoAim) ? 1 : 0,
             setIndex = i => GameSettings.SetBool(GameSettings.AutoAim, i == 1)
         });
-        game.rows.Add(Toggle("Pause automatique", "Met la partie en pause quand la fenêtre du jeu perd le focus.", GameSettings.PauseOnFocusLoss));
+        game.rows.Add(Toggle("Pause automatique", "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", GameSettings.PauseOnFocusLoss));
         game.rows.Add(Header("Nombres de dégâts"));
         game.rows.Add(Toggle("Dégâts infligés", "Affiche les dégâts infligés aux ennemis.", GameSettings.DamageDealt));
         game.rows.Add(Toggle("Dégâts subis", "Affiche les dégâts que reçoit le joueur.", GameSettings.DamageTaken));

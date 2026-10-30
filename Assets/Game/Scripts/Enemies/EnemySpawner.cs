@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    private const float ModerateEarlyHealthScale = 0.75f;   // PV des ennemis en Modéré au début de partie
+    private const float ModerateEaseEndMinutes = 8f;        // retour aux PV normaux (rampe de 6 à 8 min)
+
     [System.Serializable]
     public struct SpawnPhase
     {
@@ -210,7 +213,15 @@ public class EnemySpawner : MonoBehaviour
         float timeBasedMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
         float healthMultiplier = timeBasedMultiplier * difficultyMultiplier;
 
-        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth);
+        // AJOUTÉ (2026-10-29, retour utilisateur : "mettre moins de pv aux ennemis du début jusqu'à 8 min pour la
+        // difficulté modéré") - en Modéré, -25 % de PV jusqu'à 6 min, puis retour progressif à la normale à 8 min (pas
+        // de saut brutal). L'XP donnée ne change pas (SetXpHealthMultiplier ci-dessous lit timeBasedMultiplier).
+        float earlyEase = DifficultyTiers.Current == DifficultyTier.Moderate
+            ? Mathf.Lerp(ModerateEarlyHealthScale, 1f, Mathf.InverseLerp(ModerateEaseEndMinutes - 2f, ModerateEaseEndMinutes, runMinutes))
+            : 1f;
+        healthMultiplier *= earlyEase;
+
+        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth * earlyEase);
 
         if (spawned == null)
         {

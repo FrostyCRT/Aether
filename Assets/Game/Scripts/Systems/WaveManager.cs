@@ -347,7 +347,7 @@ public class WaveManager : MonoBehaviour
                 // déplacement et le délai entre chaque attaques [...] pour le boss 2, mettre plus de projectiles
                 // dans ce même scale") - voir BossBase/BossDeer/BossCorruptedSource pour le détail de ce que chaque
                 // boss fait de ces 2 multiplicateurs (très différent d'un boss à l'autre).
-                bossScript.SetDifficultySpeedMultiplier(DifficultyTiers.BossSpeedMultiplier(DifficultyTiers.Current));
+                bossScript.SetDifficultySpeedMultiplier(DifficultyTiers.BossSpeedMultiplier(DifficultyTiers.Current, bossNumber));
                 bossScript.SetDifficultyAttackSpeedMultiplier(DifficultyTiers.BossAttackSpeedMultiplier(DifficultyTiers.Current));
 
                 if (bossNumber == 2 && bossScript is BossDeer deer)

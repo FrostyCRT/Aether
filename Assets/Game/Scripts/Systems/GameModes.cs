@@ -158,6 +158,35 @@ public static class GameModes
         }
     }
 
+    // ---- Verrous de difficulté (AJOUTÉ 2026-10-29) ------------------------------------------------------------------
+    // Retour utilisateur : "il faut réussir une partie en difficulté modéré pour débloquer la difficulté suivante, tu peux
+    // mettre un cadenas" et "le mode sans fin ne doit être jouable que si on a réussi une partie dans la difficulté en
+    // question". Une victoire en Classique avec N'IMPORTE QUEL personnage compte (une victoire dans un palier plus dur
+    // compte aussi pour les paliers plus faciles).
+    public static bool HasClassicWin(DifficultyTier tier)
+    {
+        MetaProgressionManager meta = MetaProgressionManager.Instance;
+        return meta != null && meta.HasWonTierAnyCharacter(tier);
+    }
+
+    public static bool IsTierUnlocked(DifficultyTier tier)
+    {
+        return tier == DifficultyTier.Moderate || HasClassicWin((DifficultyTier)((int)tier - 1));
+    }
+
+    // Raison pour laquelle ce mode ne peut pas être lancé dans ce palier ("" = jouable).
+    public static string BlockReason(GameMode mode, DifficultyTier tier, SaveData data)
+    {
+        if (!IsUnlocked(mode, data)) return LockedHint(mode);
+        if (!IsTierUnlocked(tier))
+            return Loc.F("Remporte une partie en {0} pour débloquer cette difficulté", DifficultyTiers.TierName((DifficultyTier)((int)tier - 1)));
+        if (mode == GameMode.Endless && !HasClassicWin(tier))
+            return Loc.F("Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", DifficultyTiers.TierName(tier));
+        return "";
+    }
+
+    public static bool CanPlay(GameMode mode, DifficultyTier tier, SaveData data) => BlockReason(mode, tier, data).Length == 0;
+
     // Ramène un mode sauvegardé devenu indisponible (save édité...) au Classique.
     public static void EnsureCurrentIsAvailable(SaveData data)
     {

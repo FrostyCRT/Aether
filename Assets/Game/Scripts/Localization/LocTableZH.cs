@@ -44,7 +44,7 @@ public static class LocTableZH
         { "Effets sonores", "音效" }, { "Volume des bruitages : coups, sorts, interface.", "音效音量：打击、法术、界面。" }, { "Couper le son en arrière-plan", "后台静音" },
         { "Coupe tout le son quand la fenêtre du jeu n'est pas active.", "游戏窗口未激活时关闭所有声音。" }, { "JEU", "游戏" }, { "Visée, pause et retours de combat", "瞄准、暂停与战斗反馈" },
         { "Visée", "瞄准" }, { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "自动：自动瞄准最近的敌人。鼠标：手动瞄准" },
-        { "À la souris", "鼠标" }, { "Automatique", "自动" }, { "Pause automatique", "自动暂停" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "游戏窗口失去焦点时暂停对局。" },
+        { "À la souris", "鼠标" }, { "Automatique", "自动" }, { "Pause automatique", "自动暂停" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "游戏窗口失去焦点时暂停对局。" },
         { "Nombres de dégâts", "伤害数字" }, { "Dégâts infligés", "造成的伤害" }, { "Affiche les dégâts infligés aux ennemis.", "显示你对敌人造成的伤害。" },
         { "Dégâts subis", "受到的伤害" }, { "Affiche les dégâts que reçoit le joueur.", "显示你受到的伤害。" }, { "Taille des nombres", "数字大小" },
         { "Taille des chiffres qui apparaissent au-dessus des cibles.", "目标上方显示的数字大小。" }, { "INTERFACE", "界面" }, { "Ce qui s'affiche pendant la partie", "对局中显示的内容" },
@@ -259,5 +259,7 @@ public static class LocTableZH
         { "Clavier / souris", "键盘／鼠标" }, { "Aucune manette détectée : branche-en une", "未检测到手柄：请连接手柄" }, { "Faire défiler", "滚动" },
         { "Quitter le défilement", "停止滚动" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大生命值提高 {0}%，并完全恢复生命值" },
         { "Manuelle", "手动" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "自动：自动瞄准最近的敌人。手动：用鼠标或手柄右摇杆瞄准" },
+        { "Écran", "显示器" }, { "Écran {0}", "显示器 {0}" }, { "Écran sur lequel le jeu s'affiche", "显示游戏画面的显示器" }, { "Un seul écran est branché.", "只连接了一台显示器。" },
+        { "Remporte une partie en {0} pour débloquer cette difficulté", "在{0}难度下赢得一局即可解锁此难度" }, { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "在{0}难度下赢得一局经典模式，即可在此难度下游玩无尽模式" },
     };
 }

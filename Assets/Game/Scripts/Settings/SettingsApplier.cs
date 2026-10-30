@@ -155,6 +155,7 @@ public class SettingsApplier : MonoBehaviour
     {
         ApplyQuality();
         ApplyVSyncAndCap();
+        ApplyMonitor();
         ApplyDisplay();
         ApplyAudioVolumes();
         ApplyBrightness();
@@ -174,6 +175,8 @@ public class SettingsApplier : MonoBehaviour
             case GameSettings.DisplayMode:
             case GameSettings.Resolution:
                 ApplyDisplay(); break;
+            case GameSettings.Monitor:
+                ApplyMonitor(); break;
             case GameSettings.VSync:
             case GameSettings.FpsCap:
                 ApplyVSyncAndCap(); break;
@@ -191,6 +194,7 @@ public class SettingsApplier : MonoBehaviour
         _duckTarget = 1f;                                        // jamais de son étouffé qui survit à un changement de scène
         ApplyShadows();
         PlaceFps(scene);
+        ApplyShowFps();
     }
 
     // AJOUTÉ (2026-10-25) - dans le menu, la barre d'onglets occupe le haut de l'écran (100 px) et ne laisse que 136 px
@@ -281,6 +285,56 @@ public class SettingsApplier : MonoBehaviour
     }
 
     public static string ResolutionKey(Vector2Int v) => v.x + "x" + v.y;
+
+    // ---- choix de l'écran (AJOUTÉ 2026-10-29) ------------------------------------------------------------------------
+    private static readonly List<DisplayInfo> _monitors = new List<DisplayInfo>();
+
+    // Écrans branchés, dans l'ordre de Windows.
+    public static List<DisplayInfo> Monitors()
+    {
+        _monitors.Clear();
+        try { Screen.GetDisplayLayout(_monitors); } catch { }
+        return _monitors;
+    }
+
+    // Écran choisi dans les Paramètres, sinon celui où se trouve la fenêtre.
+    public static int CurrentMonitorIndex()
+    {
+        List<DisplayInfo> list = Monitors();
+        if (int.TryParse(GameSettings.GetString(GameSettings.Monitor), out int saved) && saved >= 0 && saved < list.Count)
+            return saved;
+        DisplayInfo current = Screen.mainWindowDisplayInfo;
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].Equals(current)) return i;
+        return 0;
+    }
+
+    private Coroutine _monitorMove;
+
+    // Déplace la fenêtre du jeu sur l'écran choisi (centrée), puis réapplique mode et résolution : la liste des
+    // résolutions et la taille du bureau sont celles du nouvel écran une fois le déplacement terminé.
+    private void ApplyMonitor()
+    {
+        if (Application.isEditor) return;
+        if (!int.TryParse(GameSettings.GetString(GameSettings.Monitor), out int index)) return;
+        List<DisplayInfo> list = Monitors();
+        if (index < 0 || index >= list.Count) return;
+        DisplayInfo target = list[index];
+        if (target.Equals(Screen.mainWindowDisplayInfo)) return;
+        if (_monitorMove != null) StopCoroutine(_monitorMove);
+        _monitorMove = StartCoroutine(MoveToMonitor(target));
+    }
+
+    private System.Collections.IEnumerator MoveToMonitor(DisplayInfo target)
+    {
+        Vector2Int pos = Vector2Int.zero;
+        if (Screen.fullScreenMode == FullScreenMode.Windowed)
+            pos = new Vector2Int(Mathf.Max(0, (target.width - Screen.width) / 2), Mathf.Max(0, (target.height - Screen.height) / 2));
+        AsyncOperation op = Screen.MoveMainWindowTo(target, pos);
+        while (op != null && !op.isDone) yield return null;
+        _monitorMove = null;
+        ApplyDisplay();
+    }
 
     public static bool TryParseResolution(string s, out Vector2Int v)
     {
@@ -405,7 +459,9 @@ public class SettingsApplier : MonoBehaviour
 
     private void ApplyShowFps()
     {
-        bool on = GameSettings.GetBool(GameSettings.ShowFps);
+        // MODIFIÉ (2026-10-29, retour utilisateur : "N'affiche pas les ips dans le loading panel") - jamais sur l'écran de
+        // chargement du lancement, seulement dans le menu et en partie.
+        bool on = GameSettings.GetBool(GameSettings.ShowFps) && SceneManager.GetActiveScene().name != "LoadingScreen";
         _fpsText.gameObject.SetActive(on);
         _fpsAccum = 0f; _fpsFrames = 0; _fpsTime = 0f;
     }

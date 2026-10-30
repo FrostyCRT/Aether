@@ -186,13 +186,17 @@ public static class DifficultyTiers
     // identique quel que soit le palier. 2 nouveaux multiplicateurs génériques, posés par WaveManager.SpawnBoss
     // comme BossHealthMultiplier - chaque boss les applique à SA PROPRE notion de "vitesse"/"cadence" (très
     // différente d'un boss à l'autre, voir BossBase/BossDeer/BossCorruptedSource).
-    public static float BossSpeedMultiplier(DifficultyTier tier)
+    // MODIFIÉ (2026-10-29, retour utilisateur : "faire en sorte que le boss 1 et 2 avancent un peu plus vite dans la
+    // difficulté 1 et 2") - les boss 1 et 2 marchent plus vite en Modéré (x1,15 au lieu de x1) et en Violent (x1,25 au
+    // lieu de x1,15) ; Apocalyptique reste à x1,3 (toujours le plus rapide) et le Boss 3, ancré, n'est pas concerné.
+    public static float BossSpeedMultiplier(DifficultyTier tier, int bossNumber = 0)
     {
+        bool walker = bossNumber == 1 || bossNumber == 2;
         switch (tier)
         {
-            case DifficultyTier.Violent: return 1.15f;
+            case DifficultyTier.Violent: return walker ? 1.25f : 1.15f;
             case DifficultyTier.Apocalyptic: return 1.3f;
-            default: return 1f;
+            default: return walker ? 1.15f : 1f;
         }
     }
 

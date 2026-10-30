@@ -16,7 +16,8 @@ using UnityEngine.UI;
 //
 // Visible en Classique, Sans fin ET Ruée de boss (plus seulement le Classique, voir DifficultyTiers - le palier a
 // maintenant un vrai effet de jeu sur ces 3 modes). Jamais de palier verrouillé : revenir à Modéré reste gratuit,
-// même logique que l'ancien DifficultySelector.
+// même logique que l'ancien DifficultySelector. MODIFIÉ (2026-10-29) : les paliers Violent et Apocalyptique se
+// débloquent par une victoire dans le palier précédent (cadenas, voir Refresh).
 public class DifficultyCarousel : MonoBehaviour
 {
     [SerializeField] private Button _leftButton;
@@ -27,6 +28,15 @@ public class DifficultyCarousel : MonoBehaviour
     [SerializeField] private GameObject _contentRoot;
 
     [SerializeField] private Color _activeColor = new Color(1f, 0.79f, 0.30f, 1f);
+
+    // AJOUTÉ (2026-10-29, retour utilisateur : "il faut réussir une partie en difficulté modéré pour débloquer la difficulté
+    // suivante, tu peux mettre un cadenas") - un palier verrouillé reste visible (on peut le regarder), mais son aperçu est
+    // assombri, son nom grisé et un cadenas (même médaillon que l'arbre de compétences) est posé au centre ; le bouton
+    // Jouer est grisé et la raison s'affiche sous le mode (GameModeSelector / GameModes.BlockReason).
+    [SerializeField] private Sprite _lockIcon;
+    [SerializeField] private Sprite _lockDisc;
+    [SerializeField] private Color _lockedColor = new Color(0.6f, 0.58f, 0.55f, 1f);
+    private GameObject _lockBadge;
 
     // Assombrissement progressif appliqué PAR-DESSUS la vraie teinte de lumière du palier (DifficultyTiers.LightColor)
     // pour que le dégradé de prévisualisation se lise sans ambiguïté comme jour -> crépuscule -> nuit, même si les
@@ -73,11 +83,12 @@ public class DifficultyCarousel : MonoBehaviour
     private void Refresh()
     {
         DifficultyTier tier = DifficultyTiers.Current;
+        bool locked = !GameModes.IsTierUnlocked(tier);
 
         if (_tierNameText != null)
         {
             _tierNameText.text = DifficultyTiers.TierName(tier);
-            _tierNameText.color = _activeColor;
+            _tierNameText.color = locked ? _lockedColor : _activeColor;
         }
 
         if (_previewImage != null)
@@ -85,7 +96,36 @@ public class DifficultyCarousel : MonoBehaviour
             Color lightTint = DifficultyTiers.LightColor(tier);
             float darkness = TimeOfDayDarkness[(int)tier];
             _previewImage.sprite = MenuSprites.SkyGradient(lightTint * darkness);
-            _previewImage.color = Color.white;
+            _previewImage.color = locked ? new Color(0.45f, 0.45f, 0.45f, 1f) : Color.white;
+            EnsureLockBadge();
+            if (_lockBadge != null) _lockBadge.SetActive(locked);
         }
+    }
+
+    private void EnsureLockBadge()
+    {
+        if (_lockBadge != null || _lockIcon == null) return;
+        _lockBadge = new GameObject("LockBadge", typeof(RectTransform));
+        RectTransform rt = (RectTransform)_lockBadge.transform;
+        rt.SetParent(_previewImage.transform, false);
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(76f, 76f);
+        if (_lockDisc != null)
+        {
+            Image disc = _lockBadge.AddComponent<Image>();
+            disc.sprite = _lockDisc;
+            disc.color = new Color(0.08f, 0.06f, 0.05f, 0.85f);
+            disc.raycastTarget = false;
+        }
+        GameObject icon = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        RectTransform irt = (RectTransform)icon.transform;
+        irt.SetParent(rt, false);
+        irt.anchorMin = irt.anchorMax = new Vector2(0.5f, 0.5f);
+        irt.sizeDelta = new Vector2(46f, 46f);
+        Image img = icon.GetComponent<Image>();
+        img.sprite = _lockIcon;
+        img.preserveAspect = true;
+        img.color = _activeColor;
+        img.raycastTarget = false;
     }
 }

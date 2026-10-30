@@ -36,17 +36,21 @@ public class MetaProgressionManager : MonoBehaviour
     // 2 200 en Violent, ~3 000 / 3 100 en Apocalyptique. Les éclats ne viennent plus que des boss et des victoires, plus
     // une prime unique pour la première victoire de chaque personnage dans chaque palier. Objectifs : une branche
     // maxée en ~30 parties, toute la Réputation en ~150. Coûts de l'arbre : SkillTreeData.
+    // MODIFIÉ (2026-10-29, retour utilisateur : "Donner un peu plus d'éclats et de gold par parties") - environ +25 % sur
+    // tout le barème ci-dessous (or par minute, part des ennemis, victoire, éclats des boss et de la victoire) : une
+    // branche maxée passe d'~30-40 parties à ~25-32. Primes de 1re victoire inchangées.
     // Constantes (et non [SerializeField]) : l'ancienne version sérialisait ses valeurs dans la scène MainMenu, qui
     // auraient écrasé ce barème sans qu'on le voie dans le code.
-    public const int GoldPerMinute = 20;                       // par minute de chrono (Classique, Sans fin, Ruée)
-    public const float KillGoldFactor = 0.02f;                 // part de EnemyBase._goldValue réellement versée
-    public const int ClassicVictoryGold = 250;
-    public const int RushVictoryGold = 125;
+    public const int GoldPerMinute = 25;                       // par minute de chrono (Classique, Sans fin, Ruée)
+    public const float KillGoldFactor = 0.025f;                // part de EnemyBase._goldValue réellement versée
+    public const int ClassicVictoryGold = 310;
+    public const int RushVictoryGold = 155;
     public const int TitansVictoryGold = 50;
+    public const float BossGoldBonus = 1.25f;                  // 2026-10-29 : or des boss (valeur des prefabs) +25 %
     public const float RushBossRewardScale = 0.5f;             // 9 boss rapprochés : la moitié d'un boss du Classique
     public const float TitansBossRewardScale = 0.2f;           // ~1 à 2 min de partie : pas de ferme à or
-    private static readonly int[] EclatsPerBoss = { 10, 20, 30 };   // boss 1, 2, 3
-    public const int EclatsVictoryBonus = 40;
+    private static readonly int[] EclatsPerBoss = { 13, 25, 38 };   // boss 1, 2, 3
+    public const int EclatsVictoryBonus = 50;
     public const int TitansVictoryEclats = 10;
     // Prime unique de la PREMIÈRE victoire du Classique dans un palier, pour chaque personnage (Modéré, Violent, Apocalyptique).
     private static readonly int[] FirstWinEclats = { 300, 600, 1000 };
@@ -110,7 +114,7 @@ public class MetaProgressionManager : MonoBehaviour
     public void AddBossGold(int bossGoldValue)
     {
         float scale = GameModes.IsTitans ? TitansBossRewardScale : GameModes.IsBossRush ? RushBossRewardScale : 1f;
-        AddRunGold(Mathf.RoundToInt(bossGoldValue * scale));
+        AddRunGold(Mathf.RoundToInt(bossGoldValue * scale * BossGoldBonus));
     }
 
     // Appelé par GameManager à chaque minute pleine du chrono.
@@ -364,6 +368,15 @@ public class MetaProgressionManager : MonoBehaviour
         if (Data == null || characterIndex < 0 || characterIndex > 2) return false;
         for (int t = (int)tier; t < 3; t++)
             if (Data.winsByCharacterTier[characterIndex * 3 + t] > 0) return true;
+        return false;
+    }
+
+    // AJOUTÉ (2026-10-29) - vrai si UN des personnages a gagné une partie du Classique dans ce palier (ou un plus dur) :
+    // sert à débloquer le palier suivant et le mode Sans fin du palier (voir GameModes.BlockReason).
+    public bool HasWonTierAnyCharacter(DifficultyTier tier)
+    {
+        for (int c = 0; c < 3; c++)
+            if (HasWonTier(c, tier)) return true;
         return false;
     }
 

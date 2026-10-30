@@ -64,7 +64,7 @@ public static class LocTableEN
         { "JEU", "GAMEPLAY" }, { "Visée, pause et retours de combat", "Aiming, pause and combat feedback" },
         { "Visée", "Aiming" }, { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Automatic: shots target the nearest enemy. Mouse: manual aiming" },
         { "À la souris", "Mouse" }, { "Automatique", "Automatic" },
-        { "Pause automatique", "Auto-pause" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Pauses the run when the game window loses focus." },
+        { "Pause automatique", "Auto-pause" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Pauses the run when the game window is no longer in the foreground." },
         { "Nombres de dégâts", "Damage numbers" },
         { "Dégâts infligés", "Damage dealt" }, { "Affiche les dégâts infligés aux ennemis.", "Shows the damage you deal to enemies." },
         { "Dégâts subis", "Damage taken" }, { "Affiche les dégâts que reçoit le joueur.", "Shows the damage the player takes." },
@@ -410,6 +410,13 @@ public static class LocTableEN
         { "Augmente tes PV max de {0}% et restaure tous tes PV", "Increases your max HP by {0}% and fully restores your HP" },
         { "Manuelle", "Manual" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatic: shots target the nearest enemy. Manual: aim with the mouse or the gamepad's right stick" },
+
+        // AJOUTÉ (2026-10-29) - choix de l'écran (Paramètres > Affichage), verrous de difficulté et du mode Sans fin.
+        { "Écran", "Display" }, { "Écran {0}", "Display {0}" },
+        { "Écran sur lequel le jeu s'affiche", "Display the game appears on" },
+        { "Un seul écran est branché.", "Only one display is connected." },
+        { "Remporte une partie en {0} pour débloquer cette difficulté", "Win a run on {0} to unlock this difficulty" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Win a Classic run on {0} to play Endless mode at this difficulty" },
 
         // ==== SECTIONS SUIVANTES ====
     };

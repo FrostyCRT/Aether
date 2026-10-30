@@ -46,7 +46,7 @@ public static class LocTableKO
         { "Volume de la musique des menus et des parties.", "메뉴와 게임 중 음악의 음량．" }, { "Effets sonores", "효과음" }, { "Volume des bruitages : coups, sorts, interface.", "효과음 음량： 타격， 마법， 인터페이스．" },
         { "Couper le son en arrière-plan", "백그라운드에서 음소거" }, { "Coupe tout le son quand la fenêtre du jeu n'est pas active.", "게임 창이 비활성 상태일 때 모든 소리를 끕니다．" },
         { "JEU", "게임" }, { "Visée, pause et retours de combat", "조준， 일시정지， 전투 피드백" }, { "Visée", "조준" }, { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "자동： 가장 가까운 적을 자동으로 조준합니다． 마우스： 직접 조준합니다" },
-        { "À la souris", "마우스" }, { "Automatique", "자동" }, { "Pause automatique", "자동 일시정지" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "게임 창이 포커스를 잃으면 게임을 일시정지합니다．" },
+        { "À la souris", "마우스" }, { "Automatique", "자동" }, { "Pause automatique", "자동 일시정지" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "게임 창이 포커스를 잃으면 게임을 일시정지합니다．" },
         { "Nombres de dégâts", "피해량 표시" }, { "Dégâts infligés", "가한 피해" }, { "Affiche les dégâts infligés aux ennemis.", "적에게 가한 피해를 표시합니다．" },
         { "Dégâts subis", "받은 피해" }, { "Affiche les dégâts que reçoit le joueur.", "자신이 받은 피해를 표시합니다．" }, { "Taille des nombres", "숫자 크기" },
         { "Taille des chiffres qui apparaissent au-dessus des cibles.", "대상 위에 표시되는 숫자의 크기．" }, { "INTERFACE", "인터페이스" },
@@ -271,5 +271,7 @@ public static class LocTableKO
         { "Clavier / souris", "키보드 / 마우스" }, { "Aucune manette détectée : branche-en une", "게임패드가 감지되지 않았습니다． 연결해 주세요" },
         { "Faire défiler", "스크롤" }, { "Quitter le défilement", "스크롤 종료" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "최대 HP가 {0}% 증가하고 HP를 모두 회복합니다" },
         { "Manuelle", "수동" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "자동： 가장 가까운 적을 자동으로 조준합니다． 수동： 마우스나 게임패드 오른쪽 스틱으로 조준합니다" },
+        { "Écran", "디스플레이" }, { "Écran {0}", "디스플레이 {0}" }, { "Écran sur lequel le jeu s'affiche", "게임을 표시할 디스플레이" }, { "Un seul écran est branché.", "디스플레이가 하나만 연결되어 있습니다．" },
+        { "Remporte une partie en {0} pour débloquer cette difficulté", "{0} 난이도에서 한 판을 승리하면 이 난이도가 해금됩니다" }, { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "{0} 난이도에서 클래식 모드를 한 판 승리하면 이 난이도에서 무한 모드를 플레이할 수 있습니다" },
     };
 }

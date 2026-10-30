@@ -678,3 +678,9 @@
 640| Aumenta sua vida máxima em {0}% e a restaura por completo
 641| Manual
 642| Automática: os disparos miram no inimigo mais próximo. Manual: você mira com o mouse ou com o analógico direito do controle
+643| Tela
+644| Tela {0}
+645| Tela em que o jogo é exibido
+646| Há apenas uma tela conectada.
+647| Vença uma partida em {0} para desbloquear esta dificuldade
+648| Vença uma partida no modo Clássico em {0} para jogar o modo Infinito nesta dificuldade

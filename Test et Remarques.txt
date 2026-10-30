@@ -7,28 +7,32 @@ Mode coop ? deux joueurs dans la partie.
 
 revoir les lueurs dans les fonds d'écran
 
-choisir sur quel écran jouer dans les paramètres.
+-choisir sur quel écran le joueur veut que le jeu s'affiche, dans les paramètres.
 
-il n'y a pas le système qui fait qu'il faut réussir une partie en difficulté modéré pour débloqué la difficulté suivante, tu peux mettre un cadenas.
+-il n'y a pas le système qui fait qu'il faut réussir une partie en difficulté modéré pour débloqué la difficulté suivante, tu peux mettre un cadenas.
 
-le mode sans fin ne doit être jouable que si on a réussi une partie dans la difficulté en question.
+-le mode sans fin ne doit être jouable que si on a réussi une partie dans la difficulté en question.
 
-mettre moins de pv aux ennemis du début jusqu'à 8 min pour la difficulté 1.
+-mettre moins de pv aux ennemis du début jusqu'à 8 min pour la difficulté modéré.
 
-La caméra est comme saccadée quand on se déplace, fais un mini effet élastique quand on bouge, et augmente la fluidité.
+-La caméra est comme saccadée quand on se déplace, fais un mini effet élastique quand on bouge, et augmente la fluidité.
 
-il faut recentré l'affichage du nombre de vie sur la barre de vie dans le HUD
+-il faut recentrer en X l'affichage du nombre de vie sur la barre de vie dans le HUD
 
-c'est écrit que j'ai plus de 1000 ips quand je suis en illimité, mais j'ai du mal a y croire, alors qu'en plus l'écran est limité en ips.
+-c'est écrit que j'ai plus de 1000 ips quand je suis en illimité, mais j'ai du mal a y croire, alors qu'en plus l'écran est limité en ips.
+N'affiche pas les ips dans le loading panel.
 
-faire en sorte que le boss 1 et 2 avancent un peu plus vite dans la difficulté 1 et 2. 
+-faire en sorte que le boss 1 et 2 avancent un peu plus vite dans la difficulté 1 et 2. 
 
-Pour le boss 1, revoir ses paternes de charge, au lieu que ce soit à interval fix, je veux que ce soit aléatoirement qu'il fasse une charge, aléatoirement entre 3 sec et 7 sec.
+-Pour le boss 1, revoir ses paternes de charge, au lieu que ce soit à interval fix, je veux que ce soit aléatoirement qu'il fasse une charge, aléatoirement entre 3 sec et 7 sec.
 
-possibilité de augmenter la range plus loin des orbitaux
+-possibilité de augmenter la range plus loin des orbitaux
 
-les phrases avec les points d'exclamation il faut mettre un espace entre  le dernier mot et le point d'exclamation.
+-les phrases avec les points d'exclamation il faut mettre un espace entre  le dernier mot et le point d'exclamation.
 Pareil pour les deux points ':', mettre un espace avant.
 
-en français, remplacer là où c'est écrit focus par du français.
-Donner un peu plus d'éclats en parties.
+-en français, remplacer là où c'est écrit 'focus' par le terme français.
+
+-Donner un peu plus d'éclats et de gold par parties.
+
+-Remonter dans le HUD les éléments en haut à droite, pour avoir le même écart entre le côté droit et le côté haut

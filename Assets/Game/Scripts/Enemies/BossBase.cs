@@ -33,7 +33,13 @@ public class BossBase : MonoBehaviour
     [SerializeField] protected GameObject _projectilePrefab;
     [SerializeField] protected float _fireRate = 1f;
     [SerializeField] protected int _projectileCount = 8;
-    [SerializeField] protected float _chargeCooldown = 5f;
+    [SerializeField] protected float _chargeCooldown = 5f;   // plus utilisé pour le délai entre charges (voir _chargeIntervalMin/Max)
+    // AJOUTÉ (2026-10-29, retour utilisateur : "Pour le boss 1, revoir ses paternes de charge, au lieu que ce soit à
+    // interval fix, je veux que ce soit aléatoirement qu'il fasse une charge, aléatoirement entre 3 sec et 7 sec") -
+    // un nouveau délai est tiré au hasard dans cette plage à l'apparition et après chaque charge (puis raccourci par le
+    // bonus de cadence des paliers Violent / Apocalyptique, comme avant).
+    [SerializeField] protected float _chargeIntervalMin = 3f;
+    [SerializeField] protected float _chargeIntervalMax = 7f;
     [SerializeField] protected float _chargeWindupDuration = 1f;
 
     [Header("Identité")]
@@ -93,6 +99,7 @@ public class BossBase : MonoBehaviour
     protected Transform _playerTransform;
     protected float _fireTimer = 0f;
     protected float _chargeTimer = 0f;
+    protected float _chargeDelay = 5f;   // délai tiré pour la prochaine charge
     protected bool _isCharging = false;
     protected Vector3 _chargeDirection;
     protected float _chargeDurationTimer = 0f;
@@ -176,6 +183,7 @@ public class BossBase : MonoBehaviour
     protected virtual void Start()
     {
         _currentHealth = _maxHealth;
+        RollChargeDelay();
 
         GameObject player = GameObject.FindWithTag("Player");
         if (player != null)
@@ -223,7 +231,12 @@ public class BossBase : MonoBehaviour
 
     // Délai réel entre 2 charges, après application du bonus de difficulté - utilisé partout où _chargeCooldown
     // était comparé à _chargeTimer, pour ne jamais avoir deux calculs différents du même "temps restant".
-    protected float EffectiveChargeCooldown => _chargeCooldown / _difficultyAttackSpeedMultiplier;
+    protected float EffectiveChargeCooldown => _chargeDelay / _difficultyAttackSpeedMultiplier;
+
+    protected void RollChargeDelay()
+    {
+        _chargeDelay = Random.Range(_chargeIntervalMin, Mathf.Max(_chargeIntervalMin, _chargeIntervalMax));
+    }
 
     private IEnumerator InitUI()
     {
@@ -368,6 +381,7 @@ public class BossBase : MonoBehaviour
                 _isWindingUp = false;
                 _chargeDirection = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : transform.forward;
                 _chargeTimer = 0f;
+                RollChargeDelay();
                 _chargeDurationTimer = _chargeDuration;
                 _hasDealtChargeDamage = false;
 

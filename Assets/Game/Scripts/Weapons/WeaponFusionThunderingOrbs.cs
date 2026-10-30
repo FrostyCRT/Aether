@@ -32,7 +32,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
     [Header("Orbes d'orage (hérités des Orbitaux, A/E)")]
     [SerializeField] private float _orbitRadius = 4.5f;
     [SerializeField] private float _minOrbitRadius = 1.5f;
-    [SerializeField] private float _maxOrbitRadius = 9f;
+    [SerializeField] private float _maxOrbitRadius = 13f;   // MODIFIÉ (2026-10-29) - suit les Orbitaux (8 -> 12), était 9
     [SerializeField] private float _rangeChangeSpeed = 2.5f;
     [SerializeField] private float _orbitSpeed = 190f;    // degrés par seconde
     [SerializeField] private int _orbCount = 5;

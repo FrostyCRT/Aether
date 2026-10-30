@@ -53,7 +53,7 @@ public static class LocTableES
         { "JEU", "JUEGO" }, { "Visée, pause et retours de combat", "Apuntado, pausa e indicadores de combate" }, { "Visée", "Apuntado" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Automático: los disparos apuntan al enemigo más cercano. Ratón: apuntas tú" },
         { "À la souris", "Con el ratón" }, { "Automatique", "Automático" }, { "Pause automatique", "Pausa automática" },
-        { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Pausa la partida cuando la ventana del juego pierde el foco." },
+        { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Pausa la partida cuando la ventana del juego pierde el foco." },
         { "Nombres de dégâts", "Números de daño" }, { "Dégâts infligés", "Daño infligido" }, { "Affiche les dégâts infligés aux ennemis.", "Muestra el daño que infliges a los enemigos." },
         { "Dégâts subis", "Daño recibido" }, { "Affiche les dégâts que reçoit le joueur.", "Muestra el daño que recibes." },
         { "Taille des nombres", "Tamaño de los números" }, { "Taille des chiffres qui apparaissent au-dessus des cibles.", "Tamaño de las cifras que aparecen sobre los objetivos." },
@@ -311,5 +311,8 @@ public static class LocTableES
         { "Navigation", "Navegar" }, { "Clavier / souris", "Teclado / ratón" }, { "Aucune manette détectée : branche-en une", "No se detecta ningún mando: conecta uno" },
         { "Faire défiler", "Desplazar" }, { "Quitter le défilement", "Dejar de desplazar" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Aumenta tu vida máxima un {0}% y la restaura por completo" },
         { "Manuelle", "Manual" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automático: los disparos apuntan al enemigo más cercano. Manual: apuntas con el ratón o el stick derecho del mando" },
+        { "Écran", "Pantalla" }, { "Écran {0}", "Pantalla {0}" }, { "Écran sur lequel le jeu s'affiche", "Pantalla en la que se muestra el juego" },
+        { "Un seul écran est branché.", "Solo hay una pantalla conectada." }, { "Remporte une partie en {0} pour débloquer cette difficulté", "Gana una partida en {0} para desbloquear esta dificultad" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Gana una partida en modo Clásico en {0} para jugar al modo Infinito en esta dificultad" },
     };
 }

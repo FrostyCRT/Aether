@@ -54,7 +54,7 @@ public static class LocTableDE
         { "JEU", "SPIEL" }, { "Visée, pause et retours de combat", "Zielen, Pause und Kampf-Feedback" }, { "Visée", "Zielen" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Maus: Du zielst selbst" },
         { "À la souris", "Mit der Maus" }, { "Automatique", "Automatisch" }, { "Pause automatique", "Automatische Pause" },
-        { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Pausiert den Run, wenn das Spielfenster den Fokus verliert." },
+        { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Pausiert den Run, wenn das Spielfenster den Fokus verliert." },
         { "Nombres de dégâts", "Schadenszahlen" }, { "Dégâts infligés", "Verursachter Schaden" }, { "Affiche les dégâts infligés aux ennemis.", "Zeigt den Schaden an, den du Gegnern zufügst." },
         { "Dégâts subis", "Erlittener Schaden" }, { "Affiche les dégâts que reçoit le joueur.", "Zeigt den Schaden an, den du einsteckst." },
         { "Taille des nombres", "Zahlengröße" }, { "Taille des chiffres qui apparaissent au-dessus des cibles.", "Größe der Zahlen, die über den Zielen erscheinen." },
@@ -312,5 +312,8 @@ public static class LocTableDE
         { "Navigation", "Navigieren" }, { "Clavier / souris", "Tastatur / Maus" }, { "Aucune manette détectée : branche-en une", "Kein Controller erkannt: Schließ einen an" },
         { "Faire défiler", "Scrollen" }, { "Quitter le défilement", "Scrollen beenden" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Erhöht deine maximalen LP um {0} % und stellt alle LP wieder her" },
         { "Manuelle", "Manuell" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatisch: Deine Schüsse zielen auf den nächsten Gegner. Manuell: Du zielst mit der Maus oder dem rechten Stick des Controllers" },
+        { "Écran", "Bildschirm" }, { "Écran {0}", "Bildschirm {0}" }, { "Écran sur lequel le jeu s'affiche", "Bildschirm, auf dem das Spiel angezeigt wird" },
+        { "Un seul écran est branché.", "Nur ein Bildschirm ist angeschlossen." }, { "Remporte une partie en {0} pour débloquer cette difficulté", "Gewinne einen Run auf {0}, um diesen Schwierigkeitsgrad freizuschalten" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Gewinne einen Run im Modus Klassisch auf {0}, um den Modus Endlos auf diesem Schwierigkeitsgrad zu spielen" },
     };
 }

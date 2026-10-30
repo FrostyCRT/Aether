@@ -47,7 +47,7 @@ public static class LocTableJA
         { "Effets sonores", "効果音" }, { "Volume des bruitages : coups, sorts, interface.", "効果音の音量：攻撃、魔法、インターフェース。" }, { "Couper le son en arrière-plan", "バックグラウンドで消音" },
         { "Coupe tout le son quand la fenêtre du jeu n'est pas active.", "ゲームウィンドウが非アクティブのとき、すべての音を消す。" }, { "JEU", "ゲーム" },
         { "Visée, pause et retours de combat", "エイム、ポーズ、戦闘フィードバック" }, { "Visée", "エイム" }, { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "オート：最も近い敵を自動で狙う。マウス：手動で狙う" },
-        { "À la souris", "マウス" }, { "Automatique", "オート" }, { "Pause automatique", "オートポーズ" }, { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "ゲームウィンドウのフォーカスが外れたら、プレイを一時停止する。" },
+        { "À la souris", "マウス" }, { "Automatique", "オート" }, { "Pause automatique", "オートポーズ" }, { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "ゲームウィンドウのフォーカスが外れたら、プレイを一時停止する。" },
         { "Nombres de dégâts", "ダメージ表示" }, { "Dégâts infligés", "与ダメージ" }, { "Affiche les dégâts infligés aux ennemis.", "敵に与えたダメージを表示する。" },
         { "Dégâts subis", "被ダメージ" }, { "Affiche les dégâts que reçoit le joueur.", "自分が受けたダメージを表示する。" }, { "Taille des nombres", "数字のサイズ" },
         { "Taille des chiffres qui apparaissent au-dessus des cibles.", "ターゲットの上に表示される数字の大きさ。" }, { "INTERFACE", "インターフェース" },
@@ -269,5 +269,8 @@ public static class LocTableJA
         { "Clavier / souris", "キーボード／マウス" }, { "Aucune manette détectée : branche-en une", "パッドが見つからない。接続してください" }, { "Faire défiler", "スクロール" },
         { "Quitter le défilement", "スクロールを終了" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "最大HPが{0}%増え、HPが全回復する" },
         { "Manuelle", "マニュアル" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "オート：最も近い敵を自動で狙う。マニュアル：マウスかパッドの右スティックで狙う" },
+        { "Écran", "ディスプレイ" }, { "Écran {0}", "ディスプレイ {0}" }, { "Écran sur lequel le jeu s'affiche", "ゲームを表示するディスプレイ" },
+        { "Un seul écran est branché.", "接続されているディスプレイは1台のみ。" }, { "Remporte une partie en {0} pour débloquer cette difficulté", "{0}で1回勝利すると、この難易度を解放" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "{0}でクラシックモードに1回勝利すると、この難易度でエンドレスモードを遊べる" },
     };
 }

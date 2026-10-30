@@ -149,6 +149,7 @@ public class MainMenuManager : MonoBehaviour
         // par GameModeSelector, ceci couvre un éventuel raccourci clavier.
         SaveData data = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null;
         GameModes.EnsureCurrentIsAvailable(data);
+        if (!GameModes.CanPlay(GameModes.Current, DifficultyTiers.Current, data)) return;   // palier verrouillé (2026-10-29)
 
         // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
         // chargement async + retour visuel) au lieu d'un SceneManager.LoadScene

@@ -679,3 +679,9 @@
 640| Aumenta i tuoi PS massimi del {0}% e li ripristina del tutto
 641| Manuale
 642| Automatica: i colpi puntano al nemico più vicino. Manuale: miri con il mouse o con lo stick destro del controller
+643| Schermo
+644| Schermo {0}
+645| Schermo su cui viene mostrato il gioco
+646| È collegato un solo schermo.
+647| Vinci una partita in {0} per sbloccare questa difficoltà
+648| Vinci una partita in modalità Classica in {0} per giocare alla modalità Infinita con questa difficoltà

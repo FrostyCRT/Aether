@@ -97,17 +97,27 @@ public class GameModeSelector : MonoBehaviour
         GameMode mode = GameModes.Current;
         GameModes.ModeInfo info = GameModes.Info(mode, data);
         bool unlocked = GameModes.IsUnlocked(mode, data);
+        // MODIFIÉ (2026-10-29) - un mode débloqué peut encore être bloqué par la difficulté choisie (palier pas encore
+        // débloqué, ou Sans fin sans victoire dans ce palier) : bouton Jouer grisé et raison à la place de la description.
+        string blocked = GameModes.BlockReason(mode, DifficultyTiers.Current, data);
 
         if (_nameText != null)
         {
             _nameText.text = info.name;
-            _nameText.color = unlocked ? _nameColor : _lockedColor;
+            _nameText.color = blocked.Length == 0 ? _nameColor : _lockedColor;
         }
-        if (_descriptionText != null) _descriptionText.text = info.description;
+        if (_descriptionText != null) _descriptionText.text = blocked.Length > 0 ? blocked : info.description;
         RefreshRecord(mode, data, unlocked);
 
         // Un mode verrouillé ne peut pas être lancé.
-        if (_playButton != null) _playButton.interactable = unlocked;
+        if (_playButton != null)
+        {
+            _playButton.interactable = blocked.Length == 0;
+            // le bouton n'a pas de teinte « désactivé » visible (habillage de HomeCommandPanelFX) : on l'estompe
+            CanvasGroup group = _playButton.GetComponent<CanvasGroup>();
+            if (group == null) group = _playButton.gameObject.AddComponent<CanvasGroup>();
+            group.alpha = blocked.Length == 0 ? 1f : 0.45f;
+        }
 
         bool multiple = GameModes.Count > 1;
         if (_leftButton != null) _leftButton.gameObject.SetActive(multiple);

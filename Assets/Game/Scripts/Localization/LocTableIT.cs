@@ -53,7 +53,7 @@ public static class LocTableIT
         { "JEU", "GIOCO" }, { "Visée, pause et retours de combat", "Mira, pausa e indicatori di combattimento" }, { "Visée", "Mira" },
         { "Automatique : les tirs visent l'ennemi le plus proche. Souris : visée manuelle", "Automatica: i colpi puntano al nemico più vicino. Mouse: mira manuale" },
         { "À la souris", "Con il mouse" }, { "Automatique", "Automatica" }, { "Pause automatique", "Pausa automatica" },
-        { "Met la partie en pause quand la fenêtre du jeu perd le focus.", "Mette in pausa la partita quando la finestra del gioco perde il focus." },
+        { "Met la partie en pause quand la fenêtre du jeu n'est plus au premier plan.", "Mette in pausa la partita quando la finestra del gioco perde il focus." },
         { "Nombres de dégâts", "Numeri dei danni" }, { "Dégâts infligés", "Danni inflitti" }, { "Affiche les dégâts infligés aux ennemis.", "Mostra i danni che infliggi ai nemici." },
         { "Dégâts subis", "Danni subiti" }, { "Affiche les dégâts que reçoit le joueur.", "Mostra i danni che subisci." },
         { "Taille des nombres", "Dimensione dei numeri" }, { "Taille des chiffres qui apparaissent au-dessus des cibles.", "Dimensione dei numeri che compaiono sopra i bersagli." },
@@ -316,5 +316,8 @@ public static class LocTableIT
         { "Navigation", "Naviga" }, { "Clavier / souris", "Tastiera / mouse" }, { "Aucune manette détectée : branche-en une", "Nessun controller rilevato: collegane uno" },
         { "Faire défiler", "Scorri" }, { "Quitter le défilement", "Smetti di scorrere" }, { "Augmente tes PV max de {0}% et restaure tous tes PV", "Aumenta i tuoi PS massimi del {0}% e li ripristina del tutto" },
         { "Manuelle", "Manuale" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "Automatica: i colpi puntano al nemico più vicino. Manuale: miri con il mouse o con lo stick destro del controller" },
+        { "Écran", "Schermo" }, { "Écran {0}", "Schermo {0}" }, { "Écran sur lequel le jeu s'affiche", "Schermo su cui viene mostrato il gioco" },
+        { "Un seul écran est branché.", "È collegato un solo schermo." }, { "Remporte une partie en {0} pour débloquer cette difficulté", "Vinci una partita in {0} per sbloccare questa difficoltà" },
+        { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Vinci una partita in modalità Classica in {0} per giocare alla modalità Infinita con questa difficoltà" },
     };
 }

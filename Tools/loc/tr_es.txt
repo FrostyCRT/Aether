@@ -679,3 +679,9 @@
 640| Aumenta tu vida máxima un {0}% y la restaura por completo
 641| Manual
 642| Automático: los disparos apuntan al enemigo más cercano. Manual: apuntas con el ratón o el stick derecho del mando
+643| Pantalla
+644| Pantalla {0}
+645| Pantalla en la que se muestra el juego
+646| Solo hay una pantalla conectada.
+647| Gana una partida en {0} para desbloquear esta dificultad
+648| Gana una partida en modo Clásico en {0} para jugar al modo Infinito en esta dificultad

@@ -131,7 +131,20 @@ public static class TextBalancer
         if (!(obj is TextMeshProUGUI t) || t == null || !t.isActiveAndEnabled) return;
 
         State s = GetState(t);
-        if (s.skip) return;
+        if (s.skip)
+        {
+            // texte dont la largeur suit le contenu : pas d'équilibrage, mais l'espace avant la ponctuation est élargi
+            if (t.richText && IsSlantedFont(t))
+            {
+                string widened = WidenPunctuationSpaces(t.text);
+                if (widened != t.text)
+                {
+                    _busy = true;
+                    try { t.text = widened; } finally { _busy = false; }
+                }
+            }
+            return;
+        }
 
         // Alignement changé par un script pendant que le texte était justifié : c'est le nouvel alignement d'origine.
         if (!s.justified) s.baseAlign = t.horizontalAlignment;
@@ -145,6 +158,7 @@ public static class TextBalancer
         // même disparaître certains libellés à taille automatique (titres « Orbites : rapprocher / éloigner » de la
         // page Commandes, entièrement invisibles).
         string fixedText = t.textWrappingMode == TextWrappingModes.NoWrap ? text : ProtectSpaces(text, t.richText);
+        if (t.richText && IsSlantedFont(t)) fixedText = WidenPunctuationSpaces(fixedText);
         s.lastText = fixedText;
         s.lastWidth = width;
         // Cas le plus courant (compteurs, chrono, libellés courts) : la génération qui vient d'avoir lieu tient déjà sur
@@ -389,6 +403,35 @@ public static class TextBalancer
             _sb.Append(c);
         }
         if (richText && depth > 0) _sb.Append(NoBreakClose);   // parenthèse jamais refermée
+        return _sb.ToString();
+    }
+
+    // AJOUTÉ (2026-10-29, retour utilisateur : "les phrases avec les points d'exclamation il faut mettre un espace entre
+    // le dernier mot et le point d'exclamation. Pareil pour les deux points") - les textes français ont bien leur espace
+    // avant « ! ? : ; », mais Bangers est une police PENCHÉE : la dernière lettre déborde sur l'espace et la
+    // ponctuation semble collée (« VICTOIRE ! » se lit « VICTOIRE! »). Dans les textes en Bangers, cet espace est
+    // élargi d'un supplément fixe (balise <space>). Les autres langues n'ont pas d'espace à cet endroit : rien ne change.
+    private const string PunctuationExtraSpace = "<space=0.14em>";
+
+    private static bool IsSlantedFont(TextMeshProUGUI t)
+    {
+        return t.font != null && t.font.name.StartsWith("Bangers", System.StringComparison.Ordinal);
+    }
+
+    public static string WidenPunctuationSpaces(string text)
+    {
+        if (string.IsNullOrEmpty(text) || text.IndexOf(' ') < 0) return text;
+        _sb.Clear();
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            _sb.Append(c);
+            if (c != ' ') continue;
+            if (string.CompareOrdinal(text, i + 1, PunctuationExtraSpace, 0, PunctuationExtraSpace.Length) == 0) continue;   // déjà élargi
+            if (i > 0 && text[i - 1] == ' ') continue;
+            char next = NextVisible(text, i + 1);
+            if (next == '!' || next == '?' || next == ':' || next == ';') _sb.Append(PunctuationExtraSpace);
+        }
         return _sb.ToString();
     }
 
