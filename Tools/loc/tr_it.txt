@@ -273,17 +273,17 @@
 258| Doppia caccia
 259| Sconfiggi 2 boss nella stessa partita
 260| Ascesa rapida
-261| Livello 18 prima del 10° minuto
+261| Raggiungi il livello 18 in 10 minuti
 262| Senza cristallo
-263| Niente suprema fino al boss 1
+263| Non usare la suprema prima del boss 1
 264| Impeccabile
-265| Nessun danno fino al boss 1
+265| Resta sopra il 50% di salute fino al boss 1
 266| Fulmineo
 267| Sconfiggi un boss in meno di 25 s
 268| Fortuna
-269| Raccogli almeno 12.000 monete d'oro
+269| Raccogli {0} monete d'oro
 270| Potere assoluto
-271| Livello 25 nella stessa partita
+271| Raggiungi il livello 25
 272| +{0} oro
 273| Liv. {0}/{1}
 274| In corso
@@ -384,7 +384,7 @@
 363| Sfera rimbalzante
 364| Lancia sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono
 365| Danni +
-366| +20% ai danni di tutte le tue armi
+366| +20% ai danni di tutti i tuoi attacchi
 367| Colpo doppio
 368| Il tuo attacco base spara un secondo proiettile subito dopo il primo
 369| Palla di fuoco
@@ -407,7 +407,7 @@
 386| +1 rimbalzo del fulmine
 387| Sblocca 3 pozze di fango che rallentano e feriscono
 388| +1 pozza di fango aggiuntiva
-389| +{0}% ai danni di tutte le tue armi
+389| +{0}% ai danni di tutti i tuoi attacchi
 390| +{0}% alla cadenza di tutte le tue armi da tiro
 391| Aumenta i tuoi PS massimi del {0}% e ne ripristina il {1}%
 392| Sblocca Colpo doppio: il tuo attacco base spara due volte
@@ -618,7 +618,7 @@
 581| Non usare la suprema (tasto F) prima che compaia il 1° boss
 582| Non scendere mai sotto il 50% di salute, dall'inizio della partita fino alla morte del 1° boss.
 583| Sconfiggi un boss qualsiasi entro 25 secondi dalla sua comparsa
-584| Raccogli almeno 12.000 monete d'oro in totale durante la partita
+584| Raccogli almeno {0} monete d'oro in totale durante la partita
 585| MODERATA
 586| VIOLENTA
 587| APOCALITTICA

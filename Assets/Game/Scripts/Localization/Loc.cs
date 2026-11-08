@@ -105,10 +105,36 @@ public static class Loc
         }
     }
 
-    /// <summary>Texte (écrit en français) dans la langue courante.</summary>
-    public static string T(string fr)
+    // AJOUTÉ (2026-11-08, retour utilisateur : "quand il y a des +x valeurs, un petit espace entre le + et le x, moins grand
+    // qu'un espace classique") - espace fin en balise TMP : indépendant de la police (Bangers, Fira, Noto n'ont pas tous les
+    // caractères d'espace fin Unicode). Le « ＋ » pleine largeur du chinois, japonais et coréen a déjà son propre blanc.
+    /// <summary>Signe plus suivi de l'espace fin, pour les valeurs assemblées dans le code ("+" + nombre).</summary>
+    public const string PlusSign = "+<space=0.13em>";
+
+    // "+12", "+{0}" -> espace fin après le +. Pas "Dégâts +", "Cadence+" ni "2+1" (le + n'y précède pas une valeur).
+    private static string SpacePlus(string s)
     {
-        if (string.IsNullOrEmpty(fr)) return fr;
+        int i = s.IndexOf('+');
+        if (i < 0) return s;
+        System.Text.StringBuilder sb = null;
+        int copied = 0;
+        for (; i >= 0 && i < s.Length - 1; i = s.IndexOf('+', i + 1))
+        {
+            char next = s[i + 1];
+            if (next != '{' && !char.IsDigit(next)) continue;
+            if (i > 0 && char.IsLetterOrDigit(s[i - 1])) continue;
+            if (sb == null) sb = new System.Text.StringBuilder(s.Length + 16);
+            sb.Append(s, copied, i - copied).Append(PlusSign);
+            copied = i + 1;
+        }
+        return sb == null ? s : sb.Append(s, copied, s.Length - copied).ToString();
+    }
+
+    /// <summary>Texte (écrit en français) dans la langue courante.</summary>
+    public static string T(string fr) => string.IsNullOrEmpty(fr) ? fr : SpacePlus(Translate(fr));
+
+    private static string Translate(string fr)
+    {
         GameLanguage lang = Current;
         if (lang == GameLanguage.French) return fr;
         if (TableFor(lang).TryGetValue(fr, out string tr)) return tr;

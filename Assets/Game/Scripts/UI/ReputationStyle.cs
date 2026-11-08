@@ -52,8 +52,8 @@ public static class ReputationStyle
     // "+42 %" (Dégâts, Vitesse : fraction) ou "+70 PV/s" (Régénération).
     public static string FormatBonus(string nodeId, float value)
     {
-        if (nodeId == "reputationRegen") return "+" + Loc.Num(value, "0.#") + " " + Loc.T("PV/s");   // séparateur décimal de la langue du jeu, pas de Windows
-        return "+" + Mathf.RoundToInt(value * 100f) + "%";
+        if (nodeId == "reputationRegen") return Loc.PlusSign + Loc.Num(value, "0.#") + " " + Loc.T("PV/s");   // séparateur décimal de la langue du jeu, pas de Windows
+        return Loc.PlusSign + Mathf.RoundToInt(value * 100f) + "%";
     }
 
     public static string Hex(Color c) => ColorUtility.ToHtmlStringRGB(c);

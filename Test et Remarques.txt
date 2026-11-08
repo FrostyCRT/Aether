@@ -1,10 +1,9 @@
 C:\Users\jules\My project\Aether Storm Survivor
 npx @anthropic-ai/claude-code
 C:\Users\jules\My project\Aether
+instagram-skill Plugin claude pour tout le côté marketing de Insta.
 
 
 Mode coop ? deux joueurs dans la partie.
 
-pas assez de feuilles dans la page compétences.
 
-refaire le fond d'écran de la page compétence ? Check le style graphique des autres pages. Parce que le background de la page compétence fait très Ghibli pour moi

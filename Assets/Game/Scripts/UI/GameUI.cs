@@ -1057,7 +1057,7 @@ public class GameUI : MonoBehaviour
                 // utilisateur : plus parlant dans le vocabulaire jeu video).
                 // Voir ChallengeManager.FormatRewardMultiplier, partage avec
                 // PauseMenuUI.PullChallengeInfo().
-                challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardGold(rewardGold));
+                challengeText.text = ChallengeRewardText(rewardGold);
             }
 
             yield return StartCoroutine(CountUpNumber(goldText, baseGold, totalGold, _bonusCountUpDuration));
@@ -2533,6 +2533,7 @@ public class GameUI : MonoBehaviour
             _victoryRecordHighlight.SetActive(message != null);
             if (message != null && _victoryRecordHighlightText != null)
                 _victoryRecordHighlightText.text = message;
+            _victoryFirstWinMessage = GameModes.IsClassic ? message : null;
             return message != null;
         }
 
@@ -2629,6 +2630,7 @@ public class GameUI : MonoBehaviour
         EndInfoBox victoryInfo = EnsureEndInfoBox(_victoryPanel, _victoryStatsText, _victoryChallengeText, _victoryRecordHighlightText, _victoryQuietLineText);
         FillEndInfoStats(victoryInfo, mins, secs, killCount, level, victoryBossKills);
         PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardGold);
+        ShowFirstWinChip();
         LayoutEndInfoBox(_victoryPanel, victoryInfo);
         PopulateVictoryPortrait();
         int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
@@ -3228,13 +3230,14 @@ public class GameUI : MonoBehaviour
         stack.childControlWidth = stack.childControlHeight = true;
         stack.childForceExpandWidth = true;
         stack.childForceExpandHeight = false;
-        stack.padding = new RectOffset(24, 24, 14, 16);
+        stack.padding = new RectOffset(24, 24, 14, 13);   // bas : même écart que entre les bandeaux (mesuré, 2026-11-08)
         stack.spacing = 10f;
 
         // Rangée de stats : 4 cases de même largeur séparées par un filet vertical.
         GameObject row = new GameObject("Stats", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
         row.transform.SetParent(box.root, false);
         row.GetComponent<LayoutElement>().preferredHeight = EndInfoStatsHeight;
+        row.GetComponent<LayoutElement>().flexibleHeight = 1f;   // absorbe la place en trop : l'écart sous le dernier bandeau reste fixe
         HorizontalLayoutGroup cells = row.GetComponent<HorizontalLayoutGroup>();
         cells.childControlWidth = cells.childControlHeight = true;
         cells.childForceExpandWidth = false;
@@ -3278,8 +3281,16 @@ public class GameUI : MonoBehaviour
             box.labels[i] = label;
         }
 
-        GameObject rule = NewInfoRule("Rule", box.root);
-        rule.AddComponent<LayoutElement>().preferredHeight = 2f;
+        // Filet posé en haut d'un emplacement de 5 px : 3 px de plus sous le filet, pour le même écart au-dessus du premier
+        // bandeau qu'entre les deux bandeaux et sous le dernier (12 px mesurés ; avant : 9 / 12 / 15).
+        GameObject ruleSlot = new GameObject("RuleSlot", typeof(RectTransform), typeof(LayoutElement));
+        ruleSlot.transform.SetParent(box.root, false);
+        ruleSlot.GetComponent<LayoutElement>().preferredHeight = 3f;
+        GameObject rule = NewInfoRule("Rule", ruleSlot.transform);
+        RectTransform ruleRt = (RectTransform)rule.transform;
+        rule.GetComponent<PixelSnapRule>().enabled = false; // le panneau s'ouvre en grossissant : le recalage au pixel ferait dériver ce filet et l'écart avec les barres varierait
+        ruleRt.anchorMin = Vector2.zero; ruleRt.anchorMax = Vector2.one; ruleRt.pivot = new Vector2(0.5f, 0.5f);
+        ruleRt.offsetMin = new Vector2(0f, 1f); ruleRt.offsetMax = Vector2.zero;
 
         // Textes variables : rangés dans le cadre (le chip de défi y entre avec son fond doré).
         foreach (TextMeshProUGUI message in messages)
@@ -3418,6 +3429,45 @@ public class GameUI : MonoBehaviour
         return text != null ? (text.margin.w - text.margin.y) * 0.5f : 0f;
     }
 
+    // AJOUTÉ (2026-11-08, retour utilisateur : "le +x Or/éclat on peut le mettre de la couleur correspondante des récompenses,
+    // les mêmes couleurs or et bleu du dessus") - mêmes teintes que les montants des écrans de fin (GoldText / EclatsText).
+    private const string RewardGoldHex = "#FFD700", RewardEclatHex = "#00ECE3";
+    private static readonly Color ChipDarkBg = new Color32(0x3A, 0x2A, 0x14, 0xF0);
+    private static readonly Color ChipLightText = new Color32(0xF3, 0xE3, 0xBE, 0xFF);
+
+    private static string ChallengeRewardText(int rewardGold)
+    {
+        return Loc.F("Défi réussi ! {0}", "<color=" + RewardGoldHex + ">" + ChallengeManager.FormatRewardGold(rewardGold) + "</color>");
+    }
+
+    // Prime de première victoire : même bandeau sombre que « Défi réussi », dupliqué à la place de la ligne simple (le bleu
+    // des éclats est illisible directement sur le fond clair du cadre).
+    private string _victoryFirstWinMessage;
+
+    private void ShowFirstWinChip()
+    {
+        if (string.IsNullOrEmpty(_victoryFirstWinMessage) || _victoryRecordHighlightText == null) return;
+        GameObject chipRoot = ChallengeChipRoot(_victoryChallengeText);
+        if (chipRoot == null || chipRoot.transform.parent != _victoryRecordHighlightText.transform.parent) return;
+        GameObject copy = Instantiate(chipRoot, chipRoot.transform.parent);
+        copy.name = "FirstWinChip";
+        copy.transform.SetSiblingIndex(_victoryRecordHighlightText.transform.GetSiblingIndex());
+        copy.SetActive(true);
+        if (copy.TryGetComponent(out CanvasGroup cg)) cg.alpha = 1f;
+        if (copy.TryGetComponent(out Image bg)) bg.color = ChipDarkBg;
+        TextMeshProUGUI text = copy.GetComponentInChildren<TextMeshProUGUI>(true);
+        text.color = ChipLightText;
+        text.text = TintEclatReward(_victoryFirstWinMessage);
+        _victoryRecordHighlight.SetActive(false);
+    }
+
+    // « Première victoire en X : +N éclats » : colore du signe + jusqu'à la fin du message (toutes les langues y placent le montant).
+    private static string TintEclatReward(string message)
+    {
+        int i = message.IndexOfAny(new[] { '+', '＋' });
+        return i < 0 ? message : message.Substring(0, i) + "<color=" + RewardEclatHex + ">" + message.Substring(i) + "</color>";
+    }
+
     // Chip "Défi réussi" : présent dès l'ouverture (transparent) pour que le cadre ait déjà sa hauteur finale, puis
     // révélé par PlayGoldSequence au moment du bonus.
     private static void PrepareChallengeChip(TextMeshProUGUI challengeText, bool show, int rewardGold)
@@ -3426,7 +3476,10 @@ public class GameUI : MonoBehaviour
         if (chipRoot == null) return;
         chipRoot.SetActive(show);
         if (!show) return;
-        challengeText.text = Loc.F("Défi réussi ! {0}", ChallengeManager.FormatRewardGold(rewardGold));
+        challengeText.text = ChallengeRewardText(rewardGold);
+        // Fond sombre : l'or (#FFD700) serait invisible sur l'ancien fond jaune du chip (#FFC94D).
+        if (challengeText.transform.parent != null && challengeText.transform.parent.TryGetComponent(out Image chipBg)) chipBg.color = ChipDarkBg;
+        challengeText.color = ChipLightText;
         CanvasGroup cg = chipRoot.GetComponent<CanvasGroup>();
         if (cg == null) cg = chipRoot.AddComponent<CanvasGroup>();
         cg.alpha = 0f;

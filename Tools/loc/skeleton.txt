@@ -263,21 +263,21 @@
 254	Toujours en Mouvement	Always Moving
 255	Utiliser le Dash 50 fois	Dash 50 times
 256	Sang-Froid	Cool Head
-257	Garder 30% de vie jusqu'au boss 2	Stay above 30% HP until boss 2
+257	Garder plus de 30% de vie jusqu'au boss 2	Stay above 30% HP until boss 2
 258	Double Chasse	Double Hunt
 259	Vaincre 2 boss dans la même partie	Defeat 2 bosses in one run
 260	Ascension Rapide	Fast Ascent
-261	Niveau 18 avant la 10ème minute	Level 18 before minute 10
+261	Atteindre le niveau 18 en 10 minutes	Reach level 18 within 10 minutes
 262	Sans Cristal	Crystal-Free
-263	Sans Ultime jusqu'au boss 1	No Ultimate until boss 1
+263	Ne pas utiliser l'Ultime avant le boss 1	Don't use the Ultimate before boss 1
 264	Résilience	Resilience
 265	Garder plus de 50% de vie jusqu'au boss 1	Keep above 50% health until boss 1
 266	Éclair	Lightning Fast
 267	Vaincre un boss en moins de 25s	Defeat a boss in under 25s
 268	Fortune	Fortune
-269	Avec au moins 12 000 Or ramassé	Collect at least 12,000 gold
+269	Ramasser {0} Or	Collect {0} gold
 270	Puissance Absolue	Absolute Power
-271	Niveau 25 dans la même partie	Reach level 25 in one run
+271	Atteindre le niveau 25	Reach level 25
 272	+{0} or	+{0} gold
 273	Niv. {0}/{1}	Lv. {0}/{1}
 274	En cours	In progress
@@ -378,7 +378,7 @@
 363	Orbe Rebondissant	Bouncing Orb
 364	Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés	Launches orbs that bounce endlessly around the arena, hurting every enemy they hit
 365	Dégâts +	Damage +
-366	+20% de dégâts sur toutes tes armes	+20% damage on all your weapons
+366	+20% de dégâts sur toutes tes attaques	+20% damage on all your attacks
 367	Double Tir	Double Shot
 368	Ton tir de base tire un second projectile juste après le premier	Your basic attack fires a second projectile right after the first
 369	Boule de Feu	Fireball
@@ -401,7 +401,7 @@
 386	+1 rebond de foudre supplémentaire	+1 extra lightning bounce
 387	Débloque 3 flaques de boue qui ralentissent et blessent	Unlocks 3 mud puddles that slow and hurt enemies
 388	+1 flaque de boue supplémentaire	+1 extra mud puddle
-389	+{0}% de dégâts sur toutes tes armes	+{0}% damage on all your weapons
+389	+{0}% de dégâts sur toutes tes attaques	+{0}% damage on all your attacks
 390	+{0}% de cadence sur toutes tes armes de tir	+{0}% fire rate on all your shooting weapons
 391	Augmente tes PV max de {0}% et en restaure {1}%	Increases your max HP by {0}% and restores {1}%
 392	Débloque le Double Tir : ton tir de base tire deux fois	Unlocks Double Shot: your basic attack fires twice
@@ -612,7 +612,7 @@
 581	Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss	Don't use the Ultimate (F key) before the 1st boss arrives
 582	Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.	Never drop below 50% health, from the start of the run until the 1st boss is defeated.
 583	Vaincre n'importe quel boss en moins de 25 secondes après son apparition	Defeat any boss within 25 seconds of its appearance
-584	Ramasser au moins 12 000 Or au total durant la partie	Collect at least 12,000 Gold in total during the run
+584	Ramasser au moins {0} Or au total durant la partie	Collect at least {0} Gold in total during the run
 585	MODÉRÉ	MODERATE
 586	VIOLENT	SEVERE
 587	APOCALYPTIQUE	APOCALYPTIC

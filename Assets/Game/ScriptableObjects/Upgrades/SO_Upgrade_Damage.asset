@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_Upgrade_Damage
   m_EditorClassIdentifier: 
   upgradeName: "D\xE9g\xE2ts +"
-  description: "+20% de d\xE9g\xE2ts sur toutes tes armes"
+  description: "+20% de d\xE9g\xE2ts sur toutes tes attaques"
   icon: {fileID: 21300000, guid: fdbccce659bedc14db1df8218e14eabc, type: 3}
   upgradeType: 0
   value: 0.2

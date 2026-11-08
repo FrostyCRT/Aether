@@ -274,17 +274,17 @@
 258| Podwójne łowy
 259| Pokonaj 2 bossów w jednej rozgrywce
 260| Szybki awans
-261| 18. poziom przed 10. minutą
+261| Osiągnij 18. poziom w 10 minut
 262| Bez kryształu
-263| Bez supermocy do bossa 1
+263| Nie używaj supermocy przed bossem 1
 264| Bez skazy
-265| Bez obrażeń do bossa 1
+265| Utrzymaj ponad 50% zdrowia do bossa 1
 266| Błyskawica
 267| Pokonaj bossa w mniej niż 25 s
 268| Fortuna
-269| Zbierz co najmniej 12 000 złota
+269| Zbierz {0} złota
 270| Absolutna potęga
-271| 25. poziom w jednej rozgrywce
+271| Osiągnij 25. poziom
 272| +{0} złota
 273| Poz. {0}/{1}
 274| W toku
@@ -385,7 +385,7 @@
 363| Sprężysta kula
 364| Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
 365| Obrażenia +
-366| +20% do obrażeń wszystkich broni
+366| +20% obrażeń wszystkich ataków
 367| Podwójny strzał
 368| Twój podstawowy atak wystrzeliwuje drugi pocisk tuż po pierwszym
 369| Kula ognia
@@ -408,7 +408,7 @@
 386| +1 dodatkowy przeskok błyskawicy
 387| Odblokowuje 3 kałuże błota, które spowalniają i ranią
 388| +1 dodatkowa kałuża błota
-389| +{0}% do obrażeń wszystkich broni
+389| +{0}% obrażeń wszystkich ataków
 390| +{0}% szybkostrzelności wszystkich broni strzelających
 391| Zwiększa twoje maksymalne PŻ o {0}% i przywraca {1}%
 392| Odblokowuje Podwójny strzał: twój podstawowy atak strzela dwa razy
@@ -622,7 +622,7 @@
 581| Nie używaj supermocy (klawisz F) przed pojawieniem się 1. bossa
 582| Nie schodź poniżej 50% zdrowia od początku rozgrywki aż do śmierci 1. bossa.
 583| Pokonaj dowolnego bossa w ciągu 25 sekund od jego pojawienia się
-584| Zbierz łącznie co najmniej 12 000 złota w trakcie rozgrywki
+584| Zbierz łącznie co najmniej {0} złota w trakcie rozgrywki
 585| UMIARKOWANY
 586| BRUTALNY
 587| APOKALIPTYCZNY

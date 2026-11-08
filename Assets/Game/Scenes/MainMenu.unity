@@ -24927,6 +24927,7 @@ GameObject:
   - component: {fileID: 883028528}
   - component: {fileID: 883028530}
   - component: {fileID: 883028529}
+  - component: {fileID: 883028531}
   m_Layer: 5
   m_Name: UpgradesPanel
   m_TagString: Untagged
@@ -24965,7 +24966,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883028527}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -24978,7 +24979,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 583d9141e90960940a8b0c2023497c08, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -24996,6 +24997,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883028527}
   m_CullTransparentMesh: 1
+--- !u!114 &883028531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 883028527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93a67bb916fa76e45b4662e1e7950441, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _day: {fileID: 2800000, guid: f2e253e1a7497204a8e6d7884535538d, type: 3}
+  _dusk: {fileID: 2800000, guid: 62465099add918b4b8187a0b9a8b91ec, type: 3}
+  _night: {fileID: 2800000, guid: 68291ac4e139a1a4c8e2384ba652490e, type: 3}
 --- !u!1 &886160609
 GameObject:
   m_ObjectHideFlags: 0
@@ -50942,11 +50958,6 @@ MonoBehaviour:
     glintCr: {fileID: 0}
     glintStart: 0
     glintDuration: 0
-  _goldMotes: 34
-  _cyanSparks: 26
-  _embers: 16
-  _fireflies: 7
-  _leaves: 9
 --- !u!1 &1785392976
 GameObject:
   m_ObjectHideFlags: 0

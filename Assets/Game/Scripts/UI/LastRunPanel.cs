@@ -308,7 +308,7 @@ public class LastRunPanel : MonoBehaviour
         _mini.gameObject.SetActive(show && _collapsed);
         if (!show) return;
         _miniTitle.text = Loc.T("DERNIÈRE PARTIE");
-        _miniGold.text = "+" + Loc.Int(run.gold);
+        _miniGold.text = Loc.PlusSign + Loc.Int(run.gold);
         if (_collapsed) return;   // carte cachée : ses montants « compteront » à sa réouverture
 
         _title.text = Loc.T("DERNIÈRE PARTIE");
@@ -378,8 +378,8 @@ public class LastRunPanel : MonoBehaviour
 
     private void ApplyAmounts(LastRunSummary run, int[] parts, float k)
     {
-        _goldValue.text = "+" + Loc.Int(Mathf.RoundToInt(run.gold * k));
-        _eclatValue.text = "+" + Loc.Int(Mathf.RoundToInt(run.eclats * k));
+        _goldValue.text = Loc.PlusSign + Loc.Int(Mathf.RoundToInt(run.gold * k));
+        _eclatValue.text = Loc.PlusSign + Loc.Int(Mathf.RoundToInt(run.eclats * k));
 
         int total = 0;
         foreach (int p in parts) total += Mathf.Max(0, p);

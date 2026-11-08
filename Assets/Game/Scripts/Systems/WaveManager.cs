@@ -342,10 +342,14 @@ public class WaveManager : MonoBehaviour
                 if (bossNumber == 2 && DifficultyTiers.Current == DifficultyTier.Apocalyptic)
                     bossHealthMult = 1.5f;
                 // AJOUTÉ (2026-11-07, retour utilisateur : "le boss 3 dans la difficulté 1 a un peu trop de vie, diminue de
-                // 20%") - Classique Modéré seulement : 250000 -> 200000 PV. Les échos qu'il invoque (fraction de ses PV)
+                // 20%") - Classique Modéré seulement : 300000 -> 240000 PV. Les échos qu'il invoque (fraction de ses PV)
                 // suivent d'eux-mêmes. Violent / Apocalyptique inchangés.
                 if (bossNumber == 3 && GameModes.IsClassic && DifficultyTiers.Current == DifficultyTier.Moderate)
                     bossHealthMult = 0.8f;
+                // AJOUTÉ (2026-11-08, retour utilisateur : "baisse aussi un peu sa vie max dans la difficulté apocalyptique")
+                // - x2 -> x1,7 : 600 000 -> 510 000 PV (-15 %).
+                if (bossNumber == 3 && DifficultyTiers.Current == DifficultyTier.Apocalyptic)
+                    bossHealthMult = 1.7f;
                 bossScript.SetDifficultyHealthMultiplier(bossHealthMult);
 
                 // AJOUTÉ (2026-10-21, retour utilisateur : "rendre les boss plus fort aussi dans leur vitesse de

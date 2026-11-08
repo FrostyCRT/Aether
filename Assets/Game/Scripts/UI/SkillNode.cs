@@ -72,9 +72,13 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private float _plateT;                 // 0 = cartouche caché, 1 = affiché (survol / sélection)
     private float _popStart = -10f;
     private float _appearTime;
+    private SkillTreeBackground _background;
+    private float _haloFactor = 1f;
+    private Vector3 _haloPos = Vector3.positiveInfinity;   // position pour laquelle _haloFactor a été calculé
 
     private void Awake()
     {
+        _background = GetComponentInParent<SkillTreeBackground>(true);
         _rectTransform = GetComponent<RectTransform>();
         _button = GetComponent<Button>();
         _phase = Random.Range(0f, 6.28f);
@@ -155,6 +159,7 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         ApplyName();
         _appearTime = Time.unscaledTime;
+        _haloPos = Vector3.positiveInfinity;   // l'image de fond a pu changer avec la difficulté
         _hovered = false;
         _hover = 0f;
         _plateT = 0f;
@@ -336,17 +341,20 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             case State.Maxed:
                 c = SkillTreeStyle.Gold;
-                a = 0.55f + 0.10f * Mathf.Sin(t * 0.9f + _phase);
+                // MODIFIÉ (2026-11-08) - 0,55 -> 0,32 : sur les nouveaux fonds sombres, un nœud maîtrisé formait un gros disque moutarde
+                a = 0.32f + 0.06f * Mathf.Sin(t * 0.9f + _phase);
                 break;
             case State.InProgress:
                 // en cours ET palier suivant achetable : même signal doré qu'un nœud neuf achetable
                 c = IsBuyableNow ? SkillTreeStyle.Gold : _accent;
-                a = IsBuyableNow ? 0.78f + 0.22f * Mathf.Sin(t * 2.4f + _phase)
+                // MODIFIÉ (2026-11-08) - plus de décalage par nœud sur le doré : "celui en bas à gauche parait plus lumineux par rapport
+                // aux autres" alors que tous étaient achetables. Tous les nœuds achetables pulsent ensemble.
+                a = IsBuyableNow ? 0.78f + 0.22f * Mathf.Sin(t * 2.4f)
                                  : 0.48f + 0.10f * Mathf.Sin(t * 0.9f + _phase);
                 break;
             case State.Available:
                 c = IsBuyableNow ? SkillTreeStyle.Gold : _accent;
-                a = IsBuyableNow ? 0.78f + 0.22f * Mathf.Sin(t * 2.4f + _phase) : (_activeBranch ? 0.22f : 0f);
+                a = IsBuyableNow ? 0.78f + 0.22f * Mathf.Sin(t * 2.4f) : (_activeBranch ? 0.22f : 0f);
                 break;
             default:
                 c = _accent;
@@ -355,11 +363,19 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         }
 
 
+        // le même halo paraît plus gros sur un décor très sombre : intensité compensée selon ce qu'il y a derrière ce nœud
+        if (_background != null && a > 0f)
+        {
+            Vector3 pos = transform.position;
+            if (pos != _haloPos) { _haloPos = pos; _haloFactor = _background.HaloFactor(pos); }
+            a *= _haloFactor;
+        }
+
         // survol/sélection : le halo s'ouvre et se réchauffe
         c = Color.Lerp(c, Color.Lerp(c, Color.white, 0.4f), _hover);
         a += 0.30f * _hover + 0.9f * flash;
 
-        float size = 200f * (1f + 0.12f * _hover + 0.6f * flash);
+        float size = 172f * (1f + 0.12f * _hover + 0.6f * flash);
         _glow.rectTransform.sizeDelta = new Vector2(size, size);
         _glowRenderer.SetColor(new Color(c.r, c.g, c.b, Mathf.Clamp01(a)));
     }

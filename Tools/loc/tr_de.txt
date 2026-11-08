@@ -272,17 +272,17 @@
 258| Doppeljagd
 259| Besiege 2 Bosse in einem Run
 260| Blitzaufstieg
-261| Level 18 vor Minute 10
+261| Erreiche Level 18 in 10 Minuten
 262| Kristallfrei
-263| Keine Ultimate bis Boss 1
+263| Nutze die Ultimate nicht vor Boss 1
 264| Makellos
-265| Kein Schaden bis Boss 1
+265| Bleib bis Boss 1 über 50 % LP
 266| Blitzschnell
 267| Besiege einen Boss in unter 25 s
 268| Reichtum
-269| Sammle mindestens 12.000 Gold
+269| Sammle {0} Gold
 270| Absolute Macht
-271| Level 25 in einem Run
+271| Erreiche Level 25
 272| +{0} Gold
 273| Lvl. {0}/{1}
 274| Läuft
@@ -383,7 +383,7 @@
 363| Prallkugel
 364| Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
 365| Schaden +
-366| +20 % Schaden für alle deine Waffen
+366| +20 % Schaden für alle deine Angriffe
 367| Doppelschuss
 368| Dein Standardangriff feuert direkt nach dem ersten ein zweites Projektil
 369| Feuerball
@@ -406,7 +406,7 @@
 386| +1 zusätzlicher Blitzsprung
 387| Schaltet 3 Schlammpfützen frei, die verlangsamen und verletzen
 388| +1 zusätzliche Schlammpfütze
-389| +{0} % Schaden für alle deine Waffen
+389| +{0} % Schaden für alle deine Angriffe
 390| +{0} % Feuerrate für alle deine Schusswaffen
 391| Erhöht deine maximalen LP um {0} % und stellt {1} % davon wieder her
 392| Schaltet Doppelschuss frei: Dein Standardangriff feuert zweimal
@@ -617,7 +617,7 @@
 581| Setze die Ultimate (Taste F) nicht ein, bevor der 1. Boss erscheint
 582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses.
 583| Besiege einen beliebigen Boss innerhalb von 25 Sekunden nach seinem Erscheinen
-584| Sammle im Laufe des Runs insgesamt mindestens 12.000 Gold
+584| Sammle im Laufe des Runs insgesamt mindestens {0} Gold
 585| MÄSSIG
 586| HEFTIG
 587| APOKALYPTISCH

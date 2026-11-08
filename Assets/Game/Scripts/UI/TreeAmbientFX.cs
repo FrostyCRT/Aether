@@ -10,13 +10,15 @@ using UnityEngine.UI;
 //   - HALOS de zone (orange à gauche, or au centre, vert, turquoise à droite) qui respirent
 //     très lentement, chacun à son rythme ;
 //   - RAYONS de soleil : longues bandes douces qui ondulent et changent d'intensité ;
-//   - POUSSIÈRE d'or qui monte dans les rayons, ÉTINCELLES turquoise qui scintillent dans
-//     le feuillage de droite, BRAISES orange qui montent à gauche ;
-//   - LUCIOLES : grosses lueurs chaudes/froides qui errent dans la clairière ;
 //   - FEUILLES qui tombent lentement, de la couleur du feuillage dont elles viennent ;
 //   - BRUME rasante sur les racines, derrière les logos ;
 //   - CRISTAUX des trois logos : pulsation + éclat en croix ;
 //   - GERBE d'étincelles quand une compétence est achetée (Burst).
+//
+// MODIFIÉ (2026-11-08) - nouveau fond à trois heures (SkillTreeBackground) : halos recalculés sur ce fond, rayons de soleil
+// retirés (l'image n'en a plus). Retour utilisateur : "enlève les petits ronds de couleur, et à la place un peu plus de
+// feuilles de couleurs qui tombent" : poussières, étincelles et braises supprimées, 20 feuilles au lieu de 9. Puis
+// "tu peux remettre des petits lucioles" : 10 lucioles, 3 fois plus petites qu'avant (18-30 px au lieu de 52-86).
 //
 // Les lueurs sont dessinées en ADDITIF (matériau Aether/UI/Additive) : elles éclairent le décor
 // au lieu de le grisailler, ce qui est la seule façon de les voir sur un fond déjà lumineux.
@@ -55,18 +57,13 @@ public class TreeAmbientFX : MonoBehaviour
     [Header("Cristaux des logos")]
     [SerializeField] private CrystalSpot[] _crystals;
 
-    [Header("Densités")]
-    [SerializeField] private int _goldMotes = 34;
-    [SerializeField] private int _cyanSparks = 26;
-    [SerializeField] private int _embers = 16;
-    [SerializeField] private int _fireflies = 7;
-    [SerializeField] private int _leaves = 9;
+    private const int LeafCount = 20, FireflyCount = 10;
 
     // Repère de conception : positions données en pixels de l'illustration 1920x1080
     // (le fond est étiré sur tout l'onglet, l'arbre est donc toujours au même endroit relatif).
     private const float RefW = 1920f, RefH = 1080f, TopBar = 100f;
 
-    private enum Kind { Halo, Ray, Mote, Spark, Ember, Firefly, Leaf, Mist }
+    private enum Kind { Halo, Firefly, Leaf, Mist }
 
     private class Item
     {
@@ -79,7 +76,6 @@ public class TreeAmbientFX : MonoBehaviour
         public float freq, phase;         // respiration / scintillement
         public float speed, sway, swayFreq, life, birth, spin;
         public float seedX, seedY;
-        public float angle;               // rayons : inclinaison de repos
         public Vector2 region0, region1;  // zone d'apparition
         public float flip;
     }
@@ -96,14 +92,18 @@ public class TreeAmbientFX : MonoBehaviour
     private readonly List<Spark> _burst = new List<Spark>(BurstPool);
     private readonly List<Object> _owned = new List<Object>();
 
-    private RectTransform _rect, _back, _front, _burstRoot;
+    private RectTransform _rect, _back, _front, _crystalRoot, _burstRoot;
     private Sprite _dotSprite, _glintSprite, _leafSprite, _mistA, _mistB;
     private float _enableTime;
     private bool _built;
+    private Color _mistColor = new Color(1f, 0.97f, 0.9f);
 
     // --- API --------------------------------------------------------------
 
     public void SetIntensity(float v) => _intensity = Mathf.Max(0f, v);
+
+    // La brume prend la couleur de l'heure du décor (crème en journée, bleutée la nuit).
+    public void SetMistColor(Color c) => _mistColor = c;
 
     // Gerbe d'étincelles autour d'un point (repère TreeContainer : on convertit depuis un RectTransform).
     public void Burst(RectTransform at, Color color, int count = 22)
@@ -141,6 +141,7 @@ public class TreeAmbientFX : MonoBehaviour
     {
         if (_back != null) Destroy(_back.gameObject);
         if (_front != null) Destroy(_front.gameObject);
+        if (_crystalRoot != null) Destroy(_crystalRoot.gameObject);
         if (_burstRoot != null) Destroy(_burstRoot.gameObject);
         foreach (Object o in _owned) if (o != null) Destroy(o);
         _owned.Clear();
@@ -176,14 +177,14 @@ public class TreeAmbientFX : MonoBehaviour
         Transform parent = transform;
         _back = CreateRoot("FX_Back", parent);
         _front = CreateRoot("FX_Front", parent);
+        // Sans le préfixe FX_ : ces lueurs appartiennent aux logos et s'effacent avec eux en mode contemplation (MenuViewMode).
+        _crystalRoot = CreateRoot("CrystalFX", parent);
         _burstRoot = CreateRoot("FX_Burst", parent);
 
         PlaceRoots();
 
         BuildHalos();
-        BuildRays();
         BuildMist();
-        BuildMotes();
         BuildFireflies();
         BuildLeaves();
         BuildCrystals();
@@ -221,6 +222,7 @@ public class TreeAmbientFX : MonoBehaviour
             int idx = firstNode + (_back.GetSiblingIndex() <= firstNode ? 1 : 0);
             _front.SetSiblingIndex(Mathf.Min(idx, transform.childCount - 1));
         }
+        _crystalRoot.SetSiblingIndex(_front.GetSiblingIndex() + 1);
         _burstRoot.SetAsLastSibling();
     }
 
@@ -268,16 +270,17 @@ public class TreeAmbientFX : MonoBehaviour
     // - plus de grandes taches rondes : chaque halo est découpé dans l'illustration (feuillage orange, éclat doré du soleil,
     // feuillage vert, feuillage turquoise et sa traînée de paillettes, clairière), textures Resources/TreeGlow générées par
     // Tools/build_menu_glows.py tree. Immobiles, seule l'intensité respire, chacun à son rythme.
-    // Pixels de l'illustration (BackgroundV4, 2048 x 1152, étirée sur l'onglet) : texture, rectangle, alpha, période (s).
-    private const float ArtW = 2048f, ArtH = 1152f;
+    // Pixels de la partie visible de l'illustration (2048 x 1045, sous la barre d'onglets) : texture, rectangle, alpha, période (s).
+    private const float ArtW = 2048f, ArtH = 1045f;
     private static readonly (string name, float x, float y, float w, float h, float a, float period)[] ShapedHalos =
     {
-        ("canopy_orange",    0f,   0f, 938f, 598f, 0.34f, 11f),
-        ("sunburst",       210f,  30f, 780f, 740f, 0.30f,  9f),
-        ("canopy_green",   608f,   0f, 864f, 472f, 0.22f, 13f),
-        ("canopy_cyan",   1162f,   0f, 886f, 638f, 0.34f, 10f),
-        ("cyan_stream",   1258f, 288f, 424f, 474f, 0.30f,  7f),
-        ("clearing",       436f, 676f, 1208f, 476f, 0.24f, 12f),
+        ("canopy_orange",    0f,   0f, 718f, 611f, 0.30f, 11f),
+        ("core_orange",    140f,   0f, 470f, 360f, 0.30f,  8f),
+        ("canopy_green",   518f,   0f, 994f, 445f, 0.26f, 13f),
+        ("low_green_l",    490f, 319f, 348f, 316f, 0.26f,  9f),
+        ("low_green_r",   1210f, 255f, 334f, 380f, 0.26f, 12f),
+        ("canopy_blue",   1362f,   0f, 686f, 643f, 0.24f, 10f),
+        ("core_blue",     1470f,   0f, 578f, 390f, 0.18f,  7f),
     };
 
     private struct ShapedHalo { public CanvasRenderer cr; public float alpha, freq, phase; }
@@ -291,31 +294,6 @@ public class TreeAmbientFX : MonoBehaviour
             if (cr == null) continue;
             _shapedHalos.Add(new ShapedHalo { cr = cr, alpha = s.a, freq = Mathf.PI * 2f / s.period, phase = Random.Range(0f, Mathf.PI * 2f) });
         }
-    }
-
-    private void BuildRays()
-    {
-        // (haut x, haut y) -> (bas x, bas y) sur l'illustration, largeur, alpha
-        AddRay(430, 110, 690, 790, 210, 0.16f);
-        AddRay(560, 100, 850, 800, 130, 0.14f);
-        AddRay(660, 110, 970, 770, 260, 0.12f);
-        AddRay(330, 130, 560, 760, 110, 0.10f);
-    }
-
-    private void AddRay(float tx, float ty, float bx, float by, float width, float alpha)
-    {
-        Vector2 top = P(tx, ty), bottom = P(bx, by);
-        Item it = NewItem(Kind.Ray, TreeSprites.Ray, _back, true, "Ray");
-        Vector2 dir = top - bottom;                      // le sprite est vertical : son haut pointe vers la source
-        it.basePos = (top + bottom) * 0.5f;
-        it.angle = Mathf.Atan2(dir.x, dir.y) * -Mathf.Rad2Deg;
-        it.rt.anchoredPosition = it.basePos;
-        it.rt.sizeDelta = new Vector2(width, dir.magnitude * 1.12f);
-        it.rgb = new Color(1f, 0.93f, 0.68f);
-        it.alpha = alpha;
-        it.freq = Mathf.PI * 2f / Random.Range(7f, 12f);
-        it.sway = Random.Range(1.2f, 2.6f);              // ondulation de l'angle en degrés
-        it.swayFreq = Random.Range(0.06f, 0.12f);
     }
 
     private void BuildMist()
@@ -336,40 +314,16 @@ public class TreeAmbientFX : MonoBehaviour
         }
     }
 
-    private void BuildMotes()
-    {
-        for (int i = 0; i < _goldMotes; i++)
-            SpawnMote(Kind.Mote, _front, new Color(1f, 0.86f, 0.48f), P(470, 250), P(1000, 820), 0.9f, new Vector2(5f, 13f), true);
-        for (int i = 0; i < _cyanSparks; i++)
-            SpawnMote(Kind.Spark, _front, new Color(0.62f, 0.95f, 1f), P(1300, 170), P(1900, 720), 0.9f, new Vector2(4f, 11f), true);
-        for (int i = 0; i < _embers; i++)
-            SpawnMote(Kind.Ember, _front, new Color(1f, 0.66f, 0.3f), P(90, 260), P(560, 820), 0.85f, new Vector2(4f, 10f), true);
-    }
-
-    private void SpawnMote(Kind kind, Transform parent, Color rgb, Vector2 p0, Vector2 p1, float alpha, Vector2 sizeRange, bool randomAge)
-    {
-        Item it = NewItem(kind, _dotSprite, parent, true, kind.ToString());
-        it.rgb = rgb;
-        it.alpha = alpha;
-        it.region0 = new Vector2(Mathf.Min(p0.x, p1.x), Mathf.Min(p0.y, p1.y));
-        it.region1 = new Vector2(Mathf.Max(p0.x, p1.x), Mathf.Max(p0.y, p1.y));
-        it.size = Random.Range(sizeRange.x, sizeRange.y);
-        if (Random.value < 0.22f) { it.size *= Random.Range(1.8f, 2.6f); it.alpha *= 0.55f; }
-        it.rt.sizeDelta = new Vector2(it.size, it.size);
-        Respawn(it, Time.unscaledTime, randomAge);
-    }
-
     private void BuildFireflies()
     {
-        for (int i = 0; i < _fireflies; i++)
+        for (int i = 0; i < FireflyCount; i++)
         {
             Item it = NewItem(Kind.Firefly, TreeSprites.Glow, _front, true, "Firefly");
-            bool cool = i % 3 == 2;
-            it.rgb = cool ? new Color(0.6f, 0.92f, 1f) : new Color(1f, 0.9f, 0.5f);
-            it.basePos = P(Random.Range(120f, 1800f), Random.Range(560f, 880f));
-            it.size = Random.Range(52f, 86f);
+            it.rgb = i % 3 == 2 ? new Color(0.7f, 1f, 0.6f) : new Color(1f, 0.92f, 0.5f);
+            it.basePos = P(Random.Range(120f, 1800f), Random.Range(480f, 860f));
+            it.size = Random.Range(18f, 30f);
             it.rt.sizeDelta = new Vector2(it.size, it.size);
-            it.alpha = 0.55f;
+            it.alpha = 0.8f;
             it.sway = Random.Range(60f, 140f);
             it.swayFreq = Random.Range(0.03f, 0.07f);
             it.freq = Random.Range(0.5f, 1.1f);          // pulsation lente
@@ -378,10 +332,10 @@ public class TreeAmbientFX : MonoBehaviour
 
     private void BuildLeaves()
     {
-        for (int i = 0; i < _leaves; i++)
+        for (int i = 0; i < LeafCount; i++)
         {
             Item it = NewItem(Kind.Leaf, _leafSprite, _front, false, "Leaf");
-            float sx = Mathf.Lerp(120f, 1800f, (i + Random.value * 0.6f) / _leaves);
+            float sx = Mathf.Lerp(120f, 1800f, (i + Random.value * 0.6f) / LeafCount);
             it.region0 = P(sx, 130f);
             it.region1 = P(sx + 60f, 260f);
             it.size = Random.Range(18f, 28f);
@@ -400,14 +354,14 @@ public class TreeAmbientFX : MonoBehaviour
             c.phase = Random.Range(0f, 6.28f);
 
             GameObject g = new GameObject("CrystalGlow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            g.transform.SetParent(_front, false);
+            g.transform.SetParent(_crystalRoot, false);
             c.glowRt = (RectTransform)g.transform;
             c.glowRt.sizeDelta = new Vector2(120f, 120f);
             Image gi = g.GetComponent<Image>(); gi.sprite = TreeSprites.Glow; gi.material = _additiveMaterial; gi.raycastTarget = false;
             c.glowCr = g.GetComponent<CanvasRenderer>();
 
             GameObject k = new GameObject("CrystalGlint", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            k.transform.SetParent(_front, false);
+            k.transform.SetParent(_crystalRoot, false);
             c.glintRt = (RectTransform)k.transform;
             c.glintRt.sizeDelta = new Vector2(84f, 84f);
             Image ki = k.GetComponent<Image>(); ki.sprite = _glintSprite; ki.material = _additiveMaterial; ki.raycastTarget = false;
@@ -441,19 +395,6 @@ public class TreeAmbientFX : MonoBehaviour
     {
         switch (it.kind)
         {
-            case Kind.Mote:
-            case Kind.Spark:
-            case Kind.Ember:
-            {
-                it.life = it.kind == Kind.Spark ? Random.Range(6f, 12f) : Random.Range(9f, 18f);
-                it.birth = t - (randomAge ? Random.Range(0f, it.life) : 0f);
-                it.basePos = new Vector2(Random.Range(it.region0.x, it.region1.x), Random.Range(it.region0.y, it.region1.y));
-                it.speed = it.kind == Kind.Spark ? Random.Range(-4f, 6f) : Random.Range(7f, 20f);   // px/s vers le haut
-                it.sway = Random.Range(8f, 26f);
-                it.swayFreq = Random.Range(0.25f, 0.65f);
-                it.freq = Random.Range(0.5f, 1.4f);
-                break;
-            }
             case Kind.Leaf:
             {
                 it.life = Random.Range(30f, 44f);
@@ -466,7 +407,7 @@ public class TreeAmbientFX : MonoBehaviour
                 float fx = (it.basePos.x / _rect.rect.width) + 0.5f;    // 0 gauche .. 1 droite
                 Color leaf = fx < 0.36f ? new Color(0.96f, 0.48f, 0.14f)
                            : fx < 0.66f ? new Color(0.78f, 0.86f, 0.28f)
-                           : new Color(0.38f, 0.86f, 0.82f);
+                           : new Color(0.32f, 0.62f, 1f);
                 it.rgb = Color.Lerp(leaf, Color.white, Random.Range(0f, 0.2f));
                 break;
             }
@@ -487,11 +428,9 @@ public class TreeAmbientFX : MonoBehaviour
             Item it = _items[i];
             switch (it.kind)
             {
-                case Kind.Ray: UpdateRay(it, t, k); break;
                 case Kind.Mist: UpdateMist(it, t, k); break;
                 case Kind.Firefly: UpdateFirefly(it, t, k); break;
                 case Kind.Leaf: UpdateLeaf(it, t, k); break;
-                default: UpdateMote(it, t, k); break;
             }
         }
 
@@ -509,20 +448,12 @@ public class TreeAmbientFX : MonoBehaviour
     private static float Env(float u, float inEnd, float outStart)
         => Mathf.SmoothStep(0f, 1f, u / inEnd) * (1f - Mathf.SmoothStep(0f, 1f, (u - outStart) / (1f - outStart)));
 
-    private void UpdateRay(Item it, float t, float k)
-    {
-        float breathe = 0.45f + 0.55f * (0.5f + 0.5f * Mathf.Sin(t * it.freq + it.phase));
-        float ang = it.angle + Mathf.Sin(t * it.swayFreq * 6.28f + it.phase) * it.sway;
-        it.rt.localRotation = Quaternion.Euler(0f, 0f, ang);
-        it.cr.SetColor(new Color(it.rgb.r, it.rgb.g, it.rgb.b, it.alpha * breathe * k));
-    }
-
     private void UpdateMist(Item it, float t, float k)
     {
         float nx = Mathf.PerlinNoise(it.seedX, t * it.swayFreq) - 0.5f;
         it.rt.anchoredPosition = it.basePos + new Vector2(nx * 2f * it.sway, 0f);
         float breathe = 0.6f + 0.4f * Mathf.Sin(t * it.freq + it.phase);
-        it.cr.SetColor(new Color(it.rgb.r, it.rgb.g, it.rgb.b, it.alpha * breathe * k));
+        it.cr.SetColor(new Color(_mistColor.r, _mistColor.g, _mistColor.b, it.alpha * breathe * k));
     }
 
     private void UpdateFirefly(Item it, float t, float k)
@@ -535,22 +466,6 @@ public class TreeAmbientFX : MonoBehaviour
         float pulse = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-0.2f, 0.9f, s));
         it.rt.anchoredPosition = p;
         it.cr.SetColor(new Color(it.rgb.r, it.rgb.g, it.rgb.b, it.alpha * (0.12f + 0.88f * pulse) * k));
-    }
-
-    private void UpdateMote(Item it, float t, float k)
-    {
-        float age = t - it.birth;
-        float u = age / it.life;
-        if (u >= 1f) { Respawn(it, t, false); age = 0f; u = 0f; }
-
-        float env = Env(u, 0.2f, 0.6f);
-        float twinkle = 0.65f + 0.35f * Mathf.Sin(age * it.freq * 1.6f + it.phase);
-        if (it.kind == Kind.Spark) twinkle = 0.25f + 0.75f * Mathf.Pow(0.5f + 0.5f * Mathf.Sin(age * it.freq * 2.1f + it.phase), 2f);
-
-        it.rt.anchoredPosition = new Vector2(
-            it.basePos.x + Mathf.Sin(age * it.swayFreq + it.phase) * it.sway,
-            it.basePos.y + it.speed * age);
-        it.cr.SetColor(new Color(it.rgb.r, it.rgb.g, it.rgb.b, it.alpha * env * twinkle * k));
     }
 
     private void UpdateLeaf(Item it, float t, float k)

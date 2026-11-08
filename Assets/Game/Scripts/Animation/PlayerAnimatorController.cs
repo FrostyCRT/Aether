@@ -2,7 +2,10 @@
 
 public class PlayerAnimatorController : MonoBehaviour
 {
+    private static readonly int WalkRateId = Animator.StringToHash("WalkRate");
+
     private Animator _animator;
+    private bool _hasWalkRate;
 
     void Awake()
     {
@@ -12,12 +15,28 @@ public class PlayerAnimatorController : MonoBehaviour
 
         if (_animator == null)
             Debug.LogError($"[PlayerAnimatorController] Aucun Animator trouvé sur {gameObject.name} ou ses enfants !");
+        else
+            foreach (AnimatorControllerParameter p in _animator.parameters)
+                if (p.nameHash == WalkRateId) _hasWalkRate = true;
     }
 
     public void SetWalking(bool isMoving)
     {
         if (_animator == null) return;
         _animator.SetBool("IsWalking", isMoving);
+    }
+
+    // AJOUTÉ (2026-11-08, retour utilisateur : "l'animation de walk [doit] être plus rapide par rapport à la vitesse du personnage,
+    // qui va de plus en plus vite dans les améliorations de réputation, mais pas trop non plus") - le pas suit la vitesse, en moins
+    // que proportionnel. speedRatio = vitesse actuelle / vitesse de base : ×1,20 sans bonus, ×1,44 avec +30 % de Réputation.
+    // Seul Aether a le paramètre "WalkRate" dans son Animator.
+    private const float WalkRateAtBaseSpeed = 1.2f, WalkRateExponent = 0.7f, WalkRateMin = 0.8f, WalkRateMax = 1.5f;
+
+    public void SetWalkRate(float speedRatio)
+    {
+        if (!_hasWalkRate) return;
+        float rate = WalkRateAtBaseSpeed * Mathf.Pow(Mathf.Max(speedRatio, 0.01f), WalkRateExponent);
+        _animator.SetFloat(WalkRateId, Mathf.Clamp(rate, WalkRateMin, WalkRateMax));
     }
 
     public void TriggerDeath()

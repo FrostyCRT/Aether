@@ -132,7 +132,7 @@ public class UpgradeData : ScriptableObject
                 return FormatBouncingOrbDescription(nextLevel);
 
             case UpgradeType.Damage:
-                return Loc.F("+{0}% de dégâts sur toutes tes armes", PercentOf(value));
+                return Loc.F("+{0}% de dégâts sur toutes tes attaques", PercentOf(value));
 
             case UpgradeType.FireRate:
                 // CORRIGÉ (2026-10-25) - "toutes tes armes" était faux : seules les armes qui TIRENT ont une cadence (tir de
@@ -307,7 +307,7 @@ public class UpgradeData : ScriptableObject
         switch (upgradeType)
         {
             case UpgradeType.Damage:
-                return levels != null ? Loc.F("+{0}% de dégâts sur toutes tes armes", PercentOf(levels.DamageBonusTotal)) : Description;
+                return levels != null ? Loc.F("+{0}% de dégâts sur toutes tes attaques", PercentOf(levels.DamageBonusTotal)) : Description;
             case UpgradeType.FireRate:
                 return levels != null ? Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(levels.FireRateBonusTotal)) : Description;
             case UpgradeType.BouncingOrb:
@@ -760,6 +760,11 @@ public class UpgradeData : ScriptableObject
                     if (mudOrb != null) mudOrb.AddDamage(ratio);
 
                     if (weapon != null) weapon.AddDamage(value); // additive en interne
+
+                    // AJOUTÉ (2026-11-08, retour utilisateur : "dégâts c'est dans la globalité donc tout") - l'Ultime et la
+                    // Nova ne profitaient pas de Dégâts+.
+                    CrystalSystem crystal = playerGO.GetComponent<CrystalSystem>();
+                    if (crystal != null) crystal.AddDamage(ratio);
 
                     if (LevelUpManager.Instance != null) LevelUpManager.Instance.DamageBonusTotal = total + value;
                     break;

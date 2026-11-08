@@ -91,15 +91,17 @@ PAGES = {
         ("torch_8", (266, 684, 296, 712), "warm", dict(lo=0.55), 9, 1.6, 0.8, (1.00, 0.66, 0.30)),
         ("hall_fog", (760, 330, 1180, 820), "bright", dict(lo=0.50), 40, 1.0, 0.0, (1.00, 0.80, 0.55), 0.5),
     ]),
-    # Arbre des Compétences (2048 x 1152) : feuillage orange, rayon doré, feuillage vert, feuillage turquoise et ses
-    # paillettes, clairière ensoleillée.
-    "tree": dict(src="BackgroundV4.png", out="TreeGlow", ref=(2048, 1152), sources=[
-        ("canopy_orange", (0, 0, 860, 520), "hue", dict(hue=(355, 40), smin=0.45, lo=0.55), 26, 1.0, 0.35, (1.00, 0.58, 0.22), 0.5),
-        ("sunburst", (300, 120, 900, 680), "hue", dict(hue=(40, 62), smin=0.25, lo=0.80), 30, 1.0, 0.30, (1.00, 0.86, 0.45), 0.5),
-        ("canopy_green", (680, 0, 1400, 400), "hue", dict(hue=(70, 140), smin=0.35, lo=0.60), 24, 0.9, 0.25, (0.62, 1.00, 0.55), 0.5),
-        ("canopy_cyan", (1240, 0, 2048, 560), "hue", dict(hue=(160, 200), smin=0.30, lo=0.62), 26, 1.0, 0.35, (0.40, 0.90, 1.00), 0.5),
-        ("cyan_stream", (1300, 330, 1640, 720), "bright", dict(lo=0.72), 14, 0.9, 0.5, (0.85, 0.95, 0.70), 0.5),
-        ("clearing", (520, 760, 1560, 1152), "hue", dict(hue=(45, 95), smin=0.35, lo=0.80), 28, 1.0, 0.20, (1.00, 0.90, 0.55), 0.5),
+    # Arbre des Compétences (3 images au même cadrage, jour / crépuscule / nuit) : lueurs découpées dans la NUIT, où seul le
+    # feuillage magique brille (de jour, le ciel bleu se confondrait avec le feuillage). Les 107 premières lignes sont cachées
+    # par la barre d'onglets (voir SkillTreeBackground) : les coordonnées ci-dessous partent du haut de la zone visible.
+    "tree": dict(src="Compétences/Background Compétences Nuit.jpg", out="TreeGlow", ref=(2048, 1152), crop=(0, 107, 2048, 1152), sources=[
+        ("canopy_orange", (0, 0, 640, 533), "hue", dict(hue=(12, 48), smin=0.45, lo=0.42), 26, 1.0, 0.35, (1.00, 0.58, 0.22), 0.5),
+        ("core_orange", (230, 20, 520, 270), "hue", dict(hue=(18, 58), smin=0.30, lo=0.78), 30, 1.0, 0.40, (1.00, 0.76, 0.36), 0.5),
+        ("canopy_green", (590, 0, 1440, 373), "hue", dict(hue=(85, 155), smin=0.45, lo=0.45), 24, 1.0, 0.30, (0.45, 1.00, 0.45), 0.5),
+        ("low_green_l", (544, 373, 784, 581), "hue", dict(hue=(85, 155), smin=0.45, lo=0.45), 18, 1.0, 0.30, (0.45, 1.00, 0.45), 0.5),
+        ("low_green_r", (1264, 309, 1490, 581), "hue", dict(hue=(85, 155), smin=0.45, lo=0.40), 18, 1.0, 0.30, (0.45, 1.00, 0.55), 0.5),
+        ("canopy_blue", (1440, 0, 2048, 565), "hue", dict(hue=(188, 235), smin=0.45, lo=0.45), 26, 1.0, 0.35, (0.35, 0.68, 1.00), 0.5),
+        ("core_blue", (1560, 0, 1960, 300), "hue", dict(hue=(188, 235), smin=0.30, lo=0.72), 30, 1.0, 0.40, (0.55, 0.82, 1.00), 0.5),
     ]),
     # Page Personnages : gros cristal flottant au centre (et ses volutes / paillettes). Un fond par héros
     # (Personnages/Background<Nom>.jpg), une texture par élément.
@@ -118,6 +120,7 @@ def build(page):
     cfg = PAGES[page]
     im = Image.open(BG + cfg["src"]).convert("RGB")
     if "ref" in cfg: im = im.resize(cfg["ref"], Image.LANCZOS)   # repère = taille du sprite importé (fichier plus grand)
+    if "crop" in cfg: im = im.crop(cfg["crop"])                  # partie réellement affichée de l'illustration
     A = np.asarray(im).astype(np.float32) / 255.0
     H, W = A.shape[:2]
     out = ROOT + "Assets/Resources/" + cfg["out"] + "/"

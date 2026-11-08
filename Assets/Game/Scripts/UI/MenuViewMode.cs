@@ -34,8 +34,15 @@ public class MenuViewMode : MonoBehaviour
     private bool _active;
     private Coroutine _fade;
 
-    private struct Saved { public CanvasGroup group; public bool added; public float alpha; public bool interactable, blocks; }
-    private readonly List<Saved> _hidden = new List<Saved>();
+    // CORRIGÉ (2026-11-08, retour utilisateur : "si on appuie plusieurs fois sur le bouton [...] ça peut altérer les
+    // éléments cachés, ils paraissent mi-transparents") - on n'écrit plus jamais dans le CanvasGroup d'un élément. Avant, son
+    // alpha était mémorisé puis restauré : mémorisé en plein fondu (double clic sur l'œil, clic pendant le fondu d'ouverture
+    // de la page ou le repli de Dernière partie), il devenait son état « normal ». Désormais chaque élément reçoit un groupe
+    // À NOUS ; s'il a déjà le sien (Unity n'en accepte qu'un par objet), il passe le temps de la contemplation dans un
+    // conteneur vide de la taille de la page, et ses propres animations continuent sans interférence.
+    private struct Hidden { public CanvasGroup group; public Transform wrapped; }
+    private readonly List<Hidden> _hidden = new List<Hidden>();
+    private GameObject _hiddenPanel;
 
     // Arbre des Compétences : ses médaillons ont leur propre CanvasGroup, remis à 1 par leur script à chaque image -> on
     // ne peut pas les estomper un par un. Les calques d'effets FX_* sont donc sortis provisoirement de TreeContainer
@@ -159,10 +166,24 @@ public class MenuViewMode : MonoBehaviour
         GameObject panel = _menu.CurrentPanel;
         if (panel == null) return;
         _active = true;
-        _hidden.Clear();
-        foreach (Transform child in panel.transform)
+
+        // Retour encore en cours sur cette page (clics rapides) : les éléments sont déjà pris en charge, on repart vers 0.
+        if (_hidden.Count > 0 && _hiddenPanel == panel)
         {
-            if (!child.gameObject.activeSelf || KeepNames.Contains(child.name)) continue;
+            ShowCatcher();
+            StartFade(0f);
+            return;
+        }
+        Reveal();
+        _hiddenPanel = panel;
+
+        // Copie de la liste : Hide peut déplacer l'élément dans un conteneur. Les éléments inactifs sont pris aussi : une
+        // animation peut les allumer pendant la contemplation.
+        var children = new List<Transform>();
+        foreach (Transform child in panel.transform) children.Add(child);
+        foreach (Transform child in children)
+        {
+            if (KeepNames.Contains(child.name)) continue;
             if (child.name == "TreeContainer") continue;   // traité juste après
             Hide(child);
         }
@@ -183,13 +204,18 @@ public class MenuViewMode : MonoBehaviour
         // barre d'onglets : le bandeau de bois reste (le fond des pages ne s'étend pas dessous), seuls les onglets s'effacent
         if (_tabBarRoot != null)
             foreach (Transform tab in _tabBarRoot)
-                if (tab.gameObject.activeSelf && (tab.name.StartsWith("Tab") || tab.name.EndsWith("Tab"))) Hide(tab);
+                if (tab.name.StartsWith("Tab") || tab.name.EndsWith("Tab")) Hide(tab);
 
+        ShowCatcher();
+        StartFade(0f);
+    }
+
+    private void ShowCatcher()
+    {
         _catcher.SetActive(true);
         _catcher.transform.SetAsLastSibling();
         _button.SetAsLastSibling();
         _icon.sprite = _eyeOffSprite;
-        StartFade(0f);
     }
 
     public void Exit()
@@ -203,12 +229,45 @@ public class MenuViewMode : MonoBehaviour
 
     private void Hide(Transform t)
     {
-        var g = t.GetComponent<CanvasGroup>();
-        bool added = g == null;
-        if (added) g = t.gameObject.AddComponent<CanvasGroup>();
-        _hidden.Add(new Saved { group = g, added = added, alpha = g.alpha, interactable = g.interactable, blocks = g.blocksRaycasts });
+        bool ownGroup = t.GetComponent<CanvasGroup>() != null;
+        CanvasGroup g = ownGroup ? Wrap(t) : t.gameObject.AddComponent<CanvasGroup>();
         g.interactable = false;
         g.blocksRaycasts = false;
+        _hidden.Add(new Hidden { group = g, wrapped = ownGroup ? t : null });
+    }
+
+    // Conteneur vide, à la même place dans la page et de même rectangle : l'élément garde exactement sa position.
+    private static CanvasGroup Wrap(Transform t)
+    {
+        var parent = (RectTransform)t.parent;
+        var wrap = (RectTransform)new GameObject("ViewModeWrap", typeof(RectTransform), typeof(CanvasGroup)).transform;
+        wrap.SetParent(parent, false);
+        wrap.anchorMin = Vector2.zero; wrap.anchorMax = Vector2.one; wrap.pivot = parent.pivot;
+        wrap.offsetMin = wrap.offsetMax = Vector2.zero;
+        wrap.SetSiblingIndex(t.GetSiblingIndex());
+        t.SetParent(wrap, false);
+        return wrap.GetComponent<CanvasGroup>();
+    }
+
+    // Rend l'interface d'un coup : retire nos groupes et conteneurs (les groupes des éléments n'ont jamais été touchés).
+    private void Reveal()
+    {
+        foreach (var h in _hidden)
+        {
+            if (h.group == null) continue;
+            h.group.alpha = 1f;
+            if (h.wrapped != null)
+            {
+                Transform wrap = h.group.transform;
+                h.wrapped.SetParent(wrap.parent, false);
+                h.wrapped.SetSiblingIndex(wrap.GetSiblingIndex());
+                Destroy(wrap.gameObject);
+            }
+            else Destroy(h.group);
+        }
+        _hidden.Clear();
+        _hiddenPanel = null;
+        RestoreMoved();
     }
 
     private void StartFade(float target)
@@ -219,38 +278,19 @@ public class MenuViewMode : MonoBehaviour
 
     private IEnumerator FadeRoutine(float target)
     {
-        // en sortie : chaque élément revient vers SON alpha d'origine
         var start = new float[_hidden.Count];
         for (int i = 0; i < _hidden.Count; i++) start[i] = _hidden[i].group != null ? _hidden[i].group.alpha : 0f;
         for (float t = 0f; t < Fade; t += Time.unscaledDeltaTime)
         {
             float k = Mathf.SmoothStep(0f, 1f, t / Fade);
             for (int i = 0; i < _hidden.Count; i++)
-            {
-                var s = _hidden[i];
-                if (s.group == null) continue;
-                float to = target <= 0f ? 0f : s.alpha;
-                s.group.alpha = Mathf.Lerp(start[i], to, k);
-            }
+                if (_hidden[i].group != null) _hidden[i].group.alpha = Mathf.Lerp(start[i], target, k);
             // le bouton lui-même se fait discret en contemplation
             _buttonBack.color = new Color(0.06f, 0.05f, 0.08f, Mathf.Lerp(_buttonBack.color.a, target <= 0f ? 0.25f : 0.55f, k));
             yield return null;
         }
-        if (target <= 0f)
-        {
-            foreach (var s in _hidden) if (s.group != null) s.group.alpha = 0f;
-        }
-        else
-        {
-            foreach (var s in _hidden)
-            {
-                if (s.group == null) continue;
-                if (s.added) Destroy(s.group);
-                else { s.group.alpha = s.alpha; s.group.interactable = s.interactable; s.group.blocksRaycasts = s.blocks; }
-            }
-            _hidden.Clear();
-            RestoreMoved();
-        }
+        if (target <= 0f) { foreach (var h in _hidden) if (h.group != null) h.group.alpha = 0f; }
+        else Reveal();
         _fade = null;
     }
 
@@ -266,14 +306,9 @@ public class MenuViewMode : MonoBehaviour
     {
         // sécurité : ne jamais laisser l'interface cachée si le menu se ferme
         if (_active) { _active = false; if (_catcher != null) _catcher.SetActive(false); }
-        foreach (var s in _hidden)
-        {
-            if (s.group == null) continue;
-            if (s.added) Destroy(s.group);
-            else { s.group.alpha = s.alpha; s.group.interactable = s.interactable; s.group.blocksRaycasts = s.blocks; }
-        }
-        _hidden.Clear();
-        RestoreMoved();
+        _fade = null;   // Unity a arrêté la coroutine en désactivant le composant
+        if (!gameObject.scene.isLoaded) { _hidden.Clear(); _moved.Clear(); return; }   // scène déchargée : tout part avec elle
+        Reveal();
     }
 
     private void RestoreMoved()

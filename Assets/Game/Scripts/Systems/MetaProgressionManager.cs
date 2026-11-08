@@ -50,7 +50,9 @@ public class MetaProgressionManager : MonoBehaviour
     // joueur faible / joueur fort et la fin de partie, sans jamais rendre un kill inutile.
     public const int GoldPerMinute = 300;                      // par minute de chrono (Classique, Sans fin, Ruée)
     public const float KillGoldPerValue = 1.25f;               // or par point de EnemyBase._goldValue, à faible rythme
-    public const float KillGoldHalfRate = 150f;                // kills par minute où un kill ne paie plus que la moitié
+    // MODIFIÉ (2026-11-08, retour utilisateur : 30 000 or avant la fin en Apocalyptique, 11 000 kills) - 150 -> 70 : les premiers
+    // kills paient presque autant, la masse de fin de partie paie environ moitié moins.
+    public const float KillGoldHalfRate = 70f;                 // kills par minute où un kill ne paie plus que la moitié
     private const float KillRateWindow = 60f;                  // mémoire du rythme de kills (secondes de jeu)
     public const int ClassicVictoryGold = 3700;
     public const int RushVictoryGold = 1850;

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public class CrystalSystem : MonoBehaviour
 {
+    // AJOUTÉ (2026-11-08) - carte Dégâts+ : l'Ultime et la Nova en profitent aussi (voir UpgradeData.Apply).
+    public void AddDamage(float value) { _ultDamage += _ultDamage * value; _novaDamage += _novaDamage * value; }
+
     [Header("Jauge")]
     [SerializeField] private int _maxCharges = 6;
 

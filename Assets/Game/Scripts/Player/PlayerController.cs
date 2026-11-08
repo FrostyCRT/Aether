@@ -85,6 +85,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _moveDirection;
     private float _speedMultiplier = 1f;
     private float _escapeSpeedMultiplier = 1f;
+    private float _baseMoveSpeed = 5f;   // vitesse avant bonus de Réputation : référence du rythme de marche
 
     private bool _isDashing = false;
     private bool _isInvincible = false;
@@ -221,6 +222,7 @@ public class PlayerController : MonoBehaviour
         }
 
         PrecomputeGhostMaterials();
+        _baseMoveSpeed = _moveSpeed;
 
         // AJOUTÉ (2026-10-18, diagnostic complet - audit §2.14) - garde défensive : lancer la scène Game directement
         // depuis l'éditeur (sans passer par MainMenu, qui crée le singleton) provoquait un NullReferenceException
@@ -355,6 +357,7 @@ public class PlayerController : MonoBehaviour
         {
             bool isMoving = _moveDirection.sqrMagnitude > 0.01f;
             _animatorController.SetWalking(isMoving);
+            _animatorController.SetWalkRate(_moveSpeed * _speedMultiplier / _baseMoveSpeed);
         }
     }
 

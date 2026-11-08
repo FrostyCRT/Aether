@@ -138,10 +138,6 @@ public class BossCorruptedSource : BossBase
     private GameObject _activeMiniBossInstance = null;
     private bool MiniBossAlive => _activeMiniBossInstance != null;
 
-    // AJOUTE (2026-09-16) - retour utilisateur : les invocations doivent
-    // ALTERNER entre l'echo du Boss 1 et celui du Boss 2, plutot qu'un tirage
-    // 50/50 qui pouvait invoquer 2-3 fois de suite le meme (voir SummonAttack).
-    private bool _nextSummonIsBoss1 = true;
 
     protected override void Start()
     {
@@ -235,8 +231,23 @@ public class BossCorruptedSource : BossBase
         }
     }
 
+    protected override bool DropsChest => false;
+
+    // AJOUTÉ (2026-11-08, retour utilisateur : "dans tous les cas il fait spawn un mini boss quand il est à la moitié de sa
+    // vie") - invocation garantie, prioritaire sur le tirage et sur le délai minimum. Si un mini-boss est encore en vie à
+    // ce moment-là, elle a lieu dès qu'il disparaît.
+    private bool _halfLifeSummonDone;
+
     private AttackType ChooseNextAttack(List<AttackType> pool)
     {
+        if (!_halfLifeSummonDone && _currentHealth <= _maxHealth * 0.5f && !MiniBossAlive)
+        {
+            _halfLifeSummonDone = true;
+            _lastSummonRealTime = Time.time;
+            _lastAttack = AttackType.Summon;
+            return AttackType.Summon;
+        }
+
         AttackType choice;
         int guard = 0;
         do
@@ -546,8 +557,9 @@ public class BossCorruptedSource : BossBase
         // MODIFIE (2026-09-16) - alterne strictement au lieu d'un tirage 50/50
         // (retour utilisateur) : 1ere invocation = echo du Boss 1, 2e = echo
         // du Boss 2, 3e = Boss 1, etc.
-        GameObject prefabToSpawn = _nextSummonIsBoss1 ? _miniBoss1Prefab : _miniBoss2Prefab;
-        _nextSummonIsBoss1 = !_nextSummonIsBoss1;
+        // MODIFIÉ (2026-11-08, retour utilisateur : "1 chance sur 2 par rapport au boss 1 ou 2") - tirage à chaque invocation
+        // (avant : alternance stricte, boss 1 puis boss 2).
+        GameObject prefabToSpawn = Random.value < 0.5f ? _miniBoss1Prefab : _miniBoss2Prefab;
         if (prefabToSpawn == null) yield break;
 
         GameObject mini = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);

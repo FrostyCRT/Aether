@@ -29,7 +29,11 @@ public class ChallengeManager : MonoBehaviour
     // MODIFIÉ (2026-11-07, demande utilisateur) - 1 200 → 1 000 : en Modéré, 1 200 n'était atteint qu'avec la prime de
     // victoire ; 1 000 tombe vers 13-14 min pour un joueur solide (avant la fin du boss 3), sinon à la victoire.
     // 2026-11-07 (suite) : échelle x10 de l'or, objectif recalé par mesure (voir NOTES.md).
-    public const int FortuneGoldGoal = 12000;
+    // MODIFIÉ (2026-11-08, retour utilisateur : objectif "bien trop simple") - l'or gagné est multiplié par la difficulté (x1,5 / x2) :
+    // l'objectif suit le même multiplicateur. 10 000 / 15 000 / 20 000 (Modéré / Violent / Apocalyptique), atteint vers 13 min d'une
+    // très bonne partie dans chaque palier (sur la partie de référence de l'utilisateur, 10 000 tombait dès 7 min en Apocalyptique).
+    public const int FortuneBaseGold = 10000;
+    public static int FortuneGoldGoal => Mathf.RoundToInt(FortuneBaseGold * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
     // AJOUTÉ (2026-11-07, mesuré sur 9 parties en Modéré, voir NOTES.md) - les ids restent ceux d'origine (kill150, dash20,
     // bossUnder30s, level30) car ils sont enregistrés dans les sauvegardes. 150 kills et 20 dashs tombaient vers 1 min 40
     // sans y penser ; le niveau 30 n'était jamais atteint (26 au mieux, toutes les gemmes ramassées).

@@ -273,17 +273,17 @@
 258| Doble cacería
 259| Derrota a 2 jefes en la misma partida
 260| Ascenso rápido
-261| Nivel 18 antes del minuto 10
+261| Alcanza el nivel 18 en 10 minutos
 262| Sin cristal
-263| Sin definitiva hasta el jefe 1
+263| No uses la definitiva antes del jefe 1
 264| Impecable
-265| Ningún daño hasta el jefe 1
+265| Mantén más del 50% de vida hasta el jefe 1
 266| Relámpago
 267| Derrota a un jefe en menos de 25 s
 268| Fortuna
-269| Recoge al menos 12.000 de oro
+269| Recoge {0} de oro
 270| Poder absoluto
-271| Nivel 25 en la misma partida
+271| Alcanza el nivel 25
 272| +{0} de oro
 273| Nv. {0}/{1}
 274| En curso
@@ -384,7 +384,7 @@
 363| Orbe rebotador
 364| Lanza orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan
 365| Daño +
-366| +20% de daño en todas tus armas
+366| +20% de daño en todos tus ataques
 367| Disparo doble
 368| Tu ataque básico dispara un segundo proyectil justo después del primero
 369| Bola de fuego
@@ -407,7 +407,7 @@
 386| +1 salto de rayo adicional
 387| Desbloquea 3 charcos de barro que ralentizan y hieren
 388| +1 charco de barro adicional
-389| +{0}% de daño en todas tus armas
+389| +{0}% de daño en todos tus ataques
 390| +{0}% de cadencia en todas tus armas de disparo
 391| Aumenta tu vida máxima un {0}% y restaura un {1}%
 392| Desbloquea Disparo doble: tu ataque básico dispara dos veces
@@ -618,7 +618,7 @@
 581| No uses la definitiva (tecla F) antes de que aparezca el 1.er jefe
 582| No bajes nunca del 50% de vida, desde el inicio de la partida hasta la muerte del 1.er jefe.
 583| Derrota a cualquier jefe en menos de 25 segundos desde su aparición
-584| Recoge al menos 12.000 de oro en total durante la partida
+584| Recoge al menos {0} de oro en total durante la partida
 585| MODERADO
 586| VIOLENTO
 587| APOCALÍPTICO

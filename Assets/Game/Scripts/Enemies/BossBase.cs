@@ -109,6 +109,9 @@ public class BossBase : MonoBehaviour
     private bool _hasDealtChargeDamage = false;
     public float CameraZoomMargin => _cameraZoomMargin;
     public float MaxHealth => _maxHealth;
+
+    // AJOUTÉ (2026-11-08) - la Source Corrompue (boss 3) ne laisse pas de coffre à sa mort.
+    protected virtual bool DropsChest => true;
     public float CurrentHealth => _currentHealth;
     // AJOUTE (2026-09-15) - necessaire pour corriger le calcul d'XP des
     // mini-boss invoques par BossCorruptedSource (voir InitSummonedBoss) :
@@ -640,7 +643,7 @@ public class BossBase : MonoBehaviour
             // garde le comportement d'origine (gemmes classiques, discret, cohérent avec un ennemi un peu plus gros).
             if (!IsSummoned)
             {
-                if (ObjectPool.Instance != null)
+                if (ObjectPool.Instance != null && DropsChest)
                 {
                     GameObject chestGO = ObjectPool.Instance.Get("BossChest", gemSpawnPos, Quaternion.identity);
                     BossChest chest = chestGO != null ? chestGO.GetComponent<BossChest>() : null;
