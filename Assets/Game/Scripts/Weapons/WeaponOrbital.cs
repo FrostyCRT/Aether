@@ -11,7 +11,7 @@ public class WeaponOrbital : MonoBehaviour
 
     [Header("Contrôle Range (A/E)")]
     [SerializeField] private float _minOrbitRadius = 1f;
-    [SerializeField] private float _maxOrbitRadius = 12f;   // MODIFIÉ (2026-10-29, retour utilisateur : "augmenter la range plus loin des orbitaux") - était 8
+    [SerializeField] private float _maxOrbitRadius = 10f;   // MODIFIÉ (2026-11-06, retour utilisateur : 12 "un peu trop", "un entre 2 avec la précédente limite") - était 8 puis 12
     [SerializeField] private float _rangeChangeSpeed = 2f;
 
     [Header("Références")]
@@ -28,6 +28,12 @@ public class WeaponOrbital : MonoBehaviour
     // torse se projette décalée par rapport à un cercle au sol de même rayon (celui de l'Aura), au lieu d'être
     // concentrique. Même technique de correction que WeaponAura (hauteur ABSOLUE au sol, pas relative au joueur).
     [SerializeField] private float _groundY = 0.2f;
+
+    // AJOUTÉ (2026-11-06, retour utilisateur : "pas centrés exactement sur le joueur") - au sol, sous une caméra inclinée
+    // à 65°, le centre du cercle tombe sous les pieds du héros : mesuré 21 px SOUS son corps en 1080p (514 contre 535),
+    // quel que soit le rayon (caméra orthographique). Ce décalage vers le haut de l'écran recentre le cercle sur le corps,
+    // sans le remonter en hauteur. Partagé avec l'Aura et les fusions orbitales pour que tout reste concentrique.
+    public const float VisualCenterZ = 0.5f;
 
     private float _upgradeDamageModifier = 0f;
     private float _currentDamage;
@@ -144,7 +150,7 @@ public class WeaponOrbital : MonoBehaviour
             // toGround : annule la hauteur de torse du parent (transform.position.y) pour retomber sur une
             // hauteur ABSOLUE au sol (_groundY), même technique que WeaponAura.LateUpdate() (toGround).
             float toGround = _groundY - transform.position.y;
-            Vector3 orbitOffset = new Vector3(x, toGround, z);
+            Vector3 orbitOffset = new Vector3(x, toGround, z + VisualCenterZ);
             _orbitals[i].transform.position = transform.position + orbitOffset;
         }
     }

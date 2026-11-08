@@ -260,13 +260,13 @@
 
 ## Défis
 248| Jäger
-249| Töte 150 Gegner
+249| Töte 500 Gegner
 250| Kraftschub
 251| Erreiche Level 10
 252| Erstes Blut
 253| Besiege 1 Boss
 254| Immer in Bewegung
-255| Nutze den Dash 20-mal
+255| Nutze den Dash 50-mal
 256| Kühler Kopf
 257| Bleib bis Boss 2 über 30 % LP
 258| Doppeljagd
@@ -274,15 +274,15 @@
 260| Blitzaufstieg
 261| Level 18 vor Minute 10
 262| Kristallfrei
-263| Keine Ultimate bis Boss 2
+263| Keine Ultimate bis Boss 1
 264| Makellos
 265| Kein Schaden bis Boss 1
 266| Blitzschnell
-267| Besiege einen Boss in unter 30 s
+267| Besiege einen Boss in unter 25 s
 268| Reichtum
-269| Sammle mindestens 1200 Gold
+269| Sammle mindestens 12.000 Gold
 270| Absolute Macht
-271| Level 30 in einem Run
+271| Level 25 in einem Run
 272| +{0} Gold
 273| Lvl. {0}/{1}
 274| Läuft
@@ -436,17 +436,17 @@
 414| SALVE
 415| Feuerball
 416| Ein Feuerball, der beim Aufprall explodiert und alle Gegner in der Nähe trifft
-417| Radius / Schaden / Verbrennung
+417| Radius / Feuerrate / Verbrennung
 418| KRIEGER
 419| Wachsende Angriffskraft
 420| Mana-Aura
 421| Ein dauerhaftes Feld um dich, das Gegner in Reichweite verletzt und verlangsamt
-422| Schaden / Radius / Verlangsamung
+422| Verlangsamung / Radius / Schockwelle
 423| WÄCHTER
 424| Überleben und Widerstandskraft
 425| Messersalve
 426| Wirft eine Salve von Messern, die Gegner durchbohren
-427| Extra-Messer / Schaden / Durchbohren
+427| Extra-Messer / Feuerrate / Durchbohren
 428| PHANTOM
 429| Mobilität und Dash
 430| Erreiche in einem Run Boss 2, um Kael freizuschalten
@@ -614,10 +614,10 @@
 578| FUSION
 579| Splitter
 580| Fall nie unter 30 % LP, vom Start des Runs bis zum Tod des 2. Bosses.
-581| Setze die Ultimate (Taste F) nicht ein, bevor du den 2. Boss besiegt hast
+581| Setze die Ultimate (Taste F) nicht ein, bevor der 1. Boss erscheint
 582| Fall nie unter 50 % LP, vom Start des Runs bis zum Tod des 1. Bosses.
-583| Besiege einen beliebigen Boss innerhalb von 30 Sekunden nach seinem Erscheinen
-584| Sammle im Laufe des Runs insgesamt mindestens 1200 Gold
+583| Besiege einen beliebigen Boss innerhalb von 25 Sekunden nach seinem Erscheinen
+584| Sammle im Laufe des Runs insgesamt mindestens 12.000 Gold
 585| MÄSSIG
 586| HEFTIG
 587| APOKALYPTISCH
@@ -684,3 +684,15 @@
 646| Nur ein Bildschirm ist angeschlossen.
 647| Gewinne einen Run auf {0}, um diesen Schwierigkeitsgrad freizuschalten
 648| Gewinne einen Run im Modus Klassisch auf {0}, um den Modus Endlos auf diesem Schwierigkeitsgrad zu spielen
+
+## Panneau Dernière partie (2026-11-07)
+649| LETZTER RUN
+650| SIEG
+651| AUFGEGEBEN
+652| Gegner
+653| Sieg
+654| Herausforderung
+655| Bonus für den ersten Sieg: +{0}
+656| Besiegte Gegner: {0}  ·  Lvl. {1}  ·  Bosse: {2}
+657| +{0} % Feuerrate
+658| Schaltet Schockwelle frei: Die Aura stößt Gegner alle {0} Sekunden zurück

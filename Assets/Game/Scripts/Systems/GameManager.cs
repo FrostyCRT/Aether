@@ -226,9 +226,7 @@ public class GameManager : MonoBehaviour
         // au menu. Le curseur système reste maintenant masqué partout, et NeedsCursor=false laisse CustomCursor
         // revenir à son propre comportement par défaut (gantelet affiché, voir CustomCursor.Update).
         NeedsCursor = false;
-        Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.ForceSoftware);
-        Cursor.lockState = CursorLockMode.Confined;
-        Cursor.visible = false;
+        CustomCursor.HideSystemCursor();
         _cursorState = -1;
     }
 
@@ -242,7 +240,6 @@ public class GameManager : MonoBehaviour
     // Cursor.visible = false ne suffit pas : dans l'éditeur, Échap (touche Pause) remet le curseur système visible et
     // ignore Cursor.visible jusqu'au prochain clic. On remplace donc AUSSI l'image du curseur par un carré 100 %
     // transparent : même si le système le déclare « visible », on ne voit rien, dans tous les cas.
-    private static Texture2D _blankCursor;
     private int _cursorState = -1;   // 0 = caché, 1 = visible
 
     // AJOUTÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - lu par CustomCursor pour savoir
@@ -253,23 +250,19 @@ public class GameManager : MonoBehaviour
     private void ApplyCursor(bool show)
     {
         NeedsCursor = show;
+        if (!Application.isFocused) { _cursorState = -1; return; }   // sans focus : flèche Windows (CustomCursor.ShowSystemCursor)
 
-        if (_blankCursor == null)
-        {
-            _blankCursor = new Texture2D(16, 16, TextureFormat.RGBA32, false);
-            _blankCursor.SetPixels32(new Color32[16 * 16]);
-            _blankCursor.Apply();
-            _blankCursor.hideFlags = HideFlags.HideAndDontSave;
-        }
         // CORRIGÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - remettait ici la vraie
         // flèche système (Cursor.SetCursor(null,...)) quand show=true, ce qui aurait affiché la flèche blanche de
         // l'OS PAR-DESSUS le gantelet de CustomCursor (qui gère maintenant seul la visibilité via NeedsCursor
         // ci-dessus). Le curseur système reste désormais TOUJOURS masqué (texture transparente) ; seul show change,
         // lu par CustomCursor pour afficher ou non son image.
+        // MODIFIÉ (2026-11-07) - curseur matériel transparent (CustomCursor.HideSystemCursor) au lieu d'un curseur
+        // logiciel vide : Windows remplaçait ce dernier par sa flèche au retour d'un Alt+Tab.
         if (_cursorState != 0)
         {
             _cursorState = 0;
-            Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.ForceSoftware);
+            CustomCursor.HideSystemCursor();
         }
         // CORRIGÉ (2026-10-11, retour utilisateur : "dans le menu je peux faire sortir la souris du cadre de
         // 1920x1080p") - lockState repassait à None dès qu'un panneau s'affichait (show=true), désactivant le
@@ -386,13 +379,14 @@ public class GameManager : MonoBehaviour
         // CORRIGE (2026-09-17) - abandonner sautait entierement l'evaluation du
         // defi : contrairement a ShowGameOver()/ShowVictory(), cet appel
         // manquait, donc un defi deja "Reussi" dans le HUD en cours de run
-        // (ex. "Tuer 150 ennemis") ne rapportait jamais son bonus d'Or si le
+        // (ex. "Tuer 500 ennemis") ne rapportait jamais son bonus d'Or si le
         // joueur abandonnait au lieu de mourir/gagner - meme progres reel,
         // recompense perdue sans raison. Meme traitement que les 2 autres fins
         // de run desormais.
         if (ChallengeManager.Instance != null)
             ChallengeManager.Instance.EvaluateAndApplyReward(_killCount, levelReached, _bossKillCount, MetaProgressionManager.Instance.RunGold);
 
+        MetaProgressionManager.Instance.PendingRunAbandoned = true;
         MetaProgressionManager.Instance.SaveRunResults(_runTimer, _killCount, levelReached, _bossKillCount, false);
 
         // MODIFIE (2026-09-14) - passe par SceneLoader/LoadingScreen (vrai
@@ -408,7 +402,7 @@ public class GameManager : MonoBehaviour
             GameUI.Instance.UpdateKillCount(_killCount);
 
         // AJOUTE - rafraichit la progression des defis bases sur les kills
-        // (ex. "Tuer 150 ennemis") en temps reel, pas seulement en fin de run.
+        // (ex. "Tuer 500 ennemis") en temps reel, pas seulement en fin de run.
         if (ChallengeManager.Instance != null)
             ChallengeManager.Instance.RefreshDisplay();
     }

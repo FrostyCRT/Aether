@@ -91,7 +91,10 @@ public class WeaponMudPuddle : MonoBehaviour
             float angle = _currentWaveRotation + angleStep * i;
             float rad = angle * Mathf.Deg2Rad;
             Vector3 offset = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * _spawnDistance;
-            Vector3 spawnPos = transform.position + offset;
+            // CORRIGÉ (2026-11-08, retour utilisateur : "la boue n'est pas centrée pareil par rapport aux orbitaux et à
+            // l'aura") - même centre visuel que l'Aura et les Orbitaux (WeaponOrbital.VisualCenterZ : sous la caméra
+            // orthographique inclinée, le pivot du joueur tombe sous son corps à l'écran).
+            Vector3 spawnPos = transform.position + new Vector3(0f, 0f, WeaponOrbital.VisualCenterZ) + offset;
             // MODIFIÉ (2026-10-18, diagnostic complet - audit §10) - WaveManager.MapBoundaryUtils (copie imbriquée
             // en double) a été supprimée ; référence désormais la classe autonome Systems/MapBoundaryUtils.cs.
             spawnPos = MapBoundaryUtils.ClampToZone(spawnPos);

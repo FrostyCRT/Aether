@@ -19,8 +19,7 @@ public class ReputationHallFX : MonoBehaviour
 
     private struct Glow
     {
-        public RectTransform rt; public CanvasRenderer cr; public Color color; public float alpha, freq, phase, sway, size;
-        public Vector2 basePos; public bool flicker;
+        public CanvasRenderer cr; public float alpha, freq, phase; public bool flicker;
     }
 
     private struct Ember
@@ -33,16 +32,22 @@ public class ReputationHallFX : MonoBehaviour
     private RectTransform _rect;
     private float _enable;
 
-    // (x, y) : écran 1920 x 1080 depuis le coin haut-gauche ; taille en pixels
-    private static readonly (float x, float y, float size, float r, float g, float b, float a, bool flicker)[] Sources =
+    // REFAIT (2026-11-07, retour utilisateur : "fais le même ajustement sur les autres pages" que pour les lueurs des
+    // Paramètres) - plus de ronds : chaque lueur est découpée dans l'illustration (flamme de chaque torche, brume claire
+    // du fond), textures Resources/HallGlow générées par Tools/build_menu_glows.py hall. Immobiles, seule l'intensité vit.
+    // Pixels de l'illustration (1888 x 1080, étirée sur la page) : texture, coin haut-gauche, taille, intensité, flamme ?
+    private const float ArtW = 1888f, ArtH = 1080f;
+    private static readonly (string name, float x, float y, float w, float h, float a, bool flicker)[] Sources =
     {
-        (715f, 612f, 230f, 1.00f, 0.62f, 0.26f, 0.60f, true),      // torche centre-gauche
-        (528f, 596f, 210f, 1.00f, 0.60f, 0.24f, 0.55f, true),
-        (1388f, 642f, 250f, 1.00f, 0.62f, 0.26f, 0.60f, true),     // torches centre-droit
-        (1330f, 692f, 200f, 1.00f, 0.58f, 0.22f, 0.50f, true),
-        (288f, 684f, 220f, 1.00f, 0.60f, 0.24f, 0.50f, true),      // extrême gauche
-        (1796f, 516f, 250f, 1.00f, 0.62f, 0.26f, 0.55f, true),     // extrême droite
-        (960f, 760f, 1100f, 1.00f, 0.72f, 0.42f, 0.10f, false),    // lueur diffuse au fond de la salle
+        ("torch_1",  444f, 482f, 149f, 166f, 0.80f, true),
+        ("torch_2",  649f, 559f, 114f, 130f, 0.80f, true),
+        ("torch_3",  771f, 605f,  94f, 106f, 0.75f, true),
+        ("torch_4", 1259f, 609f,  90f, 102f, 0.75f, true),
+        ("torch_5", 1309f, 563f, 114f, 126f, 0.80f, true),
+        ("torch_6", 1417f, 473f, 130f, 164f, 0.80f, true),
+        ("torch_7", 1642f, 342f, 164f, 204f, 0.85f, true),
+        ("torch_8",  239f, 657f,  84f,  82f, 0.60f, true),
+        ("hall_fog", 640f, 210f, 660f, 730f, 0.30f, false),   // brume lumineuse au fond de la salle
     };
 
     private void Awake()
@@ -76,26 +81,13 @@ public class ReputationHallFX : MonoBehaviour
         return rt;
     }
 
-    private Vector2 P(float sx, float sy)
-    {
-        Rect r = _rect.rect;
-        return new Vector2((sx / 1920f - 0.5f) * r.width, (0.5f - sy / 1080f) * r.height);
-    }
-
     private void Build()
     {
         foreach (var s in Sources)
         {
-            Glow g = new Glow
-            {
-                color = new Color(s.r, s.g, s.b), alpha = s.a, size = s.size, flicker = s.flicker,
-                freq = Random.Range(0.8f, 1.6f), phase = Random.Range(0f, 6.28f), sway = s.flicker ? Random.Range(3f, 7f) : 0f,
-                basePos = P(s.x, s.y)
-            };
-            g.rt = NewImage("Glow", out g.cr);
-            g.rt.sizeDelta = new Vector2(s.size, s.size);
-            g.rt.anchoredPosition = g.basePos;
-            _glows.Add(g);
+            CanvasRenderer cr = MenuShapedGlow.Create(_rect, "HallGlow/" + s.name, s.x, s.y, s.w, s.h, ArtW, ArtH, Additive());
+            if (cr == null) continue;
+            _glows.Add(new Glow { cr = cr, alpha = s.a, flicker = s.flicker, freq = Random.Range(0.8f, 1.6f), phase = Random.Range(0f, 6.28f) });
         }
 
         for (int i = 0; i < _emberCount; i++)
@@ -136,9 +128,7 @@ public class ReputationHallFX : MonoBehaviour
             float breathe = g.flicker
                 ? 0.72f + 0.2f * Mathf.Sin(t * g.freq * 3.4f + g.phase) + 0.08f * Mathf.Sin(t * g.freq * 8.1f + g.phase * 2f)
                 : 0.85f + 0.15f * Mathf.Sin(t * g.freq * 0.5f + g.phase);
-            g.rt.anchoredPosition = g.basePos + new Vector2(Mathf.Sin(t * 0.13f + g.phase) * g.sway, Mathf.Cos(t * 0.11f + g.phase) * g.sway);
-            g.rt.localScale = Vector3.one * (0.95f + 0.08f * breathe);
-            g.cr.SetColor(new Color(g.color.r, g.color.g, g.color.b, g.alpha * breathe * k));
+            g.cr.SetColor(new Color(1f, 1f, 1f, g.alpha * breathe * k));
         }
 
         for (int i = 0; i < _embers.Count; i++)

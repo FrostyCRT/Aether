@@ -99,13 +99,13 @@ public static class LocTableZH
         { "Or : {0}", "金币：{0}" }, { "Éliminations : {0}", "击杀：{0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
-        { "Chasseur", "猎手" }, { "Tuer 150 ennemis", "击杀 150 名敌人" }, { "Montée en Puissance", "力量觉醒" }, { "Atteindre le niveau 10", "达到 10 级" },
-        { "Premier Sang", "第一滴血" }, { "Vaincre 1 boss", "击败 1 名首领" }, { "Toujours en Mouvement", "永不停歇" }, { "Utiliser le Dash 20 fois", "冲刺 20 次" },
+        { "Chasseur", "猎手" }, { "Tuer 500 ennemis", "击杀 500 名敌人" }, { "Montée en Puissance", "力量觉醒" }, { "Atteindre le niveau 10", "达到 10 级" },
+        { "Premier Sang", "第一滴血" }, { "Vaincre 1 boss", "击败 1 名首领" }, { "Toujours en Mouvement", "永不停歇" }, { "Utiliser le Dash 50 fois", "冲刺 50 次" },
         { "Sang-Froid", "临危不乱" }, { "Garder 30% de vie jusqu'au boss 2", "在第 2 名首领之前保持 30% 以上生命值" }, { "Double Chasse", "双重狩猎" },
         { "Vaincre 2 boss dans la même partie", "在同一局中击败 2 名首领" }, { "Ascension Rapide", "极速晋升" }, { "Niveau 18 avant la 10ème minute", "第 10 分钟前达到 18 级" },
-        { "Sans Cristal", "禁用水晶" }, { "Sans Ultime jusqu'au boss 2", "第 2 名首领之前不使用大招" }, { "Résilience", "完美无伤" }, { "Garder plus de 50% de vie jusqu'au boss 1", "第 1 名首领之前不受任何伤害" },
-        { "Éclair", "闪电速攻" }, { "Vaincre un boss en moins de 30s", "在 30 秒内击败一名首领" }, { "Fortune", "财运亨通" }, { "Avec au moins 1200 Or ramassé", "拾取至少 1200 金币" },
-        { "Puissance Absolue", "绝对力量" }, { "Niveau 30 dans la même partie", "在同一局中达到 30 级" }, { "+{0} or", "＋{0} 金币" },
+        { "Sans Cristal", "禁用水晶" }, { "Sans Ultime jusqu'au boss 1", "第 1 名首领之前不使用大招" }, { "Résilience", "完美无伤" }, { "Garder plus de 50% de vie jusqu'au boss 1", "第 1 名首领之前不受任何伤害" },
+        { "Éclair", "闪电速攻" }, { "Vaincre un boss en moins de 25s", "在 25 秒内击败一名首领" }, { "Fortune", "财运亨通" }, { "Avec au moins 12 000 Or ramassé", "拾取至少 12,000 金币" },
+        { "Puissance Absolue", "绝对力量" }, { "Niveau 25 dans la même partie", "在同一局中达到 25 级" }, { "+{0} or", "＋{0} 金币" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "进行中" }, { "{0}/{1} Or", "{0}/{1} 金币" }, { "Pas de défi dans ce mode", "此模式没有挑战" },
         { "Défi déjà réussi cette heure !", "本小时的挑战已完成！" }, { "Nouveau défi dans {0} min", "{0} 分钟后刷新挑战" }, { "Nouveau défi à ta prochaine partie !", "下一局将有新挑战！" },
         { "Réussi", "已完成" }, { "Statut", "状态" },
@@ -169,11 +169,11 @@ public static class LocTableZH
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "远程" }, { "ZONE", "范围" }, { "BRÛLURE", "灼烧" }, { "MÊLÉE", "近战" }, { "AURA", "光环" }, { "RALENTISSEMENT", "减速" },
         { "PERFORANT", "穿透" }, { "SALVE", "齐射" }, { "Boule de feu", "火球" }, { "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité", "命中时爆炸的火球，波及附近所有敌人" },
-        { "Rayon / Dégâts / Brûlure", "范围 / 伤害 / 灼烧" }, { "GUERRIER", "战士" }, { "Montée en puissance offensive", "攻势节节攀升" },
+        { "Rayon / Cadence / Brûlure", "范围 / 射速 / 灼烧" }, { "GUERRIER", "战士" }, { "Montée en puissance offensive", "攻势节节攀升" },
         { "Aura de mana", "法力光环" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "环绕在你身边的常驻力场，伤害并减速范围内的敌人" },
-        { "Dégâts / Rayon / Ralentissement", "伤害 / 范围 / 减速" }, { "GARDIEN", "守护者" }, { "Survie et résilience", "生存与韧性" },
+        { "Ralentissement / Rayon / Onde de choc", "减速 / 范围 / 冲击波" }, { "GARDIEN", "守护者" }, { "Survie et résilience", "生存与韧性" },
         { "Salve de couteaux", "飞刀齐射" }, { "Lance une salve de couteaux qui transpercent les ennemis", "齐射出可穿透敌人的飞刀" },
-        { "Couteau en plus / Dégâts / Perforation", "飞刀数量 / 伤害 / 穿透" }, { "FANTÔME", "幻影" }, { "Mobilité et dash", "机动与冲刺" },
+        { "Couteau en plus / Cadence / Perforation", "飞刀数量 / 射速 / 穿透" }, { "FANTÔME", "幻影" }, { "Mobilité et dash", "机动与冲刺" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "在一局中抵达第 2 名首领即可解锁 Kael" }, { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "通关一局（击败第 3 名首领）即可解锁 Lyra" },
         { "Débloquer — {0} Éclats", "花费 {0} 碎片解锁" }, { "Sélectionné", "已选择" }, { "Sélectionner", "选择" }, { "PALIERS", "强化" },
         { "ARBRE COMPLET", "技能树已满" }, { "VOIR L'ARBRE", "查看技能树" },
@@ -233,8 +233,8 @@ public static class LocTableZH
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "融合" }, { "Éclat", "碎片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "从本局开始到第 2 名首领死亡，生命值始终不低于 30%。" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "击败第 2 名首领之前不使用大招（F 键）" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "从本局开始到第 1 名首领死亡，生命值始终不低于 50%。" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "在任意一名首领出现后 30 秒内将其击败" }, { "Ramasser au moins 1200 Or au total durant la partie", "本局累计拾取至少 1200 金币" },
+        { "Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss", "第 1 名首领出现之前不使用大招（F 键）" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "从本局开始到第 1 名首领死亡，生命值始终不低于 50%。" },
+        { "Vaincre n'importe quel boss en moins de 25 secondes après son apparition", "在任意一名首领出现后 25 秒内将其击败" }, { "Ramasser au moins 12 000 Or au total durant la partie", "本局累计拾取至少 12,000 金币" },
         { "MODÉRÉ", "温和" }, { "VIOLENT", "猛烈" }, { "APOCALYPTIQUE", "末日" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "地图没有边界，一如既往的经典体验。" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "隧道形地图，左右没有边界，敌人更耐打、更危险，但金币和碎片更丰厚。" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "四面受限的狭窄地图，敌人明显更耐打、更危险，金币和碎片达到最高。" },
@@ -261,5 +261,8 @@ public static class LocTableZH
         { "Manuelle", "手动" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "自动：自动瞄准最近的敌人。手动：用鼠标或手柄右摇杆瞄准" },
         { "Écran", "显示器" }, { "Écran {0}", "显示器 {0}" }, { "Écran sur lequel le jeu s'affiche", "显示游戏画面的显示器" }, { "Un seul écran est branché.", "只连接了一台显示器。" },
         { "Remporte une partie en {0} pour débloquer cette difficulté", "在{0}难度下赢得一局即可解锁此难度" }, { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "在{0}难度下赢得一局经典模式，即可在此难度下游玩无尽模式" },
+        { "DERNIÈRE PARTIE", "上一局" }, { "VICTOIRE", "胜利" }, { "ABANDON", "放弃" }, { "Ennemis", "敌人" }, { "Victoire", "胜利" },
+        { "Défi", "挑战" }, { "Prime de 1re victoire : +{0}", "首胜奖励：+{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "击败的敌人：{0}  ·  Lv.{1}  ·  首领：{2}" },
+        { "+{0}% cadence", "射速 +{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "解锁冲击波：光环每 {0} 秒击退敌人" },
     };
 }

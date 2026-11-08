@@ -103,13 +103,13 @@ public static class LocTableKO
         { "Or : {0}", "골드： {0}" }, { "Éliminations : {0}", "처치： {0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
-        { "Chasseur", "사냥꾼" }, { "Tuer 150 ennemis", "적 150마리 처치" }, { "Montée en Puissance", "힘의 각성" }, { "Atteindre le niveau 10", "레벨 10 달성" },
-        { "Premier Sang", "퍼스트 블러드" }, { "Vaincre 1 boss", "보스 1마리 처치" }, { "Toujours en Mouvement", "멈추지 마" }, { "Utiliser le Dash 20 fois", "대시 20회 사용" },
+        { "Chasseur", "사냥꾼" }, { "Tuer 500 ennemis", "적 500마리 처치" }, { "Montée en Puissance", "힘의 각성" }, { "Atteindre le niveau 10", "레벨 10 달성" },
+        { "Premier Sang", "퍼스트 블러드" }, { "Vaincre 1 boss", "보스 1마리 처치" }, { "Toujours en Mouvement", "멈추지 마" }, { "Utiliser le Dash 50 fois", "대시 50회 사용" },
         { "Sang-Froid", "냉정함" }, { "Garder 30% de vie jusqu'au boss 2", "보스 2까지 HP 30% 이상 유지" }, { "Double Chasse", "더블 헌트" },
         { "Vaincre 2 boss dans la même partie", "한 판에서 보스 2마리 처치" }, { "Ascension Rapide", "초고속 성장" }, { "Niveau 18 avant la 10ème minute", "10분 전에 레벨 18 달성" },
-        { "Sans Cristal", "크리스탈 봉인" }, { "Sans Ultime jusqu'au boss 2", "보스 2까지 궁극기 사용 금지" }, { "Résilience", "무결점" }, { "Garder plus de 50% de vie jusqu'au boss 1", "보스 1까지 피해 받지 않기" },
-        { "Éclair", "번개처럼" }, { "Vaincre un boss en moins de 30s", "보스를 30초 안에 처치" }, { "Fortune", "일확천금" }, { "Avec au moins 1200 Or ramassé", "골드 1200 이상 획득" },
-        { "Puissance Absolue", "절대적인 힘" }, { "Niveau 30 dans la même partie", "한 판에서 레벨 30 달성" }, { "+{0} or", "+{0} 골드" },
+        { "Sans Cristal", "크리스탈 봉인" }, { "Sans Ultime jusqu'au boss 1", "보스 1까지 궁극기 사용 금지" }, { "Résilience", "무결점" }, { "Garder plus de 50% de vie jusqu'au boss 1", "보스 1까지 피해 받지 않기" },
+        { "Éclair", "번개처럼" }, { "Vaincre un boss en moins de 25s", "보스를 25초 안에 처치" }, { "Fortune", "일확천금" }, { "Avec au moins 12 000 Or ramassé", "골드 12,000 이상 획득" },
+        { "Puissance Absolue", "절대적인 힘" }, { "Niveau 25 dans la même partie", "한 판에서 레벨 25 달성" }, { "+{0} or", "+{0} 골드" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "진행 중" }, { "{0}/{1} Or", "{0}/{1} 골드" }, { "Pas de défi dans ce mode", "이 모드에는 도전이 없습니다" },
         { "Défi déjà réussi cette heure !", "이번 시간의 도전은 이미 성공했어요！" }, { "Nouveau défi dans {0} min", "{0}분 후 새 도전" }, { "Nouveau défi à ta prochaine partie !", "다음 판에서 새 도전！" },
         { "Réussi", "성공" }, { "Statut", "상태" },
@@ -176,11 +176,11 @@ public static class LocTableKO
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "원거리" }, { "ZONE", "범위" }, { "BRÛLURE", "화상" }, { "MÊLÉE", "근접" }, { "AURA", "오라" }, { "RALENTISSEMENT", "둔화" },
         { "PERFORANT", "관통" }, { "SALVE", "일제 투척" }, { "Boule de feu", "파이어볼" }, { "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité", "명중하면 폭발해 주변의 모든 적에게 피해를 주는 불덩이" },
-        { "Rayon / Dégâts / Brûlure", "범위 / 피해 / 화상" }, { "GUERRIER", "전사" }, { "Montée en puissance offensive", "갈수록 강해지는 공격력" },
+        { "Rayon / Cadence / Brûlure", "범위 / 연사 속도 / 화상" }, { "GUERRIER", "전사" }, { "Montée en puissance offensive", "갈수록 강해지는 공격력" },
         { "Aura de mana", "마나 오라" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "주위에 항상 펼쳐져 범위 안의 적에게 피해를 주고 느리게 하는 장" },
-        { "Dégâts / Rayon / Ralentissement", "피해 / 범위 / 둔화" }, { "GARDIEN", "수호자" }, { "Survie et résilience", "생존력과 끈기" },
+        { "Ralentissement / Rayon / Onde de choc", "둔화 / 범위 / 충격파" }, { "GARDIEN", "수호자" }, { "Survie et résilience", "생존력과 끈기" },
         { "Salve de couteaux", "단검 일제 투척" }, { "Lance une salve de couteaux qui transpercent les ennemis", "적을 꿰뚫는 단검을 한꺼번에 던집니다" },
-        { "Couteau en plus / Dégâts / Perforation", "단검 추가 / 피해 / 관통" }, { "FANTÔME", "팬텀" }, { "Mobilité et dash", "기동력과 대시" },
+        { "Couteau en plus / Cadence / Perforation", "단검 추가 / 연사 속도 / 관통" }, { "FANTÔME", "팬텀" }, { "Mobilité et dash", "기동력과 대시" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "한 판에서 보스 2에 도달하면 Kael 해금" }, { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "한 판을 끝까지 클리어하면（보스 3 처치） Lyra 해금" },
         { "Débloquer — {0} Éclats", "파편 {0}개로 해금" }, { "Sélectionné", "선택됨" }, { "Sélectionner", "선택" }, { "PALIERS", "강화" },
         { "ARBRE COMPLET", "트리 완성" }, { "VOIR L'ARBRE", "트리 보기" },
@@ -243,9 +243,8 @@ public static class LocTableKO
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "융합" }, { "Éclat", "파편" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "판 시작부터 2번째 보스가 쓰러질 때까지 HP 30% 아래로 떨어지지 않기．" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "2번째 보스를 처치하기 전에는 궁극기(F 키) 사용 금지" },
-        { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "판 시작부터 1번째 보스가 쓰러질 때까지 HP 50% 아래로 떨어지지 않기．" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "아무 보스나 등장 후 30초 안에 처치" }, { "Ramasser au moins 1200 Or au total durant la partie", "한 판 동안 골드를 총 1200 이상 줍기" },
+        { "Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss", "1번째 보스가 등장하기 전에는 궁극기(F 키) 사용 금지" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "판 시작부터 1번째 보스가 쓰러질 때까지 HP 50% 아래로 떨어지지 않기．" },
+        { "Vaincre n'importe quel boss en moins de 25 secondes après son apparition", "아무 보스나 등장 후 25초 안에 처치" }, { "Ramasser au moins 12 000 Or au total durant la partie", "한 판 동안 골드를 총 12,000 이상 줍기" },
         { "MODÉRÉ", "보통" }, { "VIOLENT", "격렬" }, { "APOCALYPTIQUE", "종말" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "경계 없는 맵， 언제나 그랬던 클래식 그대로．" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "좌우 경계가 없는 터널형 맵， 더 단단하고 위험한 적， 대신 골드와 파편이 더 많음．" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "사방이 막힌 좁은 맵， 훨씬 단단하고 위험한 적， 골드와 파편 최대．" },
@@ -273,5 +272,8 @@ public static class LocTableKO
         { "Manuelle", "수동" }, { "Automatique : les tirs visent l'ennemi le plus proche. Manuelle : tu vises avec la souris ou le stick droit de la manette", "자동： 가장 가까운 적을 자동으로 조준합니다． 수동： 마우스나 게임패드 오른쪽 스틱으로 조준합니다" },
         { "Écran", "디스플레이" }, { "Écran {0}", "디스플레이 {0}" }, { "Écran sur lequel le jeu s'affiche", "게임을 표시할 디스플레이" }, { "Un seul écran est branché.", "디스플레이가 하나만 연결되어 있습니다．" },
         { "Remporte une partie en {0} pour débloquer cette difficulté", "{0} 난이도에서 한 판을 승리하면 이 난이도가 해금됩니다" }, { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "{0} 난이도에서 클래식 모드를 한 판 승리하면 이 난이도에서 무한 모드를 플레이할 수 있습니다" },
+        { "DERNIÈRE PARTIE", "지난 판" }, { "VICTOIRE", "승리" }, { "ABANDON", "포기" }, { "Ennemis", "적" }, { "Victoire", "승리" },
+        { "Défi", "도전" }, { "Prime de 1re victoire : +{0}", "첫 승리 보너스： +{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "처치한 적： {0}  ·  Lv.{1}  ·  보스： {2}" },
+        { "+{0}% cadence", "연사 속도 +{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "충격파 해금： 오라가 {0}초마다 적을 밀쳐냅니다" },
     };
 }

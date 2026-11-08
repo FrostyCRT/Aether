@@ -148,18 +148,18 @@ public static class LocTableEN
         { "Or : {0}", "Gold: {0}" }, { "Éliminations : {0}", "Kills: {0}" }, { "Niv. {0}", "Lv. {0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI) - fait
-        { "Chasseur", "Hunter" }, { "Tuer 150 ennemis", "Kill 150 enemies" },
+        { "Chasseur", "Hunter" }, { "Tuer 500 ennemis", "Kill 500 enemies" },
         { "Montée en Puissance", "Power Surge" }, { "Atteindre le niveau 10", "Reach level 10" },
         { "Premier Sang", "First Blood" }, { "Vaincre 1 boss", "Defeat 1 boss" },
-        { "Toujours en Mouvement", "Always Moving" }, { "Utiliser le Dash 20 fois", "Dash 20 times" },
+        { "Toujours en Mouvement", "Always Moving" }, { "Utiliser le Dash 50 fois", "Dash 50 times" },
         { "Sang-Froid", "Cool Head" }, { "Garder 30% de vie jusqu'au boss 2", "Stay above 30% HP until boss 2" },
         { "Double Chasse", "Double Hunt" }, { "Vaincre 2 boss dans la même partie", "Defeat 2 bosses in one run" },
         { "Ascension Rapide", "Fast Ascent" }, { "Niveau 18 avant la 10ème minute", "Level 18 before minute 10" },
-        { "Sans Cristal", "Crystal-Free" }, { "Sans Ultime jusqu'au boss 2", "No Ultimate until boss 2" },
+        { "Sans Cristal", "Crystal-Free" }, { "Sans Ultime jusqu'au boss 1", "No Ultimate until boss 1" },
         { "Résilience", "Resilience" }, { "Garder plus de 50% de vie jusqu'au boss 1", "Keep above 50% health until boss 1" },
-        { "Éclair", "Lightning Fast" }, { "Vaincre un boss en moins de 30s", "Defeat a boss in under 30s" },
-        { "Fortune", "Fortune" }, { "Avec au moins 1200 Or ramassé", "Collect at least 1200 gold" },
-        { "Puissance Absolue", "Absolute Power" }, { "Niveau 30 dans la même partie", "Reach level 30 in one run" },
+        { "Éclair", "Lightning Fast" }, { "Vaincre un boss en moins de 25s", "Defeat a boss in under 25s" },
+        { "Fortune", "Fortune" }, { "Avec au moins 12 000 Or ramassé", "Collect at least 12,000 gold" },
+        { "Puissance Absolue", "Absolute Power" }, { "Niveau 25 dans la même partie", "Reach level 25 in one run" },
         { "+{0} or", "+{0} gold" }, { "Niv. {0}/{1}", "Lv. {0}/{1}" }, { "En cours", "In progress" }, { "{0}/{1} Or", "{0}/{1} Gold" },
         { "Pas de défi dans ce mode", "No challenge in this mode" },
         { "Défi déjà réussi cette heure !", "Challenge already completed this hour!" },
@@ -252,13 +252,13 @@ public static class LocTableEN
         { "DISTANCE", "RANGED" }, { "ZONE", "AREA" }, { "BRÛLURE", "BURN" }, { "MÊLÉE", "MELEE" }, { "AURA", "AURA" },
         { "RALENTISSEMENT", "SLOW" }, { "PERFORANT", "PIERCING" }, { "SALVE", "VOLLEY" },
         { "Boule de feu", "Fireball" }, { "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité", "A fireball that explodes on impact and hits every nearby enemy" },
-        { "Rayon / Dégâts / Brûlure", "Radius / Damage / Burn" },
+        { "Rayon / Cadence / Brûlure", "Radius / Fire rate / Burn" },
         { "GUERRIER", "WARRIOR" }, { "Montée en puissance offensive", "Offensive power ramp-up" },
         { "Aura de mana", "Mana aura" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "A permanent field around you that damages and slows nearby enemies" },
-        { "Dégâts / Rayon / Ralentissement", "Damage / Radius / Slow" },
+        { "Ralentissement / Rayon / Onde de choc", "Slow / Radius / Shockwave" },
         { "GARDIEN", "GUARDIAN" }, { "Survie et résilience", "Survival and resilience" },
         { "Salve de couteaux", "Knife volley" }, { "Lance une salve de couteaux qui transpercent les ennemis", "Throws a volley of knives that pierce through enemies" },
-        { "Couteau en plus / Dégâts / Perforation", "Extra knife / Damage / Pierce" },
+        { "Couteau en plus / Cadence / Perforation", "Extra knife / Fire rate / Pierce" },
         { "FANTÔME", "PHANTOM" }, { "Mobilité et dash", "Mobility and dash" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "Reach Boss 2 in a run to unlock Kael" },
         { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "Finish a run (beat Boss 3) to unlock Lyra" },
@@ -351,10 +351,10 @@ public static class LocTableEN
         // AJOUTÉ (2026-10-16) - descriptions longues de défi (annonce de lancement uniquement, voir ChallengeDatabase.longDescription).
         // Propagé aux 9 autres langues le 2026-10-24 (Tools/loc/tr_xx.txt, ids 580-590).
         { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "Never drop below 30% health, from the start of the run until the 2nd boss dies." },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "Don't use the Ultimate (F key) before defeating the 2nd boss" },
+        { "Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss", "Don't use the Ultimate (F key) before the 1st boss arrives" },
         { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "Never drop below 50% health, from the start of the run until the 1st boss is defeated." },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "Defeat any boss within 30 seconds of its appearance" },
-        { "Ramasser au moins 1200 Or au total durant la partie", "Collect at least 1200 Gold in total during the run" },
+        { "Vaincre n'importe quel boss en moins de 25 secondes après son apparition", "Defeat any boss within 25 seconds of its appearance" },
+        { "Ramasser au moins 12 000 Or au total durant la partie", "Collect at least 12,000 Gold in total during the run" },
 
         // AJOUTÉ (2026-10-18, diagnostic complet) - 3 paliers de difficulté du mode Classique (DifficultyTiers.cs).
         { "MODÉRÉ", "MODERATE" }, { "VIOLENT", "SEVERE" }, { "APOCALYPTIQUE", "APOCALYPTIC" },
@@ -417,6 +417,18 @@ public static class LocTableEN
         { "Un seul écran est branché.", "Only one display is connected." },
         { "Remporte une partie en {0} pour débloquer cette difficulté", "Win a run on {0} to unlock this difficulty" },
         { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "Win a Classic run on {0} to play Endless mode at this difficulty" },
+
+        // Panneau « Dernière partie » du menu d'accueil (2026-11-07)
+        { "DERNIÈRE PARTIE", "LAST RUN" },
+        { "VICTOIRE", "VICTORY" },
+        { "ABANDON", "ABANDONED" },
+        { "Ennemis", "Enemies" },
+        { "Victoire", "Victory" },
+        { "Défi", "Challenge" },
+        { "Prime de 1re victoire : +{0}", "First-win bonus: +{0}" },
+        { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "Enemies defeated: {0}  ·  Lv. {1}  ·  Bosses: {2}" },
+        { "+{0}% cadence", "+{0}% fire rate" },
+        { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "Unlocks Shockwave: the aura pushes enemies back every {0} seconds" },
 
         // ==== SECTIONS SUIVANTES ====
     };

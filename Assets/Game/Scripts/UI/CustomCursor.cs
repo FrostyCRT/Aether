@@ -19,9 +19,50 @@ using UnityEngine.UI;
 // stylisé (1490x1490) bien plus grand qu'un curseur matériel (souvent plafonné à 32x32 selon l'OS/le pilote sans
 // passer par CursorMode.ForceSoftware) - une Image UI redimensionnée donne un rendu net et prévisible quelle que
 // soit la plateforme, et reste cohérente avec le reste de l'UI (CanvasScaler, résolution de référence 1920x1080).
+//
+// CORRIGÉ (2026-11-07, retour utilisateur : "quand on change de fenêtre et qu'on revient, on a la souris Windows classique
+// et en même temps le curseur du jeu, ça le fait aussi avec Alt + Tab [...] vérifie qu'il n'y ait pas le curseur
+// Windows") - deux causes : (1) dans les menus, le curseur système n'était masqué qu'UNE fois (Cursor.visible = false
+// dans Awake) ; au retour dans la fenêtre, Windows remet sa flèche et rien ne la recachait ; (2) en partie, le masquage
+// passait par un curseur LOGICIEL vide (ForceSoftware), que Windows remplace lui aussi par sa flèche au retour du focus.
+// Désormais (HideSystemCursor, seul point d'entrée, utilisé aussi par GameManager) : le curseur MATÉRIEL de la fenêtre
+// est remplacé par une image 100 % transparente (CursorMode.Auto) - même si Windows le déclare « visible », il n'y a
+// rien à voir dans la fenêtre - en plus de Cursor.visible = false et du confinement. Réappliqué au retour du focus
+// (plusieurs frames de suite : Windows rend parfois sa flèche juste après l'événement), à chaque chargement de scène,
+// et vérifié à chaque frame tant que la fenêtre a le focus.
 public class CustomCursor : MonoBehaviour
 {
     public static CustomCursor Instance { get; private set; }
+
+    private static Texture2D _blankCursor;
+    private int _reapplyFrames;
+
+    // Masque le curseur Windows dans la fenêtre du jeu (le gantelet, lui, est une image UI : voir Update).
+    public static void HideSystemCursor()
+    {
+        if (_blankCursor == null)
+        {
+            _blankCursor = new Texture2D(32, 32, TextureFormat.RGBA32, false);
+            _blankCursor.SetPixels32(new Color32[32 * 32]);
+            _blankCursor.Apply();
+            _blankCursor.hideFlags = HideFlags.HideAndDontSave;
+        }
+        Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Confined;
+    }
+
+    // CORRIGÉ (2026-11-07, retour utilisateur : "quand on Alt+Tab et qu'on met le curseur sur la page sans avoir cliqué
+    // pour actualiser le focus, la souris disparaît et il n'y a aucun des deux") - fenêtre SANS le focus : le gantelet ne
+    // suit plus la souris (le jeu ne reçoit plus ses mouvements), il est donc masqué, et c'est la flèche Windows normale
+    // qui s'affiche au-dessus de la fenêtre, comme pour n'importe quelle application en arrière-plan. Au clic qui rend le
+    // focus, HideSystemCursor reprend la main et le gantelet revient.
+    public static void ShowSystemCursor()
+    {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Boot()
@@ -85,19 +126,32 @@ public class CustomCursor : MonoBehaviour
         _image.raycastTarget = false; // ne bloque jamais un clic sur l'UI en dessous
         _image.preserveAspect = true;
 
-        Cursor.visible = false;
+        HideSystemCursor();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (s, m) => { HideSystemCursor(); _reapplyFrames = 10; };
 
         // CORRIGÉ (2026-10-11, retour utilisateur : "dans le menu je peux faire sortir la souris du cadre de
         // 1920x1080p") - rien ne confinait la souris système à la fenêtre du jeu avant ce correctif (comportement
         // normal d'une fenêtre non verrouillée) ; invisible dès qu'elle est dans la fenêtre, elle n'y réapparaissait
         // donc qu'une fois ressortie - aucun repère visuel au moment de sortir. Confined la garde dans les limites
         // de la fenêtre (mais toujours déplaçable librement dedans, contrairement à Locked qui la fige au centre).
-        Cursor.lockState = CursorLockMode.Confined;
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        if (!focus) { _reapplyFrames = 0; ShowSystemCursor(); return; }
+        HideSystemCursor();
+        _reapplyFrames = 30;   // ~0,5 s : Windows peut rendre sa flèche quelques frames après le retour du focus
     }
 
     private void Update()
     {
         if (_rect == null) return;
+
+        if (Application.isFocused)
+        {
+            if (_reapplyFrames > 0) { _reapplyFrames--; HideSystemCursor(); }
+            else if (Cursor.visible || Cursor.lockState != CursorLockMode.Confined) HideSystemCursor();
+        }
 
         // CORRIGÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - le gantelet s'affichait
         // en permanence, y compris en pleine partie, alors que l'ancien système (GameManager.ApplyCursor) masquait
@@ -106,7 +160,8 @@ public class CustomCursor : MonoBehaviour
         // (MainMenu, LoadingScreen...), on affiche le gantelet par défaut, comme un curseur de menu normal.
         // MODIFIÉ (2026-10-28, session manette) - masqué tant que le joueur utilise la manette (on navigue à la
         // croix/au stick, un curseur immobile au milieu de l'écran gênerait) ; revient au premier mouvement de souris.
-        bool shouldShow = (GameManager.Instance == null || GameManager.Instance.NeedsCursor) && !GameInput.UsingGamepad;
+        bool shouldShow = Application.isFocused
+                          && (GameManager.Instance == null || GameManager.Instance.NeedsCursor) && !GameInput.UsingGamepad;
         if (_image.enabled != shouldShow) _image.enabled = shouldShow;
 
         // Conversion écran -> espace local du Canvas Overlay (le CanvasScaler change le facteur d'échelle selon la

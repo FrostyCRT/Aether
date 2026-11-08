@@ -323,12 +323,21 @@ public static class TextBalancer
         if (lines < 3) return false;
         if (MaxStretch(t) > MaxJustifyStretch) return false;
 
+        // Début de chaque ligne en alignement à gauche, pour vérifier après coup que le Justifié n'a rien déplacé.
+        int[] starts = new int[lines];
+        for (int l = 0; l < lines; l++) starts[l] = t.textInfo.lineInfo[l].firstCharacterIndex;
+
         t.horizontalAlignment = HorizontalAlignmentOptions.Justified;
         t.wordWrappingRatios = 0f;
         t.ForceMeshUpdate();
-        // Le Justifié de TextMeshPro accepte une ligne jusqu'à 5 % trop longue en resserrant ses espaces : un texte de 3
-        // lignes peut finir sur 2, c'est voulu (comme un logiciel de mise en page). Jamais plus de lignes, en revanche.
-        if (t.textInfo.lineCount > lines || Mathf.Abs(t.fontSize - fontSize) >= 0.01f)
+        // CORRIGÉ (2026-11-07, retour utilisateur : "les descriptions info bulle n'ont pas toujours le même format quand on
+        // clique dessus") - le Justifié de TextMeshPro accepte une ligne jusqu'à 5 % trop longue en resserrant ses espaces :
+        // dans l'infobulle du menu Pause (cadre ajusté au texte), un mot remontait d'une ligne et les espaces tombaient à
+        // zéro (« Lance2orbesqui rebondissentsans »), ou l'inverse creusait de grands trous. Le Justifié ne fait désormais
+        // que répartir l'espace : si un seul retour à la ligne a bougé, le paragraphe reste aligné à gauche.
+        bool sameBreaks = t.textInfo.lineCount == lines;
+        for (int l = 0; sameBreaks && l < lines; l++) sameBreaks = t.textInfo.lineInfo[l].firstCharacterIndex == starts[l];
+        if (!sameBreaks || Mathf.Abs(t.fontSize - fontSize) >= 0.01f)
         {
             t.horizontalAlignment = h;   // garde-fou : le Justifié ne doit jamais allonger le texte
             t.ForceMeshUpdate();

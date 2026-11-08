@@ -37,7 +37,8 @@ public class BossBase : MonoBehaviour
     // AJOUTÉ (2026-10-29, retour utilisateur : "Pour le boss 1, revoir ses paternes de charge, au lieu que ce soit à
     // interval fix, je veux que ce soit aléatoirement qu'il fasse une charge, aléatoirement entre 3 sec et 7 sec") -
     // un nouveau délai est tiré au hasard dans cette plage à l'apparition et après chaque charge (puis raccourci par le
-    // bonus de cadence des paliers Violent / Apocalyptique, comme avant).
+    // bonus de cadence des paliers Violent / Apocalyptique, comme avant). Délai mesuré d'un DÉPART de charge au suivant :
+    // le minuteur reprend à la fin de la récupération avec le temps réellement écoulé depuis ce départ.
     [SerializeField] protected float _chargeIntervalMin = 3f;
     [SerializeField] protected float _chargeIntervalMax = 7f;
     [SerializeField] protected float _chargeWindupDuration = 1f;
@@ -100,6 +101,8 @@ public class BossBase : MonoBehaviour
     protected float _fireTimer = 0f;
     protected float _chargeTimer = 0f;
     protected float _chargeDelay = 5f;   // délai tiré pour la prochaine charge
+    private float _chargeStartedAt;      // Time.time du dernier départ de charge
+    private float _chargeResumeTimer;    // valeur de _chargeTimer à la fin de la dernière récupération
     protected bool _isCharging = false;
     protected Vector3 _chargeDirection;
     protected float _chargeDurationTimer = 0f;
@@ -212,7 +215,7 @@ public class BossBase : MonoBehaviour
     // de la valeur imposée en Ruée de boss (voir InitUI plus bas, qui les cumule au lieu de les traiter comme des
     // alternatives).
     private float _difficultyHealthMultiplier = 1f;
-    public void SetDifficultyHealthMultiplier(float multiplier) { _difficultyHealthMultiplier = Mathf.Max(1f, multiplier); }
+    public void SetDifficultyHealthMultiplier(float multiplier) { _difficultyHealthMultiplier = Mathf.Max(0.1f, multiplier); }   // < 1 permis depuis 2026-11-07 (Boss 3 en Modéré x0,8)
 
     // AJOUTÉ (2026-10-21, retour utilisateur : "rendre les boss plus fort aussi dans leur vitesse de déplacement
     // et le délai entre chaque attaques") - même principe que _difficultyHealthMultiplier ci-dessus, mais SÉPARÉ de
@@ -231,7 +234,10 @@ public class BossBase : MonoBehaviour
 
     // Délai réel entre 2 charges, après application du bonus de difficulté - utilisé partout où _chargeCooldown
     // était comparé à _chargeTimer, pour ne jamais avoir deux calculs différents du même "temps restant".
-    protected float EffectiveChargeCooldown => _chargeDelay / _difficultyAttackSpeedMultiplier;
+    // Plancher : le télégraphe reste entier même quand le délai tiré est plus court que charge + récupération + télégraphe
+    // (3 s divisées par le bonus d'Apocalyptique).
+    protected float EffectiveChargeCooldown =>
+        Mathf.Max(_chargeResumeTimer + _chargeWindupDuration + 0.1f, _chargeDelay / _difficultyAttackSpeedMultiplier);
 
     protected void RollChargeDelay()
     {
@@ -250,7 +256,7 @@ public class BossBase : MonoBehaviour
             // totalement le palier de difficulté choisi, malgré l'appel à SetDifficultyHealthMultiplier.
             if (_healthOverride > 0f) _maxHealth = _healthOverride;
             if (_endlessHealthMultiplier > 1f) _maxHealth *= _endlessHealthMultiplier;
-            if (_difficultyHealthMultiplier > 1f) _maxHealth *= _difficultyHealthMultiplier;
+            if (!Mathf.Approximately(_difficultyHealthMultiplier, 1f)) _maxHealth *= _difficultyHealthMultiplier;
             _currentHealth = _maxHealth;
         }
 
@@ -268,7 +274,7 @@ public class BossBase : MonoBehaviour
                 MusicStarter.Instance.SwitchTo(_bossMusicClip);
 
             // AJOUTE - demarre le chrono du defi "Eclair" (vaincre un boss en
-            // moins de 30 secondes). Utilise Time.time cote ChallengeManager,
+            // moins de 25 secondes). Utilise Time.time cote ChallengeManager,
             // jamais GameManager.RunTimer (qui ne progresse pas tant qu'un boss
             // est en vie).
             if (ChallengeManager.Instance != null)
@@ -362,7 +368,11 @@ public class BossBase : MonoBehaviour
         {
             _recoveryTimer -= Time.deltaTime;
             if (_recoveryTimer <= 0f)
+            {
                 _isRecovering = false;
+                _chargeTimer = Time.time - _chargeStartedAt;
+                _chargeResumeTimer = _chargeTimer;
+            }
             return;
         }
 
@@ -381,6 +391,8 @@ public class BossBase : MonoBehaviour
                 _isWindingUp = false;
                 _chargeDirection = toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : transform.forward;
                 _chargeTimer = 0f;
+                _chargeResumeTimer = 0f;
+                _chargeStartedAt = Time.time;
                 RollChargeDelay();
                 _chargeDurationTimer = _chargeDuration;
                 _hasDealtChargeDamage = false;

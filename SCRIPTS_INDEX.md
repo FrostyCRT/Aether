@@ -111,7 +111,7 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 
 | Script | Rôle |
 |---|---|
-| `ChallengeDatabase.cs` | Classe statique : liste des 12 défis (4 Facile / 3 Moyen / 5 Difficile - "Sans Cristal" reclassé Moyen → Difficile le 2026-10-21, jugé trop punitif pour son palier), chacun avec id, nom, description, difficulté. |
+| `ChallengeDatabase.cs` | Classe statique : liste des 12 défis (4 Facile / 4 Moyen / 4 Difficile - "Sans Cristal" repassé Moyen le 2026-11-07, jusqu'au boss 1), chacun avec id, nom, description, difficulté. |
 | `ChallengeManager.cs` | Singleton (scène Game) : tire le défi de l'heure (UTC, anti-répétition), suit sa progression/échec en temps réel, calcule et applique la récompense en or. |
 
 ## Settings (`Assets/Game/Scripts/Settings`)
@@ -160,13 +160,14 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `CustomCursor.cs` | Remplace le curseur système par le gantelet fantasy (`Resources/Cursor_Gauntlet`) via une Image UI qui suit la souris ; objet auto-créé dans toutes les scènes (comme `SettingsApplier`), masqué pendant le jeu actif et affiché sur les panneaux (pause/paramètres/level-up/Game Over) via `GameManager.NeedsCursor`. |
 | `DamageNumber.cs` | Instance poolée d'un nombre de dégâts flottant (texte 3D, contour, montée + fondu). |
 | `DifficultySelector.cs` | Sélecteur du palier de difficulté du Classique (2026-10-19), sous `GameModeSelector` dans l'onglet Jouer : rangée fixe de 3 boutons toujours cliquables (jamais verrouillé, contrairement au mode de jeu), visible seulement en Classique. |
-| `DifficultyCarousel.cs` | (2026-10-20) Carrousel du palier de difficulté de la page Accueil (remplace `DifficultySelector`) : flèches, nom du palier, emplacement du futur diorama (dégradé de ciel teinté à la lumière du palier en attendant). |
+| `DifficultyCarousel.cs` | (2026-10-20) Carrousel du palier de difficulté de la page Accueil (remplace `DifficultySelector`) : flèches, nom du palier, cadenas sur un palier pas encore débloqué (2026-10-29, règles dans `GameModes`), emplacement du futur diorama (dégradé de ciel teinté à la lumière du palier en attendant). |
 | `GameModeSelector.cs` | Sélecteur de mode de jeu du menu principal (flèches, nom, description, record), verrouille JOUER si le mode choisi n'est pas débloqué. Saute les modes non commercialisés (`GameModes.IsShippable`) depuis le 2026-10-19. |
 | `GameOverMessagePool.cs` | Classe statique : pool de messages contextuels de Game Over selon la cause de mort et le temps de survie (ton "dur mais motivant"). |
 | `GameUI.cs` | **Le plus gros script UI.** HUD complet (vie/XP/boss/dash/ultime), grille d'armes 3×3 partagée par le menu Pause ET les écrans Victoire/Défaite (`ConfigureBuildGridSlot`, `PopulatePauseGrid`, `PopulateBuildGrid`), messages de fin de run, records. |
 | `GameFonts.cs` | (2026-10-25) Classe statique des deux polices : Bangers (titres, noms, boutons, chiffres) et Fira Sans SemiBold (`Body`, toutes les phrases), avec `ToBody` / `Outline` pour les textes créés en code. |
 | `HintPill.cs` | (2026-10-25) Pastille sombre derrière un message de page (Réputation, Personnages), largeur calée sur le texte. |
 | `HomeCommandPanelFX.cs` | (2026-10-20) Habille le panneau de commande de la page Accueil (mode, difficulté, Jouer) dans le même langage que la barre d'onglets. |
+| `LastRunPanel.cs` | (2026-11-07) Carte « Dernière partie » en haut à gauche de la page Accueil (posée sur MenuPanel, construite par le code) : résultat, personnage/mode/palier/durée, or et éclats gagnés avec leur icône, barre de répartition de l'or (ennemis, survie, boss, victoire, défi), stats. Lit `SaveData.lastRun` (écrit par `MetaProgressionManager.SaveRunResults`). |
 | `HudBar.cs` | Une barre du HUD habillée (vie/boss/XP/esquive) : cadre, remplissage animé, traînée de dégâts, flash au coup reçu, pulsation vie basse. |
 | `HudKeyLegend.cs` | Légende des touches à gauche du HUD (Dash/Ultime/Clone/Orbites/Pause), adaptative selon les compétences du personnage et les touches réellement assignées. |
 | `HudSprites.cs` | Classe statique : génère en code tous les sprites du HUD (cadres biseautés, capsules, cœur, éclair, gemme, losange...) — zéro asset à importer. |

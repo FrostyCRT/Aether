@@ -72,6 +72,7 @@ public static class SkillTreeData
     // barème de gains de MetaProgressionManager (victoire ~1 000 or en Modéré, ~1 700 en Violent, ~3 000 en Apocalyptique,
     // mesuré sur 6 parties automatiques). Bas : 150 / 600 / 1 800 (unique : 2 500), premier achat dès la 1re partie.
     // Milieu : 1 000 / 2 500 / 5 000 (unique : 5 000). Haut : 12 000.
+    // MODIFIÉ (2026-11-07) - tout x10 avec l'échelle de l'or (voir MetaProgressionManager) : branche ~306 000 or.
     private static void PopulateDatabase()
     {
         // ── GUERRIER ────────────────────────────────────────────────────
@@ -87,9 +88,9 @@ public static class SkillTreeData
             level1Desc = "+2% / s, plafond +15%",
             level2Desc = "+3% / s, plafond +30%",
             level3Desc = "+5% / s, plafond +50%",
-            costLevel1 = 150,
-            costLevel2 = 600,
-            costLevel3 = 1800,
+            costLevel1 = 1500,
+            costLevel2 = 6000,
+            costLevel3 = 18000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Guerrier
         });
@@ -103,9 +104,9 @@ public static class SkillTreeData
             level1Desc = "+10%",
             level2Desc = "+20%",
             level3Desc = "+35%",
-            costLevel1 = 150,
-            costLevel2 = 600,
-            costLevel3 = 1800,
+            costLevel1 = 1500,
+            costLevel2 = 6000,
+            costLevel3 = 18000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Guerrier
         });
@@ -118,7 +119,7 @@ public static class SkillTreeData
             // grand rayon (au lieu de 15 % de chance, 50 % des dégâts, rayon 2). Voir WeaponBase.FireProjectile.
             description = "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.",
             isUnique = true,
-            costLevel1 = 5000,
+            costLevel1 = 50000,
             prerequisites = new[] { "concentration" }, // MODIFIÉ — était "damage"
             requiredWinTier = 0,
             branch = CharacterBranch.Guerrier
@@ -132,9 +133,9 @@ public static class SkillTreeData
             level1Desc = "+25%",
             level2Desc = "+50%",
             level3Desc = "+100%",
-            costLevel1 = 1000,
-            costLevel2 = 2500,
-            costLevel3 = 5000,
+            costLevel1 = 10000,
+            costLevel2 = 25000,
+            costLevel3 = 50000,
             prerequisites = new[] { "cadence" },
             requiredWinTier = 0,
             branch = CharacterBranch.Guerrier
@@ -146,7 +147,7 @@ public static class SkillTreeData
             // CORRIGÉ (2026-10-25) - la durée réelle est de 10 s depuis le 2026-10-22 (CrystalSystem.OverpowerBuff).
             description = "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.",
             isUnique = true,
-            costLevel1 = 12000,
+            costLevel1 = 120000,
             prerequisites = new[] { "fragmentation", "crystalDamage" },
             requiredWinTier = 1,
             branch = CharacterBranch.Guerrier
@@ -162,9 +163,9 @@ public static class SkillTreeData
             level1Desc = "+15%",
             level2Desc = "+30%",
             level3Desc = "+50%",
-            costLevel1 = 150,
-            costLevel2 = 600,
-            costLevel3 = 1800,
+            costLevel1 = 1500,
+            costLevel2 = 6000,
+            costLevel3 = 18000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Gardien
         });
@@ -179,9 +180,9 @@ public static class SkillTreeData
             level1Desc = "+20 PV par absorption",
             level2Desc = "+50 PV par absorption",
             level3Desc = "+80 PV par absorption",
-            costLevel1 = 150,
-            costLevel2 = 600,
-            costLevel3 = 1800,
+            costLevel1 = 1500,
+            costLevel2 = 6000,
+            costLevel3 = 18000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Gardien
         });
@@ -192,7 +193,7 @@ public static class SkillTreeData
             // CORRIGÉ (2026-10-25) - ajoute les 3 s d'invincibilité de HealthSystem.TriggerSecondWind, jamais mentionnées.
             description = "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.",
             isUnique = true,
-            costLevel1 = 5000,
+            costLevel1 = 50000,
             prerequisites = new[] { "vitality" },
             requiredWinTier = 0,
             branch = CharacterBranch.Gardien
@@ -206,9 +207,9 @@ public static class SkillTreeData
             level1Desc = "-8%",
             level2Desc = "-15%",
             level3Desc = "-25%",
-            costLevel1 = 1000,
-            costLevel2 = 2500,
-            costLevel3 = 5000,
+            costLevel1 = 10000,
+            costLevel2 = 25000,
+            costLevel3 = 50000,
             prerequisites = new[] { "recuperation" }, // MODIFIÉ — était "regen"
             requiredWinTier = 0,
             branch = CharacterBranch.Gardien
@@ -221,7 +222,7 @@ public static class SkillTreeData
             // réelles : ManaShield._maxCharges / _rechargeInterval / _breakLockoutDuration.
             description = "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.",
             isUnique = true,
-            costLevel1 = 12000,
+            costLevel1 = 120000,
             prerequisites = new[] { "secondWind", "armor" },
             requiredWinTier = 1,
             branch = CharacterBranch.Gardien
@@ -235,7 +236,7 @@ public static class SkillTreeData
             displayName = "Impulsion Nova",
             description = "Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.",
             isUnique = true,
-            costLevel1 = 2500,
+            costLevel1 = 25000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Fantome
         });
@@ -248,9 +249,9 @@ public static class SkillTreeData
             level1Desc = "Recharge -0,3 s",
             level2Desc = "Recharge -0,6 s",
             level3Desc = "Recharge -1 s",
-            costLevel1 = 150,
-            costLevel2 = 600,
-            costLevel3 = 1800,
+            costLevel1 = 1500,
+            costLevel2 = 6000,
+            costLevel3 = 18000,
             prerequisites = System.Array.Empty<string>(),
             branch = CharacterBranch.Fantome
         });
@@ -265,7 +266,7 @@ public static class SkillTreeData
             // manquant détecté par Tools/build_language_fonts.py après reconnexion d'Unity. Remplacé par "à".
             description = "Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5).",
             isUnique = true,
-            costLevel1 = 5000,
+            costLevel1 = 50000,
             prerequisites = new[] { "impulsionNova" }, // MODIFIÉ — était "agility"
             requiredWinTier = 0,
             branch = CharacterBranch.Fantome
@@ -279,9 +280,9 @@ public static class SkillTreeData
             level1Desc = "+30%",
             level2Desc = "+60%",
             level3Desc = "+100%",
-            costLevel1 = 1000,
-            costLevel2 = 2500,
-            costLevel3 = 5000,
+            costLevel1 = 10000,
+            costLevel2 = 25000,
+            costLevel3 = 50000,
             prerequisites = new[] { "dash" },
             requiredWinTier = 0,
             branch = CharacterBranch.Fantome
@@ -301,7 +302,7 @@ public static class SkillTreeData
             // ciblent le clone (PlayerController.TryAttractToPhantom, sans rayon) et le joueur est invincible pendant ce temps.
             description = "Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible. Recharge : 8 secondes.",
             isUnique = true,
-            costLevel1 = 12000,
+            costLevel1 = 120000,
             prerequisites = new[] { "crystalMastery", "novaRadius" },
             requiredWinTier = 1,
             branch = CharacterBranch.Fantome

@@ -27,6 +27,8 @@ public class HudStyler : MonoBehaviour
     [SerializeField] private float _row2 = 130f;
     [Tooltip("Ligne 3 : défi.")]
     [SerializeField] private float _row3 = 194f;
+    [Tooltip("Remontée de la colonne de droite seule (or, éliminations, défi), sans toucher à la ligne de la barre de vie ni au chrono. 2026-11-07, retour utilisateur : « remonte légèrement les éléments en haut à droite du HUD ».")]
+    [SerializeField] private float _rightColumnLift = 8f;
 
     [Header("Colonne en haut à droite")]
     [Tooltip("Taille commune des icônes (pièce, crâne, parchemin), toutes centrées sur la même colonne.")]
@@ -58,7 +60,7 @@ public class HudStyler : MonoBehaviour
     [Tooltip("Marge gauche (Left) du texte « 1850 / 2000 » dans la barre.")]
     // MODIFIÉ (2026-10-29, retour utilisateur : "recentrer en X l'affichage du nombre de vie") - 42 -> 54 : le texte est centré
     // sur la partie VISIBLE de la barre (le cœur, 64 px, en cache le début), plus sur la barre entière.
-    [SerializeField] private float _hpTextLeft = 54f;
+    [SerializeField] private float _hpTextLeft = 48f;
     [Tooltip("Marge droite (Right) du texte : comme dans l'inspecteur de Unity, une valeur négative fait dépasser le texte à droite.")]
     [SerializeField] private float _hpTextRight = -10f;
     [Tooltip("Coché : la barre de vie change de couleur selon les points de vie (vert, vert clair, orange, rouge), comme à l'origine. Décoché : couleur fixe « Life Color » de la palette.")]
@@ -598,8 +600,8 @@ public class HudStyler : MonoBehaviour
     // ---------------------------------------------------------------------------------------------------------------
     private void ApplyTopRight()
     {
-        RightRow(Find<TextMeshProUGUI>("StatsGroup/GoldText"), "GoldIcon", -_row1, _rightTextFontSize, _goldIconSize, _goldSprite);
-        RightRow(Find<TextMeshProUGUI>("StatsGroup/KillCountText"), "KillCountIcon", -_row2 + _killsTextOffsetY, _rightTextFontSize, _killsIconSize, _killsSprite, -_killsTextOffsetY);
+        RightRow(Find<TextMeshProUGUI>("StatsGroup/GoldText"), "GoldIcon", -_row1 + _rightColumnLift, _rightTextFontSize, _goldIconSize, _goldSprite);
+        RightRow(Find<TextMeshProUGUI>("StatsGroup/KillCountText"), "KillCountIcon", -_row2 + _rightColumnLift + _killsTextOffsetY, _rightTextFontSize, _killsIconSize, _killsSprite, -_killsTextOffsetY);
 
         // défi : l'icône passe à DROITE (même colonne que l'or et les éliminations), texte aligné à droite juste à côté
         Transform cg = transform.Find("ChallengeGroup");
@@ -608,7 +610,7 @@ public class HudStyler : MonoBehaviour
         var rt = (RectTransform)cg;
         rt.anchorMin = rt.anchorMax = new Vector2(1f, 1f);
         rt.pivot = new Vector2(1f, 0.5f);
-        rt.anchoredPosition = new Vector2(-(_rightMargin + _rowIconSize * 0.5f) + _challengeIconSize.x * 0.5f, -_row3);   // centre de l'icône sur l'axe de la colonne
+        rt.anchoredPosition = new Vector2(-(_rightMargin + _rowIconSize * 0.5f) + _challengeIconSize.x * 0.5f, -_row3 + _rightColumnLift);   // centre de l'icône sur l'axe de la colonne
 
         var layout = cg.GetComponent<HorizontalLayoutGroup>();
         if (layout != null) layout.spacing = _iconGap;

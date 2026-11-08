@@ -20,12 +20,23 @@ public class ChallengeManager : MonoBehaviour
     // l'Apocalyptique (jusqu'à +45 000 or), et repassait en plus dans le multiplicateur de difficulté. Une victoire en
     // Modéré rapporte ~1 000 or : la prime pèse beaucoup pour un nouveau joueur, moins pour un vétéran en Apocalyptique.
     // Constantes : les anciens pourcentages étaient sérialisés dans la scène Game.
-    public const int EasyRewardGold = 150;
-    public const int MediumRewardGold = 300;
-    public const int HardRewardGold = 500;
+    // 2026-11-07 : x10 avec l'échelle de l'or (150 / 300 / 500 avant).
+    public const int EasyRewardGold = 1500;
+    public const int MediumRewardGold = 3000;
+    public const int HardRewardGold = 5000;
     // Défi "Fortune" (id "gold3000" conservé : il est enregistré dans les sauvegardes). 3 000 or était devenu hors
     // d'atteinte : 1 200 = une victoire en Violent, ou une victoire en Modéré d'un joueur déjà aguerri.
-    public const int FortuneGoldGoal = 1200;
+    // MODIFIÉ (2026-11-07, demande utilisateur) - 1 200 → 1 000 : en Modéré, 1 200 n'était atteint qu'avec la prime de
+    // victoire ; 1 000 tombe vers 13-14 min pour un joueur solide (avant la fin du boss 3), sinon à la victoire.
+    // 2026-11-07 (suite) : échelle x10 de l'or, objectif recalé par mesure (voir NOTES.md).
+    public const int FortuneGoldGoal = 12000;
+    // AJOUTÉ (2026-11-07, mesuré sur 9 parties en Modéré, voir NOTES.md) - les ids restent ceux d'origine (kill150, dash20,
+    // bossUnder30s, level30) car ils sont enregistrés dans les sauvegardes. 150 kills et 20 dashs tombaient vers 1 min 40
+    // sans y penser ; le niveau 30 n'était jamais atteint (26 au mieux, toutes les gemmes ramassées).
+    public const int HunterKillGoal = 500;
+    public const int DashGoal = 50;
+    public const float FastBossSeconds = 25f;
+    public const int MaxPowerLevel = 25;
 
     [Header("Anti-répétition")]
     [SerializeField] private int _recentHistorySize = 3;
@@ -83,6 +94,7 @@ public class ChallengeManager : MonoBehaviour
 
     // AJOUTÉ (2026-10-24, retour utilisateur : "le défi niveau 20 avant la 10eme minute, change en niveau 18") - niveau
     // visé par "Ascension Rapide". L'id "level20in10min" est gardé tel quel (il peut être enregistré dans la sauvegarde).
+    // 2026-11-07 : passé à 17 puis remis à 18 par l'utilisateur, qui a atteint le niveau 18 avant 10 min en jouant.
     private const int FastAscentLevel = 18;
 
     // Time.time plutot que GameManager.RunTimer pour la duree du combat de boss :
@@ -259,6 +271,13 @@ public class ChallengeManager : MonoBehaviour
     public void NotifyBossSpawned()
     {
         _currentBossSpawnRealTime = Time.time;
+
+        // "Sans Cristal" : atteindre le boss 1 suffit, il n'a pas à être vaincu. L'Ultime est libre dès son apparition.
+        if (CurrentChallenge != null && CurrentChallenge.id == "noUltimate" && !IsFailed)
+        {
+            _enduranceCompleted = true;
+            RefreshDisplay();
+        }
     }
 
     public void NotifyBossDefeated()
@@ -291,7 +310,7 @@ public class ChallengeManager : MonoBehaviour
         switch (challengeId)
         {
             case "hp30never": return 2;
-            case "noUltimate": return 2;
+            case "noUltimate": return 1;   // validé dès l'apparition du boss, voir NotifyBossSpawned
             case "hp50boss1": return 1;
             default: return 0;
         }
@@ -351,15 +370,15 @@ public class ChallengeManager : MonoBehaviour
 
         switch (CurrentChallenge.id)
         {
-            case "kill150": return kills >= 150;
+            case "kill150": return kills >= HunterKillGoal;
             case "level10": return level >= 10;
             case "boss1": return bossKills >= 1;
-            case "dash20": return _dashUsedCount >= 20;
+            case "dash20": return _dashUsedCount >= DashGoal;
             case "boss2": return bossKills >= 2;
             case "level20in10min": return _level20ReachedInTime;
-            case "bossUnder30s": return _fastestBossKillTime <= 30f;
+            case "bossUnder30s": return _fastestBossKillTime <= FastBossSeconds;
             case "gold3000": return gold >= FortuneGoldGoal;
-            case "level30": return level >= 30;
+            case "level30": return level >= MaxPowerLevel;
             case "hp30never":
             case "noUltimate":
             case "hp50boss1":
@@ -399,18 +418,19 @@ public class ChallengeManager : MonoBehaviour
 
         switch (CurrentChallenge.id)
         {
-            case "kill150": return $"{Mathf.Min(kills, 150)}/150";
+            case "kill150": return $"{Mathf.Min(kills, HunterKillGoal)}/{HunterKillGoal}";
             case "level10": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 10), 10);
             case "boss1": return $"{Mathf.Min(bossKills, 1)}/1";
-            case "dash20": return $"{Mathf.Min(_dashUsedCount, 20)}/20";
+            case "dash20": return $"{Mathf.Min(_dashUsedCount, DashGoal)}/{DashGoal}";
             case "hp30never": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
             case "boss2": return $"{Mathf.Min(bossKills, 2)}/2";
             case "level20in10min": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, FastAscentLevel), FastAscentLevel);
-            case "noUltimate": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 2), 2);
+            case "noUltimate": return Loc.F("Boss {0}/{1}", _enduranceCompleted ? 1 : 0, 1);
             case "hp50boss1": return Loc.F("Boss {0}/{1}", Mathf.Min(_bossesDefeatedCount, 1), 1);
-            case "bossUnder30s": return Loc.T("En cours");
+            // CORRIGÉ (2026-11-07) - restait « En cours » après un boss tué à temps (vu en partie réelle).
+            case "bossUnder30s": return Loc.T(_fastestBossKillTime <= FastBossSeconds ? "Réussi" : "En cours");
             case "gold3000": return Loc.F("{0}/{1} Or", Mathf.Min(gold, FortuneGoldGoal), FortuneGoldGoal);
-            case "level30": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, 30), 30);
+            case "level30": return Loc.F("Niv. {0}/{1}", Mathf.Min(level, MaxPowerLevel), MaxPowerLevel);
             default: return "";
         }
     }
@@ -427,19 +447,19 @@ public class ChallengeManager : MonoBehaviour
         bool success = false;
         switch (CurrentChallenge.id)
         {
-            case "kill150": success = killCount >= 150; break;
+            case "kill150": success = killCount >= HunterKillGoal; break;
             case "level10": success = levelReached >= 10; break;
             case "boss1": success = bossKillCount >= 1; break;
-            case "dash20": success = _dashUsedCount >= 20; break;
+            case "dash20": success = _dashUsedCount >= DashGoal; break;
             case "hp30never":
             case "noUltimate":
             case "hp50boss1":
                 success = _enduranceCompleted; break;
             case "boss2": success = bossKillCount >= 2; break;
             case "level20in10min": success = _level20ReachedInTime; break;
-            case "bossUnder30s": success = _fastestBossKillTime <= 30f; break;
+            case "bossUnder30s": success = _fastestBossKillTime <= FastBossSeconds; break;
             case "gold3000": success = runGoldEarned >= FortuneGoldGoal; break;
-            case "level30": success = levelReached >= 30; break;
+            case "level30": success = levelReached >= MaxPowerLevel; break;
         }
 
         IsCompleted = success;
@@ -459,7 +479,7 @@ public class ChallengeManager : MonoBehaviour
             return;
         }
 
-        MetaProgressionManager.Instance.AddRunGold(GetCurrentRewardGold(), applyDifficulty: false);
+        MetaProgressionManager.Instance.AddChallengeGold(GetCurrentRewardGold());
 
         data.currentChallengeRewardClaimed = true;
         SaveSystem.Save(data);

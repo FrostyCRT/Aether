@@ -315,6 +315,7 @@ public class EnemyBase : MonoBehaviour
         if (_hitFlashTimer > 0f && _hitFlashRenderer != null) SetHitFlashIntensity(0f);
         _hitFlashTimer = 0f;
         _knockbackVelocity = Vector3.zero;
+        _shoveTime = -1f;
 
         if (_playerTransform == null)
         {
@@ -541,8 +542,39 @@ public class EnemyBase : MonoBehaviour
         transform.position += toCenter / distance * step;
     }
 
+    // AJOUTÉ (2026-11-07, retour utilisateur sur l'Onde de choc de l'Aura : "ça ne repousse pas assez loin") - POUSSÉE
+    // franche, indépendante du recul des coups (ApplyKnockback, volontairement plafonné à 4,5 u/s) : l'ennemi parcourt
+    // `distance` en `duration` secondes, avec une décélération douce, après `delay` secondes (le temps que le front de
+    // l'onde l'atteigne, pour que la poussée tombe pile sur le visuel). Une nouvelle poussée remplace la précédente.
+    private Vector3 _shoveDir;
+    private float _shoveDistance, _shoveDuration, _shoveDelay, _shoveTime = -1f;
+
+    public void Shove(Vector3 direction, float distance, float duration, float delay = 0f)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f) return;
+        _shoveDir = direction.normalized;
+        _shoveDistance = distance;
+        _shoveDuration = Mathf.Max(0.05f, duration);
+        _shoveDelay = Mathf.Max(0f, delay);
+        _shoveTime = 0f;
+    }
+
+    private void UpdateShove()
+    {
+        if (_shoveTime < 0f) return;
+        float dt = Time.deltaTime;
+        if (_shoveDelay > 0f) { _shoveDelay -= dt; return; }
+        float before = FXSprites.EaseOutCubic(_shoveTime / _shoveDuration);
+        _shoveTime += dt;
+        float after = FXSprites.EaseOutCubic(_shoveTime / _shoveDuration);
+        transform.position += _shoveDir * (_shoveDistance * (after - before));
+        if (_shoveTime >= _shoveDuration) _shoveTime = -1f;
+    }
+
     private void UpdateKnockback()
     {
+        UpdateShove();
         if (_knockbackVelocity.sqrMagnitude < 0.0001f) { _knockbackVelocity = Vector3.zero; return; }
         transform.position += _knockbackVelocity * Time.deltaTime;
         _knockbackVelocity = Vector3.MoveTowards(_knockbackVelocity, Vector3.zero, _knockbackVelocity.magnitude * KnockbackDamping * Time.deltaTime);

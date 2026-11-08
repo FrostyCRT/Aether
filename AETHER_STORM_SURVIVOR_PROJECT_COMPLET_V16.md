@@ -1,6 +1,6 @@
 # AETHER STORM SURVIVOR — Documentation projet (V16)
 
-> **Mise à jour : 2026-10-29** (depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
+> **Mise à jour : 2026-11-06** (paliers de difficulté et Sans fin à débloquer, boss 1 à charges aléatoires, choix de l'écran, caméra fluide, économie +25 % ; depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -78,14 +78,14 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 
 - **Ennemis** : Loup, Gobelin à sarbacane (tireur mobile), Golem (costaud), Corbeau, Tisseuse corrompue (araignée qui saute), Bulbe cracheur (tireur fixe, **encore un cube placeholder**). Animation par texture (VAT) pour tenir la foule.
 - **Apparition** (`EnemySpawner`, seule référence depuis le 2026-10-16) : 6 phases, plafond d'ennemis simultanés 20 → 45 → 75 → 120 → 105 → **160** (dès 12 min), cadence 2 s → 0,6 s. Mode Sans fin après 15 min : jusqu'à 200 ennemis, cadence 0,3 s. Paliers de composition (types d'ennemis + PV ×1 à ×5) toutes les 2-4 minutes. Réglable dans l'Inspector de l'objet EnemySpawner (scène Game). **À tester en jeu** : la fin de partie est nettement plus dense qu'avant.
-- **Boss** (un toutes les 5 min, le chrono s'arrête pendant le combat) :
-  1. **Dragon de Mana** : 20 000 PV, charge télégraphiée, tir radial.
+- **Boss** (un toutes les 5 min, le chrono s'arrête pendant le combat). Vitesse de marche des boss 1 et 2 : ×1,15 en Modéré, ×1,25 en Violent, ×1,3 en Apocalyptique :
+  1. **Dragon de Mana** : 20 000 PV, charge télégraphiée à intervalle aléatoire (3 à 7 s d'un départ à l'autre, raccourci en Violent et Apocalyptique), tir radial.
   2. **Cerf Ancestral** : 63 000 PV (90 000 jusqu'au 2026-10-23, baissés de 30% sur retour utilisateur "toujours trop de vie" - réduction du PV de BASE, donc appliquée identiquement aux 3 paliers de difficulté), saut, spirale de projectiles, rage sous 30 %.
   3. **Source Corrompue** (serpent ancré à une faille) : 180 000 PV, Pulse de cristaux, Frappe, Onde de corruption, Invocation de mini-boss, Implosion.
 - Les boss 1 et 2 soignent le joueur de 50 % à leur mort. Les 3 boss utilisent pour l'instant **la même musique**.
 - **Récompense de mort de boss** (changé le 2026-10-19) : un vrai boss ne donne plus de burst d'XP, il fait apparaître un **coffre** (`BossChest`) à ramasser qui accorde directement **2 tirages de carte complets** (3 choix à chaque fois), sans jamais donner d'XP - récompense fixe et lisible plutôt qu'une XP qui pouvait être gâchée ou déclencher une cascade illisible. Un mini-boss invoqué (Source Corrompue) garde le burst de gemmes classique.
 - **XP** (hors mort de boss) : gemmes 10/20/50, reste reporté sur la mort suivante (aucune XP perdue), courbe `70 × niveau²` (relevée le 2026-10-21, pèse surtout sur les hauts niveaux). La récompense d'XP par kill suit la pleine croissance des PV des ennemis au fil de la partie (jusqu'à ×5 en fin de partie) - un amortissement à ×3 introduit le 2026-10-11 pour ralentir la montée en XP a été retiré le 2026-10-23 (il empilait mal avec la courbe ci-dessus, plus assez de grosses gemmes dorées en fin de partie). Rayon d'attraction débloqué au niveau 3.
-- **Difficulté du Classique** (nouveau, 2026-10-19) : 3 paliers **Modéré / Violent / Apocalyptique**, sélectionnables dans l'onglet Jouer sous le sélecteur de mode (toujours réversible, aucun palier verrouillé). Modéré = comportement actuel inchangé. Violent/Apocalyptique agrandissent la carte jouable (110×110 → 140×140 → 180×180), augmentent les PV/dégâts des ennemis et boss, le nombre d'ennemis simultanés et l'Or/les Éclats de fin de partie, et régénèrent le décor de bordure à la nouvelle taille. Multiplicateurs posés comme premiers jets, non encore playtestés.
+- **Difficulté du Classique** (nouveau, 2026-10-19) : 3 paliers **Modéré / Violent / Apocalyptique**, sélectionnables dans l'onglet Jouer. **Depuis le 2026-10-29, un palier se débloque en gagnant une partie du Classique dans le palier précédent**, avec n'importe quel personnage (cadenas sur le carrousel, bouton Jouer estompé, raison affichée). En Modéré, les ennemis ont -25 % de PV jusqu'à 6 min, puis reviennent à la normale à 8 min (XP inchangée). Violent/Apocalyptique agrandissent la carte jouable (110×110 → 140×140 → 180×180), augmentent les PV/dégâts des ennemis et boss, le nombre d'ennemis simultanés et l'Or/les Éclats de fin de partie, et régénèrent le décor de bordure à la nouvelle taille. Multiplicateurs posés comme premiers jets, non encore playtestés.
 
 ---
 
@@ -94,7 +94,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Mode | Règle | Déblocage |
 |---|---|---|
 | Classique | 3 boss en 15 min, victoire au Boss 3 | Dès le départ |
-| Sans fin | Les boss reviennent en boucle, de plus en plus forts | Dès le départ |
+| Sans fin | Les boss reviennent en boucle, de plus en plus forts | Avoir gagné une partie du Classique dans le palier choisi (ou un plus dur) |
 | Ruée de boss | Les boss s'enchaînent | Avoir battu 1 boss en Classique |
 
 Seul le Classique compte pour la progression (défis, déblocages). Sans fin et Ruée de boss ne sont pas encore validés par l'utilisateur et sont volontairement absents du trailer.
@@ -105,9 +105,9 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 
 ## 5. Progression méta
 
-- **Économie refondue le 2026-10-27** (une partie Apocalyptique rapportait ~40 000 or pour un arbre complet à 14 000) : l'or vient surtout des minutes de jeu (20/min), des boss et de la victoire (250 en Classique), très peu des ennemis (2 % de leur valeur). Objectifs de l'utilisateur : premier achat dès la 1re partie, une branche maxée en ~30-40 parties, les 3 branches en ~100, toute la Réputation en ~150.
+- **Économie refondue le 2026-10-27** (une partie Apocalyptique rapportait ~40 000 or pour un arbre complet à 14 000) : l'or vient surtout des minutes de jeu (25/min), des boss et de la victoire (310 en Classique), très peu des ennemis (2,5 % de leur valeur). Barème relevé d'environ 25 % le 2026-10-29 à la demande de l'utilisateur : les objectifs du 2026-10-27 (premier achat dès la 1re partie, une branche maxée en ~30-40 parties, les 3 branches en ~100, toute la Réputation en ~150) sont donc maintenant atteints environ 20 % plus vite (estimation, pas remesurée).
 - **Or** : finance les arbres de compétences (paliers 150 / 600 / 1 800, nœuds uniques 1 000 à 12 000 ; les 2 nœuds du bas sont libres, ceux du milieu demandent une victoire en Modéré, celui du haut une victoire en Violent avec le personnage de la branche) et les skins Classique.
-- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés aux boss (10 / 20 / 30), à la victoire (+40) et lors de la 1re victoire de chaque personnage dans chaque palier (300 / 600 / 1 000).
+- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés aux boss (13 / 25 / 38), à la victoire (+50) et lors de la 1re victoire de chaque personnage dans chaque palier (300 / 600 / 1 000).
 - **Réputation** (onglet du menu) : 3 bonus permanents, Dégâts (jusqu'à +60 %), Vitesse (jusqu'à +30 %), Régénération (jusqu'à 70 PV/s), 5 paliers chacun. Un bonus au maximum affiche un bouton « MAX » grisé, comme « Équipé » / « Sélectionné ».
 - **Skins** (même onglet) : par personnage, une rangée Classique (Or) et une rangée Prestige (Éclats) de 4 emplacements. Seule la tenue d'origine existe ; les emplacements vides affichent « BIENTÔT ». Ajouter un skin = une ligne dans `Resources/SkinCatalog.asset` (aucun code), mais il faut le modèle 3D, le prefab et le portrait (**21 skins prévus**, voir `A_MODELISER_3D.md`).
 
@@ -116,10 +116,10 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ## 6. Défis horaires
 
 - Un défi tiré **par heure réelle (UTC)**, identique pour toutes les parties de l'heure ; récompense accordée une seule fois par heure. Classique uniquement.
-- 12 défis (4 Faciles, 3 Moyens, 5 Difficiles - "Sans Cristal" reclassé Moyen → Difficile le 2026-10-21, jugé trop punitif pour son palier), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
-- Les défis liés au TEMPS (ex. "Ascension Rapide" : niveau 20 avant la 10e minute) sont réévalués en continu (`ChallengeManager.Update`, 2026-10-23) et pas seulement sur un évènement de jeu - sinon un défi purement temporel ne passait jamais en Échoué.
+- 12 défis (4 Faciles, 4 Moyens, 4 Difficiles - "Sans Cristal" repassé Moyen le 2026-11-07 : atteindre le boss 1 sans Ultime), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
+- Les défis liés au TEMPS (ex. "Ascension Rapide" : niveau 18 avant la 10e minute) sont réévalués en continu (`ChallengeManager.Update`, 2026-10-23) et pas seulement sur un évènement de jeu - sinon un défi purement temporel ne passait jamais en Échoué.
 - Récompense : multiplicateur de l'or ramassé, **Or ×1,2 / ×1,5 / ×2** selon le palier.
-- Les défis « endurance » (Sang-Froid, Sans Cristal, Sans-Faute) ne sont validés qu'au jalon de boss prévu.
+- Les défis « endurance » (Sang-Froid, Résilience) ne sont validés qu'à la mort du boss prévu ; Sans Cristal, dès l'apparition du boss 1.
 - Suivi dans le HUD et détail dans le menu Pause.
 
 ---
@@ -134,7 +134,7 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 - **Level-up** : temps fort de 0,3 s en jeu avant l'ouverture des cartes, une ascension de cristal doré autour du héros (fragments qui montent en spirale, étoile au-dessus de lui ; remplace l'anneau doré au sol le 2026-10-29). Puis 3 cartes parchemin animées (couleur par personnage, violet pour les fusions, léger grossissement au survol), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3 ou au curseur de la manette.
 - **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation.
 - **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
-- **Paramètres** : affichage, graphismes, audio, jeu (visée automatique ou manuelle, pause automatique), interface, commandes (2 touches clavier/souris + 1 bouton de manette par action, préréglages AZERTY/QWERTY, vibrations), langue.
+- **Paramètres** : affichage (dont le choix de l'écran, 2026-10-29), graphismes, audio, jeu (visée automatique ou manuelle, pause automatique), interface, commandes (2 touches clavier/souris + 1 bouton de manette par action, préréglages AZERTY/QWERTY, vibrations), langue.
 - **Manette** (2026-10-28/29) : curseur rond au stick dans tous les menus (souris virtuelle : survol, clic, glisser), mode défilement dans les zones déroulantes (A pour entrer, B pour sortir), LB/RB = onglets, LT/RT = catégories des Paramètres, B = retour. Légende du HUD et icônes au style de la manette branchée. Le jeu bascule tout seul entre souris et manette selon le dernier appareil touché.
 - Durées affichées partout au format « 03 : 24 » (espace fine autour des deux-points, chrono, records, écrans de fin).
 - **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu.
@@ -178,6 +178,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ---
 
 ## 10. Principaux bugs corrigés récemment
+
+**2026-10-29 → 2026-11-06** : caméra saccadée (héros déplacé à 50 Hz sans interpolation, corrigé) · nombre de vie décentré par rapport à la partie visible de la barre · espace avant « ! » et « : » invisible en Bangers (police penchée) · compteur d'IPS affiché sur l'écran de chargement.
 
 **2026-10-24 → 2026-10-29** : gels de 250-360 ms toutes les ~3 min (ramasse-miettes incrémental désactivé) et chute d'images/s avec beaucoup de gemmes au sol (gemmes passées en données) · hitbox des boss sans rapport avec leur modèle (impacts dans le vide sur le Boss 3) · chaîne de foudre qui pouvait viser un ennemi mort et recyclé par le pool · nombres de dégâts à moitié cachés sous les grands ennemis (gobelin, golem) · cartes de Réputation : libellés invisibles après un redémarrage, « Éclats insuffisants » mal placé et trop sombre, bouton qui sortait de la carte au survol · bord de la barre d'XP qui clignotait et tremblait au ramassage · vibrations de manette bloquées après un changement de fenêtre.
 

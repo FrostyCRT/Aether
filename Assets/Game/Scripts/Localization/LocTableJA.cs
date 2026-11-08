@@ -102,13 +102,13 @@ public static class LocTableJA
         { "Or : {0}", "ゴールド：{0}" }, { "Éliminations : {0}", "撃破数：{0}" }, { "Niv. {0}", "Lv.{0}" },
 
         // ======================================================== Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
-        { "Chasseur", "ハンター" }, { "Tuer 150 ennemis", "敵を150体倒す" }, { "Montée en Puissance", "パワーアップ" }, { "Atteindre le niveau 10", "レベル10に到達する" },
-        { "Premier Sang", "ファーストブラッド" }, { "Vaincre 1 boss", "ボスを1体倒す" }, { "Toujours en Mouvement", "止まるな" }, { "Utiliser le Dash 20 fois", "ダッシュを20回使う" },
+        { "Chasseur", "ハンター" }, { "Tuer 500 ennemis", "敵を500体倒す" }, { "Montée en Puissance", "パワーアップ" }, { "Atteindre le niveau 10", "レベル10に到達する" },
+        { "Premier Sang", "ファーストブラッド" }, { "Vaincre 1 boss", "ボスを1体倒す" }, { "Toujours en Mouvement", "止まるな" }, { "Utiliser le Dash 50 fois", "ダッシュを50回使う" },
         { "Sang-Froid", "冷静沈着" }, { "Garder 30% de vie jusqu'au boss 2", "ボス2までHPを30%以上に保つ" }, { "Double Chasse", "ダブルハント" },
         { "Vaincre 2 boss dans la même partie", "1回のプレイでボスを2体倒す" }, { "Ascension Rapide", "急成長" }, { "Niveau 18 avant la 10ème minute", "10分経過までにレベル18" },
-        { "Sans Cristal", "クリスタル禁止" }, { "Sans Ultime jusqu'au boss 2", "ボス2まで必殺技を使わない" }, { "Résilience", "ノーダメージ" }, { "Garder plus de 50% de vie jusqu'au boss 1", "ボス1までダメージを受けない" },
-        { "Éclair", "電光石火" }, { "Vaincre un boss en moins de 30s", "ボスを30秒以内に倒す" }, { "Fortune", "一攫千金" }, { "Avec au moins 1200 Or ramassé", "ゴールドを1200以上拾う" },
-        { "Puissance Absolue", "絶対的な力" }, { "Niveau 30 dans la même partie", "1回のプレイでレベル30" }, { "+{0} or", "＋{0}ゴールド" },
+        { "Sans Cristal", "クリスタル禁止" }, { "Sans Ultime jusqu'au boss 1", "ボス1まで必殺技を使わない" }, { "Résilience", "ノーダメージ" }, { "Garder plus de 50% de vie jusqu'au boss 1", "ボス1までダメージを受けない" },
+        { "Éclair", "電光石火" }, { "Vaincre un boss en moins de 25s", "ボスを25秒以内に倒す" }, { "Fortune", "一攫千金" }, { "Avec au moins 12 000 Or ramassé", "ゴールドを12,000以上拾う" },
+        { "Puissance Absolue", "絶対的な力" }, { "Niveau 25 dans la même partie", "1回のプレイでレベル25" }, { "+{0} or", "＋{0}ゴールド" },
         { "Niv. {0}/{1}", "Lv.{0}/{1}" }, { "En cours", "進行中" }, { "{0}/{1} Or", "{0}/{1}ゴールド" }, { "Pas de défi dans ce mode", "このモードにチャレンジはない" },
         { "Défi déjà réussi cette heure !", "この時間帯のチャレンジは達成済み！" }, { "Nouveau défi dans {0} min", "{0}分後に新しいチャレンジ" }, { "Nouveau défi à ta prochaine partie !", "次のプレイで新しいチャレンジ！" },
         { "Réussi", "達成" }, { "Statut", "状態" },
@@ -175,11 +175,11 @@ public static class LocTableJA
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "遠距離" }, { "ZONE", "範囲" }, { "BRÛLURE", "炎上" }, { "MÊLÉE", "近接" }, { "AURA", "オーラ" }, { "RALENTISSEMENT", "減速" },
         { "PERFORANT", "貫通" }, { "SALVE", "一斉投擲" }, { "Boule de feu", "ファイアボール" }, { "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité", "着弾時に爆発し、近くの敵すべてにダメージを与える火の玉" },
-        { "Rayon / Dégâts / Brûlure", "範囲 / ダメージ / 炎上" }, { "GUERRIER", "戦士" }, { "Montée en puissance offensive", "攻撃力がどんどん上がる" },
+        { "Rayon / Cadence / Brûlure", "範囲 / 連射速度 / 炎上" }, { "GUERRIER", "戦士" }, { "Montée en puissance offensive", "攻撃力がどんどん上がる" },
         { "Aura de mana", "マナのオーラ" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "周囲に常に展開し、範囲内の敵にダメージを与えて減速させるフィールド" },
-        { "Dégâts / Rayon / Ralentissement", "ダメージ / 範囲 / 減速" }, { "GARDIEN", "守護者" }, { "Survie et résilience", "生存力と粘り強さ" },
+        { "Ralentissement / Rayon / Onde de choc", "減速 / 範囲 / 衝撃波" }, { "GARDIEN", "守護者" }, { "Survie et résilience", "生存力と粘り強さ" },
         { "Salve de couteaux", "ナイフ一斉投擲" }, { "Lance une salve de couteaux qui transpercent les ennemis", "敵を貫くナイフを一斉に投げる" },
-        { "Couteau en plus / Dégâts / Perforation", "ナイフ追加 / ダメージ / 貫通" }, { "FANTÔME", "ファントム" }, { "Mobilité et dash", "機動力とダッシュ" },
+        { "Couteau en plus / Cadence / Perforation", "ナイフ追加 / 連射速度 / 貫通" }, { "FANTÔME", "ファントム" }, { "Mobilité et dash", "機動力とダッシュ" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "1回のプレイでボス2に到達すると、Kaelを解放" }, { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "プレイをクリア（ボス3を撃破）すると、Lyraを解放" },
         { "Débloquer — {0} Éclats", "{0}個の欠片で解放" }, { "Sélectionné", "選択中" }, { "Sélectionner", "選択" }, { "PALIERS", "強化" },
         { "ARBRE COMPLET", "ツリー完成" }, { "VOIR L'ARBRE", "ツリーを見る" },
@@ -241,8 +241,8 @@ public static class LocTableJA
 
         // ======================================================== Ajouts (toujours EN FIN de table : les numéros de Tools/loc/skeleton.txt ne bougent pas)
         { "FUSION", "融合" }, { "Éclat", "個の欠片" }, { "Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.", "プレイ開始から2体目のボスを倒すまで、HPを30%未満にしない。" },
-        { "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", "2体目のボスを倒すまで必殺技（Fキー）を使わない" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "プレイ開始から1体目のボスを倒すまで、HPを50%未満にしない。" },
-        { "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", "どのボスでも出現から30秒以内に倒す" }, { "Ramasser au moins 1200 Or au total durant la partie", "1回のプレイで合計1200ゴールド以上を拾う" },
+        { "Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss", "1体目のボスが出現するまで必殺技（Fキー）を使わない" }, { "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", "プレイ開始から1体目のボスを倒すまで、HPを50%未満にしない。" },
+        { "Vaincre n'importe quel boss en moins de 25 secondes après son apparition", "どのボスでも出現から25秒以内に倒す" }, { "Ramasser au moins 12 000 Or au total durant la partie", "1回のプレイで合計12,000ゴールド以上を拾う" },
         { "MODÉRÉ", "ふつう" }, { "VIOLENT", "はげしい" }, { "APOCALYPTIQUE", "アポカリプス" }, { "Carte sans limite, l'expérience Classique telle qu'elle a toujours été.", "境界のないマップ。これまでどおりのクラシック。" },
         { "Carte en tunnel sans limite de côté, ennemis plus résistants et plus dangereux, mais Or et Éclats plus généreux.", "左右に果てのないトンネル状のマップ。敵はよりタフで危険に。そのぶんゴールドと欠片が多い。" },
         { "Carte resserrée sur les 4 côtés, ennemis nettement plus résistants et plus dangereux, Or et Éclats au maximum.", "四方を囲まれた狭いマップ。敵はかなりタフで危険に。ゴールドと欠片は最大。" },
@@ -272,5 +272,8 @@ public static class LocTableJA
         { "Écran", "ディスプレイ" }, { "Écran {0}", "ディスプレイ {0}" }, { "Écran sur lequel le jeu s'affiche", "ゲームを表示するディスプレイ" },
         { "Un seul écran est branché.", "接続されているディスプレイは1台のみ。" }, { "Remporte une partie en {0} pour débloquer cette difficulté", "{0}で1回勝利すると、この難易度を解放" },
         { "Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté", "{0}でクラシックモードに1回勝利すると、この難易度でエンドレスモードを遊べる" },
+        { "DERNIÈRE PARTIE", "前回のプレイ" }, { "VICTOIRE", "勝利" }, { "ABANDON", "中断" }, { "Ennemis", "敵" }, { "Victoire", "勝利" },
+        { "Défi", "チャレンジ" }, { "Prime de 1re victoire : +{0}", "初勝利ボーナス：+{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "撃破数：{0}  ·  Lv.{1}  ·  ボス：{2}" },
+        { "+{0}% cadence", "連射速度+{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "衝撃波を解放：オーラが{0}秒ごとに敵を押し返す" },
     };
 }

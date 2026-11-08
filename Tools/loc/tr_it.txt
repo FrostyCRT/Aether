@@ -261,13 +261,13 @@
 
 ## Défis
 248| Cacciatore
-249| Uccidi 150 nemici
+249| Uccidi 500 nemici
 250| Scalata al potere
 251| Raggiungi il livello 10
 252| Primo sangue
 253| Sconfiggi 1 boss
 254| Sempre in movimento
-255| Usa lo scatto 20 volte
+255| Usa lo scatto 50 volte
 256| Sangue freddo
 257| Resta sopra il 30% di salute fino al boss 2
 258| Doppia caccia
@@ -275,15 +275,15 @@
 260| Ascesa rapida
 261| Livello 18 prima del 10° minuto
 262| Senza cristallo
-263| Niente suprema fino al boss 2
+263| Niente suprema fino al boss 1
 264| Impeccabile
 265| Nessun danno fino al boss 1
 266| Fulmineo
-267| Sconfiggi un boss in meno di 30 s
+267| Sconfiggi un boss in meno di 25 s
 268| Fortuna
-269| Raccogli almeno 1200 monete d'oro
+269| Raccogli almeno 12.000 monete d'oro
 270| Potere assoluto
-271| Livello 30 nella stessa partita
+271| Livello 25 nella stessa partita
 272| +{0} oro
 273| Liv. {0}/{1}
 274| In corso
@@ -437,17 +437,17 @@
 414| RAFFICA
 415| Palla di fuoco
 416| Palla di fuoco che esplode all'impatto e colpisce tutti i nemici vicini
-417| Raggio / Danni / Ustione
+417| Raggio / Cadenza / Ustione
 418| GUERRIERO
 419| Potenza offensiva crescente
 420| Aura di mana
 421| Campo permanente intorno a te che ferisce e rallenta i nemici vicini
-422| Danni / Raggio / Rallentamento
+422| Rallentamento / Raggio / Onda d'urto
 423| GUARDIANO
 424| Sopravvivenza e resistenza
 425| Raffica di coltelli
 426| Lancia una raffica di coltelli che trafiggono i nemici
-427| Coltello extra / Danni / Perforazione
+427| Coltello extra / Cadenza / Perforazione
 428| FANTASMA
 429| Mobilità e scatto
 430| Raggiungi il boss 2 in una partita per sbloccare Kael
@@ -615,10 +615,10 @@
 578| FUSIONE
 579| frammento
 580| Non scendere mai sotto il 30% di salute, dall'inizio della partita fino alla morte del 2° boss.
-581| Non usare la suprema (tasto F) prima di aver sconfitto il 2° boss
+581| Non usare la suprema (tasto F) prima che compaia il 1° boss
 582| Non scendere mai sotto il 50% di salute, dall'inizio della partita fino alla morte del 1° boss.
-583| Sconfiggi un boss qualsiasi entro 30 secondi dalla sua comparsa
-584| Raccogli almeno 1200 monete d'oro in totale durante la partita
+583| Sconfiggi un boss qualsiasi entro 25 secondi dalla sua comparsa
+584| Raccogli almeno 12.000 monete d'oro in totale durante la partita
 585| MODERATA
 586| VIOLENTA
 587| APOCALITTICA
@@ -685,3 +685,15 @@
 646| È collegato un solo schermo.
 647| Vinci una partita in {0} per sbloccare questa difficoltà
 648| Vinci una partita in modalità Classica in {0} per giocare alla modalità Infinita con questa difficoltà
+
+## Panneau Dernière partie (2026-11-07)
+649| ULTIMA PARTITA
+650| VITTORIA
+651| ABBANDONO
+652| Nemici
+653| Vittoria
+654| Sfida
+655| Bonus prima vittoria: +{0}
+656| Nemici sconfitti: {0}  ·  Liv. {1}  ·  Boss: {2}
+657| +{0}% alla cadenza
+658| Sblocca Onda d'urto: l'aura respinge i nemici ogni {0} secondi

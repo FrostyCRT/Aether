@@ -306,6 +306,13 @@ public class PauseMenuUI : MonoBehaviour
         // texte retourné à la ligne sur presque chaque caractère la toute première fois. Activer le GameObject
         // D'ABORD, puis changer le texte et forcer la reconstruction du maillage, règle ça définitivement.
         _descriptionTooltip.gameObject.SetActive(true);
+        // CORRIGÉ (2026-11-07, retour utilisateur : "les descriptions info bulle n'ont pas toujours le même format quand on
+        // clique dessus") - mesuré sur 9 compétences, 2 clics chacune : les textes de 3 lignes passaient en Justifié
+        // (TextBalancer) dans un cadre déjà ajusté à leur largeur - grands trous entre les mots, ou espaces écrasés - et
+        // le 1er clic mesurait le texte avant ses insécables, le 2e après (412 puis 394 px de large pour la même
+        // compétence). Ce cadre suit son texte : TextBalancer n'y touche plus, toujours aligné à gauche.
+        TextBalancer.Ignore(_descriptionText);
+        _descriptionText.horizontalAlignment = HorizontalAlignmentOptions.Left;
         // MODIFIÉ (2026-10-26) - état ACTUEL de la compétence (nombre d'orbes, bonus total...), voir
         // UpgradeData.GetCurrentStateDescription ; le texte générique de l'asset annonçait parfois plus que la réalité.
         string description = upgrade.GetCurrentStateDescription();

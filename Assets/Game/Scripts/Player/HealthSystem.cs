@@ -15,9 +15,19 @@ public class HealthSystem : MonoBehaviour
 
     private float _damageTimer = 0f;
 
+    // MODIFIÉ (2026-11-07, retour utilisateur : "quand ils meurent, l'animation de mort leur fait passer 1 sec sous le sol")
+    // - l'ancienne chute abaissait tout le personnage de sa hauteur normale à 0,4 en 1,2 s DÈS la mort, alors que
+    // l'animation le garde debout ~1,4 s avant de le faire tomber : il s'enfonçait dans le sol pendant ce temps. Désormais
+    // la hauteur SUIT l'animation : à chaque image, le point le plus bas du squelette est ramené à la hauteur qu'avaient
+    // les orteils au moment de la mort (= au ras du sol), en douceur. Le corps ne descend que quand il tombe vraiment,
+    // et ne flotte pas non plus une fois allongé (ce que l'ancienne chute corrigeait).
     [Header("Chute a la mort")]
-    [SerializeField] private float _deathFallTargetY = 0.4f;
-    [SerializeField] private float _deathFallDuration = 1.2f;
+    [Tooltip("Durée pendant laquelle la hauteur suit l'animation de mort (un peu plus longue que l'animation).")]
+    [SerializeField] private float _deathGroundFollowDuration = 5f;
+    [Tooltip("Vitesse max de correction de la hauteur (unités/s) : évite tout à-coup.")]
+    [SerializeField] private float _deathGroundFollowSpeed = 4f;
+    private Transform[] _deathBones;
+    private float _deathGroundRef, _deathFollowUntil = -1f;
 
     public bool IsInvincible => _isInvincible || _externalInvincibilitySources > 0;
     public float MaxHealth => _maxHealth;
@@ -340,7 +350,7 @@ public class HealthSystem : MonoBehaviour
         if (playerController != null)
             playerController.HideStaff();
 
-        StartCoroutine(LowerBodyOnDeath());
+        BeginDeathGroundFollow();
 
         // MODIFIE - transmet la cause du coup fatal, pour le message d'ambiance
         // contextuel du Game Over.
@@ -348,23 +358,38 @@ public class HealthSystem : MonoBehaviour
             GameManager.Instance.TriggerGameOver(_lastDamageSource);
     }
 
-    private System.Collections.IEnumerator LowerBodyOnDeath()
+    private void BeginDeathGroundFollow()
     {
-        float startY = transform.position.y;
-        float elapsed = 0f;
-
-        while (elapsed < _deathFallDuration)
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim == null || !anim.isHuman) return;
+        var list = new System.Collections.Generic.List<Transform>();
+        for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / _deathFallDuration);
-            Vector3 pos = transform.position;
-            pos.y = Mathf.Lerp(startY, _deathFallTargetY, t);
-            transform.position = pos;
-            yield return null;
+            Transform t = anim.GetBoneTransform((HumanBodyBones)i);
+            if (t != null) list.Add(t);
         }
+        if (list.Count == 0) return;
+        _deathBones = list.ToArray();
+        _deathGroundRef = LowestDeathBoneY();   // debout : les orteils, au ras du sol
+        _deathFollowUntil = Time.time + _deathGroundFollowDuration;
+    }
 
-        Vector3 finalPos = transform.position;
-        finalPos.y = _deathFallTargetY;
-        transform.position = finalPos;
+    private float LowestDeathBoneY()
+    {
+        float low = float.MaxValue;
+        for (int i = 0; i < _deathBones.Length; i++)
+            if (_deathBones[i] != null && _deathBones[i].position.y < low) low = _deathBones[i].position.y;
+        return low;
+    }
+
+    // Après l'évaluation de l'Animator (LateUpdate) : la pose de CETTE image est déjà appliquée aux os.
+    private void LateUpdate()
+    {
+        if (_deathFollowUntil < 0f || _deathBones == null) return;
+        if (Time.time > _deathFollowUntil) { _deathFollowUntil = -1f; return; }
+        float error = LowestDeathBoneY() - _deathGroundRef;   // > 0 : flotte, < 0 : sous le sol
+        Vector3 pos = transform.position;
+        pos.y = Mathf.MoveTowards(pos.y, pos.y - error, _deathGroundFollowSpeed * Time.deltaTime);
+        transform.position = pos;
     }
 }

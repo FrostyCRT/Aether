@@ -32,7 +32,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
     [Header("Orbes d'orage (hérités des Orbitaux, A/E)")]
     [SerializeField] private float _orbitRadius = 4.5f;
     [SerializeField] private float _minOrbitRadius = 1.5f;
-    [SerializeField] private float _maxOrbitRadius = 13f;   // MODIFIÉ (2026-10-29) - suit les Orbitaux (8 -> 12), était 9
+    [SerializeField] private float _maxOrbitRadius = 11f;   // MODIFIÉ (2026-11-06) - suit les Orbitaux (8 -> 10), était 9 puis 13
     [SerializeField] private float _rangeChangeSpeed = 2.5f;
     [SerializeField] private float _orbitSpeed = 190f;    // degrés par seconde
     [SerializeField] private int _orbCount = 5;
@@ -117,7 +117,7 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
     private readonly List<int> _removeBuffer = new List<int>();
     private readonly HashSet<int> _chainHit = new HashSet<int>();
 
-    private Vector3 Center => new Vector3(transform.position.x, 0f, transform.position.z);
+    private Vector3 Center => new Vector3(transform.position.x, 0f, transform.position.z + WeaponOrbital.VisualCenterZ);
 
     // Appelé une fois par UpgradeData.ApplyFusionResult avec ce que les 2 armes d'origine avaient accumulé (Réputation et
     // "Dégâts+" déjà inclus : pas de second bonus de Réputation ici).

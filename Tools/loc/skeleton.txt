@@ -255,13 +255,13 @@
 
 ## Défis (ChallengeDatabase / ChallengeManager / PauseMenuUI)
 248	Chasseur	Hunter
-249	Tuer 150 ennemis	Kill 150 enemies
+249	Tuer 500 ennemis	Kill 500 enemies
 250	Montée en Puissance	Power Surge
 251	Atteindre le niveau 10	Reach level 10
 252	Premier Sang	First Blood
 253	Vaincre 1 boss	Defeat 1 boss
 254	Toujours en Mouvement	Always Moving
-255	Utiliser le Dash 20 fois	Dash 20 times
+255	Utiliser le Dash 50 fois	Dash 50 times
 256	Sang-Froid	Cool Head
 257	Garder 30% de vie jusqu'au boss 2	Stay above 30% HP until boss 2
 258	Double Chasse	Double Hunt
@@ -269,15 +269,15 @@
 260	Ascension Rapide	Fast Ascent
 261	Niveau 18 avant la 10ème minute	Level 18 before minute 10
 262	Sans Cristal	Crystal-Free
-263	Sans Ultime jusqu'au boss 2	No Ultimate until boss 2
+263	Sans Ultime jusqu'au boss 1	No Ultimate until boss 1
 264	Résilience	Resilience
 265	Garder plus de 50% de vie jusqu'au boss 1	Keep above 50% health until boss 1
 266	Éclair	Lightning Fast
-267	Vaincre un boss en moins de 30s	Defeat a boss in under 30s
+267	Vaincre un boss en moins de 25s	Defeat a boss in under 25s
 268	Fortune	Fortune
-269	Avec au moins 1200 Or ramassé	Collect at least 1200 gold
+269	Avec au moins 12 000 Or ramassé	Collect at least 12,000 gold
 270	Puissance Absolue	Absolute Power
-271	Niveau 30 dans la même partie	Reach level 30 in one run
+271	Niveau 25 dans la même partie	Reach level 25 in one run
 272	+{0} or	+{0} gold
 273	Niv. {0}/{1}	Lv. {0}/{1}
 274	En cours	In progress
@@ -431,17 +431,17 @@
 414	SALVE	VOLLEY
 415	Boule de feu	Fireball
 416	Boule de feu qui explose à l'impact et touche tous les ennemis à proximité	A fireball that explodes on impact and hits every nearby enemy
-417	Rayon / Dégâts / Brûlure	Radius / Damage / Burn
+417	Rayon / Cadence / Brûlure	Radius / Fire rate / Burn
 418	GUERRIER	WARRIOR
 419	Montée en puissance offensive	Offensive power ramp-up
 420	Aura de mana	Mana aura
 421	Champ permanent autour de toi qui blesse et ralentit les ennemis à portée	A permanent field around you that damages and slows nearby enemies
-422	Dégâts / Rayon / Ralentissement	Damage / Radius / Slow
+422	Ralentissement / Rayon / Onde de choc	Slow / Radius / Shockwave
 423	GARDIEN	GUARDIAN
 424	Survie et résilience	Survival and resilience
 425	Salve de couteaux	Knife volley
 426	Lance une salve de couteaux qui transpercent les ennemis	Throws a volley of knives that pierce through enemies
-427	Couteau en plus / Dégâts / Perforation	Extra knife / Damage / Pierce
+427	Couteau en plus / Cadence / Perforation	Extra knife / Fire rate / Pierce
 428	FANTÔME	PHANTOM
 429	Mobilité et dash	Mobility and dash
 430	Atteins le Boss 2 dans une partie pour débloquer Kael	Reach Boss 2 in a run to unlock Kael
@@ -609,10 +609,10 @@
 578	FUSION	FUSION
 579	Éclat	Shard
 580	Ne jamais descendre sous 30% de vie, du début de la partie jusqu'à la mort du 2ème boss.	Never drop below 30% health, from the start of the run until the 2nd boss dies.
-581	Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss	Don't use the Ultimate (F key) before defeating the 2nd boss
+581	Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss	Don't use the Ultimate (F key) before the 1st boss arrives
 582	Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.	Never drop below 50% health, from the start of the run until the 1st boss is defeated.
-583	Vaincre n'importe quel boss en moins de 30 secondes après son apparition	Defeat any boss within 30 seconds of its appearance
-584	Ramasser au moins 1200 Or au total durant la partie	Collect at least 1200 Gold in total during the run
+583	Vaincre n'importe quel boss en moins de 25 secondes après son apparition	Defeat any boss within 25 seconds of its appearance
+584	Ramasser au moins 12 000 Or au total durant la partie	Collect at least 12,000 Gold in total during the run
 585	MODÉRÉ	MODERATE
 586	VIOLENT	SEVERE
 587	APOCALYPTIQUE	APOCALYPTIC
@@ -679,3 +679,13 @@
 646	Un seul écran est branché.	Only one display is connected.
 647	Remporte une partie en {0} pour débloquer cette difficulté	Win a run on {0} to unlock this difficulty
 648	Remporte une partie en Classique en {0} pour jouer au mode Sans fin dans cette difficulté	Win a Classic run on {0} to play Endless mode at this difficulty
+649	DERNIÈRE PARTIE	LAST RUN
+650	VICTOIRE	VICTORY
+651	ABANDON	ABANDONED
+652	Ennemis	Enemies
+653	Victoire	Victory
+654	Défi	Challenge
+655	Prime de 1re victoire : +{0}	First-win bonus: +{0}
+656	Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}	Enemies defeated: {0}  ·  Lv. {1}  ·  Bosses: {2}
+657	+{0}% cadence	+{0}% fire rate
+658	Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes	Unlocks Shockwave: the aura pushes enemies back every {0} seconds

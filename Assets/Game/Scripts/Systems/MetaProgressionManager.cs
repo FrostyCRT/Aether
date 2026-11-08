@@ -41,17 +41,31 @@ public class MetaProgressionManager : MonoBehaviour
     // branche maxée passe d'~30-40 parties à ~25-32. Primes de 1re victoire inchangées.
     // Constantes (et non [SerializeField]) : l'ancienne version sérialisait ses valeurs dans la scène MainMenu, qui
     // auraient écrasé ce barème sans qu'on le voie dans le code.
-    public const int GoldPerMinute = 25;                       // par minute de chrono (Classique, Sans fin, Ruée)
-    public const float KillGoldFactor = 0.025f;                // part de EnemyBase._goldValue réellement versée
-    public const int ClassicVictoryGold = 310;
-    public const int RushVictoryGold = 155;
-    public const int TitansVictoryGold = 50;
-    public const float BossGoldBonus = 1.25f;                  // 2026-10-29 : or des boss (valeur des prefabs) +25 %
+    // REFONTE (2026-11-07, retour utilisateur : "il faut que ça en donne quand on tue des ennemis, car il faut garder le
+    // côté satisfaisant, mais du coup ça pourrait donner trop de gold en fin de game [...] faire un x10 dans les coûts")
+    // - tout l'or passe à l'échelle x10 (coûts de l'arbre, primes de défi, Fortune, sauvegardes migrées), environ +20 %
+    // en plus, et les ennemis redeviennent une vraie source : chaque kill paie de l'or, mais avec un RENDEMENT
+    // DÉCROISSANT selon le rythme de kills de la dernière minute (KillGoldHalfRate) : les premiers kills d'une vague
+    // paient plein pot, une horde de 1 000 kills à la minute ne paie pas 10 fois plus qu'une de 100. Ça borne l'écart
+    // joueur faible / joueur fort et la fin de partie, sans jamais rendre un kill inutile.
+    public const int GoldPerMinute = 300;                      // par minute de chrono (Classique, Sans fin, Ruée)
+    public const float KillGoldPerValue = 1.25f;               // or par point de EnemyBase._goldValue, à faible rythme
+    public const float KillGoldHalfRate = 150f;                // kills par minute où un kill ne paie plus que la moitié
+    private const float KillRateWindow = 60f;                  // mémoire du rythme de kills (secondes de jeu)
+    public const int ClassicVictoryGold = 3700;
+    public const int RushVictoryGold = 1850;
+    public const int TitansVictoryGold = 600;
+    public const float BossGoldScale = 15f;                    // valeur des prefabs (60 / 120 / 200) -> 900 / 1 800 / 3 000
+    // Éclats à chaque minute pleine du chrono (Classique, Sans fin) : même une partie perdue en rapporte, plus seulement
+    // les boss et la victoire.
+    // MODIFIÉ (2026-11-07, retour utilisateur : "en Apocalyptique, en faisant une plutôt bonne partie je gagne que 50 éclats")
+    // - 1 -> 2 : une partie perdue vers 10 min en Apocalyptique passe de ~50 à ~70 éclats, une victoire Modéré de 165 à 180.
+    public const int EclatsPerMinute = 2;
     public const float RushBossRewardScale = 0.5f;             // 9 boss rapprochés : la moitié d'un boss du Classique
     public const float TitansBossRewardScale = 0.2f;           // ~1 à 2 min de partie : pas de ferme à or
-    private static readonly int[] EclatsPerBoss = { 13, 25, 38 };   // boss 1, 2, 3
-    public const int EclatsVictoryBonus = 50;
-    public const int TitansVictoryEclats = 10;
+    private static readonly int[] EclatsPerBoss = { 15, 30, 45 };   // boss 1, 2, 3 (2026-11-07 : 13 / 25 / 38 avant)
+    public const int EclatsVictoryBonus = 60;
+    public const int TitansVictoryEclats = 12;
     // Prime unique de la PREMIÈRE victoire du Classique dans un palier, pour chaque personnage (Modéré, Violent, Apocalyptique).
     private static readonly int[] FirstWinEclats = { 300, 600, 1000 };
 
@@ -86,6 +100,28 @@ public class MetaProgressionManager : MonoBehaviour
         Data = SaveSystem.Load();
         if (Data == null) Data = new SaveData();
         MigrateClassicBossProgress();
+        MigrateGoldScale();
+    }
+
+    // AJOUTÉ (2026-11-07) - l'or est passé à l'échelle x10 (gains ET coûts) : l'or d'une sauvegarde plus ancienne est
+    // multiplié une seule fois pour garder le même pouvoir d'achat. Une sauvegarde neuve (or 0) ne change pas.
+    private void MigrateGoldScale()
+    {
+        if (Data.version >= 2) return;
+        Data.totalGold *= 10;
+        Data.bestGoldInRun *= 10;
+        Data.version = 2;
+    }
+
+    // Remet à zéro l'or de la partie et son détail (fin de partie).
+    public void ResetRunGold()
+    {
+        RunGold = 0;
+        RunGoldFromKills = RunGoldFromTime = RunGoldFromBosses = RunGoldFromVictory = RunGoldFromChallenge = 0;
+        RunKillGoldValueRaw = 0;
+        _killGoldCarry = 0f;
+        _killRate = 0f;
+        _killRateTime = 0f;
     }
 
     // Saves d'avant les modes de jeu : on retrouve la progression boss d'après les déblocages existants
@@ -97,44 +133,65 @@ public class MetaProgressionManager : MonoBehaviour
         else if (Data.kaelUnlocked && Data.bestClassicBossKills < 1) Data.bestClassicBossKills = 1;
     }
 
-    // Or des ennemis tués : seule une petite part de leur valeur (KillGoldFactor), cumulée en fractions pour que même
-    // un ennemi à 1 or compte. Remis à zéro avec RunGold (SaveRunResults).
+    // Or des ennemis tués, cumulé en fractions (un kill à fort rythme peut valoir moins d'1 or). Remis à zéro avec
+    // RunGold (ResetRunGold).
     private float _killGoldCarry;
+    // Rythme de kills : compteur qui s'efface avec le temps ; à rythme constant, il vaut le nombre de kills par minute.
+    // Un kill paie KillGoldPerValue x valeur x HalfRate / (HalfRate + rythme).
+    private float _killRate, _killRateTime;
+
+    // AJOUTÉ (2026-11-07) - détail de l'or de la partie (après le multiplicateur de difficulté), pour le panneau
+    // « Dernière partie » du menu. Remis à zéro avec RunGold.
+    public int RunGoldFromKills { get; private set; }
+    public int RunGoldFromTime { get; private set; }
+    public int RunGoldFromBosses { get; private set; }
+    public int RunGoldFromVictory { get; private set; }
+    public int RunGoldFromChallenge { get; private set; }
+    public int RunKillGoldValueRaw { get; private set; }   // somme des _goldValue des ennemis tués (mesures)
+    private enum GoldSource { Kills, Time, Bosses, Victory, Challenge }
+    // Posé par GameManager.AbandonRun juste avant SaveRunResults (le panneau « Dernière partie » distingue l'abandon).
+    public bool PendingRunAbandoned { get; set; }
 
     public void AddKillGold(int enemyGoldValue)
     {
-        _killGoldCarry += enemyGoldValue * KillGoldFactor;
+        float now = Time.time;
+        if (_killRateTime > 0f && now > _killRateTime) _killRate *= Mathf.Exp(-(now - _killRateTime) / KillRateWindow);
+        _killRateTime = now;
+        _killGoldCarry += enemyGoldValue * KillGoldPerValue * KillGoldHalfRate / (KillGoldHalfRate + _killRate);
+        _killRate += 1f;
+        RunKillGoldValueRaw += enemyGoldValue;
         if (_killGoldCarry < 1f) return;
         int whole = Mathf.FloorToInt(_killGoldCarry);
         _killGoldCarry -= whole;
-        AddRunGold(whole);
+        AddRunGold(whole, true, GoldSource.Kills);
     }
 
     // Or d'un boss, réduit dans les modes qui enchaînent les boss bien plus vite que le Classique.
     public void AddBossGold(int bossGoldValue)
     {
         float scale = GameModes.IsTitans ? TitansBossRewardScale : GameModes.IsBossRush ? RushBossRewardScale : 1f;
-        AddRunGold(Mathf.RoundToInt(bossGoldValue * scale * BossGoldBonus));
+        AddRunGold(Mathf.RoundToInt(bossGoldValue * scale * BossGoldScale), true, GoldSource.Bosses);
     }
 
     // Appelé par GameManager à chaque minute pleine du chrono.
     public void AddSurvivalMinuteGold()
     {
         if (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
-            AddRunGold(GoldPerMinute);
+            AddRunGold(GoldPerMinute, true, GoldSource.Time);
     }
 
     // Appelé par GameManager à la victoire, AVANT l'évaluation du défi (le défi "Fortune" compte cet or).
     public void AddVictoryGold()
     {
-        if (GameModes.IsTitans) AddRunGold(TitansVictoryGold);
-        else if (GameModes.IsBossRush) AddRunGold(RushVictoryGold);
-        else if (GameModes.IsClassic) AddRunGold(ClassicVictoryGold);
+        if (GameModes.IsTitans) AddRunGold(TitansVictoryGold, true, GoldSource.Victory);
+        else if (GameModes.IsBossRush) AddRunGold(RushVictoryGold, true, GoldSource.Victory);
+        else if (GameModes.IsClassic) AddRunGold(ClassicVictoryGold, true, GoldSource.Victory);
     }
 
-    public void AddRunGold(int amount) => AddRunGold(amount, true);
+    // Prime du défi de l'heure : calculée sur un or déjà majoré, elle ne repasse pas dans le multiplicateur.
+    public void AddChallengeGold(int amount) => AddRunGold(amount, false, GoldSource.Challenge);
 
-    public void AddRunGold(int amount, bool applyDifficulty)
+    private void AddRunGold(int amount, bool applyDifficulty, GoldSource source)
     {
         // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté ; ÉTENDU 2026-10-20, carrousel de
         // difficulté - "les boss [...] dans les autres difficultés bénéficient du scale donc [...] un niveau de
@@ -148,6 +205,14 @@ public class MetaProgressionManager : MonoBehaviour
             amount = Mathf.RoundToInt(amount * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
 
         RunGold += amount;
+        switch (source)
+        {
+            case GoldSource.Kills: RunGoldFromKills += amount; break;
+            case GoldSource.Time: RunGoldFromTime += amount; break;
+            case GoldSource.Bosses: RunGoldFromBosses += amount; break;
+            case GoldSource.Victory: RunGoldFromVictory += amount; break;
+            case GoldSource.Challenge: RunGoldFromChallenge += amount; break;
+        }
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
             GameUI.Instance.UpdateGold(RunGold);
 
@@ -246,10 +311,11 @@ public class MetaProgressionManager : MonoBehaviour
 
         RecordCharacterRun(runTime, victory && classic, !classic);
 
-        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode);
+        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode, runTime);
+        int firstWinBonus = 0;
         if (victory && classic)
         {
-            int firstWinBonus = RecordClassicWin(GetSelectedCharacterIndex(), DifficultyTiers.Current);
+            firstWinBonus = RecordClassicWin(GetSelectedCharacterIndex(), DifficultyTiers.Current);
             if (firstWinBonus > 0)
             {
                 eclatsEarned += firstWinBonus;
@@ -259,9 +325,33 @@ public class MetaProgressionManager : MonoBehaviour
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
 
+        // AJOUTÉ (2026-11-07) - gains de la partie, affichés dans le menu d'accueil (LastRunPanel).
+        Data.lastRun = new LastRunSummary
+        {
+            valid = true,
+            gold = RunGold,
+            goldKills = RunGoldFromKills,
+            goldTime = RunGoldFromTime,
+            goldBosses = RunGoldFromBosses,
+            goldVictory = RunGoldFromVictory,
+            goldChallenge = RunGoldFromChallenge,
+            eclats = eclatsEarned,
+            eclatsFirstWin = firstWinBonus,
+            runTime = runTime,
+            kills = kills,
+            level = levelReached,
+            bossKills = bossKills,
+            victory = victory,
+            abandoned = PendingRunAbandoned,
+            mode = (int)mode,
+            tier = (int)DifficultyTiers.Current,
+            character = GetSelectedCharacterIndex(),
+            unixTime = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        };
+
         SaveSystem.Save(Data);
-        RunGold = 0;
-        _killGoldCarry = 0f;
+        ResetRunGold();
+        PendingRunAbandoned = false;
 
         // Déblocage de Lyra : gagner une partie complète (Boss 3) - EN CLASSIQUE uniquement. Idempotent,
         // se sauvegarde lui-même si c'est un nouveau déblocage.
@@ -442,14 +532,15 @@ public class MetaProgressionManager : MonoBehaviour
     //  - Sans fin : 9 boss comptés au plus (3 boucles), pas de victoire.
     //  - Ruée de boss : moitié moins par boss ; la victoire rapporte le bonus proportionnellement à la taille de la Ruée.
     //  - Choc des titans (~1 à 2 min) : seulement une petite prime de victoire, pas de ferme à éclats.
-    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode = GameMode.Classic)
+    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode, float runTime)
     {
         float tierMultiplier = DifficultyTiers.RewardMultiplier(DifficultyTiers.Current);
+        int minuteEclats = Mathf.FloorToInt(runTime / 60f) * EclatsPerMinute;
         switch (mode)
         {
             case GameMode.Endless:
             {
-                int total = 0;
+                int total = minuteEclats;
                 for (int i = 0; i < Mathf.Min(bossKills, 9); i++) total += EclatsPerBoss[i % 3];
                 return Mathf.RoundToInt(total * tierMultiplier);
             }
@@ -469,7 +560,7 @@ public class MetaProgressionManager : MonoBehaviour
                 return victory ? TitansVictoryEclats : 0;
             default:
             {
-                int total = 0;
+                int total = minuteEclats;
                 for (int i = 0; i < Mathf.Min(bossKills, 3); i++) total += EclatsPerBoss[i];
                 if (victory) total += EclatsVictoryBonus;
                 return Mathf.RoundToInt(total * tierMultiplier);
@@ -948,9 +1039,14 @@ public class MetaProgressionManager : MonoBehaviour
     // MODIFIÉ (2026-10-27, refonte de l'économie) - 100/300/700/1 500/3 000 -> 200/500/1 000/2 000/3 500 (7 200 éclats par
     // bonus, 21 600 pour les 3) : avec ~100 à 200 éclats par victoire et 5 700 de primes de première victoire, toute la
     // Réputation demande ~150 parties - l'objectif de très long terme, commun aux 3 personnages.
+    // MODIFIÉ (2026-11-07, retour utilisateur : "le dernier palier de 3500 c'est presque impossible [...] il faudrait faire 70
+    // parties [...] il ne faut quand même pas aller trop loin") - 200/500/1 000/2 000/3 500 -> 150/400/800/1 400/2 200
+    // (4 950 éclats par bonus au lieu de 7 200, -31 %), avec en plus 2 éclats par minute au lieu de 1 : le dernier palier
+    // passe de ~70 à ~30 bonnes parties perdues en Apocalyptique, ~6 victoires Apocalyptiques. Toute la Réputation reste
+    // un objectif de long terme (~60 à 80 parties au lieu de ~150).
     private int GetReputationLevelCost(int currentLevel)
     {
-        int[] costs = { 200, 500, 1000, 2000, 3500 };
+        int[] costs = { 150, 400, 800, 1400, 2200 };
         if (currentLevel >= costs.Length) return -1;
         return costs[currentLevel];
     }
@@ -1069,7 +1165,7 @@ public class MetaProgressionManager : MonoBehaviour
         Data.crystalMasteryUnlocked = false;
         Data.phantomDashUnlocked = false;
 
-        Data.totalGold = 100000; // DEBUG : de quoi tout acheter (~91 750 pour les 3 branches depuis la refonte du 2026-10-27) ; remettre à 0 pour la release
+        Data.totalGold = 1000000; // DEBUG : de quoi tout acheter (~917 500 pour les 3 branches, échelle x10 du 2026-11-07) ; remettre à 0 pour la release
 
         SaveSystem.Save(Data);
     }

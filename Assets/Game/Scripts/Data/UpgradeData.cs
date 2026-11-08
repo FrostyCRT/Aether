@@ -187,6 +187,9 @@ public class UpgradeData : ScriptableObject
     // MODIFIÉ (2026-10-28) - 0,25 -> 0,15 (retour utilisateur), le soin devenant complet.
     public const float HealMaxHealthBonus = 0.15f;
 
+    // MODIFIÉ (2026-11-07, retour utilisateur : "éviter les pourcentages de dégâts en plus, il y a déjà assez d'éléments en jeu
+    // qui boostent les dégâts") - plus aucun palier d'arme exclusive en « +X% dégâts » (Dégâts+, la Réputation et l'arbre
+    // s'en chargent) : chaque palier change maintenant le COMPORTEMENT de l'arme (cadence, contrôle, nombre d'orbes).
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
@@ -197,7 +200,7 @@ public class UpgradeData : ScriptableObject
         switch (tier)
         {
             case 1: return Loc.T("Le rayon d'explosion est 2 fois plus grand");
-            case 2: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 2: return Loc.F("+{0}% cadence", PercentOf(v));
             case 3: return Loc.T("Débloque la Brûlure : les ennemis touchés brûlent sur la durée");
             default: return Description;
         }
@@ -213,13 +216,20 @@ public class UpgradeData : ScriptableObject
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
             case 2: return Loc.F("+{0}% rayon", PercentOf(v));
+            // Palier 3 (2026-11-07) : Onde de choc, au lieu d'un 2e palier de ralentissement.
+            case 3:
+                {
+                    GameObject p3 = GetActivePlayer();
+                    WeaponAura a3 = p3 != null ? p3.GetComponent<WeaponAura>() : null;
+                    float every = a3 != null ? a3.ShockwaveInterval : 4f;
+                    return Loc.F("Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", Mathf.RoundToInt(every));
+                }
             // CORRIGÉ (2026-10-25) - "+50% ralentissement" ne disait pas la réalité : la valeur se RETRANCHE du
             // multiplicateur de vitesse, elle n'est pas un pourcentage du ralentissement.
             // MODIFIÉ (2026-10-28, retour utilisateur : "On garde vraiment ce 'Au lieu de X' ? Je ne vois pas ça souvent
             // dans les jeux pro") - n'affiche plus que la valeur atteinte (15% -> 40%, voir WeaponAura._minSlowMultiplier).
-            case 3:
+            case 1:   // ralentissement porté à 40 % d'un coup (2026-11-07)
                 {
                     GameObject player = GetActivePlayer();
                     WeaponAura aura = player != null ? player.GetComponent<WeaponAura>() : null;
@@ -250,7 +260,7 @@ public class UpgradeData : ScriptableObject
         switch (tier)
         {
             case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve");
-            case 2: return Loc.F("+{0}% dégâts", PercentOf(v));
+            case 2: return Loc.F("+{0}% cadence", PercentOf(v));
             case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? Loc.F("+{0} ennemis perforés en plus", pierce) : Loc.F("+{0} ennemi perforé en plus", pierce); }
             default: return Description;
         }
@@ -275,8 +285,8 @@ public class UpgradeData : ScriptableObject
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% dégâts", PercentOf(v));
-            case 2: return Loc.F("+{0}% vitesse des orbes", PercentOf(v));
+            case 1: return Loc.F("+{0}% vitesse des orbes", PercentOf(v));
+            case 2:
             case 3: return Loc.T("+1 orbe rebondissant supplémentaire");
             default: return Description;
         }
@@ -510,7 +520,7 @@ public class UpgradeData : ScriptableObject
                     switch (tier)
                     {
                         case 1: fireball.AddFragmentRadius(v); break;
-                        case 2: fireball.AddDamage(v); break;
+                        case 2: fireball.AddFireRate(v); break;   // était +X% dégâts (2026-11-07)
                         case 3: fireball.EnableBurn(); break;
                         default:
                             Debug.LogWarning($"[UpgradeData] Fireball : palier {newLevel} inattendu (max {TotalAllowedPicks}), aucun effet appliqué.");
@@ -537,9 +547,9 @@ public class UpgradeData : ScriptableObject
                     float v = GetLevelValue(tier);
                     switch (tier)
                     {
-                        case 1: aura.AddDamage(v); break;
+                        case 1: aura.AddSlowStrength(v); break;   // était +X% dégâts (2026-11-07) ; 15 % -> 40 %
                         case 2: aura.AddRadius(v); break;
-                        case 3: aura.AddSlowStrength(v); break;
+                        case 3: aura.EnableShockwave(); break;    // Onde de choc (2026-11-07)
                         default:
                             Debug.LogWarning($"[UpgradeData] AuraUpgrade : palier {newLevel} inattendu (max {TotalAllowedPicks}), aucun effet appliqué.");
                             break;
@@ -569,7 +579,7 @@ public class UpgradeData : ScriptableObject
                     switch (tier)
                     {
                         case 1: knives.AddKnife(); break;
-                        case 2: knives.AddDamage(v); break;
+                        case 2: knives.AddFireRate(v); break;   // était +X% dégâts (2026-11-07)
                         case 3: knives.AddPierce(Mathf.Max(1, Mathf.RoundToInt(v))); break;
                         default:
                             Debug.LogWarning($"[UpgradeData] Knives : palier {newLevel} inattendu (max {TotalAllowedPicks}), aucun effet appliqué.");
@@ -672,8 +682,8 @@ public class UpgradeData : ScriptableObject
                     float orbValue = GetLevelValue(tier);
                     switch (tier)
                     {
-                        case 1: orb.AddDamage(orbValue); break;
-                        case 2: orb.AddSpeed(orbValue); break;
+                        case 1: orb.AddSpeed(orbValue); break;   // était +X% dégâts (2026-11-07)
+                        case 2: orb.AddOrb(); break;
                         case 3: orb.AddOrb(); break;
                         default:
                             Debug.LogWarning($"[UpgradeData] BouncingOrb : palier {newLevel} inattendu (max {TotalAllowedPicks}), aucun effet appliqué.");

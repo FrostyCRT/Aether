@@ -19,6 +19,25 @@ public class WeaponAura : MonoBehaviour
     // 0,4 -> 0,6 : le palier 3 de l'Aura mène le ralentissement de 15% à 40% (valeur du palier 0,5 -> 0,25, voir l'asset).
     [SerializeField] private float _minSlowMultiplier = 0.6f;
     private float _tickTimer = 0f;
+
+    // AJOUTÉ (2026-11-07, retour utilisateur : "pas bien de répéter 2 fois Ralentissement pour Kael" -> choix : nouvel
+    // effet au palier 3) - ONDE DE CHOC : toutes les _shockwaveInterval secondes, l'aura repousse vers l'extérieur les
+    // ennemis qu'elle touche (EnemyBase.ApplyKnockback, vitesse plafonnée par l'ennemi lui-même). Les boss ne sont jamais
+    // repoussés. Visuel : onde de cristal brisée + éclats (ArcaneBurstVFX, grammaire « cristal » des effets du joueur),
+    // teintée au vert de Kael.
+    [Header("Onde de choc (palier 3)")]
+    [SerializeField] private float _shockwaveInterval = 4f;
+    // MODIFIÉ (2026-11-07, retour utilisateur : "ça ne repousse pas assez loin") - vraie poussée (EnemyBase.Shove) au
+    // lieu du recul plafonné : chaque ennemi touché est projeté jusqu'à _shockwavePushBeyond au-delà du bord de l'aura
+    // (au moins _shockwaveMinPush), au moment où le front de l'onde l'atteint. Visuel : AuraShockwaveVFX.
+    [SerializeField] private float _shockwavePushBeyond = 2.5f;
+    [SerializeField] private float _shockwaveMinPush = 4f;
+    [SerializeField] private float _shockwavePushDuration = 0.45f;
+    private bool _shockwaveEnabled;
+    private float _shockwaveTimer;
+    public bool ShockwaveEnabled => _shockwaveEnabled;
+    public float ShockwaveInterval => _shockwaveInterval;
+    public void EnableShockwave() { _shockwaveEnabled = true; _shockwaveTimer = _shockwaveInterval * 0.5f; }
     private static readonly Collider[] _auraOverlapBuffer = new Collider[64];
     private readonly Dictionary<int, EnemyBase> _currentlySlowed = new Dictionary<int, EnemyBase>();
     private readonly HashSet<int> _inRangeThisTick = new HashSet<int>();
@@ -69,7 +88,7 @@ public class WeaponAura : MonoBehaviour
     // centre visuel de Kael selon comment son modele est rigge. S'applique a la
     // fois au visuel (anneau) et a la zone de degats/ralentissement reelle, pour
     // que les deux restent toujours coherents entre eux.
-    public Vector3 _centerOffset = Vector3.zero;
+    public Vector3 _centerOffset = new Vector3(0f, 0f, WeaponOrbital.VisualCenterZ);   // MODIFIÉ (2026-11-06) - était zéro, voir WeaponOrbital.VisualCenterZ
 
     private void Awake()
     {
@@ -126,9 +145,8 @@ public class WeaponAura : MonoBehaviour
 
         if (_auraRingRenderer != null)
         {
-            Vector3 ringLocalPos = _centerOffset;
-            ringLocalPos.y = _ringGroundY + toGround;
-            _auraRingRenderer.transform.localPosition = ringLocalPos;
+            // Position MONDE : un décalage en localPosition tournerait avec le joueur (voir la rotation juste en dessous).
+            _auraRingRenderer.transform.position = transform.position + new Vector3(_centerOffset.x, _ringGroundY + toGround, _centerOffset.z);
             // CORRIGÉ (2026-10-03) - retour utilisateur : "la rotation du joueur quand il bouge impact aussi
             // l'aura, donc ça fait tout bouger". Ces 3 objets sont enfants du joueur (pour suivre sa position
             // automatiquement) mais héritaient AUSSI de sa rotation (il tourne pour faire face à son déplacement) -
@@ -140,7 +158,7 @@ public class WeaponAura : MonoBehaviour
         }
         if (_auraFill == null) return;
 
-        _auraFill.transform.localPosition = new Vector3(_centerOffset.x, _fillGroundY + toGround, _centerOffset.z);
+        _auraFill.transform.position = transform.position + new Vector3(_centerOffset.x, _fillGroundY + toGround, _centerOffset.z);
         _auraFill.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
         // Légère pulsation calée sur _tickRate, pour que l'intensité visuelle respire au même rythme que les
@@ -179,6 +197,37 @@ public class WeaponAura : MonoBehaviour
             ApplyAuraTick();
             _tickTimer = 0f;
         }
+
+        if (_shockwaveEnabled)
+        {
+            _shockwaveTimer += Time.deltaTime;
+            if (_shockwaveTimer >= _shockwaveInterval)
+            {
+                _shockwaveTimer = 0f;
+                FireShockwave();
+            }
+        }
+    }
+
+    private void FireShockwave()
+    {
+        Vector3 center = transform.position + _centerOffset;
+        int hitCount = Physics.OverlapSphereNonAlloc(center, _radius, _auraOverlapBuffer, EnemyLayers.Mask);
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider hit = _auraOverlapBuffer[i];
+            if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (!hit.TryGetComponent(out EnemyBase enemy)) continue;   // boss : jamais repoussés
+            Vector3 away = enemy.transform.position - center;
+            away.y = 0f;
+            float dist = away.magnitude;
+            if (dist < 0.0001f) { away = Vector3.forward; dist = 0f; }
+            float push = Mathf.Max(_shockwaveMinPush, _radius + _shockwavePushBeyond - dist);
+            // 0,08 s : l'onde jaillit juste après la courte inspiration du visuel (voir AuraShockwaveRunner)
+            float delay = 0.08f + AuraShockwaveVFX.DelayToReach(dist, _radius);
+            enemy.Shove(away, push, _shockwavePushDuration, delay);
+        }
+        AuraShockwaveVFX.Spawn(center, _radius, transform, _centerOffset);   // suit Kael pendant l'animation
     }
     private void ApplyAuraTick()
     {

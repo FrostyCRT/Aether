@@ -41,9 +41,12 @@ public class BouncingOrbProjectile : MonoBehaviour
         // AJOUTÉ — lit le vrai rayon depuis le SphereCollider du prefab (en tenant compte
         // de son échelle), plutôt qu'une valeur codée en dur qui se désynchroniserait
         // silencieusement si tu changes la taille du prefab dans l'Inspector plus tard.
-        SphereCollider sphereCollider = GetComponent<SphereCollider>();
+        // CORRIGÉ (2026-11-08, retour utilisateur : "la collision entre les orbes rebondissantes se fait au centre de
+        // l'orbe et pas sur sa surface") - le SphereCollider est sur l'enfant visuel « Sphere » (rayon 0,5 x échelle
+        // 2,5 = 1,25), pas sur la racine : GetComponent renvoyait null et le rayon retombait sur 0,5.
+        SphereCollider sphereCollider = GetComponentInChildren<SphereCollider>(true);
         _orbRadius = sphereCollider != null
-            ? sphereCollider.radius * transform.lossyScale.x
+            ? sphereCollider.radius * sphereCollider.transform.lossyScale.x
             : _fallbackOrbRadius;
 
         // RÉGLÉ (2026-10-05) - 1er essai (0,22 de large, 65% d'opacité, bleu) quasi invisible en jeu : confirmé par
@@ -68,6 +71,24 @@ public class BouncingOrbProjectile : MonoBehaviour
     private void OnEnable()
     {
         if (_trail != null) _trail.Clear();
+        if (!s_active.Contains(this)) s_active.Add(this);
+    }
+
+    private void OnDisable() => s_active.Remove(this);
+
+    // Orbes actives : le contact orbe-orbe est testé à chaque image sur la distance entre centres (somme des rayons),
+    // au lieu d'attendre le chevauchement des BoxCollider déclencheurs (2 de large, plus petits que la sphère de 2,5) :
+    // le rebond part dès que les SURFACES se touchent.
+    private static readonly List<BouncingOrbProjectile> s_active = new List<BouncingOrbProjectile>();
+
+    private void LateUpdate()
+    {
+        if (GameManager.Instance != null && (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused)) return;
+        for (int i = 0; i < s_active.Count; i++)
+        {
+            BouncingOrbProjectile other = s_active[i];
+            if (other != null && other != this && other.isActiveAndEnabled) BounceOffOrb(other);
+        }
     }
 
     public void Init(Vector3 direction, float damage, float speed, float groundY)
@@ -223,7 +244,11 @@ public class BouncingOrbProjectile : MonoBehaviour
     {
         other.TryGetComponent(out BouncingOrbProjectile otherOrb);
         if (otherOrb == null || otherOrb == this) return;
+        BounceOffOrb(otherOrb);
+    }
 
+    private void BounceOffOrb(BouncingOrbProjectile otherOrb)
+    {
         // Une seule des 2 orbes traite la collision (celle avec le plus petit InstanceID) - sinon les 2
         // recalculeraient le même rebond indépendamment le même frame, avec un risque de double-application.
         if (GetInstanceID() >= otherOrb.GetInstanceID()) return;

@@ -322,8 +322,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxHealth: 2000
   _invincibilityDuration: 1
-  _deathFallTargetY: 0.4
-  _deathFallDuration: 1.2
+  _deathGroundFollowDuration: 5
+  _deathGroundFollowSpeed: 4
   _baseRegenPerSecond: 5
   _projectileDamageMergeWindow: 0.1
 --- !u!114 &1021830163797081726
@@ -1357,7 +1357,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4549156189220955103}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.17364816, z: 0, w: 0.9848078}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.01365, y: -1.27, z: -0.10344}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
@@ -1365,7 +1365,7 @@ Transform:
   - {fileID: 7634780402316121744}
   - {fileID: 6741533400963721708}
   m_Father: {fileID: 1021830163797081696}
-  m_LocalEulerAnglesHint: {x: 0, y: 20, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &3156917115850504609
 Animator:
   serializedVersion: 7
@@ -2194,14 +2194,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6979724901977870082}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.33662716, y: 0.5696265, z: 0.6015755, w: 0.44756535}
-  m_LocalPosition: {x: -0.121, y: -0.011, z: 0.008}
+  m_LocalRotation: {x: 0.2766263, y: 0.5378793, z: 0.65534574, w: 0.4524221}
+  m_LocalPosition: {x: -0.11, y: -0.019, z: -0.012}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4032694106368479100}
   m_Father: {fileID: 5387247385154692097}
-  m_LocalEulerAnglesHint: {x: -22.583, y: 82.256, z: 86.922}
+  m_LocalEulerAnglesHint: {x: -27.045, y: 72.466, z: 90.772}
 --- !u!33 &2806900663333062195
 MeshFilter:
   m_ObjectHideFlags: 0

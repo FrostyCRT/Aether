@@ -4,6 +4,8 @@ Audit du 2026-10-15, mis à jour le 2026-10-16 (Vortex de Mana ramené au sol, r
 
 > **Mise à jour du 2026-10-29** : les 6 fusions ont toutes été refaites (2026-10-27/28) avec leurs **propres visuels procéduraux en cristal** (`PrismaticCrownVFX`, `StormConstellationVFX`, `BladeWaltzVFX`, `MagneticBogVFX`, `MudWakeVFX`, `MeteorFallVFX`) : elles ne réutilisent plus les sphères/cylindres de leurs armes sources (§4.1 et §5 mis à jour). Les gros éléments (orbe de Sillage Boueux en premier) seront remplacés par des modèles Tripo3D de l'utilisateur : brancher le modèle à la place du maillage construit en code (`MudWakeVFX` → `OrbMesh`), ne pas repolir le procédural. Le level-up a maintenant son effet (`LevelUpAscensionVFX`, §6).
 
+> **Mise à jour du 2026-11-06** : contrôle de tous les prefabs, des 3 scènes et des scripts (hors packs FlexUnit et TextMesh Pro), analyse des fichiers sans lancer de partie : aucune forme Unity visible en jeu n'est absente de ce document. Corrections : le coffre de boss est un cube (§8), les prefabs cylindres du boss 3 ne sont jamais instanciés (§3), la flaque de boue existe en 2 copies (§5), nettoyages déjà faits retirés (§2.4, §6, §12). `PFB_XPGem` (sphère inutilisée) supprimé.
+
 Le principe : **tout ce que le joueur voit en partie et qui est encore une primitive Unity (cube, sphère, cylindre, capsule) avec un simple matériau de couleur** doit être remplacé par un vrai modèle, un vrai effet visuel ou une vraie texture.
 
 Légende des priorités :
@@ -24,11 +26,11 @@ Rappel de la DA (direction artistique) : les modèles actuels viennent de Tripo3
 | Projectiles du joueur en sphères | 5 (tir de base, couteaux, boule de feu, orbitaux, orbe rebondissant) | 🔴 P1 |
 | Projectiles ennemis / boss en sphères | 1 prefab partagé par 6 sources + cristaux du boss 3 | 🔴 P1 |
 | Zones au sol en cylindres | Boue (+ cratère de Pluie de Météores) | 🔴 P1 |
-| Effets en cylindres/capsules | Nova, Ultime, Bouclier de Mana, prefabs du boss 3 | 🟠 P2 |
+| Effets en cylindres/capsules | Nova, Ultime, Bouclier de Mana | 🟠 P2 |
 | Environnement de l'arène | Sol plat unique, aucun décor dans l'aire de jeu | 🔴 P1 |
 | Effets procéduraux « génériques » à remplacer par de vrais VFX | ~10 | 🟡 P3 |
 | Diorama du carrousel de difficulté (page Accueil, nouveau 2026-10-20) | 4 modèles (terrain + arbre + rocher + loup, style "cartoon" distinct du reste du jeu) | 🟠 P2 (voir §13) |
-| Coffre de boss (ajouté 2026-10-20) | Système déjà fonctionnel, 1 modèle manquant (réutilise le mesh des gemmes d'XP aujourd'hui) | 🟠 P2 (voir §8.1) |
+| Coffre de boss (ajouté 2026-10-20) | Système déjà fonctionnel, 1 modèle manquant (cube Unity étiré et teinté or aujourd'hui) | 🟠 P2 (voir §8.1) |
 | **Sons** (hors 3D mais bloquant pour un jeu pro) | **le jeu n'a aucun bruitage** | 🔴 P1 (voir §9) |
 
 **Total de modèles 3D distincts clairement spécifiés dans ce document (hors options/variantes non chiffrées — voir §0.1) : 53.**
@@ -114,7 +116,7 @@ Conseil : les skins **Prestige** doivent se voir **de loin, vus de dessus** (sil
 | Bulbe | — | **Effet d'apparition** : les ennemis normaux apparaissent hors champ (rayon 22 réglé dans la scène, corrigé le 2026-10-16 : ce n'était pas 15). Seul le Bulbe apparaît volontairement dans l'écran (10 u) : il lui faut une sortie de terre (voir §2.1). |
 
 ### 2.4 Nettoyage des prefabs ennemis
-Les racines des prefabs ennemis, boss et joueurs gardent un `MeshRenderer` CUBE/CAPSULE **désactivé** (reste du prototypage). Invisible, mais à supprimer (propreté, et ça évite qu'un jour quelqu'un le réactive par erreur).
+✅ Fait : les `MeshRenderer` cube/capsule désactivés ne sont plus à la racine des prefabs ennemis, boss et joueurs (vérifié le 2026-11-06).
 
 ---
 
@@ -125,7 +127,7 @@ Les racines des prefabs ennemis, boss et joueurs gardent un `MeshRenderer` CUBE/
 | **Boss 1 : Dragon de Mana** | Drake, 4 sous-maillages | Projectiles radiaux = sphères orange (voir §4). Une « jauge » visuelle de charge avant la ruée serait un plus. |
 | **Boss 2 : Cerf Ancestral** | `Deer.glb`, textures **4K** | Spirale de projectiles = sphères orange. Textures 4K inutiles vu de haut, passer en 2K (gain mémoire). Animations de saut/atterrissage à vérifier. |
 | **Boss 3 : Source Corrompue** | `White Snake.glb`, 4K, 28,8k triangles | Le serpent est **blanc/argenté**, peu « corrompu » pour le boss final. Retexture (veines violettes émissives, cristaux incrustés) ou nouveau modèle. **Cristaux orbitaux** = sphères bleues (`OrbitalCrystal`, `Mat_CristalCorrompu`) → vrais cristaux taillés. **Pulse** = sphère orange. |
-| Prefabs du boss 3 | `RiftPortal` (cylindre), `PFB_ImplosionWarning` (cylindre), `CorruptionWaveRing` (cylindre) | En partie remplacés par des télégraphes procéduraux. Ce qui reste visible doit devenir un vrai VFX : faille/portail, anneau d'onde de corruption, zone d'implosion. |
+| Prefabs du boss 3 | `RiftPortal` (cylindre), `PFB_ImplosionWarning` (cylindre), `CorruptionWaveRing` (cylindre) | **Jamais instanciés par le code** (vérifié le 2026-11-06) : le portail et l'implosion passent par `SummonPortalFX` et `GroundTelegraphFX`. Rien à modéliser, voir §12. |
 | Tous | — | **Une musique par boss** : les 3 boss utilisent le même morceau (guid 737e7c…). Ce n'est pas de la 3D, mais c'est un manque pro (voir §9). |
 
 ---
@@ -159,7 +161,7 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 
 | Zone | Prefab | Aujourd'hui | À produire |
 |---|---|---|---|
-| **Flaques de boue** | `Resources/MudPuddleZone` | Cylindres plats **marron** (`Maron.mat`) | **Décal** ou maillage plat avec texture de boue animée (bulles, reflets), bord irrégulier. |
+| **Flaques de boue** | `Resources/MudPuddleZone` (chargé par `UpgradeData`) et `Game/Prefabs/Weapons/MudPuddleZone` (pool de `Game.unity`) : à remplacer dans les 2 copies | Cylindres plats **marron** (`Maron.mat`) | **Décal** ou maillage plat avec texture de boue animée (bulles, reflets), bord irrégulier. |
 | Fusion **Pluie de Météores** (ex-« Terre Calcinée », refondue le 2026-10-23, renommée le 2026-10-24) | même prefab, pour le cratère résiduel seulement | Cylindres marron boueux (même teinte que la Boue normale, avant c'était orange) | Sol brûlé : braises, fissures incandescentes, petites flammes. **Le visuel principal de cette fusion n'est plus ce cratère** mais le météore qui tombe du ciel (`MeteorFallVFX`) - entièrement procédural (sprites générés en code, aucun modèle/texture requis), donc rien à produire pour cette partie. |
 | Fusion **Tourbière Magnétique** (ex-Marécage Maudit, refaite le 2026-10-27) | même prefab, visuel masqué | ✅ Effet procédural dédié (`MagneticBogVFX` : voile d'orage, aspiration, décharge) | Rien d'obligatoire. |
 | Fusion **Sillage Boueux** (repassée le 2026-10-28) | même prefab, disque masqué (`MudPuddleZone.HideVisual`) | ✅ Taches de boue aux bords doux semées d'éclats azur (`MudWakeVFX`) | Seul l'orbe reste à modéliser (§4.1). |
@@ -178,7 +180,6 @@ Note technique : chaque nouveau projectile doit garder le collider et le script 
 | **Clone fantôme** (Lyra) | Copie du maillage (OK) ; repli = capsule si aucun modèle | Ajouter un shader « spectral » (transparence + bord lumineux) s'il n'existe pas encore. Le repli en capsule ne devrait jamais être vu. |
 | **Dash** | ? | Traînée/afterimage visible (aujourd'hui dépend du personnage). |
 | **Montée de niveau** | ✅ Fait le 2026-10-29 (`LevelUpAscensionVFX`) : fragments de cristal dorés qui montent en spirale autour du héros, étoile de cristal au-dessus de lui, éclats et poussières. Remplace l'anneau doré au sol (il se lisait comme une zone / un télégraphe ennemi). | Rien d'obligatoire. |
-| `PulseVisual` (cylindre) | **Inutilisé** | À supprimer. |
 
 ---
 
@@ -213,7 +214,7 @@ C'est **le plus gros manque** pour l'impression de « jeu fini ».
 Compromis à avoir en tête : plus de travail qu'un simple remplacement de texture (il faut un passage shader + de nouveaux petits meshs + un script de dispersion/instancing GPU pour rester performant avec beaucoup d'ennemis à l'écran), mais c'est la seule version qui corrige vraiment le "ça fait vide" — un sol plus joli mais toujours sans rien dessus resterait vide.
 
 ### 7.2 Nouveaux modèles 3D proposés pour Tripo3D (2026-10-19)
-Remplace les arbres/rochers actuels (`Tree_1`, `Tree_2`, `Rock 1`, `Rock 2` dans `TripoModels/`/`Game/3D Models/`, supprimés par l'utilisateur car hors DA) et ajoute des props d'arène qui manquaient totalement (§7 point 2). Même contrainte de style que le reste de la liste (§ Rappel de la DA en tête de document) : silhouettes lisibles vues de dessus, cohérent avec le thème "Fantasy Médiéval avec magie et mana" et les teintes par palier de difficulté déjà en place (ambre Modéré / ambre-orage Violent / violet arcanique Apocalyptique — voir `DifficultyTiers.LightColor`).
+Remplace les arbres/rochers actuels (`Tree_1`, `Tree_2`, `Rock 1`, `Rock 2`, jugés hors DA par l'utilisateur ; leurs prefabs `Game/Prefabs/Décors/` restent utilisés par `Game.unity` en attendant) et ajoute des props d'arène qui manquaient totalement (§7 point 2). Même contrainte de style que le reste de la liste (§ Rappel de la DA en tête de document) : silhouettes lisibles vues de dessus, cohérent avec le thème "Fantasy Médiéval avec magie et mana" et les teintes par palier de difficulté déjà en place (ambre Modéré / ambre-orage Violent / violet arcanique Apocalyptique — voir `DifficultyTiers.LightColor`).
 
 **Arbres de bordure** (remplacent `Tree_1`/`Tree_2`) 🔴 :
 | Nom | Description (base de prompt Tripo3D) |
@@ -255,14 +256,14 @@ Remplace les arbres/rochers actuels (`Tree_1`, `Tree_2`, `Rock 1`, `Rock 2` dans
 |---|---|---|
 | Gemmes d'XP | Quads texturés + effet de collecte | ✅ OK. Éventuellement une version 3D (cristal facetté) pour les grosses gemmes. |
 | **Or** | Ajouté directement au compteur, rien à ramasser | Pièces/sacs qui tombent des ennemis (plus gratifiant). C'est un choix de design. |
-| **Coffre de boss** 🟠 | Existe déjà en jeu (`BossChest.cs`, apparaît à CHAQUE mort de vrai boss en Classique/Sans fin/Ruée de boss, accorde 2 tirages de carte complets) mais réutilise le mesh générique des gemmes d'XP, juste teinté or/ambre (`MAT_Gem` + `MaterialPropertyBlock`) - pas un vrai modèle de coffre | **Vrai modèle de coffre au trésor** (voir description ci-dessous) - contrairement aux autres lignes de ce tableau, ce n'est plus un "choix de design" : le système existe et tourne déjà, il ne manque que le modèle. |
+| **Coffre de boss** 🟠 | Existe déjà en jeu (`BossChest.cs`, apparaît à CHAQUE mort de vrai boss en Classique/Sans fin/Ruée de boss, accorde 2 tirages de carte complets) mais son visuel est un cube Unity étiré, juste teinté or/ambre (`MAT_Gem` + `MaterialPropertyBlock`) - pas un vrai modèle de coffre | **Vrai modèle de coffre au trésor** (voir description ci-dessous) - contrairement aux autres lignes de ce tableau, ce n'est plus un "choix de design" : le système existe et tourne déjà, il ne manque que le modèle. |
 | Soins | N'existent pas (soin seulement à la mort d'un boss) | Potion/fruit à ramasser, rare. Choix de design. |
 | Aimant / bombe | N'existent pas | Classiques du genre survivor. Choix de design. |
 | **Menu principal** | 100 % 2D (illustrations) | ✅ Cohérent et beau. Option : personnage 3D animé (RT_Aether/Kael/Lyra déjà créées et inutilisées) pour montrer les skins. |
 
 ### 8.1 Coffre de boss — à modéliser 🟠 P2 (ajouté 2026-10-20)
 
-Contrairement au reste de ce tableau (§8, 🟡 P3, des idées de design pas encore implémentées), **le coffre de boss est un système déjà fonctionnel et vu à chaque run** : il apparaît à la mort de chaque vrai boss (Classique, Sans fin, Ruée de boss), avec sa propre animation (apparition en "pop", lévitation + rotation lente en attendant le ramassage, hitstop + onde de choc + secousse de caméra à l'ouverture). Seul le modèle manque - `BossChest.cs` affiche aujourd'hui le mesh générique des gemmes d'XP (un simple cristal), juste reteint en or/ambre via `MaterialPropertyBlock` : on reconnaît un gros diamant doré, pas un coffre.
+Contrairement au reste de ce tableau (§8, 🟡 P3, des idées de design pas encore implémentées), **le coffre de boss est un système déjà fonctionnel et vu à chaque run** : il apparaît à la mort de chaque vrai boss (Classique, Sans fin, Ruée de boss), avec sa propre animation (apparition en "pop", lévitation + rotation lente en attendant le ramassage, hitstop + onde de choc + secousse de caméra à l'ouverture). Seul le modèle manque - le prefab `BossChest` affiche aujourd'hui un cube Unity étiré (enfant `Visual`, 1,1 × 0,85 × 0,75, `MAT_Gem`), reteint en or/ambre via `MaterialPropertyBlock` : on voit un bloc doré, pas un coffre.
 
 | Nom | Description (base de prompt Tripo3D) |
 |---|---|
@@ -317,18 +318,16 @@ Ils fonctionnent et sont lisibles, mais ce sont des sprites ou des `LineRenderer
 3. 🔴 **Sol + props de l'arène** (§7, points 1 à 3).
 4. 🔴 **Bulbe cracheur** (§2.1) et **zones de boue** (§5).
 5. 🟠 **Ultime + Nova + Bouclier** (§6).
-6. 🟠 **Boss 3** (retexture + cristaux) et nettoyage de ses prefabs cylindres (§3).
+6. 🟠 **Boss 3** (retexture + cristaux, §3).
 7. 🟠 **Skins** (§1), d'abord 1 Classique par personnage pour valider le pipeline (modèle → rig → prefab → portrait → catalogue), puis le reste.
 8. 🟡 Effets génériques, Sanglier, biomes, objets à ramasser.
 9. 🟠 **Diorama du carrousel de difficulté** (§13) : indépendant du reste, peut se faire à tout moment — bloque seulement l'habillage final de la page Accueil du menu (le système/carrousel fonctionne déjà avec un dégradé de ciel temporaire).
 
 ## 12. Fichiers à supprimer une fois les remplacements faits
-- `Assets/Resources/PulseVisual.prefab` (inutilisé)
-- `Assets/Game/Prefabs/Weapons/BouncingOrbProjectile.prefab` (doublon inutilisé de celui de `Resources/`)
-- `Assets/Resources/Prefabs/` (29 prefabs en double jamais chargés, **inclus dans le build** car dans `Resources/`)
+- `RiftPortal`, `PFB_ImplosionWarning`, `CorruptionWaveRing` et leurs champs dans `BossCorruptedSource` (jamais instanciés)
+- `Assets/Resources/Prefabs/` (dossier maintenant vide)
 - `TripoModels/` (doublons de `3D Models/`)
 - `MAT_EnemyBulb_Placeholder` et l'enfant `VisualCube_PLACEHOLDER`
-- Les `MeshRenderer` cube/capsule désactivés à la racine des prefabs
 - `RT_Aether/Kael/Lyra` si on ne fait pas d'aperçu 3D
 - Le pack `10 Fantasy Medieval Ambient Tracks` s'il ne sert pas (il n'est pas dans le build mais alourdit le projet)
 

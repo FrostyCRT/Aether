@@ -3,8 +3,7 @@ using UnityEngine;
 // MODIFIÉ (2026-10-28, performances avec beaucoup de gemmes au sol) - les gemmes d'XP ne sont plus des GameObjects :
 // elles sont simulées et dessinées toutes ensemble par XPGemField (voir son en-tête : mesures, comportement repris à
 // l'identique, règle "jamais fusionnées ni détruites"). Cette classe ne garde que la description des 3 paliers, utilisée
-// par XPGemSpawner, XPGemField et DebugCheats. Elle reste un MonoBehaviour car le prefab PFB_XPGem (plus utilisé) la
-// référence encore.
+// par XPGemSpawner, XPGemField et DebugCheats.
 //
 // Historique de l'apparence (voir l'ancien XPGem, 2026-10-04 -> 2026-10-25) : texture cuite par palier (silhouette,
 // dégradé radial décalé bas-gauche, liseré sombre - Tex_XPGem_*.png) sur un quad face caméra ancré par le bas (jamais

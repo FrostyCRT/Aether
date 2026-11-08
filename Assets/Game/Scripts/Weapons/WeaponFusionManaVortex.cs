@@ -81,7 +81,7 @@ public class WeaponFusionManaVortex : MonoBehaviour
     private readonly Dictionary<int, float> _nextRimHit = new Dictionary<int, float>();
     private readonly Dictionary<int, float> _nextLaserHit = new Dictionary<int, float>();
 
-    private Vector3 Center => new Vector3(transform.position.x, 0f, transform.position.z);
+    private Vector3 Center => new Vector3(transform.position.x, 0f, transform.position.z + WeaponOrbital.VisualCenterZ);
     private float Density => Mathf.Clamp(_referenceRadius / _crownRadius, _minDensity, _maxDensity);
 
     // Appelé une fois par UpgradeData.ApplyFusionResult avec ce que les 2 armes d'origine avaient accumulé (Réputation et

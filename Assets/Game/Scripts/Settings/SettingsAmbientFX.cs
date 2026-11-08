@@ -8,8 +8,12 @@ using UnityEngine.UI;
 // décor), couleur/alpha par CanvasRenderer.SetColor (pas de reconstruction de maillage). Discret : la page est un
 // écran de réglages, pas une scène. Réglable par Paramètres > Graphismes > Effets d'ambiance des menus.
 //
-// Positions données en pixels de l'illustration 1920 x 980 (fond étiré sur toute la page) : elles sont posées sur
-// les sources de lumière visibles de SettingsBackground, hors de la zone couverte par la carte centrale.
+// REFAIT (2026-11-07, retour utilisateur : "met pas de simple ronds colorés, il faut que ce soit précis sur les éléments
+// du fond d'écran") - chaque lueur est maintenant une texture découpée dans l'illustration elle-même (Resources/
+// SettingsGlow, générées par Tools/build_menu_glows.py settings) : la flamme, le verre de la lanterne, les arêtes des
+// cristaux, le contour des sphères... avec un halo flou qui suit leur forme. Posées pixel pour pixel sur le fond
+// (illustration 1920 x 1280 étirée sur la page), elles ne bougent pas : seule leur intensité vit (vacillement des
+// flammes, respiration lente des cristaux et du verre).
 [RequireComponent(typeof(RectTransform))]
 public class SettingsAmbientFX : MonoBehaviour
 {
@@ -19,8 +23,7 @@ public class SettingsAmbientFX : MonoBehaviour
 
     private struct Glow
     {
-        public RectTransform rt; public CanvasRenderer cr; public Color color; public float alpha, size, freq, phase, sway;
-        public Vector2 basePos; public bool flicker;
+        public CanvasRenderer cr; public float alpha, freq, phase; public bool flicker;
     }
 
     private struct Dust
@@ -33,16 +36,23 @@ public class SettingsAmbientFX : MonoBehaviour
     private RectTransform _rect;
     private float _enable;
 
-    // (x, y) : écran 1920 x 980 depuis le coin haut-gauche de la page ; taille en pixels
-    private static readonly (float x, float y, float size, float r, float g, float b, float a, bool flicker)[] Sources =
+    // Pixels de l'illustration (1920 x 1280) : nom de la texture, coin haut-gauche, taille ; intensité ; flamme ?
+    private const float ArtW = 1920f, ArtH = 1280f;
+    private static readonly (string name, float x, float y, float w, float h, float a, bool flicker)[] Sources =
     {
-        (255f, 180f, 200f, 1.00f, 0.70f, 0.32f, 0.55f, true),    // bougies, mur gauche
-        (325f, 560f, 260f, 1.00f, 0.72f, 0.34f, 0.60f, true),    // lanterne gauche
-        (95f, 470f, 300f, 0.42f, 0.70f, 1.00f, 0.55f, false),    // cristaux bleus, à gauche
-        (1478f, 610f, 240f, 1.00f, 0.74f, 0.36f, 0.50f, true),   // lanterne droite
-        (1600f, 320f, 190f, 0.55f, 0.72f, 1.00f, 0.50f, false),  // sphères de verre
-        (1665f, 425f, 210f, 0.62f, 0.60f, 1.00f, 0.50f, false),
-        (1745f, 440f, 190f, 0.50f, 0.72f, 1.00f, 0.45f, false),
+        ("candle_l",  198f, 342f,  82f,  98f, 0.85f, true),    // chandelier mural, 3 flammes
+        ("candle_m",  232f, 310f,  82f, 100f, 0.85f, true),
+        ("candle_r",  264f, 346f,  82f,  98f, 0.85f, true),
+        ("lantern_l", 230f, 610f, 186f, 246f, 0.80f, true),    // lanterne du bureau
+        ("lantern_r", 1358f, 656f, 214f, 216f, 0.80f, true),   // lanterne de la table ronde
+        ("crystals",  0f,   446f, 242f, 276f, 0.55f, false),   // cristaux bleus, à gauche
+        ("amethyst",  1376f, 746f, 188f, 118f, 0.55f, false),  // améthystes au pied de la lanterne
+        ("sphere_1",  1524f, 332f, 136f, 136f, 0.45f, false),  // sphères de verre suspendues
+        ("sphere_2",  1600f, 332f, 136f, 136f, 0.45f, false),
+        ("sphere_3",  1658f, 372f, 138f, 138f, 0.40f, false),
+        ("sphere_4",  1585f, 477f, 146f, 146f, 0.45f, false),
+        ("sphere_5",  1703f, 502f, 146f, 146f, 0.45f, false),
+        ("globe",     798f,  462f, 128f, 130f, 0.40f, false),  // sphère armillaire près du pilier
     };
 
     private void Awake()
@@ -76,26 +86,13 @@ public class SettingsAmbientFX : MonoBehaviour
         return rt;
     }
 
-    private Vector2 P(float sx, float sy)
-    {
-        Rect r = _rect.rect;
-        return new Vector2((sx / 1920f - 0.5f) * r.width, (0.5f - sy / 980f) * r.height);
-    }
-
     private void Build()
     {
         foreach (var s in Sources)
         {
-            Glow l = new Glow
-            {
-                color = new Color(s.r, s.g, s.b), alpha = s.a, size = s.size, flicker = s.flicker,
-                freq = Random.Range(0.8f, 1.6f), phase = Random.Range(0f, 6.28f), sway = Random.Range(3f, 8f),
-                basePos = P(s.x, s.y)
-            };
-            l.rt = NewImage("Light", out l.cr);
-            l.rt.sizeDelta = new Vector2(s.size, s.size);
-            l.rt.anchoredPosition = l.basePos;
-            _lights.Add(l);
+            CanvasRenderer cr = MenuShapedGlow.Create(_rect, "SettingsGlow/" + s.name, s.x, s.y, s.w, s.h, ArtW, ArtH, Additive());
+            if (cr == null) continue;
+            _lights.Add(new Glow { cr = cr, alpha = s.a, flicker = s.flicker, freq = Random.Range(0.8f, 1.6f), phase = Random.Range(0f, 6.28f) });
         }
 
         for (int i = 0; i < _dustCount; i++)
@@ -134,11 +131,9 @@ public class SettingsAmbientFX : MonoBehaviour
         {
             Glow l = _lights[i];
             float breathe = l.flicker
-                ? 0.72f + 0.20f * Mathf.Sin(t * l.freq * 3.1f + l.phase) + 0.08f * Mathf.Sin(t * l.freq * 7.3f + l.phase * 2f)
-                : 0.82f + 0.18f * Mathf.Sin(t * l.freq * 0.9f + l.phase);
-            l.rt.anchoredPosition = l.basePos + new Vector2(Mathf.Sin(t * 0.13f + l.phase) * l.sway, Mathf.Cos(t * 0.11f + l.phase) * l.sway);
-            l.rt.localScale = Vector3.one * (0.95f + 0.08f * breathe);
-            l.cr.SetColor(new Color(l.color.r, l.color.g, l.color.b, l.alpha * breathe * k));
+                ? 0.74f + 0.16f * Mathf.Sin(t * l.freq * 3.1f + l.phase) + 0.10f * Mathf.Sin(t * l.freq * 7.9f + l.phase * 2f)
+                : 0.70f + 0.30f * Mathf.Sin(t * l.freq * 0.7f + l.phase);
+            l.cr.SetColor(new Color(1f, 1f, 1f, l.alpha * breathe * k));
         }
 
         for (int i = 0; i < _dust.Count; i++)

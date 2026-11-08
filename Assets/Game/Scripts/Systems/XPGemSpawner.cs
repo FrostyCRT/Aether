@@ -5,8 +5,11 @@ public class XPGemSpawner : MonoBehaviour
 {
     public static XPGemSpawner Instance { get; private set; }
 
-    // Unification du rayon d'attraction (0f par défaut, s'agrandit au fil du jeu)
-    public float AttractionRadius { get; private set; } = 0f;
+    // Unification du rayon d'attraction (s'agrandit au fil du jeu)
+    // MODIFIÉ (2026-11-07, retour utilisateur : "il faut vraiment que le personnage soit pile dessus") - petite absorption
+    // des niveaux 1 et 2, était 0. Le rayon se mesure en 3D depuis le torse du héros (Y=1,5) vers la gemme (Y=0,3) : 1,9
+    // donne environ 1,5 au sol, contre 0,7 pour le contact seul.
+    public float AttractionRadius { get; private set; } = 1.9f;
 
     // OPTIMISATION : Liste réutilisable mise en cache pour éviter le "new List" à chaque mort
     private readonly List<XPGem.GemType> _gemsCalculationCache = new List<XPGem.GemType>();
@@ -45,8 +48,12 @@ public class XPGemSpawner : MonoBehaviour
     // Appelé par XPSystem quand le joueur level up
     public void OnLevelUp(int level)
     {
-        if (level >= 3)
-            AttractionRadius = 4f; // S'active ou s'agrandit
+        // MODIFIÉ (2026-11-07, retour utilisateur) - l'aimant complet arrivait dès le niveau 3, il n'arrive plus qu'au niveau
+        // 10. Entre les deux, palier intermédiaire : environ 2,6 au sol, contre 1,5 avant et 3,8 après.
+        if (level >= 10)
+            AttractionRadius = 4f;
+        else if (level >= 3)
+            AttractionRadius = 2.9f;
     }
 
     // MODIFIÉ (2026-10-22, retour utilisateur : "c'est ce que j'avais dit, je voulais retrouver le nombre d'xp des

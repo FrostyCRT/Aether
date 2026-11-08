@@ -23,8 +23,8 @@ MonoBehaviour:
   _fusionResultId: 
   _fusionBranch: 3
   _levelValues:
-  - 0.35
   - 0.3
+  - 0
   - 0
   _maxLevel: 3
   _requiresUnlockPick: 1

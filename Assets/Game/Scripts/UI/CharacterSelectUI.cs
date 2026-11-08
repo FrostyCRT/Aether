@@ -227,7 +227,7 @@ public class CharacterSelectUI : MonoBehaviour
                 tags                 = new[] { "DISTANCE", "ZONE", "BRÛLURE" },
                 weaponName           = "Boule de feu",
                 weaponDescription    = "Boule de feu qui explose à l'impact et touche tous les ennemis à proximité",
-                weaponUpgrades       = "Rayon / Dégâts / Brûlure",
+                weaponUpgrades       = "Rayon / Cadence / Brûlure",
                 branch               = SkillTreeData.CharacterBranch.Guerrier,
                 branchName           = "GUERRIER",
                 branchFocus          = "Montée en puissance offensive"
@@ -248,7 +248,7 @@ public class CharacterSelectUI : MonoBehaviour
                 tags                 = new[] { "MÊLÉE", "AURA", "RALENTISSEMENT" },
                 weaponName           = "Aura de mana",
                 weaponDescription    = "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée",
-                weaponUpgrades       = "Dégâts / Rayon / Ralentissement",
+                weaponUpgrades       = "Ralentissement / Rayon / Onde de choc",
                 branch               = SkillTreeData.CharacterBranch.Gardien,
                 branchName           = "GARDIEN",
                 branchFocus          = "Survie et résilience"
@@ -269,7 +269,7 @@ public class CharacterSelectUI : MonoBehaviour
                 tags                 = new[] { "DISTANCE", "PERFORANT", "SALVE" },
                 weaponName           = "Salve de couteaux",
                 weaponDescription    = "Lance une salve de couteaux qui transpercent les ennemis",
-                weaponUpgrades       = "Couteau en plus / Dégâts / Perforation",
+                weaponUpgrades       = "Couteau en plus / Cadence / Perforation",
                 branch               = SkillTreeData.CharacterBranch.Fantome,
                 branchName           = "FANTÔME",
                 branchFocus          = "Mobilité et dash"
@@ -469,6 +469,9 @@ public class CharacterSelectUI : MonoBehaviour
         if (image != null) image.sprite = sprite;
 
         FitCover(sprite);
+
+        // AJOUTÉ (2026-11-07) - lueur du cristal du décor + poussières mystiques (voir CharacterBackdropFX).
+        CharacterBackdropFX.Ensure(_panelBackgroundImageRect).SetCharacter(_currentIndex);
     }
 
     private void FitCover(Sprite sprite)

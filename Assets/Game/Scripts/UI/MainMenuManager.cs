@@ -32,6 +32,10 @@ public class MainMenuManager : MonoBehaviour
     // refaire : avant, ShowPanel() désactivait puis réactivait ce même panneau, ce qui relançait toutes ses animations
     // d'ouverture (OnEnable) alors que rien n'avait changé.
     private GameObject _currentPanel;
+    public GameObject CurrentPanel => _currentPanel;
+
+    // AJOUTÉ (2026-11-08) - bouton œil « contemplation » (voir MenuViewMode).
+    private MenuViewMode _viewMode;
 
     // AJOUTE (2026-09-26) - barre de navigation dynamique (survol / appui / clic animés + liseré doré qui glisse) :
     // MenuTabBarFX est ajouté tout seul sur le parent des onglets, aucun objet à poser dans la scène.
@@ -53,6 +57,12 @@ public class MainMenuManager : MonoBehaviour
     private void Start()
     {
         ShowPanel(_menuPanel);
+        if (_menuPanel != null && _menuPanel.transform.parent is RectTransform canvasRect)
+        {
+            _viewMode = gameObject.AddComponent<MenuViewMode>();
+            Transform bar = _tabBarFX != null ? _tabBarFX.transform : null;
+            _viewMode.Init(this, canvasRect, bar);
+        }
     }
 
     // ---- manette (2026-10-28) ------------------------------------------------------------------------------------
@@ -76,6 +86,7 @@ public class MainMenuManager : MonoBehaviour
     }
     public void ShowPanel(GameObject panel)
     {
+        if (_viewMode != null && _viewMode.Active) _viewMode.Exit();
         if (panel == null) return;
 
         // Déjà sur cette page (et elle est bien affichée) : on ne touche à rien, elle garde son état et ses animations.

@@ -114,6 +114,12 @@ public class CharacterInfoPanel : MonoBehaviour
     // l'onglet Compétences, où un nœud verrouillé reste reconnaissable à sa couleur) ;
     // l'icône est assombrie sans disparaître (un gris trop sombre sur le disque = illisible).
     private static readonly Color InactiveIcon = new Color(0.58f, 0.58f, 0.64f, 0.95f);
+
+    // AJOUTÉ (2026-11-08, retour utilisateur : "diminue légèrement la taille de toutes les icônes de compétences [...]
+    // pas le cercle autour, juste l'icône" ; "l'icône de Fragmentation [...] orientée en diagonale en haut à droite,
+    // rotation Z = -20") - appliqué à l'icône seule (les cercles et les points de palier ne bougent pas).
+    private const float SkillIconScale = 0.86f;
+    private static float IconRotationZ(string nodeId) => nodeId == "fragmentation" ? -20f : 0f;
     private static readonly Color EmptyPip = new Color32(0x4A, 0x44, 0x58, 0xFF);
     private static readonly Color Muted = new Color32(0x9C, 0x93, 0xAE, 0xFF);
 
@@ -235,6 +241,7 @@ public class CharacterInfoPanel : MonoBehaviour
         if (_weaponIcon != null && _weaponIcons != null && info.characterIndex >= 0 && info.characterIndex < _weaponIcons.Length)
         {
             _weaponIcon.sprite = _weaponIcons[info.characterIndex];
+            _weaponIcon.rectTransform.localScale = Vector3.one * SkillIconScale;
             _weaponIcon.enabled = _weaponIcon.sprite != null;
         }
 
@@ -281,6 +288,8 @@ public class CharacterInfoPanel : MonoBehaviour
                 int iconIndex = branchIndex * 5 + i;
                 if (_nodeIcons != null && iconIndex < _nodeIcons.Length) slot.icon.sprite = _nodeIcons[iconIndex];
                 slot.icon.color = active ? Color.white : InactiveIcon;
+                slot.icon.rectTransform.localScale = Vector3.one * SkillIconScale;
+                slot.icon.rectTransform.localEulerAngles = new Vector3(0f, 0f, IconRotationZ(ids[i]));
             }
 
             for (int p = 0; slot.pips != null && p < slot.pips.Length; p++)

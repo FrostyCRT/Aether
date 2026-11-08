@@ -261,13 +261,13 @@
 
 ## Défis
 248| Cazador
-249| Mata a 150 enemigos
+249| Mata a 500 enemigos
 250| Escalada de poder
 251| Alcanza el nivel 10
 252| Primera sangre
 253| Derrota a 1 jefe
 254| Siempre en movimiento
-255| Usa el dash 20 veces
+255| Usa el dash 50 veces
 256| Sangre fría
 257| Mantén más del 30% de vida hasta el jefe 2
 258| Doble cacería
@@ -275,15 +275,15 @@
 260| Ascenso rápido
 261| Nivel 18 antes del minuto 10
 262| Sin cristal
-263| Sin definitiva hasta el jefe 2
+263| Sin definitiva hasta el jefe 1
 264| Impecable
 265| Ningún daño hasta el jefe 1
 266| Relámpago
-267| Derrota a un jefe en menos de 30 s
+267| Derrota a un jefe en menos de 25 s
 268| Fortuna
-269| Recoge al menos 1200 de oro
+269| Recoge al menos 12.000 de oro
 270| Poder absoluto
-271| Nivel 30 en la misma partida
+271| Nivel 25 en la misma partida
 272| +{0} de oro
 273| Nv. {0}/{1}
 274| En curso
@@ -437,17 +437,17 @@
 414| RÁFAGA
 415| Bola de fuego
 416| Bola de fuego que explota al impactar y alcanza a todos los enemigos cercanos
-417| Radio / Daño / Quemadura
+417| Radio / Cadencia / Quemadura
 418| GUERRERO
 419| Poder ofensivo creciente
 420| Aura de maná
 421| Campo permanente a tu alrededor que hiere y ralentiza a los enemigos cercanos
-422| Daño / Radio / Ralentización
+422| Ralentización / Radio / Onda de choque
 423| GUARDIÁN
 424| Supervivencia y resistencia
 425| Ráfaga de cuchillos
 426| Lanza una ráfaga de cuchillos que atraviesan a los enemigos
-427| Cuchillo extra / Daño / Perforación
+427| Cuchillo extra / Cadencia / Perforación
 428| FANTASMA
 429| Movilidad y dash
 430| Llega al jefe 2 en una partida para desbloquear a Kael
@@ -615,10 +615,10 @@
 578| FUSIÓN
 579| fragmento
 580| No bajes nunca del 30% de vida, desde el inicio de la partida hasta la muerte del 2.º jefe.
-581| No uses la definitiva (tecla F) antes de derrotar al 2.º jefe
+581| No uses la definitiva (tecla F) antes de que aparezca el 1.er jefe
 582| No bajes nunca del 50% de vida, desde el inicio de la partida hasta la muerte del 1.er jefe.
-583| Derrota a cualquier jefe en menos de 30 segundos desde su aparición
-584| Recoge al menos 1200 de oro en total durante la partida
+583| Derrota a cualquier jefe en menos de 25 segundos desde su aparición
+584| Recoge al menos 12.000 de oro en total durante la partida
 585| MODERADO
 586| VIOLENTO
 587| APOCALÍPTICO
@@ -685,3 +685,15 @@
 646| Solo hay una pantalla conectada.
 647| Gana una partida en {0} para desbloquear esta dificultad
 648| Gana una partida en modo Clásico en {0} para jugar al modo Infinito en esta dificultad
+
+## Panneau Dernière partie (2026-11-07)
+649| ÚLTIMA PARTIDA
+650| VICTORIA
+651| ABANDONO
+652| Enemigos
+653| Victoria
+654| Desafío
+655| Bonificación de primera victoria: +{0}
+656| Enemigos derrotados: {0}  ·  Nv. {1}  ·  Jefes: {2}
+657| +{0}% de cadencia
+658| Desbloquea Onda de choque: el aura repele a los enemigos cada {0} segundos

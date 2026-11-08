@@ -33,10 +33,10 @@ public static class ChallengeDatabase
 {
     private static readonly List<ChallengeDefinition> _all = new List<ChallengeDefinition>
     {
-        new ChallengeDefinition { id = "kill150", displayName = "Chasseur", description = "Tuer 150 ennemis", difficulty = ChallengeDifficulty.Easy },
+        new ChallengeDefinition { id = "kill150", displayName = "Chasseur", description = "Tuer 500 ennemis", difficulty = ChallengeDifficulty.Easy },
         new ChallengeDefinition { id = "level10", displayName = "Montée en Puissance", description = "Atteindre le niveau 10", difficulty = ChallengeDifficulty.Easy },
         new ChallengeDefinition { id = "boss1", displayName = "Premier Sang", description = "Vaincre 1 boss", difficulty = ChallengeDifficulty.Easy },
-        new ChallengeDefinition { id = "dash20", displayName = "Toujours en Mouvement", description = "Utiliser le Dash 20 fois", difficulty = ChallengeDifficulty.Easy },
+        new ChallengeDefinition { id = "dash20", displayName = "Toujours en Mouvement", description = "Utiliser le Dash 50 fois", difficulty = ChallengeDifficulty.Easy },
 
         // MODIFIE (2026-09-13) - descriptions raccourcies a 35 caracteres max
         // (espaces inclus), retour utilisateur : plusieurs debordaient de
@@ -48,19 +48,16 @@ public static class ChallengeDatabase
         new ChallengeDefinition { id = "boss2", displayName = "Double Chasse", description = "Vaincre 2 boss dans la même partie", difficulty = ChallengeDifficulty.Medium },
         new ChallengeDefinition { id = "level20in10min", displayName = "Ascension Rapide", description = "Niveau 18 avant la 10ème minute", difficulty = ChallengeDifficulty.Medium },
 
-        // CORRIGÉ (2026-10-21, retour utilisateur : "le défi sans ult jusqu'au boss 2 est presque impossible, ça
-        // veut dire qu'il faut jamais ult pendant 10min c'est énorme") - BossSpawnInterval=300s (voir WaveManager) :
-        // le boss 2 apparaît au plus tôt à la 10e minute, donc ce défi impose de tenir TOUT ce temps sans la
-        // capacité la plus forte du joueur (dégâts de zone + ralentissement + absorption d'XP), pendant que les
-        // ennemis montent déjà en puissance - nettement plus punitif que les autres défis "Medium" au même jalon
-        // (ex. "Double Chasse"/"boss2", qui ne retire aucune capacité) et au moins aussi dur que les défis déjà
-        // classés "Hard" ci-dessous. Reclassé Medium -> Hard, pas de changement du jalon lui-même (toujours boss 2).
-        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 2", longDescription = "Ne pas utiliser l'Ultime (touche F) avant d'avoir vaincu le 2ème boss", difficulty = ChallengeDifficulty.Hard },
+        // MODIFIÉ (2026-11-07, retour utilisateur : "10 min sans ultime ça casse le but du gameplay fluide") - classé
+        // Difficile jusqu'au boss 2 depuis le 2026-10-21, ce défi retirait la capacité la plus forte du joueur pendant
+        // 10 minutes. Il suffit maintenant d'ATTEINDRE le boss 1 sans Ultime (validé à son apparition, voir
+        // ChallengeManager.NotifyBossSpawned) et il repasse Moyen.
+        new ChallengeDefinition { id = "noUltimate", displayName = "Sans Cristal", description = "Sans Ultime jusqu'au boss 1", longDescription = "Ne pas utiliser l'Ultime (touche F) avant l'arrivée du 1er boss", difficulty = ChallengeDifficulty.Medium },
 
         new ChallengeDefinition { id = "hp50boss1", displayName = "Résilience", description = "Garder plus de 50% de vie jusqu'au boss 1", longDescription = "Ne jamais descendre sous 50% de vie, du début de la partie jusqu'à la mort du 1er boss.", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 30s", longDescription = "Vaincre n'importe quel boss en moins de 30 secondes après son apparition", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 1200 Or ramassé", longDescription = "Ramasser au moins 1200 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
-        new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 30 dans la même partie", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "bossUnder30s", displayName = "Éclair", description = "Vaincre un boss en moins de 25s", longDescription = "Vaincre n'importe quel boss en moins de 25 secondes après son apparition", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "gold3000", displayName = "Fortune", description = "Avec au moins 12 000 Or ramassé", longDescription = "Ramasser au moins 12 000 Or au total durant la partie", difficulty = ChallengeDifficulty.Hard },
+        new ChallengeDefinition { id = "level30", displayName = "Puissance Absolue", description = "Niveau 25 dans la même partie", difficulty = ChallengeDifficulty.Hard },
     };
 
     public static ChallengeDefinition Get(string id) => _all.Find(c => c.id == id);

@@ -264,30 +264,33 @@ public class TreeAmbientFX : MonoBehaviour
         return it;
     }
 
+    // REFAIT (2026-11-07, retour utilisateur : "fais le même ajustement sur les autres pages" que les lueurs des Paramètres)
+    // - plus de grandes taches rondes : chaque halo est découpé dans l'illustration (feuillage orange, éclat doré du soleil,
+    // feuillage vert, feuillage turquoise et sa traînée de paillettes, clairière), textures Resources/TreeGlow générées par
+    // Tools/build_menu_glows.py tree. Immobiles, seule l'intensité respire, chacun à son rythme.
+    // Pixels de l'illustration (BackgroundV4, 2048 x 1152, étirée sur l'onglet) : texture, rectangle, alpha, période (s).
+    private const float ArtW = 2048f, ArtH = 1152f;
+    private static readonly (string name, float x, float y, float w, float h, float a, float period)[] ShapedHalos =
+    {
+        ("canopy_orange",    0f,   0f, 938f, 598f, 0.34f, 11f),
+        ("sunburst",       210f,  30f, 780f, 740f, 0.30f,  9f),
+        ("canopy_green",   608f,   0f, 864f, 472f, 0.22f, 13f),
+        ("canopy_cyan",   1162f,   0f, 886f, 638f, 0.34f, 10f),
+        ("cyan_stream",   1258f, 288f, 424f, 474f, 0.30f,  7f),
+        ("clearing",       436f, 676f, 1208f, 476f, 0.24f, 12f),
+    };
+
+    private struct ShapedHalo { public CanvasRenderer cr; public float alpha, freq, phase; }
+    private readonly List<ShapedHalo> _shapedHalos = new List<ShapedHalo>();
+
     private void BuildHalos()
     {
-        // (x, y illustration), taille, couleur, alpha, période de respiration (s)
-        // Placés sur les zones de lumière de l'illustration : canopée orange, soleil doré,
-        // feuillage vert, canopée turquoise, clairière éclairée par les rayons.
-        AddHalo(330, 270, 720, 560, new Color(1f, 0.60f, 0.20f), 0.34f, 11f);
-        AddHalo(730, 300, 660, 560, new Color(1f, 0.87f, 0.45f), 0.40f, 9f);
-        AddHalo(1010, 250, 560, 440, new Color(0.55f, 1f, 0.62f), 0.20f, 13f);
-        AddHalo(1500, 280, 720, 560, new Color(0.35f, 0.85f, 1f), 0.34f, 10f);
-        AddHalo(1720, 600, 460, 460, new Color(0.40f, 0.85f, 1f), 0.16f, 14f);
-        AddHalo(760, 800, 820, 380, new Color(1f, 0.85f, 0.5f), 0.20f, 12f);
-    }
-
-    private void AddHalo(float sx, float sy, float w, float h, Color color, float alpha, float period)
-    {
-        Item it = NewItem(Kind.Halo, TreeSprites.Glow, _back, true, "Halo");
-        it.basePos = P(sx, sy);
-        it.rt.anchoredPosition = it.basePos;
-        it.rt.sizeDelta = new Vector2(w, h);
-        it.rgb = color;
-        it.alpha = alpha;
-        it.freq = Mathf.PI * 2f / period;
-        it.sway = Random.Range(10f, 24f);
-        it.swayFreq = 0.05f + Random.value * 0.03f;
+        foreach (var s in ShapedHalos)
+        {
+            CanvasRenderer cr = MenuShapedGlow.Create(_back, "TreeGlow/" + s.name, s.x, s.y, s.w, s.h, ArtW, ArtH, _additiveMaterial);
+            if (cr == null) continue;
+            _shapedHalos.Add(new ShapedHalo { cr = cr, alpha = s.a, freq = Mathf.PI * 2f / s.period, phase = Random.Range(0f, Mathf.PI * 2f) });
+        }
     }
 
     private void BuildRays()
@@ -484,7 +487,6 @@ public class TreeAmbientFX : MonoBehaviour
             Item it = _items[i];
             switch (it.kind)
             {
-                case Kind.Halo: UpdateHalo(it, t, k); break;
                 case Kind.Ray: UpdateRay(it, t, k); break;
                 case Kind.Mist: UpdateMist(it, t, k); break;
                 case Kind.Firefly: UpdateFirefly(it, t, k); break;
@@ -493,21 +495,19 @@ public class TreeAmbientFX : MonoBehaviour
             }
         }
 
+        for (int i = 0; i < _shapedHalos.Count; i++)
+        {
+            ShapedHalo h = _shapedHalos[i];
+            float breathe = 0.62f + 0.38f * Mathf.Sin(t * h.freq + h.phase);
+            h.cr.SetColor(new Color(1f, 1f, 1f, h.alpha * breathe * k));
+        }
+
         UpdateCrystals(t, k);
         UpdateBurst(t, k);
     }
 
     private static float Env(float u, float inEnd, float outStart)
         => Mathf.SmoothStep(0f, 1f, u / inEnd) * (1f - Mathf.SmoothStep(0f, 1f, (u - outStart) / (1f - outStart)));
-
-    private void UpdateHalo(Item it, float t, float k)
-    {
-        float breathe = 0.62f + 0.38f * Mathf.Sin(t * it.freq + it.phase);
-        Vector2 drift = new Vector2((Mathf.PerlinNoise(it.seedX, t * it.swayFreq) - 0.5f) * 2f * it.sway,
-                                    (Mathf.PerlinNoise(it.seedY, t * it.swayFreq) - 0.5f) * 2f * it.sway);
-        it.rt.anchoredPosition = it.basePos + drift;
-        it.cr.SetColor(new Color(it.rgb.r, it.rgb.g, it.rgb.b, it.alpha * breathe * k));
-    }
 
     private void UpdateRay(Item it, float t, float k)
     {

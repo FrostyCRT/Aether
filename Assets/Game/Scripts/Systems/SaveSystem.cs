@@ -12,7 +12,8 @@ public static class SaveSystem
 
     // AJOUTÉ (2026-10-18, diagnostic complet - audit §6) - numéro de version du format de sauvegarde, pour pouvoir
     // migrer proprement un jour sans deviner si un save vient d'avant ou après un changement de structure.
-    public const int CurrentVersion = 1;
+    // 2 (2026-11-07) : or à l'échelle x10, voir MetaProgressionManager.MigrateGoldScale.
+    public const int CurrentVersion = 2;
 
     public static void Save(SaveData data)
     {
@@ -210,4 +211,20 @@ public class SaveData
     // (index 0 Aether, 1 Kael, 2 Lyra ; vide = tenue d'origine). Un ancien save sans ces champs les charge vides.
     public List<string> ownedSkins = new List<string>();
     public string[] equippedSkins = new string[3];
+
+    // AJOUTÉ (2026-11-07) - gains de la dernière partie terminée, affichés en haut à gauche du menu d'accueil.
+    public LastRunSummary lastRun = new LastRunSummary();
+}
+
+[System.Serializable]
+public class LastRunSummary
+{
+    public bool valid;
+    public int gold, goldKills, goldTime, goldBosses, goldVictory, goldChallenge;
+    public int eclats, eclatsFirstWin;
+    public float runTime;
+    public int kills, level, bossKills;
+    public bool victory, abandoned;
+    public int mode, tier, character;
+    public long unixTime;
 }

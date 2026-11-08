@@ -22,8 +22,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -203655887218126122, guid: 87561ea77697feb44b21bbf6c4c6642b,
-    type: 3}
+  m_Motion: {fileID: 7400000, guid: d865b691ff52b6a479f79f339a999d28, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -101,8 +100,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -203655887218126122, guid: be31362eefd2157448d8224a8a24c0c3,
-    type: 3}
+  m_Motion: {fileID: 7400000, guid: 0c7e0732058930142b7f1ab8919276a4, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -191,6 +189,30 @@ AnimatorController:
     m_BlendingMode: 0
     m_SyncedLayerIndex: -1
     m_DefaultWeight: 0
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 0
+    m_Controller: {fileID: 9100000}
+  - serializedVersion: 5
+    m_Name: BrasBaton
+    m_StateMachine: {fileID: 0}
+    m_Mask: {fileID: 31900000, guid: 48c18d5615b75744db4484967f2a0028, type: 2}
+    m_Motions:
+    - serializedVersion: 2
+      m_State: {fileID: -5377212742543608159}
+      m_Motion: {fileID: -203655887218126122, guid: be31362eefd2157448d8224a8a24c0c3,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: -3070647786783147314}
+      m_Motion: {fileID: -203655887218126122, guid: e62300a44852165489c8effd33e37a33,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: -8542802715932328100}
+      m_Motion: {fileID: -203655887218126122, guid: 87561ea77697feb44b21bbf6c4c6642b,
+        type: 3}
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: 0
+    m_DefaultWeight: 1
     m_IKPass: 0
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
