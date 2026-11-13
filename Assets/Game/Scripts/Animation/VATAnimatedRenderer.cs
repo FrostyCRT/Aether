@@ -36,6 +36,7 @@ public class VATAnimatedRenderer : MonoBehaviour
     private MeshRenderer _renderer;
     private MaterialPropertyBlock _props;
     private static readonly int VatFrameID = Shader.PropertyToID("_VatFrame");
+    private static readonly int VatFrameNextID = Shader.PropertyToID("_VatFrameNext");
 
     private ClipRange _currentClip;
     private bool _hasClip;
@@ -108,12 +109,19 @@ public class VATAnimatedRenderer : MonoBehaviour
         float length = Mathf.Max(0.0001f, _currentClip.length);
         float loopedTime = _time % length;
         float normalized = loopedTime / length;
-        int frameInClip = Mathf.Clamp(Mathf.FloorToInt(normalized * _currentClip.frameCount), 0, _currentClip.frameCount - 1);
+        float exact = normalized * _currentClip.frameCount;
+        int frameInClip = Mathf.Clamp(Mathf.FloorToInt(exact), 0, _currentClip.frameCount - 1);
         int frame = _currentClip.startFrame + frameInClip;
         CurrentFrame = frame;
 
+        // MODIFIÉ (2026-11-11) - interpolation entre deux images de cuisson (VATCommon.hlsl) : partie décimale = avancement
+        // vers l'image suivante, qui reboucle sur la première image du clip.
+        float blend = Mathf.Clamp(exact - frameInClip, 0f, 0.999f);
+        int next = _currentClip.startFrame + (frameInClip + 1) % _currentClip.frameCount;
+
         _renderer.GetPropertyBlock(_props);
-        _props.SetFloat(VatFrameID, frame);
+        _props.SetFloat(VatFrameID, frame + blend);
+        _props.SetFloat(VatFrameNextID, next);
         _renderer.SetPropertyBlock(_props);
     }
 }

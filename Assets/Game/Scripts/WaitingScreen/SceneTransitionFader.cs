@@ -8,6 +8,10 @@ public class SceneTransitionFader : MonoBehaviour
 
     [SerializeField] private CanvasGroup _canvasGroup;
 
+    // AJOUTÉ (2026-11-11) - opacité du noir de transition (0 = scène visible), lue par le compteur d'images par seconde
+    // (SettingsApplier), dessiné au-dessus de tout : il s'efface et réapparaît avec le fondu.
+    public float BlackAlpha => _canvasGroup != null ? _canvasGroup.alpha : 0f;
+
     // AJOUTE (2026-09-14) - duree du fondu utilise par LoadScene() pour les
     // transitions EN COURS DE JEU (Jouer/Abandonner/Recommencer/Retour menu) :
     // volontairement courte, juste assez pour masquer la coupure de scene sans
@@ -142,7 +146,9 @@ public class SceneTransitionFader : MonoBehaviour
         {
             // unscaledDeltaTime : reste correct meme si Time.timeScale est deja
             // modifie ailleurs (ex. le hitstop de l'ultime dans CrystalSystem).
-            elapsed += Time.unscaledDeltaTime;
+            // CORRIGÉ (2026-11-11) - pas d'image comptée plus de 1/30 s : la première image après un chargement dure souvent
+            // près d'une seconde, et le retour du noir se faisait alors en une seule image (mesuré : 0,99 -> 0).
+            elapsed += Mathf.Min(Time.unscaledDeltaTime, 1f / 30f);
             _canvasGroup.alpha = Mathf.Lerp(from, to, elapsed / duration);
             yield return null;
         }

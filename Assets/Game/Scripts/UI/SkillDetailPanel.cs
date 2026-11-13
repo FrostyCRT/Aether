@@ -320,6 +320,13 @@ public class SkillDetailPanel : MonoBehaviour
             // "NIVEAU 3/3" juste au-dessus (voir SetChip) ; cette phrase descriptive repasse en gris neutre.
             statusColor = SkillTreeStyle.Muted;
         }
+        else if (!SkillTreeStyle.IsCharacterUnlocked(data.branch))
+        {
+            // AJOUTÉ (2026-11-11) - personnage pas encore débloqué : le dire, plutôt que « sélectionne-le » (impossible)
+            label = Loc.T("VERROUILLÉ");
+            status = Loc.F("Débloque {0} pour acheter cette compétence", owner);
+            statusColor = SkillTreeStyle.Warn;
+        }
         else if (!activeBranch)
         {
             label = Loc.T("INDISPONIBLE");

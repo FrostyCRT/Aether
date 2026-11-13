@@ -39,7 +39,7 @@ public static class LocTableKO
         { "Sans effet tant que la synchronisation verticale est activée.", "수직 동기화가 켜져 있으면 적용되지 않습니다．" }, { "Luminosité", "밝기" },
         { "Éclaircit ou assombrit toute l'image, menus compris.", "메뉴를 포함한 전체 화면을 밝게 하거나 어둡게 합니다．" }, { "Afficher les images par seconde", "FPS 표시" },
         { "Affiche le nombre d'images par seconde en haut à gauche.", "왼쪽 위에 초당 프레임 수를 표시합니다．" }, { "GRAPHISMES", "그래픽" },
-        { "Qualité de l'image et effets visuels", "화질과 시각 효과" }, { "Qualité graphique", "그래픽 품질" }, { "Préréglage global du rendu : éclairage, ombres et netteté.", "전체 렌더링 프리셋： 조명， 그림자， 선명도．" },
+        { "Qualité de l'image et effets visuels", "화질과 시각 효과" }, { "Qualité graphique", "그래픽 품질" }, { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "성능： 사양이 낮은 PC에서 더 부드럽습니다． 높음： 선명한 그림자， 매끄러운 윤곽， 빛 번짐 효과．" },
         { "Ombres", "그림자" }, { "Ombres projetées par les personnages et les ennemis.", "캐릭터와 적이 드리우는 그림자．" }, { "Effets d'ambiance des menus", "메뉴 분위기 효과" },
         { "Poussières et halos lumineux animés dans les menus", "메뉴에서 움직이는 먼지와 빛 효과" }, { "AUDIO", "사운드" }, { "Volumes et comportement du son", "음량과 사운드 설정" },
         { "Volume général", "전체 음량" }, { "Règle le volume de tout le jeu.", "게임 전체의 음량을 조절합니다．" }, { "Musique", "음악" },
@@ -118,12 +118,12 @@ public static class LocTableKO
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "집중" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "피해를 받지 않은 채 1초가 지날 때마다 주는 피해가 최대치까지 증가합니다． 공격을 받으면 보너스가 0으로 돌아갑니다．" },
         { "+2% / s, plafond +15%", "초당 +2%, 최대 +15%" }, { "+3% / s, plafond +30%", "초당 +3%, 최대 +30%" }, { "+5% / s, plafond +50%", "초당 +5%, 최대 +50%" },
-        { "Cadence", "연사 속도" }, { "Augmente la cadence de ton tir de base.", "기본 공격의 연사 속도가 증가합니다．" }, { "Fragmentation", "파편화" },
+        { "Cadence", "연사 속도" }, { "Augmente la cadence de toutes tes armes de tir.", "모든 사격 무기의 연사 속도가 증가합니다．" }, { "Fragmentation", "파편화" },
         { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "기본 공격의 탄환 4발 중 1발이 명중 시 폭발해 주변의 적에게 전체 피해를 줍니다．" },
         { "Dégâts Cristal", "크리스탈 피해" }, { "Augmente les dégâts de l'ultime et de la Nova.", "궁극기와 노바의 피해가 증가합니다．" }, { "Surpuissance", "오버파워" },
         { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "궁극기 사용 후 10초 동안 피해가 두 배가 됩니다．" }, { "Vitalité", "활력" },
         { "Augmente tes points de vie maximum.", "최대 HP가 증가합니다．" }, { "Récupération", "회복" }, { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "대시나 마나 보호막으로 탄환을 흡수할 때마다 HP가 회복됩니다．" },
-        { "+20 PV par absorption", "흡수할 때마다 HP +20" }, { "+50 PV par absorption", "흡수할 때마다 HP +50" }, { "+80 PV par absorption", "흡수할 때마다 HP +80" },
+        { "+15 PV par absorption", "흡수할 때마다 HP +15" }, { "+35 PV par absorption", "흡수할 때마다 HP +35" }, { "+55 PV par absorption", "흡수할 때마다 HP +55" },
         { "Second Souffle", "기사회생" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "한 판에 한 번， 치명적인 공격을 HP 1로 버티고 이후 3초 동안 무적이 됩니다．" },
         { "Armure", "방어구" }, { "Réduit les dégâts reçus de tous les ennemis.", "모든 적에게서 받는 피해가 감소합니다．" }, { "Bouclier de Mana", "마나 보호막" },
         { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "3회 충전된 보호막이 적의 탄환을 막고 대시처럼 흡수합니다． 충전： 3초마다 1회， 보호막이 깨지면 4초 동안 중단．" },
@@ -157,7 +157,7 @@ public static class LocTableKO
         { "Orbe Rebondissant", "튕기는 구체" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "경기장 안을 끊임없이 튕겨 다니며 맞힌 적에게 피해를 주는 구체를 발사합니다" },
         { "Dégâts +", "피해＋" }, { "+20% de dégâts sur toutes tes attaques", "모든 공격의 피해 +20%" }, { "Double Tir", "더블 샷" },
         { "Ton tir de base tire un second projectile juste après le premier", "기본 공격이 첫 번째 탄환 직후 두 번째 탄환을 발사합니다" }, { "Boule de Feu", "파이어볼" },
-        { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "적이 가장 밀집한 곳에서 폭발하는 불덩이를 발사" }, { "Cadence+", "연사 속도＋" },
+        { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "적이 가장 밀집한 곳에서 폭발하는 불덩이를 발사" }, { "Cadence +", "연사 속도＋" },
         { "+20% de cadence sur toutes tes armes de tir", "모든 사격 무기의 연사 속도 +20%" }, { "Soin", "회복" }, { "Restaure 50% de tes PV max", "최대 HP의 50% 회복" },
         { "Couteaux", "단검" }, { "Lance des salves de couteaux qui transpercent les ennemis", "적을 관통하는 단검을 연달아 던짐" }, { "Chaîne de Foudre", "연쇄 번개" },
         { "Décharge électrique qui rebondit sur les ennemis proches", "주변 적 사이를 튕겨 다니는 전격" }, { "Boue", "진흙" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "진흙 웅덩이를 만들어， 그 안의 적을 느리게 하고 피해를 줍니다" },
@@ -172,7 +172,7 @@ public static class LocTableKO
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "오라 해금： Kael의 전용 무기" }, { "+{0}% rayon", "범위 +{0}%" }, { "Ralentissement porté à {0}%", "둔화 {0}%로 강화" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "단검 일제 투척 해금： Lyra의 전용 무기" }, { "Débloque un couteau supplémentaire dans la salve", "일제 투척에 단검 1자루를 추가합니다" },
         { "+{0} ennemis perforés en plus", "관통하는 적 수 +{0}" }, { "+{0} ennemi perforé en plus", "관통하는 적 수 +{0}" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "적을 관통하는 튕기는 구체를 해금합니다" },
-        { "+{0}% vitesse des orbes", "구체 속도 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "튕기는 구체 +1" },
+        { "+{0}% vitesse de l'orbe", "구체 속도 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "튕기는 구체 +1" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "원거리" }, { "ZONE", "범위" }, { "BRÛLURE", "화상" }, { "MÊLÉE", "근접" }, { "AURA", "오라" }, { "RALENTISSEMENT", "둔화" },
@@ -276,5 +276,9 @@ public static class LocTableKO
         { "DERNIÈRE PARTIE", "지난 판" }, { "VICTOIRE", "승리" }, { "ABANDON", "포기" }, { "Ennemis", "적" }, { "Victoire", "승리" },
         { "Défi", "도전" }, { "Prime de 1re victoire : +{0}", "첫 승리 보너스： +{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "처치한 적： {0}  ·  Lv.{1}  ·  보스： {2}" },
         { "+{0}% cadence", "연사 속도 +{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "충격파 해금： 오라가 {0}초마다 적을 밀쳐냅니다" },
+        { "Taille de la fenêtre en mode fenêtré", "창 모드에서의 창 크기" }, { "Le plein écran utilise toujours la résolution de l'écran.", "전체 화면에서는 항상 화면 해상도를 사용합니다．" },
+        { "Défi en cours", "진행 중인 도전" }, { "Le défi de la partie et sa progression.", "이번 판의 도전과 진행 상황．" }, { "Débloque {0} pour acheter cette compétence", "{0} 캐릭터를 해금하면 이 스킬을 구매할 수 있어요" },
+        { "Le niveau Performance n'affiche pas d'ombres.", "성능 단계에서는 그림자가 표시되지 않습니다．" }, { "Sources des éclats", "파편 획득 내역" },
+        { "Sources de l'or", "골드 획득 내역" }, { "1re victoire", "첫 승리" },
     };
 }

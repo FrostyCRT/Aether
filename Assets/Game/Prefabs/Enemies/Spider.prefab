@@ -209,7 +209,7 @@ MonoBehaviour:
   _poolTag: EnemyTisseuse
   _playerContactRadius: 1.2
   _contactDamage: 125
-  _contactDamageCooldown: 0.5
+  _contactDamageCooldown: 0.8
   _burnTickInterval: 0.5
   _burnTintIntensity: 0.55
   _jumpTriggerRange: 6.5

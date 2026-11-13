@@ -1,0 +1,16 @@
+DEBUT c2_sans_2 perso=Player_Lyra(Clone) branche=Fantome pvmax=2000 cadence=1
+T chrono=60 niv=1 kills=16 boss=0 degats=930 (930/min) soins=235 recharges=0 dashs=3 absorptions=3 clones=0 pvmax=2000 plusGrosCoup=125
+T chrono=120 niv=1 kills=33 boss=0 degats=1555 (777/min) soins=535 recharges=0 dashs=3 absorptions=3 clones=0 pvmax=2000 plusGrosCoup=125
+T chrono=180 niv=2 kills=73 boss=0 degats=2055 (685/min) soins=595 recharges=1 dashs=3 absorptions=3 clones=0 pvmax=2000 plusGrosCoup=250
+T chrono=240 niv=7 kills=354 boss=0 degats=10225 (2556/min) soins=850 recharges=7 dashs=19 absorptions=26 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=300 niv=7 kills=540 boss=0 degats=14415 (2883/min) soins=995 recharges=10 dashs=26 absorptions=30 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=360 niv=10 kills=813 boss=1 degats=19910 (3318/min) soins=2620 recharges=13 dashs=38 absorptions=45 clones=0 pvmax=2300 plusGrosCoup=500
+T chrono=420 niv=12 kills=1291 boss=1 degats=22675 (3239/min) soins=3280 recharges=15 dashs=48 absorptions=53 clones=0 pvmax=2600 plusGrosCoup=500
+T chrono=480 niv=12 kills=1582 boss=1 degats=25050 (3131/min) soins=3575 recharges=16 dashs=52 absorptions=53 clones=0 pvmax=2600 plusGrosCoup=500
+T chrono=540 niv=13 kills=1803 boss=1 degats=27850 (3094/min) soins=3870 recharges=18 dashs=57 absorptions=54 clones=0 pvmax=2600 plusGrosCoup=500
+T chrono=600 niv=14 kills=1991 boss=1 degats=34300 (3430/min) soins=5835 recharges=20 dashs=68 absorptions=56 clones=0 pvmax=2900 plusGrosCoup=500
+T chrono=660 niv=16 kills=2180 boss=2 degats=49105 (4464/min) soins=6315 recharges=28 dashs=87 absorptions=75 clones=0 pvmax=2900 plusGrosCoup=1100
+T chrono=720 niv=17 kills=2476 boss=2 degats=52520 (4377/min) soins=7270 recharges=30 dashs=96 absorptions=78 clones=0 pvmax=3200 plusGrosCoup=1100
+T chrono=780 niv=18 kills=2741 boss=2 degats=69865 (5374/min) soins=7555 recharges=38 dashs=107 absorptions=85 clones=0 pvmax=3200 plusGrosCoup=1100
+T chrono=840 niv=18 kills=2983 boss=2 degats=82805 (5915/min) soins=7835 recharges=45 dashs=120 absorptions=91 clones=0 pvmax=3200 plusGrosCoup=1100
+FIN15 chrono=900 niv=20 kills=3358 boss=2 degats=103470 (6898/min) soins=9165 recharges=55 dashs=134 absorptions=102 clones=0 pvmax=3500 plusGrosCoup=1100 bossTemps=44s,60s,

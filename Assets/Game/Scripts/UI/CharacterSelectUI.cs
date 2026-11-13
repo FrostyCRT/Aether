@@ -189,6 +189,19 @@ public class CharacterSelectUI : MonoBehaviour
         if (_infoPanel != null) _infoPanel.FadeTo(1f, 0f); // repart toujours pleinement visible (transition interrompue)
     }
 
+    // AJOUTÉ (2026-11-12, bug signalé : « si on change de page pendant que ça tourne, en revenant la page reste bloquée ») -
+    // quitter la page coupe la coroutine SlideTransition en plein milieu : _isTransitioning restait vrai et les flèches
+    // non cliquables pour toujours. On libère tout ici ; OnEnable remet le portrait du perso sélectionné en place.
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        _isTransitioning = false;
+        if (_leftArrow != null) _leftArrow.interactable = true;
+        if (_rightArrow != null) _rightArrow.interactable = true;
+        if (_characterRect != null) _characterRect.anchoredPosition = _characterOriginalPos;
+        if (_nameRect != null) _nameRect.anchoredPosition = _nameOriginalPos;
+    }
+
     private void BuildCharacterData()
     {
         _characters = new CharacterData[]

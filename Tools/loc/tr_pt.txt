@@ -107,7 +107,7 @@
 99| GRÁFICOS
 100| Qualidade da imagem e efeitos visuais
 101| Qualidade gráfica
-102| Predefinição geral de renderização: iluminação, sombras e nitidez.
+102| Desempenho: mais fluido em PCs modestos. Alta: sombras nítidas, bordas suavizadas e brilhos.
 103| Sombras
 104| Sombras projetadas pelos personagens e pelos inimigos.
 105| Efeitos de ambiente nos menus
@@ -301,7 +301,7 @@
 285| +3% / s, máx. +30%
 286| +5% / s, máx. +50%
 287| Cadência
-288| Aumenta a cadência do seu ataque básico.
+288| Aumenta a cadência de todas as suas armas de disparo.
 289| Fragmentação
 290| Um a cada 4 projéteis do seu ataque básico explode no impacto e causa todo o seu dano aos inimigos próximos.
 291| Dano de Cristal
@@ -312,9 +312,9 @@
 296| Aumenta seus pontos de vida máximos.
 297| Recuperação
 298| Cada projétil absorvido pelo dash ou pelo Escudo de Mana restaura PV.
-299| +20 PV por absorção
-300| +50 PV por absorção
-301| +80 PV por absorção
+299| +15 PV por absorção
+300| +35 PV por absorção
+301| +55 PV por absorção
 302| Segundo Fôlego
 303| Uma vez por partida, você sobrevive a um golpe fatal com 1 PV e fica invencível por 3 segundos.
 304| Armadura
@@ -388,7 +388,7 @@
 368| Seu ataque básico dispara um segundo projétil logo após o primeiro
 369| Bola de Fogo
 370| Lança uma bola de fogo que explode no grupo de inimigos mais denso
-371| Cadência+
+371| Cadência +
 372| +20% de cadência em todas as suas armas de disparo
 373| Cura
 374| Restaura 50% dos seus PV máximos
@@ -422,7 +422,7 @@
 402| Perfura mais {0} inimigos
 403| Perfura mais {0} inimigo
 404| Desbloqueia um orbe quicante que atravessa os inimigos
-405| +{0}% de velocidade dos orbes
+405| +{0}% de velocidade do orbe
 406| +1 orbe quicante extra
 
 ## Personnages
@@ -696,3 +696,12 @@
 656| Inimigos derrotados: {0}  ·  Nv. {1}  ·  Chefes: {2}
 657| +{0}% de cadência
 658| Desbloqueia Onda de choque: a aura repele os inimigos a cada {0} segundos
+659| Tamanho da janela no modo janela
+660| A tela cheia sempre usa a resolução da tela.
+661| Desafio atual
+662| O desafio da partida e o seu progresso.
+663| Desbloqueie {0} para comprar esta habilidade
+664| O nível Desempenho não exibe sombras.
+665| Origem dos fragmentos
+666| Origem do ouro
+667| 1ª vitória

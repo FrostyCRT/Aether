@@ -61,17 +61,32 @@ public static class SettingsSchema
         return n;
     }
 
+    // MODIFIÉ (2026-11-11, retour utilisateur : "si on repasse en fenêtré sans bordure après avoir été en fenêtré, la résolution
+    // affichée reste celle du fenêtré, même si on est bien en plein écran") - la ligne affiche ce qui est vraiment à l'écran :
+    // en fenêtré, la taille réelle de la fenêtre ; en plein écran (avec ou sans bordure), la résolution native de l'écran.
+    private static bool IsWindowed => GameSettings.GetInt(GameSettings.DisplayMode) == 2;
+
     private static string[] ResolutionNames()
     {
         List<Vector2Int> list = SettingsApplier.AvailableResolutions();
         string[] n = new string[list.Count];
-        for (int i = 0; i < n.Length; i++) n[i] = list[i].x + " × " + list[i].y;
+        for (int i = 0; i < n.Length; i++)
+        {
+            // en fenêtré : la taille réellement prise par la fenêtre (réduite pour tenir au-dessus de la barre des tâches)
+            Vector2Int size = IsWindowed ? SettingsApplier.WindowSizeFor(list[i]) : list[i];
+            n[i] = size.x + " × " + size.y;
+        }
         return n;
     }
 
     private static int ResolutionIndex()
     {
         List<Vector2Int> list = SettingsApplier.AvailableResolutions();
+        if (!IsWindowed)
+        {
+            int native = list.IndexOf(SettingsApplier.NativeResolution());
+            return native >= 0 ? native : list.Count - 1;
+        }
         if (SettingsApplier.TryParseResolution(GameSettings.GetString(GameSettings.Resolution), out Vector2Int saved))
         {
             int i = list.IndexOf(saved);
@@ -149,10 +164,11 @@ public static class SettingsSchema
         display.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Résolution", key = GameSettings.Resolution,
-            description = "Définition de l'image en plein écran et en mode fenêtré",
+            description = "Taille de la fenêtre en mode fenêtré",
             dynamicOptions = ResolutionNames, getIndex = ResolutionIndex, setIndex = SetResolutionIndex,
-            isEnabled = () => GameSettings.GetInt(GameSettings.DisplayMode) != 1,
-            disabledHint = "Le mode sans bordure utilise toujours la résolution du bureau.",
+            // MODIFIÉ (2026-11-10) - les deux pleins écrans prennent toujours la résolution de l'écran (SettingsApplier.ApplyDisplay)
+            isEnabled = () => GameSettings.GetInt(GameSettings.DisplayMode) == 2,
+            disabledHint = "Le plein écran utilise toujours la résolution de l'écran.",
             affectsDisplay = true
         });
         display.rows.Add(Toggle("Synchronisation verticale", "Évite les déchirures de l'image. Limite la fluidité à la fréquence de l'écran.", GameSettings.VSync));
@@ -176,8 +192,12 @@ public static class SettingsSchema
 
         // ---------------------------------------------------------------- GRAPHISMES
         CategoryDef gfx = new CategoryDef { id = "graphics", title = "GRAPHISMES", subtitle = "Qualité de l'image et effets visuels" };
-        gfx.rows.Add(Choice("Qualité graphique", "Préréglage global du rendu : éclairage, ombres et netteté.", GameSettings.Quality, QualityNames));
-        gfx.rows.Add(Toggle("Ombres", "Ombres projetées par les personnages et les ennemis.", GameSettings.Shadows));
+        gfx.rows.Add(Choice("Qualité graphique", "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", GameSettings.Quality, QualityNames));
+        // MODIFIÉ (2026-11-11) - le profil Performance n'a pas d'ombres : la ligne est grisée et dit pourquoi
+        RowDef shadows = Toggle("Ombres", "Ombres projetées par les personnages et les ennemis.", GameSettings.Shadows);
+        shadows.isEnabled = () => GameSettings.GetInt(GameSettings.Quality) != 0;
+        shadows.disabledHint = "Le niveau Performance n'affiche pas d'ombres.";
+        gfx.rows.Add(shadows);
         gfx.rows.Add(new RowDef
         {
             kind = RowKind.Choice, label = "Effets d'ambiance des menus", key = GameSettings.MenuEffects, options = MenuEffectNames,
@@ -221,6 +241,7 @@ public static class SettingsSchema
         ui.rows.Add(Toggle("Chronomètre", "Le temps écoulé depuis le début de la partie.", GameSettings.ShowTimer));
         ui.rows.Add(Toggle("Or de la partie", "L'or ramassé pendant cette partie.", GameSettings.ShowGold));
         ui.rows.Add(Toggle("Ennemis vaincus", "Le nombre d'ennemis éliminés.", GameSettings.ShowKills));
+        ui.rows.Add(Toggle("Défi en cours", "Le défi de la partie et sa progression.", GameSettings.ShowChallenge));
         ui.rows.Add(Toggle("Légende des touches", "Rappel des touches (dash, ultime, clone, orbites, pause) affiché à gauche de l'écran.", GameSettings.ShowKeyLegend));
         cats.Add(ui);
 

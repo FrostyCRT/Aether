@@ -207,9 +207,13 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         bool unlockable = meta.IsNodeUnlockable(_nodeId);
 
         _activeBranch = data.branch == meta.GetActiveBranch();
+        // MODIFIÉ (2026-11-11, retour utilisateur : "mettre un cadenas sur les 2 premiers nœuds des personnages pas encore
+        // débloqués") - personnage verrouillé : ses nœuds non achetés sont verrouillés eux aussi (gris + cadenas), même ceux
+        // qui n'ont aucun prérequis.
+        bool characterLocked = !SkillTreeStyle.IsCharacterUnlocked(data.branch);
         CurrentState = level >= max ? State.Maxed
                      : level > 0 ? State.InProgress
-                     : unlockable ? State.Available
+                     : unlockable && !characterLocked ? State.Available
                      : State.Locked;
 
         int cost = meta.GetNodeCost(_nodeId);

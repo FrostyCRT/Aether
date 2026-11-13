@@ -39,6 +39,12 @@ Ce document ne change rien au code : c'est une liste de travail. Chaque point do
 >
 > Reste à faire : fin de l'étape 3 (nom de société, IL2CPP, Steam Cloud : reportés par l'utilisateur), secousses/flashs (§5), textures 4K des boss et prefabs en double de `Resources/` (§8, §10), sons.
 
+> ### ✅ Avancement du 2026-11-10 au 2026-11-13 (détail : « ▶ REPRENDRE ICI » en tête de `NOTES.md`)
+> - **§4** : écran « Made with Unity » retiré. Qualité graphique refaite (3 profils URP réellement différents, mesurés), GPU Resident Drawer réparé.
+> - **§7 Équilibrage** : comparaison des 3 branches au bot (18 parties) puis corrections (Couteaux de Lyra +50 %, Récupération réduite, Clone gardé à 8 s), dégâts de contact espacés, Cadence sur toutes les armes de tir, plafond d'un coup à 50 % des PV max, éclats de survie 2 toutes les 45 s.
+> - Bugs : annonce de Lyra absente de l'écran de victoire, page Personnages bloquée après un changement de page, écarts du défi dans la Pause, retouches de traduction écrasées par la régénération des tables.
+> - Toujours en attente : nom de société, IL2CPP, Steam Cloud (reportés par l'utilisateur), secousses/flashs (§5), sons.
+
 Légende :
 - 🔴 **Bug confirmé** : vérifié dans le code (et en jeu quand c'était possible). Effet visible pour le joueur.
 - 🟠 **Probable / à confirmer en jeu** : le code le permet, l'effet dépend du contexte.
@@ -159,7 +165,7 @@ Légende :
 | `runInBackground` | 0 | OK (le jeu se met en pause quand on change de fenêtre). Vérifier que la **pause s'ouvre automatiquement** (`OnApplicationFocus(false)`), sinon le joueur revient en pleine horde |
 | Always Included Shaders | Sprites/Default, UI/Default… présents | `Shader.Find("Aether/UI/Additive")` (CharacterNameLight, ReputationHallFX) et `"Universal Render Pipeline/Unlit"` ne sont pas garantis en build. Les ajouter à la liste, ou mieux : **référencer un matériau** au lieu de `Shader.Find` |
 | `activeInputHandler` | 0 = ancien Input Manager | Voir §5 |
-| Icône de l'application, splash screen | À vérifier | Icône à toutes les tailles ; splash Unity selon licence |
+| Icône de l'application, splash screen | Splash ✅ retiré (2026-11-12, `SplashScreen.show = false`, permis en Unity 6 Personal) ; icône à vérifier | Icône à toutes les tailles |
 | Curseur | `Cursor.lockState = Confined` **en permanence** (`CustomCursor.cs:91`, `GameManager.cs:165/215`) | En **mode fenêtré**, le joueur ne peut plus sortir la souris de la fenêtre, même au menu. Confiner seulement en plein écran, ou seulement en partie |
 
 ---

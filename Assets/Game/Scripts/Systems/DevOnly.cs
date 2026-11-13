@@ -8,9 +8,13 @@ using UnityEngine;
 // désormais pour les 3 : un oubli futur se limite à ne pas appeler Show(), jamais à mal recopier la condition.
 public static class DevOnly
 {
+    // MODIFIÉ (2026-11-10, demande utilisateur avant une build : "cache les boutons de réinitialisation dans le menu") -
+    // à remettre à false pour retrouver les boutons dans l'éditeur et les builds de développement.
+    private const bool HideResetButtons = true;
+
     public static void Show(GameObject go)
     {
         if (go == null) return;
-        go.SetActive(Application.isEditor || Debug.isDebugBuild);
+        go.SetActive(!HideResetButtons && (Application.isEditor || Debug.isDebugBuild));
     }
 }

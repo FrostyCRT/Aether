@@ -135,7 +135,10 @@ public class HealthSystem : MonoBehaviour
     // Plafond : au plus ContactHitsPerWindow coups par fenêtre de ContactHitWindow s (mesure 2026-10-28 sans plafond :
     // ~2 750 dégâts/s immobile dans la horde à 3:20, Kael mort en ~1 s). Coup refusé par le plafond = false aussi.
     private const int ContactHitsPerWindow = 3;
-    private const float ContactHitWindow = 0.5f;
+    // MODIFIÉ (2026-11-11, équilibrage choisi par l'utilisateur) - 0,5 -> 0,8 s : encerclé, au plus ~470 dégâts/s au lieu
+    // de 750 (Kael à 2000 PV tient ~4,3 s au lieu de 2,7 s). Délai de chaque ennemi aussi allongé (prefabs : 0,5 -> 0,8 s,
+    // Golem 1,2 -> 1,6 s, boss 0,8 -> 1 s).
+    private const float ContactHitWindow = 0.8f;
     private readonly float[] _contactHitTimes = new float[ContactHitsPerWindow];
     private int _contactHitIndex;
 
@@ -160,6 +163,8 @@ public class HealthSystem : MonoBehaviour
         _damageTimer = cooldown;
     }
 
+    private const float MaxHitFraction = 0.5f;
+
     public void TakeDamage(float damage, string source = "horde")
     {
         // MODIFIÉ (2026-10-01) - ignore aussi les coups reçus une fois mort (voir _isDead).
@@ -177,6 +182,11 @@ public class HealthSystem : MonoBehaviour
             _playerBuffs.NotifyDamaged();
 
         damage *= (1f - _armorReduction);
+
+        // AJOUTÉ (2026-11-12, choix de l'utilisateur) - aucun coup ne retire plus de la moitié des PV max :
+        // les attaques de boss montaient à 1100-1565 pour 2000 PV de base (mort en un coup mesurée à 12:09).
+        // Deux coups restent mortels ; Second Souffle se déclenche toujours sur le coup fatal.
+        damage = Mathf.Min(damage, _maxHealth * MaxHitFraction);
 
         if (MetaProgressionManager.Instance != null && MetaProgressionManager.Instance.HasSecondWind() && !_secondWindUsed)
         {

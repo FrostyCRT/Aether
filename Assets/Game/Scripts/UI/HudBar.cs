@@ -178,7 +178,10 @@ public class HudBar : MonoBehaviour
         // translucide. Passer FlatStyle à false rend l'ancien cadre de bronze biseauté.
         bool flat = FlatStyle;
         Sprite fillShape = flat ? HudSprites.Pill : HudSprites.Inset;
-        float frameGrow = flat ? 0.5f : HudSprites.FrameThickness / frameScale - 0.4f;
+        // MODIFIÉ (2026-11-11, retour utilisateur : "le contour de la barre n'est pas uniforme") - 0,5 -> 1 : avec un demi-pixel,
+        // le liseré tombait à cheval sur le bord du remplissage : net en haut, mangé par le remplissage en bas. À 1 px, il est
+        // entièrement autour de la barre, sur des pixels entiers.
+        float frameGrow = flat ? 1f : HudSprites.FrameThickness / frameScale - 0.4f;
         _frame = Sliced("Frame", root, flat ? HudSprites.PillOutline : HudSprites.Frame, Color.white, frameScale, frameGrow);
         Sliced("Track", root, fillShape, flat ? FlatTrackColor : TrackColor, frameScale, 0f);
 

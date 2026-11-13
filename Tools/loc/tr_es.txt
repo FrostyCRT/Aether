@@ -108,7 +108,7 @@
 99| GRÁFICOS
 100| Calidad de imagen y efectos visuales
 101| Calidad gráfica
-102| Ajuste global del renderizado: iluminación, sombras y nitidez.
+102| Rendimiento: más fluido en equipos modestos. Alta: sombras nítidas, bordes suavizados y brillos.
 103| Sombras
 104| Sombras que proyectan los personajes y los enemigos.
 105| Efectos de ambiente en los menús
@@ -302,7 +302,7 @@
 285| +3% / s, máx. +30%
 286| +5% / s, máx. +50%
 287| Cadencia
-288| Aumenta la cadencia de tu ataque básico.
+288| Aumenta la cadencia de todas tus armas de disparo.
 289| Fragmentación
 290| Uno de cada 4 proyectiles de tu ataque básico explota al impactar e inflige todo su daño a los enemigos cercanos.
 291| Daño de cristal
@@ -313,9 +313,9 @@
 296| Aumenta tus puntos de vida máximos.
 297| Recuperación
 298| Cada proyectil que absorbes con el dash o con el Escudo de maná te restaura PV.
-299| +20 PV por absorción
-300| +50 PV por absorción
-301| +80 PV por absorción
+299| +15 PV por absorción
+300| +35 PV por absorción
+301| +55 PV por absorción
 302| Segundo aliento
 303| Una vez por partida, sobrevives a un golpe mortal con 1 PV y luego eres invulnerable durante 3 segundos.
 304| Armadura
@@ -389,7 +389,7 @@
 368| Tu ataque básico dispara un segundo proyectil justo después del primero
 369| Bola de fuego
 370| Lanza una bola de fuego que explota sobre el grupo de enemigos más denso
-371| Cadencia+
+371| Cadencia +
 372| +20% de cadencia en todas tus armas de disparo
 373| Curación
 374| Restaura el 50% de tus PV máximos
@@ -423,7 +423,7 @@
 402| Perfora a {0} enemigos más
 403| Perfora a {0} enemigo más
 404| Desbloquea un orbe rebotador que atraviesa a los enemigos
-405| +{0}% de velocidad de los orbes
+405| +{0}% de velocidad del orbe
 406| +1 orbe rebotador adicional
 
 ## Personnages
@@ -697,3 +697,12 @@
 656| Enemigos derrotados: {0}  ·  Nv. {1}  ·  Jefes: {2}
 657| +{0}% de cadencia
 658| Desbloquea Onda de choque: el aura repele a los enemigos cada {0} segundos
+659| Tamaño de la ventana en modo ventana
+660| La pantalla completa siempre usa la resolución de la pantalla.
+661| Desafío en curso
+662| El desafío de la partida y su progreso.
+663| Desbloquea a {0} para comprar esta habilidad
+664| El nivel Rendimiento no muestra sombras.
+665| Origen de los fragmentos
+666| Origen del oro
+667| 1.ª victoria

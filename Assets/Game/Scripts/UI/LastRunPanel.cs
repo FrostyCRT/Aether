@@ -50,11 +50,28 @@ public class LastRunPanel : MonoBehaviour
     private TextMeshProUGUI _title, _resultText, _subtitle, _goldValue, _eclatValue, _eclatNote, _stats;
     private Image _resultPill;
     private RectTransform _bar;
+    private Image _barBack, _divider2;
     private readonly List<Image> _barSegments = new List<Image>();
     private readonly List<GameObject> _legendRows = new List<GameObject>();
     private readonly List<TextMeshProUGUI> _legendLabels = new List<TextMeshProUGUI>();
     private readonly List<TextMeshProUGUI> _legendValues = new List<TextMeshProUGUI>();
     private Coroutine _anim;
+
+    // AJOUTÉ (2026-11-12, retour utilisateur : « voir la source des gains d'éclats dans Dernière Partie, avec un bouton ») -
+    // le bouton sous les éclats fait basculer la barre et sa légende entre la répartition de l'or et celle des éclats ;
+    // le montant qui n'est pas détaillé s'estompe. La prime de 1re victoire devient une ligne de la légende des éclats.
+    private bool _showEclats;
+    private RectTransform _sourceButton;
+    private TextMeshProUGUI _sourceLabel;
+    private Graphic[] _goldBlock, _eclatBlock;
+    private static readonly Color[] EclatSourceColors =
+    {
+        new Color(0.44f, 0.72f, 0.91f, 1f),   // survie
+        new Color(0.69f, 0.48f, 0.91f, 1f),   // boss
+        new Color(0.95f, 0.76f, 0.31f, 1f),   // victoire
+        new Color(0.00f, 0.93f, 0.89f, 1f),   // prime de 1re victoire
+        new Color(0f, 0f, 0f, 0f),
+    };
 
     // Réduction / agrandissement
     private const string CollapsedPref = "lastRunPanelCollapsed";
@@ -137,12 +154,24 @@ public class LastRunPanel : MonoBehaviour
         _eclatValue = AmountBlock("Eclats", pad + half + 8f, y, half - 8f, _eclatIcon, EclatText, 57f);   // texte un peu plus près de l'icône (retour utilisateur)
         _eclatNote = NewText("EclatNote", _root, GameFonts.Body, 14f, Muted, TextAlignmentOptions.TopLeft);
         Place(_eclatNote.rectTransform, pad + half + 8f, y - 60f, half - 8f, 20f);   // -4 px (retour utilisateur 2026-11-08), reste au-dessus de la barre
+        _eclatNote.gameObject.SetActive(false);   // remplacée par le bouton ci-dessous (2026-11-12)
+        _goldBlock = new Graphic[] { _root.Find("GoldIcon").GetComponent<Image>(), _goldValue };
+        _eclatBlock = new Graphic[] { _root.Find("EclatsIcon").GetComponent<Image>(), _eclatValue };
+
+        _sourceButton = NewButton("SourceToggle", _root, () => { _showEclats = !_showEclats; Refresh(); });
+        Place(_sourceButton, pad + half + 8f, y - 58f, 190f, 22f);
+        CenterPivot(_sourceButton);
+        _sourceLabel = NewText("Label", _sourceButton, GameFonts.Body, 14f, Parchment, TextAlignmentOptions.Center);
+        Stretch(_sourceLabel.rectTransform, 0f);
+        _sourceLabel.enableAutoSizing = true; _sourceLabel.fontSizeMax = 14f; _sourceLabel.fontSizeMin = 10f;
+        _sourceLabel.margin = new Vector4(10f, 0f, 10f, 0f);
         y -= 82f;
 
         // Barre de répartition de l'or.
         Image barBack = NewImage("BarBack", _root, HudSprites.Pill, new Color(0f, 0f, 0f, 0.45f));
         barBack.type = Image.Type.Sliced;
         Place(barBack.rectTransform, pad, y, w, 14f);
+        _barBack = barBack;
         _bar = new GameObject("Bar", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
         _bar.SetParent(_root, false);
         Place(_bar, pad + 2f, y - 2f, w - 4f, 10f);
@@ -176,6 +205,7 @@ public class LastRunPanel : MonoBehaviour
 
         Image divider2 = NewImage("Divider2", _root, null, new Color(Trim.r, Trim.g, Trim.b, 0.35f));
         Place(divider2.rectTransform, pad, y, w, 1f);
+        _divider2 = divider2;
         y -= 6f;
         _stats = NewText("Stats", _root, GameFonts.Body, 16f, Muted, TextAlignmentOptions.MidlineLeft);
         Place(_stats.rectTransform, pad, y, w, 24f);
@@ -323,29 +353,34 @@ public class LastRunPanel : MonoBehaviour
         string hero = run.character >= 0 && run.character < heroes.Length ? heroes[run.character] : heroes[0];
         int secs = Mathf.FloorToInt(run.runTime);
         _subtitle.text = hero + "  ·  " + Capitalize(GameModes.ShortName((GameMode)run.mode)) + "  ·  "
-                         + Capitalize(DifficultyTiers.TierName((DifficultyTier)run.tier)) + "  ·  " + (secs / 60) + ":" + (secs % 60).ToString("00");
+                         + Capitalize(DifficultyTiers.TierName((DifficultyTier)run.tier)) + "  ·  "
+                         + TimeText.SpaceColons((secs / 60) + ":" + (secs % 60).ToString("00"));   // « 15 : 00 », comme partout (2026-11-11)
 
-        int[] parts = { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge };
-        string[] labels = { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi") };
-        int shown = 0;
+        // Détail des éclats disponible seulement pour les parties enregistrées depuis le 2026-11-12 (parts == total).
+        bool eclatDetail = run.eclats > 0 && run.eclatsTime + run.eclatsBosses + run.eclatsVictory + run.eclatsFirstWin == run.eclats;
+        if (!eclatDetail) _showEclats = false;
+        _sourceButton.gameObject.SetActive(eclatDetail);
+        _sourceLabel.text = _showEclats ? Loc.T("Sources de l'or") : Loc.T("Sources des éclats");
+
+        int[] parts = _showEclats
+            ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, 0 }
+            : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge };
+        string[] labels = _showEclats
+            ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), "" }
+            : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi") };
+        Color[] colors = _showEclats ? EclatSourceColors : SourceColors;
+        string unit = _showEclats ? Loc.T("Éclats") : Loc.T("Or");
         for (int i = 0; i < parts.Length; i++)
         {
-            bool has = parts[i] > 0;
-            _legendRows[i].SetActive(has);
+            _legendRows[i].SetActive(parts[i] > 0);
             _legendLabels[i].text = labels[i];
-            _legendValues[i].text = Loc.Int(parts[i]) + " " + Loc.T("Or");   // le cumul est en or (retour utilisateur : le préciser, sans symbole)
-            if (has)
-            {
-                // Les lignes visibles se tassent (pas de trou quand une source vaut 0).
-                int col = shown < 3 ? 0 : 1, row = shown < 3 ? shown : shown - 3;
-                var rt = (RectTransform)_legendRows[i].transform;
-                float pad = 22f, half = (_size.x - pad * 2f) * 0.5f;
-                rt.anchoredPosition = new Vector2(pad + col * (half + 8f), LegendTop() - row * 24f);
-                shown++;
-            }
+            _legendValues[i].text = Loc.Int(parts[i]) + " " + unit;   // le cumul est en or / éclats (retour utilisateur : le préciser, sans symbole)
+            _barSegments[i].color = colors[i];
+            _legendRows[i].transform.Find("Dot").GetComponent<Image>().color = colors[i];
         }
+        foreach (Graphic g in _goldBlock) g.color = WithAlpha(g.color, _showEclats ? 0.45f : 1f);   // montant non détaillé estompé
 
-        _eclatNote.text = run.eclatsFirstWin > 0 ? Loc.F("Prime de 1re victoire : +{0}", Loc.Int(run.eclatsFirstWin)) : "";
+        Layout(eclatDetail, parts);
         _stats.text = Loc.F("Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", Loc.Int(run.kills), run.level, run.bossKills);
 
         bool animate = run.unixTime != _lastAnimatedRun && isActiveAndEnabled;
@@ -355,10 +390,44 @@ public class LastRunPanel : MonoBehaviour
         else ApplyAmounts(run, parts, 1f);
     }
 
-    private float LegendTop()
+    // AJOUTÉ (2026-11-11, retour utilisateur : "adapter la taille automatiquement du panel de dernière partie lorsqu'il n'est pas
+    // rempli par toutes les valeurs, pour éviter les vides") - sous les montants, tout se place selon ce qui est présent :
+    // la note « Prime de 1re victoire » (sinon 12 px de moins), la barre et la légende (absentes si la partie n'a rapporté aucun
+    // or), une légende de 1 à 3 lignes au lieu de 3 toujours réservées. Les lignes visibles se tassent (pas de trou quand une
+    // source vaut 0), puis le séparateur, les stats et la hauteur de la carte suivent. Mêmes écarts que Build().
+    private void Layout(bool hasNote, int[] parts)
     {
-        // Même calcul que Build() : hauteur cumulée jusqu'à la légende.
-        return -18f - 40f - 32f - 12f - 82f - 22f;
+        const float pad = 22f;
+        float half = (_size.x - pad * 2f) * 0.5f;
+        float y = -18f - 40f - 32f - 12f;              // haut des montants
+        y -= hasNote ? 82f : 70f;                      // sans note : 12 px sous les icônes, comme sous le séparateur du haut
+
+        int shown = 0;
+        foreach (int p in parts) if (p > 0) shown++;
+        bool bar = shown > 0;
+        _barBack.gameObject.SetActive(bar);
+        _bar.gameObject.SetActive(bar);
+        if (bar)
+        {
+            _barBack.rectTransform.anchoredPosition = new Vector2(pad, y);
+            _bar.anchoredPosition = new Vector2(pad + 2f, y - 2f);
+            y -= 22f;
+            int index = 0;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i] <= 0) continue;
+                int col = index < 3 ? 0 : 1, row = index < 3 ? index : index - 3;
+                ((RectTransform)_legendRows[i].transform).anchoredPosition = new Vector2(pad + col * (half + 8f), y - row * 24f);
+                index++;
+            }
+            y -= Mathf.Min(shown, 3) * 24f + 4f;
+        }
+
+        _divider2.rectTransform.anchoredPosition = new Vector2(pad, y);
+        y -= 6f;
+        _stats.rectTransform.anchoredPosition = new Vector2(pad, y);
+        _size.y = -y + 24f + 15f;
+        _root.sizeDelta = _size;
     }
 
     private IEnumerator CountUp(LastRunSummary run, int[] parts)
@@ -393,6 +462,8 @@ public class LastRunPanel : MonoBehaviour
             x += segW;
         }
     }
+
+    private static Color WithAlpha(Color c, float a) { c.a = a; return c; }
 
     private static string Capitalize(string upper)
     {

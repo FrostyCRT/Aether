@@ -117,7 +117,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         float dt = Time.deltaTime;
 
         _cooldownTimer += dt;
-        float cooldownDuration = _fireRate > 0f ? (1f / _fireRate) : 9999f;
+        float cooldownDuration = _fireRate > 0f ? (1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) : 9999f; // Cadence (arbre)
         if (_cooldownTimer >= cooldownDuration)
         {
             Transform target = FindNearestEnemy();

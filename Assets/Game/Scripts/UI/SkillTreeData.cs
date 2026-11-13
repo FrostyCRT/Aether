@@ -98,12 +98,13 @@ public static class SkillTreeData
         AddNode("cadence", new NodeData
         {
             displayName = "Cadence",
-            // CORRIGÉ (2026-10-25) - le bonus n'est lu que par WeaponBase (tir de base), pas par les autres armes.
-            description = "Augmente la cadence de ton tir de base.",
+            // MODIFIÉ (2026-11-11, équilibrage choisi par l'utilisateur) - le bonus s'applique à toutes les armes de tir
+            // (tir de base, Boule de feu, Chaîne d'éclairs, Shurikens, Lames ricochets), valeurs baissées en conséquence.
+            description = "Augmente la cadence de toutes tes armes de tir.",
             isUnique = false,
-            level1Desc = "+10%",
-            level2Desc = "+20%",
-            level3Desc = "+35%",
+            level1Desc = "+8%",
+            level2Desc = "+16%",
+            level3Desc = "+25%",
             costLevel1 = 1500,
             costLevel2 = 6000,
             costLevel3 = 18000,
@@ -177,9 +178,9 @@ public static class SkillTreeData
             // CORRIGÉ (2026-10-25) - le Bouclier de Mana passe aussi par CrystalSystem.AbsorbProjectile, donc soigne aussi.
             description = "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.",
             isUnique = false,
-            level1Desc = "+20 PV par absorption",
-            level2Desc = "+50 PV par absorption",
-            level3Desc = "+80 PV par absorption",
+            level1Desc = "+15 PV par absorption",
+            level2Desc = "+35 PV par absorption",
+            level3Desc = "+55 PV par absorption",
             costLevel1 = 1500,
             costLevel2 = 6000,
             costLevel3 = 18000,

@@ -43,7 +43,7 @@ public static class LocTablePL
         { "Luminosité", "Jasność" }, { "Éclaircit ou assombrit toute l'image, menus compris.", "Rozjaśnia lub przyciemnia cały obraz, łącznie z menu." },
         { "Afficher les images par seconde", "Licznik FPS" }, { "Affiche le nombre d'images par seconde en haut à gauche.", "Pokazuje liczbę klatek na sekundę w lewym górnym rogu." },
         { "GRAPHISMES", "GRAFIKA" }, { "Qualité de l'image et effets visuels", "Jakość obrazu i efekty wizualne" }, { "Qualité graphique", "Jakość grafiki" },
-        { "Préréglage global du rendu : éclairage, ombres et netteté.", "Ogólne ustawienie renderowania: oświetlenie, cienie i ostrość." },
+        { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "Wydajność: płynniej na słabszych komputerach. Wysoka: ostre cienie, wygładzone krawędzie i poświata." },
         { "Ombres", "Cienie" }, { "Ombres projetées par les personnages et les ennemis.", "Cienie rzucane przez postacie i wrogów." },
         { "Effets d'ambiance des menus", "Efekty otoczenia w menu" }, { "Poussières et halos lumineux animés dans les menus", "Animowany kurz i poświata w menu" },
         { "AUDIO", "DŹWIĘK" }, { "Volumes et comportement du son", "Głośność i zachowanie dźwięku" }, { "Volume général", "Głośność ogólna" },
@@ -136,13 +136,13 @@ public static class LocTablePL
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "Skupienie" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "Każda sekunda bez otrzymania obrażeń zwiększa twoje obrażenia, aż do limitu. Premia spada do zera przy każdym otrzymanym ciosie." },
         { "+2% / s, plafond +15%", "+2% / s, maks. +15%" }, { "+3% / s, plafond +30%", "+3% / s, maks. +30%" }, { "+5% / s, plafond +50%", "+5% / s, maks. +50%" },
-        { "Cadence", "Szybkostrzelność" }, { "Augmente la cadence de ton tir de base.", "Zwiększa szybkostrzelność twojego podstawowego ataku." },
+        { "Cadence", "Szybkostrzelność" }, { "Augmente la cadence de toutes tes armes de tir.", "Zwiększa szybkostrzelność wszystkich twoich broni strzeleckich." },
         { "Fragmentation", "Fragmentacja" }, { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "Co 4. pocisk twojego podstawowego ataku wybucha przy trafieniu i zadaje pełne obrażenia pobliskim wrogom." },
         { "Dégâts Cristal", "Obrażenia kryształu" }, { "Augmente les dégâts de l'ultime et de la Nova.", "Zwiększa obrażenia supermocy i Novy." },
         { "Surpuissance", "Potęga" }, { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "Po użyciu supermocy twoje obrażenia są podwojone przez 10 sekund." },
         { "Vitalité", "Witalność" }, { "Augmente tes points de vie maximum.", "Zwiększa twoje maksymalne punkty życia." },
         { "Récupération", "Odnowa" }, { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "Każdy pocisk pochłonięty zrywem lub Tarczą many przywraca PŻ." },
-        { "+20 PV par absorption", "+20 PŻ za pochłonięcie" }, { "+50 PV par absorption", "+50 PŻ za pochłonięcie" }, { "+80 PV par absorption", "+80 PŻ za pochłonięcie" },
+        { "+15 PV par absorption", "+15 PŻ za pochłonięcie" }, { "+35 PV par absorption", "+35 PŻ za pochłonięcie" }, { "+55 PV par absorption", "+55 PŻ za pochłonięcie" },
         { "Second Souffle", "Drugi oddech" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "Raz na rozgrywkę przeżywasz śmiertelny cios z 1 PŻ, a przez kolejne 3 sekundy nic nie może cię zranić." },
         { "Armure", "Pancerz" }, { "Réduit les dégâts reçus de tous les ennemis.", "Zmniejsza obrażenia otrzymywane od wszystkich wrogów." },
         { "Bouclier de Mana", "Tarcza many" }, { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "Bańka z 3 ładunkami blokuje wrogie pociski i pochłania je jak zryw. Odnawianie: 1 ładunek co 3 sekundy, wstrzymane na 4 sekundy po pęknięciu bańki." },
@@ -179,7 +179,7 @@ public static class LocTablePL
         { "Dégâts +", "Obrażenia +" }, { "+20% de dégâts sur toutes tes attaques", "+20% obrażeń wszystkich ataków" }, { "Double Tir", "Podwójny strzał" },
         { "Ton tir de base tire un second projectile juste après le premier", "Twój podstawowy atak wystrzeliwuje drugi pocisk tuż po pierwszym" },
         { "Boule de Feu", "Kula ognia" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "Ciska kulą ognia, która wybucha w największym skupisku wrogów" },
-        { "Cadence+", "Szybkostrzelność+" }, { "+20% de cadence sur toutes tes armes de tir", "+20% szybkostrzelności wszystkich broni strzelających" },
+        { "Cadence +", "Szybkostrzelność +" }, { "+20% de cadence sur toutes tes armes de tir", "+20% szybkostrzelności wszystkich broni strzelających" },
         { "Soin", "Leczenie" }, { "Restaure 50% de tes PV max", "Przywraca 50% maksymalnych PŻ" }, { "Couteaux", "Noże" },
         { "Lance des salves de couteaux qui transpercent les ennemis", "Rzuca salwy noży przebijających wrogów" }, { "Chaîne de Foudre", "Łańcuch błyskawic" },
         { "Décharge électrique qui rebondit sur les ennemis proches", "Wyładowanie elektryczne przeskakujące między pobliskimi wrogami" },
@@ -198,7 +198,7 @@ public static class LocTablePL
         { "Ralentissement porté à {0}%", "Spowolnienie zwiększone do {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry" },
         { "Débloque un couteau supplémentaire dans la salve", "Dodaje jeden nóż do salwy" }, { "+{0} ennemis perforés en plus", "Przebija o {0} wrogów więcej" },
         { "+{0} ennemi perforé en plus", "Przebija o {0} wroga więcej" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Odblokowuje sprężystą kulę, która przenika przez wrogów" },
-        { "+{0}% vitesse des orbes", "+{0}% szybkości kul" }, { "+1 orbe rebondissant supplémentaire", "+1 dodatkowa sprężysta kula" },
+        { "+{0}% vitesse de l'orbe", "+{0}% szybkości kuli" }, { "+1 orbe rebondissant supplémentaire", "+1 dodatkowa sprężysta kula" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "DYSTANS" }, { "ZONE", "OBSZAR" }, { "BRÛLURE", "PODPALENIE" }, { "MÊLÉE", "WRĘCZ" }, { "AURA", "AURA" },
@@ -318,6 +318,10 @@ public static class LocTablePL
         { "Victoire", "Zwycięstwo" }, { "Défi", "Wyzwanie" }, { "Prime de 1re victoire : +{0}", "Premia za pierwsze zwycięstwo: +{0}" },
         { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "Pokonani wrogowie: {0}  ·  Poz. {1}  ·  Bossowie: {2}" },
         { "+{0}% cadence", "+{0}% szybkostrzelności" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "Odblokowuje Falę uderzeniową: aura co {0} s odpycha wrogów" },
+        { "Taille de la fenêtre en mode fenêtré", "Rozmiar okna w trybie okienkowym" }, { "Le plein écran utilise toujours la résolution de l'écran.", "Pełny ekran zawsze używa rozdzielczości monitora." },
+        { "Défi en cours", "Bieżące wyzwanie" }, { "Le défi de la partie et sa progression.", "Wyzwanie tej rozgrywki i jego postęp." },
+        { "Débloque {0} pour acheter cette compétence", "Odblokuj postać {0}, aby kupić tę umiejętność" }, { "Le niveau Performance n'affiche pas d'ombres.", "Poziom Wydajność nie wyświetla cieni." },
+        { "Sources des éclats", "Źródła odłamków" }, { "Sources de l'or", "Źródła złota" }, { "1re victoire", "Pierwsze zwycięstwo" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },

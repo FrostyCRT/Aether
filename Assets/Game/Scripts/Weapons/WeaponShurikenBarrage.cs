@@ -2,7 +2,7 @@ using UnityEngine;
 public class WeaponShurikenBarrage : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _damage = 120f; // MODIFIE - x10, cf. rescale global des degats/PV
+    [SerializeField] private float _damage = 180f; // MODIFIE - x10, cf. rescale global des degats/PV ; MODIFIÉ (2026-11-11) 120 -> 180 (+50 %), Lyra tuait ~2x moins qu Aether et Kael
     [SerializeField] private float _fireRate = 0.4f;
     [SerializeField] private float _detectionRange = 15f;
 
@@ -50,7 +50,7 @@ public class WeaponShurikenBarrage : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
         _cooldownTimer += Time.deltaTime;
-        float cooldownDuration = _fireRate > 0f ? (1f / _fireRate) : 9999f;
+        float cooldownDuration = _fireRate > 0f ? (1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) : 9999f; // Cadence (arbre)
         if (_cooldownTimer >= cooldownDuration)
         {
             Transform target = FindNearestEnemy();

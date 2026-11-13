@@ -1,0 +1,16 @@
+DEBUT c0_sans_2 perso=Player_Aether(Clone) branche=Guerrier pvmax=2000 cadence=1
+T chrono=60 niv=1 kills=20 boss=0 degats=2255 (2255/min) soins=255 recharges=1 dashs=5 absorptions=5 clones=0 pvmax=2000 plusGrosCoup=375
+T chrono=120 niv=1 kills=38 boss=0 degats=2505 (1252/min) soins=555 recharges=1 dashs=5 absorptions=5 clones=0 pvmax=2000 plusGrosCoup=375
+T chrono=180 niv=5 kills=183 boss=0 degats=5880 (1960/min) soins=840 recharges=4 dashs=13 absorptions=16 clones=0 pvmax=2000 plusGrosCoup=375
+T chrono=240 niv=8 kills=455 boss=0 degats=10265 (2566/min) soins=1080 recharges=7 dashs=28 absorptions=34 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=300 niv=9 kills=786 boss=0 degats=13520 (2704/min) soins=1335 recharges=9 dashs=45 absorptions=60 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=360 niv=13 kills=1274 boss=1 degats=25350 (4225/min) soins=2845 recharges=17 dashs=67 absorptions=94 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=420 niv=14 kills=1808 boss=1 degats=31540 (4506/min) soins=3125 recharges=22 dashs=83 absorptions=121 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=480 niv=15 kills=2341 boss=1 degats=39060 (4882/min) soins=3375 recharges=28 dashs=102 absorptions=142 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=540 niv=16 kills=2870 boss=1 degats=55455 (6162/min) soins=3590 recharges=41 dashs=118 absorptions=154 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=600 niv=17 kills=3153 boss=1 degats=66360 (6636/min) soins=3830 recharges=49 dashs=132 absorptions=166 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=660 niv=20 kills=3681 boss=2 degats=94945 (8631/min) soins=4445 recharges=71 dashs=160 absorptions=193 clones=0 pvmax=2000 plusGrosCoup=1100
+T chrono=720 niv=21 kills=4281 boss=2 degats=111175 (9265/min) soins=5925 recharges=83 dashs=176 absorptions=207 clones=0 pvmax=2300 plusGrosCoup=1100
+T chrono=780 niv=22 kills=5203 boss=2 degats=137515 (10578/min) soins=6150 recharges=101 dashs=195 absorptions=228 clones=0 pvmax=2300 plusGrosCoup=1100
+T chrono=840 niv=24 kills=6001 boss=2 degats=158605 (11329/min) soins=6410 recharges=115 dashs=211 absorptions=242 clones=0 pvmax=2300 plusGrosCoup=1100
+FIN15 chrono=900 niv=25 kills=6972 boss=2 degats=174900 (11660/min) soins=6665 recharges=126 dashs=224 absorptions=252 clones=0 pvmax=2300 plusGrosCoup=1100 bossTemps=62s,75s,

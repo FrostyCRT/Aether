@@ -108,7 +108,7 @@
 99| GRAFICA
 100| Qualità dell'immagine ed effetti visivi
 101| Qualità grafica
-102| Preimpostazione generale del rendering: illuminazione, ombre e nitidezza.
+102| Prestazioni: più fluido sui PC meno potenti. Alta: ombre nitide, bordi smussati e bagliori.
 103| Ombre
 104| Ombre proiettate da personaggi e nemici.
 105| Effetti d'atmosfera nei menu
@@ -302,7 +302,7 @@
 285| +3% / s, max +30%
 286| +5% / s, max +50%
 287| Cadenza
-288| Aumenta la cadenza del tuo attacco base.
+288| Aumenta la cadenza di tutte le tue armi da tiro.
 289| Frammentazione
 290| Un proiettile su 4 del tuo attacco base esplode all'impatto e infligge tutti i suoi danni ai nemici vicini.
 291| Danni del cristallo
@@ -313,9 +313,9 @@
 296| Aumenta i tuoi punti salute massimi.
 297| Recupero
 298| Ogni proiettile assorbito dallo scatto o dallo Scudo di mana ripristina PS.
-299| +20 PS per assorbimento
-300| +50 PS per assorbimento
-301| +80 PS per assorbimento
+299| +15 PS per assorbimento
+300| +35 PS per assorbimento
+301| +55 PS per assorbimento
 302| Secondo fiato
 303| Una volta per partita, sopravvivi a un colpo fatale con 1 PS e diventi invulnerabile per 3 secondi.
 304| Armatura
@@ -389,7 +389,7 @@
 368| Il tuo attacco base spara un secondo proiettile subito dopo il primo
 369| Palla di fuoco
 370| Lancia una palla di fuoco che esplode sul gruppo di nemici più fitto
-371| Cadenza+
+371| Cadenza +
 372| +20% alla cadenza di tutte le tue armi da tiro
 373| Cura
 374| Ripristina il 50% dei tuoi PS massimi
@@ -423,7 +423,7 @@
 402| Perfora {0} nemici in più
 403| Perfora {0} nemico in più
 404| Sblocca una sfera rimbalzante che attraversa i nemici
-405| +{0}% alla velocità delle sfere
+405| +{0}% alla velocità della sfera
 406| +1 sfera rimbalzante aggiuntiva
 
 ## Personnages
@@ -697,3 +697,12 @@
 656| Nemici sconfitti: {0}  ·  Liv. {1}  ·  Boss: {2}
 657| +{0}% alla cadenza
 658| Sblocca Onda d'urto: l'aura respinge i nemici ogni {0} secondi
+659| Dimensione della finestra in modalità finestra
+660| Lo schermo intero usa sempre la risoluzione dello schermo.
+661| Sfida in corso
+662| La sfida della partita e i suoi progressi.
+663| Sblocca {0} per acquistare questa abilità
+664| Il livello Prestazioni non mostra ombre.
+665| Origine dei frammenti
+666| Origine dell'oro
+667| 1ª vittoria

@@ -17,8 +17,9 @@ using UnityEngine;
 public class MenuPageReveal : MonoBehaviour
 {
     public const float RevealCooldown = 60f;   // secondes hors de la page avant de rejouer l'apparition
-    private const float Delay = 0.5f;          // décor seul (1 s jugé trop long par l'utilisateur, 2026-10-29)
-    private const float FadeDuration = 0.6f;   // fondu du contenu
+    // MODIFIÉ (2026-11-12, demande utilisateur : « diviser par 1,5 ») - 0,5 / 0,6 s -> 0,33 / 0,4 s (1,1 s -> 0,73 s en tout).
+    private const float Delay = 0.5f / 1.5f;   // décor seul (1 s jugé trop long par l'utilisateur, 2026-10-29)
+    private const float FadeDuration = 0.6f / 1.5f;   // fondu du contenu
 
     private static readonly HashSet<string> BackgroundNames = new HashSet<string>
     {

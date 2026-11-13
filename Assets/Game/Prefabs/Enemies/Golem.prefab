@@ -78,7 +78,7 @@ MonoBehaviour:
   _poolTag: EnemyTank
   _playerContactRadius: 1.4
   _contactDamage: 250
-  _contactDamageCooldown: 1.2
+  _contactDamageCooldown: 1.6
   _burnTickInterval: 0.5
   _burnTintIntensity: 0.55
 --- !u!54 &5642038682667198314

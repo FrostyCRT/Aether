@@ -53,6 +53,7 @@ Shader "Aether/VATLit"
         [NoScaleOffset] _VatPositionTex("VAT Position", 2D) = "black" {}
         [NoScaleOffset] _VatNormalTex("VAT Normal", 2D) = "black" {}
         _VatFrame("VAT Frame (par instance)", Float) = 0
+        _VatFrameNext("VAT Frame suivante (par instance)", Float) = 0
     }
 
     SubShader

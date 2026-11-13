@@ -270,7 +270,7 @@ public class GameManager : MonoBehaviour
         // level-up, game over) - c'est là que le joueur la fait le plus facilement sortir. Confined reste actif
         // dans tous les cas : la souris peut toujours bouger librement et cliquer DANS la fenêtre, seulement plus
         // en sortir.
-        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.lockState = CustomCursor.DesiredLockState;   // libérée par Échap en fenêtré (CustomCursor)
         Cursor.visible = false;
     }
 

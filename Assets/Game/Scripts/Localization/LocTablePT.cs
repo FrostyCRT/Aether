@@ -43,7 +43,7 @@ public static class LocTablePT
         { "Luminosité", "Brilho" }, { "Éclaircit ou assombrit toute l'image, menus compris.", "Clareia ou escurece toda a imagem, inclusive os menus." },
         { "Afficher les images par seconde", "Mostrar FPS" }, { "Affiche le nombre d'images par seconde en haut à gauche.", "Mostra os quadros por segundo no canto superior esquerdo." },
         { "GRAPHISMES", "GRÁFICOS" }, { "Qualité de l'image et effets visuels", "Qualidade da imagem e efeitos visuais" },
-        { "Qualité graphique", "Qualidade gráfica" }, { "Préréglage global du rendu : éclairage, ombres et netteté.", "Predefinição geral de renderização: iluminação, sombras e nitidez." },
+        { "Qualité graphique", "Qualidade gráfica" }, { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "Desempenho: mais fluido em PCs modestos. Alta: sombras nítidas, bordas suavizadas e brilhos." },
         { "Ombres", "Sombras" }, { "Ombres projetées par les personnages et les ennemis.", "Sombras projetadas pelos personagens e pelos inimigos." },
         { "Effets d'ambiance des menus", "Efeitos de ambiente nos menus" }, { "Poussières et halos lumineux animés dans les menus", "Poeira e brilhos animados nos menus" },
         { "AUDIO", "ÁUDIO" }, { "Volumes et comportement du son", "Volume e comportamento do som" }, { "Volume général", "Volume geral" },
@@ -135,13 +135,13 @@ public static class LocTablePT
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "Foco" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "Cada segundo sem sofrer dano aumenta seu dano, até um limite. O bônus zera sempre que você é atingido." },
         { "+2% / s, plafond +15%", "+2% / s, máx. +15%" }, { "+3% / s, plafond +30%", "+3% / s, máx. +30%" }, { "+5% / s, plafond +50%", "+5% / s, máx. +50%" },
-        { "Cadence", "Cadência" }, { "Augmente la cadence de ton tir de base.", "Aumenta a cadência do seu ataque básico." },
+        { "Cadence", "Cadência" }, { "Augmente la cadence de toutes tes armes de tir.", "Aumenta a cadência de todas as suas armas de disparo." },
         { "Fragmentation", "Fragmentação" }, { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "Um a cada 4 projéteis do seu ataque básico explode no impacto e causa todo o seu dano aos inimigos próximos." },
         { "Dégâts Cristal", "Dano de Cristal" }, { "Augmente les dégâts de l'ultime et de la Nova.", "Aumenta o dano da suprema e da Nova." },
         { "Surpuissance", "Sobrecarga" }, { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "Depois da suprema, seu dano dobra por 10 segundos." },
         { "Vitalité", "Vitalidade" }, { "Augmente tes points de vie maximum.", "Aumenta seus pontos de vida máximos." },
         { "Récupération", "Recuperação" }, { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "Cada projétil absorvido pelo dash ou pelo Escudo de Mana restaura PV." },
-        { "+20 PV par absorption", "+20 PV por absorção" }, { "+50 PV par absorption", "+50 PV por absorção" }, { "+80 PV par absorption", "+80 PV por absorção" },
+        { "+15 PV par absorption", "+15 PV por absorção" }, { "+35 PV par absorption", "+35 PV por absorção" }, { "+55 PV par absorption", "+55 PV por absorção" },
         { "Second Souffle", "Segundo Fôlego" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "Uma vez por partida, você sobrevive a um golpe fatal com 1 PV e fica invencível por 3 segundos." },
         { "Armure", "Armadura" }, { "Réduit les dégâts reçus de tous les ennemis.", "Reduz o dano recebido de todos os inimigos." },
         { "Bouclier de Mana", "Escudo de Mana" }, { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "Uma bolha de 3 cargas bloqueia os projéteis inimigos e os absorve como o dash. Recarga: 1 carga a cada 3 segundos, pausada por 4 segundos se a bolha se romper." },
@@ -179,7 +179,7 @@ public static class LocTablePT
         { "Dégâts +", "Dano +" }, { "+20% de dégâts sur toutes tes attaques", "+20% de dano em todos os seus ataques" },
         { "Double Tir", "Tiro Duplo" }, { "Ton tir de base tire un second projectile juste après le premier", "Seu ataque básico dispara um segundo projétil logo após o primeiro" },
         { "Boule de Feu", "Bola de Fogo" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "Lança uma bola de fogo que explode no grupo de inimigos mais denso" },
-        { "Cadence+", "Cadência+" }, { "+20% de cadence sur toutes tes armes de tir", "+20% de cadência em todas as suas armas de disparo" },
+        { "Cadence +", "Cadência +" }, { "+20% de cadence sur toutes tes armes de tir", "+20% de cadência em todas as suas armas de disparo" },
         { "Soin", "Cura" }, { "Restaure 50% de tes PV max", "Restaura 50% dos seus PV máximos" }, { "Couteaux", "Facas" },
         { "Lance des salves de couteaux qui transpercent les ennemis", "Lança rajadas de facas que atravessam os inimigos" },
         { "Chaîne de Foudre", "Raio em Cadeia" }, { "Décharge électrique qui rebondit sur les ennemis proches", "Descarga elétrica que salta entre os inimigos próximos" },
@@ -198,7 +198,7 @@ public static class LocTablePT
         { "+{0}% rayon", "+{0}% de raio" }, { "Ralentissement porté à {0}%", "Lentidão aumentada para {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Adiciona mais uma faca à rajada" }, { "+{0} ennemis perforés en plus", "Perfura mais {0} inimigos" },
         { "+{0} ennemi perforé en plus", "Perfura mais {0} inimigo" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Desbloqueia um orbe quicante que atravessa os inimigos" },
-        { "+{0}% vitesse des orbes", "+{0}% de velocidade dos orbes" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe quicante extra" },
+        { "+{0}% vitesse de l'orbe", "+{0}% de velocidade do orbe" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe quicante extra" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "DISTÂNCIA" }, { "ZONE", "ÁREA" }, { "BRÛLURE", "QUEIMADURA" }, { "MÊLÉE", "CORPO A CORPO" }, { "AURA", "AURA" },
@@ -319,5 +319,9 @@ public static class LocTablePT
         { "Victoire", "Vitória" }, { "Défi", "Desafio" }, { "Prime de 1re victoire : +{0}", "Bônus da primeira vitória: +{0}" },
         { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "Inimigos derrotados: {0}  ·  Nv. {1}  ·  Chefes: {2}" },
         { "+{0}% cadence", "+{0}% de cadência" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "Desbloqueia Onda de choque: a aura repele os inimigos a cada {0} segundos" },
+        { "Taille de la fenêtre en mode fenêtré", "Tamanho da janela no modo janela" }, { "Le plein écran utilise toujours la résolution de l'écran.", "A tela cheia sempre usa a resolução da tela." },
+        { "Défi en cours", "Desafio atual" }, { "Le défi de la partie et sa progression.", "O desafio da partida e o seu progresso." },
+        { "Débloque {0} pour acheter cette compétence", "Desbloqueie {0} para comprar esta habilidade" }, { "Le niveau Performance n'affiche pas d'ombres.", "O nível Desempenho não exibe sombras." },
+        { "Sources des éclats", "Origem dos fragmentos" }, { "Sources de l'or", "Origem do ouro" }, { "1re victoire", "1ª vitória" },
     };
 }

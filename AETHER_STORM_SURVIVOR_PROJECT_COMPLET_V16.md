@@ -1,6 +1,6 @@
 # AETHER STORM SURVIVOR — Documentation projet (V16)
 
-> **Mise à jour : 2026-11-06** (paliers de difficulté et Sans fin à débloquer, boss 1 à charges aléatoires, choix de l'écran, caméra fluide, économie +25 % ; depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
+> **Mise à jour : 2026-11-13** (du 2026-11-10 au 13 : équilibrage des 3 branches mesuré au bot puis corrigé, dégâts de contact espacés, Cadence sur toutes les armes de tir, plafond d'un coup à 50 % des PV, annonce de déblocage sur l'écran de victoire, sources des éclats dans « Dernière partie », badge « défi réussi » en jeu, éclats peints sur l'écran de chargement, logo Unity retiré, Qualité graphique refaite ; prochains chantiers décidés : mode **Escarmouche** (`CONCEPTION_ESCARMOUCHE.md`), **Grimoire**, événement **Nuit des Éclats**, tutoriel - voir « ▶ REPRENDRE ICI » en tête de `NOTES.md`. Le 2026-11-06 : paliers de difficulté et Sans fin à débloquer, boss 1 à charges aléatoires, choix de l'écran, caméra fluide, économie +25 % ; depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -32,6 +32,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Intégration Steam (SDK, succès, Cloud) | ⏳ Pas commencée |
 | Manette | ✅ Complète (2026-10-28/29) : nouvel Input System, boutons modifiables, icônes Xbox/PlayStation/Switch, curseur rond dans les menus, visée au stick droit, vibrations |
 | Accessibilité | 🟡 Pause automatique à la perte de focus ; pas encore d'option secousses d'écran / flashs |
+| Nouveaux contenus décidés (2026-11-13) | ⏳ Mode Escarmouche (5 min, document de conception, décisions en attente) · Grimoire (collection des découvertes) · événement Nuit des Éclats (session dédiée) · tutoriel |
 
 ---
 
@@ -45,13 +46,15 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 
 - Attaque de base commune (`WeaponBase`, projectile d'eau) équipée au départ.
 - Les armes exclusives ne sont **pas** équipées au départ : elles se débloquent par une carte de level-up garantie tôt dans la partie, filtrée par personnage.
-- Clone spectral (Lyra uniquement, nœud « Clone Spectral », renommé le 2026-10-19 - ne correspondait plus à l'effet depuis que ce n'est plus un dash) : touche dédiée, attire les ennemis 2 s, invincibilité, boost de fuite, recharge 8 s.
+- Clone spectral (Lyra uniquement, nœud « Clone Spectral », renommé le 2026-10-19 - ne correspondait plus à l'effet depuis que ce n'est plus un dash) : touche dédiée, attire **tous** les ennemis de la carte pendant 3 s, invincibilité, boost de fuite, recharge 8 s (la recharge démarre dès la pose ; 6 s essayé le 2026-11-11 puis annulé, trop fort).
+- Équilibrage des branches (2026-11-11, bot de 18 parties) : Lyra sans arbre tuait ~2× moins que les autres → Salve de couteaux 120 → **180** dégâts de base ; Gardien trop fort en survie → Récupération +20/50/80 → **+15/35/55** PV par absorption. Remesure au bot pas encore refaite.
+- Bases identiques pour les 3 héros : 2 000 PV, dash 3 s, Nova 100 dégâts. **Aucun coup ne retire plus de 50 % des PV max** (2026-11-12 ; des coups de boss allaient jusqu'à 1 565). Dégâts de contact : un coup par ennemi toutes les 0,8 s (Golem 1,6 s, boss 1 s), 3 coups maximum par fenêtre de 0,8 s.
 
 ### Arbre de compétences (payé en Or, une branche par personnage)
-- **Guerrier (Aether)** : Concentration, Cadence → Fragmentation, Dégâts Cristal → Surpuissance (dégâts ×2 pendant 10 s après l'Ultime - 5 s jusqu'au 2026-10-23, jugé trop court -, sur toutes les armes depuis le 2026-10-16).
+- **Guerrier (Aether)** : Concentration, Cadence (+8/16/25 % sur **toutes** les armes de tir depuis le 2026-11-11) → Fragmentation, Dégâts Cristal → Surpuissance (dégâts ×2 pendant 10 s après l'Ultime - 5 s jusqu'au 2026-10-23, jugé trop court -, sur toutes les armes depuis le 2026-10-16).
 - **Gardien (Kael)** : Vitalité, Récupération → Second Souffle, Armure → Bouclier de Mana.
 - **Fantôme (Lyra)** : Impulsion Nova, Dash Amélioré → Maîtrise du Cristal (réduit de 1 le nombre de charges de Nova pour l'Ultime, 6 à 5), Nova Étendue → Clone Spectral.
-- Coûts par palier : 100 / 300 / 700 ; nœuds uniques 500 à 1200.
+- Coûts (or ×10 le 2026-11-07) : paliers 1 500 / 6 000 / 18 000 (ou 10 000 / 25 000 / 50 000 selon le nœud) ; nœuds uniques 25 000 à 120 000.
 
 ---
 
@@ -97,6 +100,8 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Sans fin | Les boss reviennent en boucle, de plus en plus forts | Avoir gagné une partie du Classique dans le palier choisi (ou un plus dur) |
 | Ruée de boss | Les boss s'enchaînent | Avoir battu 1 boss en Classique |
 
+**Escarmouche** (5 min, partie de 15 min « compressée », montée en puissance rapide et volontairement excessive) : décidée le 2026-11-13, document `CONCEPTION_ESCARMOUCHE.md`, rien de codé, 6 décisions en attente.
+
 Seul le Classique compte pour la progression (défis, déblocages). Sans fin et Ruée de boss ne sont pas encore validés par l'utilisateur et sont volontairement absents du trailer.
 
 **Choc des titans retiré de la sélection le 2026-10-19** (les 3 boss en même temps, build entièrement maxée dès le départ) : zéro décision de build pendant la partie, à l'opposé du cœur stratégique du genre, et ses constantes d'équilibrage n'étaient que des premiers jets jamais playtestés. Retrait non destructif (`GameModes.IsShippable`) - le code, l'enum et les statistiques de sauvegarde existent toujours, récupérable pour un futur mode post-lancement.
@@ -107,7 +112,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 
 - **Économie refondue le 2026-10-27** (une partie Apocalyptique rapportait ~40 000 or pour un arbre complet à 14 000) : l'or vient surtout des minutes de jeu (25/min), des boss et de la victoire (310 en Classique), très peu des ennemis (2,5 % de leur valeur). Barème relevé d'environ 25 % le 2026-10-29 à la demande de l'utilisateur : les objectifs du 2026-10-27 (premier achat dès la 1re partie, une branche maxée en ~30-40 parties, les 3 branches en ~100, toute la Réputation en ~150) sont donc maintenant atteints environ 20 % plus vite (estimation, pas remesurée).
 - **Or** : finance les arbres de compétences (paliers 150 / 600 / 1 800, nœuds uniques 1 000 à 12 000 ; les 2 nœuds du bas sont libres, ceux du milieu demandent une victoire en Modéré, celui du haut une victoire en Violent avec le personnage de la branche) et les skins Classique.
-- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés aux boss (13 / 25 / 38), à la victoire (+50) et lors de la 1re victoire de chaque personnage dans chaque palier (300 / 600 / 1 000).
+- **Or ×10 le 2026-11-07** : 300 or par minute de chrono, boss 900 / 1 800 / 3 000, victoire 3 700 (Classique), ennemis à rendement décroissant ; défis : +1 500 / 3 000 / 5 000 or.
+- **Éclats** : financent la Réputation, les skins Prestige et le déblocage anticipé de Kael/Lyra. Gagnés à la survie (**2 toutes les 45 s** depuis le 2026-11-13), aux boss (15 / 30 / 45), à la victoire (+60), × la difficulté (×1 / ×1,5 / ×2), et lors de la 1re victoire de chaque personnage dans chaque palier (300 / 600 / 1 000). Le détail par source s'affiche dans « Dernière partie » (bouton « Sources des éclats », 2026-11-12).
 - **Réputation** (onglet du menu) : 3 bonus permanents, Dégâts (jusqu'à +60 %), Vitesse (jusqu'à +30 %), Régénération (jusqu'à 70 PV/s), 5 paliers chacun. Un bonus au maximum affiche un bouton « MAX » grisé, comme « Équipé » / « Sélectionné ».
 - **Skins** (même onglet) : par personnage, une rangée Classique (Or) et une rangée Prestige (Éclats) de 4 emplacements. Seule la tenue d'origine existe ; les emplacements vides affichent « BIENTÔT ». Ajouter un skin = une ligne dans `Resources/SkinCatalog.asset` (aucun code), mais il faut le modèle 3D, le prefab et le portrait (**21 skins prévus**, voir `A_MODELISER_3D.md`).
 
@@ -118,7 +124,7 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 - Un défi tiré **par heure réelle (UTC)**, identique pour toutes les parties de l'heure ; récompense accordée une seule fois par heure. Classique uniquement.
 - 12 défis (4 Faciles, 4 Moyens, 4 Difficiles - "Sans Cristal" repassé Moyen le 2026-11-07 : atteindre le boss 1 sans Ultime), tirage pondéré 50/35/15, anti-répétition sur les 3 derniers.
 - Les défis liés au TEMPS (ex. "Ascension Rapide" : niveau 18 avant la 10e minute) sont réévalués en continu (`ChallengeManager.Update`, 2026-10-23) et pas seulement sur un évènement de jeu - sinon un défi purement temporel ne passait jamais en Échoué.
-- Récompense : multiplicateur de l'or ramassé, **Or ×1,2 / ×1,5 / ×2** selon le palier.
+- Récompense : **+1 500 / +3 000 / +5 000 or** selon la difficulté du défi (montant fixe, plus un multiplicateur). En partie, un défi réussi passe au vert avec un badge coché (2026-11-12) ; les défis ne comptent qu'en Classique.
 - Les défis « endurance » (Sang-Froid, Résilience) ne sont validés qu'à la mort du boss prévu ; Sans Cristal, dès l'apparition du boss 1.
 - Suivi dans le HUD et détail dans le menu Pause.
 
@@ -128,16 +134,18 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 
 - **Menu principal** : onglets Jouer (avec sélecteur de mode et carrousel de difficulté), Personnages, Compétences, Réputation, Paramètres ; décors 2D illustrés animés (vent, feuilles, lumière), curseur gantelet personnalisé.
   - Fond de l'Accueil selon le héros (illustrations V2) **et** la difficulté : Modéré = jour, Violent = crépuscule, Apocalyptique = nuit, fondu par-dessus l'ancien fond (2026-10-29).
-  - **Apparition des pages** (2026-10-29) : en ouvrant un onglet, on voit d'abord le décor seul (ce sont de vraies illustrations du lore), puis le contenu apparaît en fondu 0,5 s plus tard. Chaque page a son propre minuteur, qui démarre quand on la quitte : l'animation ne se rejoue que si l'on revient au moins 1 minute plus tard (ou à la 1re ouverture) ; rester sur une page ne la relance jamais.
+  - **Apparition des pages** (2026-10-29) : en ouvrant un onglet, on voit d'abord le décor seul (ce sont de vraies illustrations du lore), puis le contenu apparaît en fondu (0,33 s de décor seul + 0,4 s de fondu depuis le 2026-11-12, ÷ 1,5). Chaque page a son propre minuteur, qui démarre quand on la quitte : l'animation ne se rejoue que si l'on revient au moins 1 minute plus tard (ou à la 1re ouverture) ; rester sur une page ne la relance jamais.
   - Tous les boutons du jeu grossissent légèrement au survol (`ButtonHoverFX`) ; Alt+F4 ou la croix de la fenêtre demandent confirmation (`QuitConfirm`).
 - **HUD** construit en code (`HudStyler`) : barres vie/XP/boss, chrono, or, kills, défi, Dash, Clone, Ultime, Concentration, légende des touches adaptative.
 - **Level-up** : temps fort de 0,3 s en jeu avant l'ouverture des cartes, une ascension de cristal doré autour du héros (fragments qui montent en spirale, étoile au-dessus de lui ; remplace l'anneau doré au sol le 2026-10-29). Puis 3 cartes parchemin animées (couleur par personnage, violet pour les fusions, léger grossissement au survol), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3 ou au curseur de la manette.
-- **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation.
-- **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
+- **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation ; liseré sombre autour du cadre (2026-11-12).
+- **Défi réussi en cours de partie** (2026-11-12) : texte vert et badge rond coché qui « tamponne » l'icône du défi.
+- **Dernière partie** (Accueil) : résultat, or et éclats gagnés, barre de répartition par source (bouton pour basculer entre l'or et les éclats).
+- **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, annonce « Nouveau personnage débloqué » (aussi sur la Victoire depuis le 2026-11-12 : Lyra n'était jamais annoncée), arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
 - **Paramètres** : affichage (dont le choix de l'écran, 2026-10-29), graphismes, audio, jeu (visée automatique ou manuelle, pause automatique), interface, commandes (2 touches clavier/souris + 1 bouton de manette par action, préréglages AZERTY/QWERTY, vibrations), langue.
 - **Manette** (2026-10-28/29) : curseur rond au stick dans tous les menus (souris virtuelle : survol, clic, glisser), mode défilement dans les zones déroulantes (A pour entrer, B pour sortir), LB/RB = onglets, LT/RT = catégories des Paramètres, B = retour. Légende du HUD et icônes au style de la manette branchée. Le jeu bascule tout seul entre souris et manette selon le dernier appareil touché.
 - Durées affichées partout au format « 03 : 24 » (espace fine autour des deux-points, chrono, records, écrans de fin).
-- **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu.
+- **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu ; éclats de cristal peints (images de l'utilisateur, 12 par bande, 2026-11-13). Plus d'écran « Made with Unity » (retiré le 2026-11-12, visible en build).
 
 ---
 
@@ -169,6 +177,12 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 - Profilage des performances (cible 60 FPS stables, Steam Deck).
 - Nettoyage du projet (prefabs en double dans `Resources/`, scripts et assets inutilisés).
 
+**Décidés le 2026-11-13 (conception avant code)**
+- Mode **Escarmouche** (5 min) : `CONCEPTION_ESCARMOUCHE.md`, décisions de l'utilisateur en attente.
+- **Grimoire** : collection des premières découvertes (cartes, fusions, boss) avec petite prime d'éclats ; un bouton discret, pas de nouvelle page, pas sur la Réputation.
+- **Nuit des Éclats** : événement de mi-partie déclenché par un objet à ramasser, éclairage de nuit ; session dédiée, conséquences à étudier une par une.
+- **Tutoriel** (reporté).
+
 **Idées de contenu (non commencées)**
 - Plusieurs cartes / biomes (idée « 3 maps »).
 - Sanglier (modèle existant, pas intégré).
@@ -178,6 +192,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ---
 
 ## 10. Principaux bugs corrigés récemment
+
+**2026-11-10 → 2026-11-13** : Lyra débloquée sans annonce (seul l'écran de défaite lisait l'annonce) · page Personnages bloquée si l'on changeait de page pendant le glissement · écarts irréguliers texte du défi / barre / statut dans la Pause (mesure de largeur faussée) · retouches de traduction écrasées par la régénération des tables (corrigé à la source, `tr_xx.txt`) · morts en un coup de boss (plafond à 50 % des PV).
 
 **2026-10-29 → 2026-11-06** : caméra saccadée (héros déplacé à 50 Hz sans interpolation, corrigé) · nombre de vie décentré par rapport à la partie visible de la barre · espace avant « ! » et « : » invisible en Bangers (police penchée) · compteur d'IPS affiché sur l'écran de chargement.
 

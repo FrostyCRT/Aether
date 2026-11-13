@@ -144,6 +144,16 @@ public class PauseMenuUI : MonoBehaviour
             _mainFrameCanvasGroup = _mainFrame.GetComponent<CanvasGroup>();
             if (_mainFrameCanvasGroup == null)
                 _mainFrameCanvasGroup = _mainFrame.gameObject.AddComponent<CanvasGroup>();
+
+            // AJOUTÉ (2026-11-12, retour utilisateur : « rajouter une petite bordure sur chaque côté du pause panel ») -
+            // le bord du parchemin se fondait dans le sol : liseré sombre de 3 px tout autour, de la teinte des contours.
+            if (_mainFrame.TryGetComponent(out Image frameImage) && !frameImage.TryGetComponent(out Outline _))
+            {
+                Outline border = frameImage.gameObject.AddComponent<Outline>();
+                border.effectColor = new Color32(0x2A, 0x1C, 0x10, 0xF0);
+                border.effectDistance = new Vector2(3f, -3f);
+                border.useGraphicAlpha = true;
+            }
         }
 
         // AJOUTÉ (2026-10-25, audit de lisibilité) - les infos du défi (blanc fin, 21 px) se perdaient sur le parchemin
@@ -420,6 +430,7 @@ public class PauseMenuUI : MonoBehaviour
         if (_statsBarFitFrames > 0)
         {
             _statsBarFitFrames--;
+            PositionSeparatorAndStatus();   // même raison : glyphes du défi pas encore construits pendant OnEnable
             FitStatsBar();
         }
 
@@ -540,6 +551,21 @@ public class PauseMenuUI : MonoBehaviour
     // a part dans _challengeStatusText (voir PullChallengeStatus) - 3 lignes
     // ici au lieu de 4, plus de place par ligne dans l'espace dedie du
     // HeaderRow. Appele a chaque ouverture du menu pause, comme PullLiveStats().
+    // Mot de la difficulté dans la police titre du menu (celle du titre « PAUSE »), habillé comme dans l'annonce de début de
+    // partie (DifficultyStyle). Repli sur la police du texte si aucune police titre n'est trouvée.
+    private TMP_FontAsset _titleFont;
+    private const int TitleWordSizePercent = 112;   // Bangers est plus resserrée que Fira : capitales de même hauteur à 112 %
+
+    private string DifficultyWord(ChallengeDifficulty difficulty, string label)
+    {
+        if (_titleFont == null)
+            foreach (TMP_Text t in GetComponentsInChildren<TMP_Text>(true))
+                if (t.font != null && t.font.name.StartsWith("Bangers")) { _titleFont = t.font; break; }
+        return _titleFont != null
+            ? DifficultyStyle.WrapInFont(_titleFont, difficulty, label, TitleWordSizePercent)
+            : DifficultyStyle.Wrap(_challengeInfoText.font, difficulty, label);
+    }
+
     private void PullChallengeInfo()
     {
         PullChallengeStatus();
@@ -577,15 +603,16 @@ public class PauseMenuUI : MonoBehaviour
 
         ChallengeDefinition challenge = ChallengeManager.Instance.CurrentChallenge;
         string difficultyLabel = GetDifficultyLabel(challenge.difficulty);
-        string difficultyColorHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(challenge.difficulty));
         // MODIFIE (2026-09-13) - "Nom : Niv. Difficulte" au lieu de "Nom
         // (Difficulte)" (retour utilisateur) ; recompense en "Or xN" au lieu
         // de "+X%" (voir ChallengeManager.FormatRewardMultiplier).
         string rewardText = ChallengeManager.FormatRewardGold(ChallengeManager.Instance.GetCurrentRewardGold());
 
         _challengeInfoText.color = _challengeInfoTextColor;
+        _challengeInfoText.extraPadding = true;   // contour et lueur du mot de la difficulté (DifficultyStyle)
         _challengeInfoText.text =
-            Loc.F("{0} : Niv. {1}", challenge.Name, $"<color=#{difficultyColorHex}>{difficultyLabel}</color>") + "\n" +
+            // MODIFIÉ (2026-11-11) - mot de la difficulté mis en valeur (DifficultyStyle : couleur vive, contour de sa teinte)
+            Loc.F("{0} : Niv. {1}", challenge.Name, DifficultyWord(challenge.difficulty, difficultyLabel)) + "\n" +
             challenge.Description + "\n" +
             Loc.F("Récompense : {0}", rewardText);
         // Position et taille de ChallengeInfoText restent figees dans
@@ -662,16 +689,14 @@ public class PauseMenuUI : MonoBehaviour
         _challengeInfoText.ForceMeshUpdate();
 
         RectTransform textRt = _challengeInfoText.rectTransform;
-        float widest = 0f;
-        foreach (string line in _challengeInfoText.text.Split('\n'))
-        {
-            Vector2 pref = _challengeInfoText.GetPreferredValues(line, 0f, 0f);
-            if (pref.x > widest) widest = pref.x;
-        }
-
+        // MODIFIÉ (2026-11-12, retour utilisateur : « revoir l'écart entre le texte des défis, la barre verticale et le
+        // statut ») - GetPreferredValues ligne par ligne surestimait la largeur (balises du mot de difficulté, Auto Size) :
+        // mesuré 62 px texte -> barre contre 33 px barre -> « EN COURS » pour deux écarts réglés à 24. On mesure
+        // maintenant les glyphes réellement dessinés, des deux côtés de la barre.
+        GlyphExtents(_challengeInfoText, out _, out float glyphRight);
         // Pivot.x=0 sur ChallengeInfoText : anchoredPosition.x EST deja son
-        // bord gauche.
-        float textRight = textRt.anchoredPosition.x + widest;
+        // bord gauche (l'abscisse locale des glyphes part du pivot).
+        float textRight = textRt.anchoredPosition.x + glyphRight;
 
         RectTransform sepRt = _challengeSeparator.rectTransform;
         RectTransform statusRt = _challengeStatusText.rectTransform;
@@ -685,9 +710,31 @@ public class PauseMenuUI : MonoBehaviour
 
         // Statut : pivot.x=1/ancrage a DROITE du bloc - anchoredPosition.x est
         // mesure depuis le bord droit du bloc, d'ou la conversion via blockWidth.
-        float statusLeft = sepCenterX + sepRt.sizeDelta.x / 2f + _challengeSeparatorToStatusGap;
+        // Le texte du statut est centré dans une boîte plus large que lui : c'est son premier glyphe, pas le bord de la
+        // boîte, qui doit tomber à _challengeSeparatorToStatusGap de la barre.
+        _challengeStatusText.ForceMeshUpdate();
+        float glyphInset = 0f;
+        if (GlyphExtents(_challengeStatusText, out float statusGlyphLeft, out _))
+            glyphInset = statusGlyphLeft - statusRt.rect.xMin;
+        float statusLeft = sepCenterX + sepRt.sizeDelta.x / 2f + _challengeSeparatorToStatusGap - glyphInset;
         float statusRight = statusLeft + statusRt.sizeDelta.x;
         statusRt.anchoredPosition = new Vector2(statusRight - blockWidth, statusRt.anchoredPosition.y);
+    }
+
+    // Abscisses locales (repère du RectTransform, origine au pivot) du premier et du dernier pixel de glyphe visible.
+    private static bool GlyphExtents(TextMeshProUGUI text, out float left, out float right)
+    {
+        left = float.MaxValue; right = float.MinValue;
+        TMP_TextInfo info = text.textInfo;
+        for (int i = 0; i < info.characterCount; i++)
+        {
+            TMP_CharacterInfo c = info.characterInfo[i];
+            if (!c.isVisible) continue;
+            if (c.bottomLeft.x < left) left = c.bottomLeft.x;
+            if (c.topRight.x > right) right = c.topRight.x;
+        }
+        if (left > right) { left = right = 0f; return false; }
+        return true;
     }
 
     private Color GetDifficultyColor(ChallengeDifficulty difficulty)

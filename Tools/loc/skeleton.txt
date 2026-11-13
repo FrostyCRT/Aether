@@ -102,7 +102,7 @@
 99	GRAPHISMES	GRAPHICS
 100	Qualité de l'image et effets visuels	Image quality and visual effects
 101	Qualité graphique	Graphics quality
-102	Préréglage global du rendu : éclairage, ombres et netteté.	Global rendering preset: lighting, shadows and sharpness.
+102	Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.	Performance: smoother on lower-end PCs. High: sharp shadows, smooth edges and glow.
 103	Ombres	Shadows
 104	Ombres projetées par les personnages et les ennemis.	Shadows cast by characters and enemies.
 105	Effets d'ambiance des menus	Menu ambient effects
@@ -296,7 +296,7 @@
 285	+3% / s, plafond +30%	+3% / s, cap +30%
 286	+5% / s, plafond +50%	+5% / s, cap +50%
 287	Cadence	Fire Rate
-288	Augmente la cadence de ton tir de base.	Increases the fire rate of your basic attack.
+288	Augmente la cadence de toutes tes armes de tir.	Increases the fire rate of all your shooting weapons.
 289	Fragmentation	Fragmentation
 290	Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.	Every 4th projectile of your basic attack explodes on impact and deals its full damage to nearby enemies.
 291	Dégâts Cristal	Crystal Damage
@@ -307,9 +307,9 @@
 296	Augmente tes points de vie maximum.	Increases your maximum HP.
 297	Récupération	Recovery
 298	Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.	Each projectile absorbed, by your dash or your Mana Shield, restores HP.
-299	+20 PV par absorption	+20 HP per absorb
-300	+50 PV par absorption	+50 HP per absorb
-301	+80 PV par absorption	+80 HP per absorb
+299	+15 PV par absorption	+15 HP per absorb
+300	+35 PV par absorption	+35 HP per absorb
+301	+55 PV par absorption	+55 HP per absorb
 302	Second Souffle	Second Wind
 303	Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.	Once per run, survive a fatal blow with 1 HP, then become invincible for 3 seconds.
 304	Armure	Armor
@@ -383,7 +383,7 @@
 368	Ton tir de base tire un second projectile juste après le premier	Your basic attack fires a second projectile right after the first
 369	Boule de Feu	Fireball
 370	Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense	Throws a fireball that explodes on the densest group of enemies
-371	Cadence+	Fire Rate+
+371	Cadence +	Fire Rate +
 372	+20% de cadence sur toutes tes armes de tir	+20% fire rate on all your shooting weapons
 373	Soin	Heal
 374	Restaure 50% de tes PV max	Restores 50% of your max HP
@@ -417,7 +417,7 @@
 402	+{0} ennemis perforés en plus	Pierces {0} more enemies
 403	+{0} ennemi perforé en plus	Pierces {0} more enemy
 404	Débloque un orbe rebondissant qui traverse les ennemis	Unlocks a bouncing orb that passes through enemies
-405	+{0}% vitesse des orbes	+{0}% orb speed
+405	+{0}% vitesse de l'orbe	+{0}% orb speed
 406	+1 orbe rebondissant supplémentaire	+1 extra bouncing orb
 
 ## Personnages (CharacterSelectUI / CharacterInfoPanel)
@@ -689,3 +689,12 @@
 656	Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}	Enemies defeated: {0}  ·  Lv. {1}  ·  Bosses: {2}
 657	+{0}% cadence	+{0}% fire rate
 658	Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes	Unlocks Shockwave: the aura pushes enemies back every {0} seconds
+659	Taille de la fenêtre en mode fenêtré	Window size in windowed mode
+660	Le plein écran utilise toujours la résolution de l'écran.	Fullscreen always uses the screen's resolution.
+661	Défi en cours	Current challenge
+662	Le défi de la partie et sa progression.	This run's challenge and its progress.
+663	Débloque {0} pour acheter cette compétence	Unlock {0} to buy this skill
+664	Le niveau Performance n'affiche pas d'ombres.	The Performance level has no shadows.
+665	Sources des éclats	Shard sources
+666	Sources de l'or	Gold sources
+667	1re victoire	First win

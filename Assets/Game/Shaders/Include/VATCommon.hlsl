@@ -33,20 +33,32 @@ CBUFFER_END
 // et revérifié en isolation AVANT tout changement de prefab (voir NOTES.md) - fonctionne cette fois.
 UNITY_INSTANCING_BUFFER_START(VatPerInstance)
     UNITY_DEFINE_INSTANCED_PROP(float, _VatFrame)
+    UNITY_DEFINE_INSTANCED_PROP(float, _VatFrameNext)
 UNITY_INSTANCING_BUFFER_END(VatPerInstance)
 
 // vertexU : coordonnee horizontale du sommet dans la texture VAT, precalculee a la cuisson et stockee dans un
 // canal UV libre du mesh (voir VATBaker.cs - canal uv4/TEXCOORD3, inutilise par LitForwardPass.hlsl de base).
+// MODIFIÉ (2026-11-11, retour utilisateur : "revenir sur une animation générale des ennemis plus fluide") - les clips
+// sont cuits à 30 images/s et chaque image était tenue telle quelle : à 60-240 FPS, les ennemis bougeaient par paliers
+// de 1/30 s. instanceFrame porte maintenant une partie décimale (avancement vers l'image suivante, _VatFrameNext, qui
+// tient compte du bouclage du clip) : position et normale sont interpolées entre les deux images. Deux lectures de
+// texture de plus par sommet, aucun coût processeur, regroupement GPU des instances inchangé.
 void ApplyVatDisplacement(inout float3 positionOS, inout float3 normalOS, float vertexU, float instanceFrame)
 {
-    float frameV = (instanceFrame + 0.5) * _VatPositionTex_TexelSize.y;
-    float2 uv = float2(vertexU, frameV);
+    float frameA = floor(instanceFrame);
+    float blend = instanceFrame - frameA;
+    float frameB = UNITY_ACCESS_INSTANCED_PROP(VatPerInstance, _VatFrameNext);
 
-    float3 vatPosition = SAMPLE_TEXTURE2D_LOD(_VatPositionTex, sampler_VatPositionTex, uv, 0).xyz;
-    float3 vatNormal = SAMPLE_TEXTURE2D_LOD(_VatNormalTex, sampler_VatNormalTex, uv, 0).xyz;
+    float2 uvA = float2(vertexU, (frameA + 0.5) * _VatPositionTex_TexelSize.y);
+    float2 uvB = float2(vertexU, (frameB + 0.5) * _VatPositionTex_TexelSize.y);
 
-    positionOS = vatPosition;
-    normalOS = normalize(vatNormal);
+    float3 posA = SAMPLE_TEXTURE2D_LOD(_VatPositionTex, sampler_VatPositionTex, uvA, 0).xyz;
+    float3 nrmA = SAMPLE_TEXTURE2D_LOD(_VatNormalTex, sampler_VatNormalTex, uvA, 0).xyz;
+    float3 posB = SAMPLE_TEXTURE2D_LOD(_VatPositionTex, sampler_VatPositionTex, uvB, 0).xyz;
+    float3 nrmB = SAMPLE_TEXTURE2D_LOD(_VatNormalTex, sampler_VatNormalTex, uvB, 0).xyz;
+
+    positionOS = lerp(posA, posB, blend);
+    normalOS = normalize(lerp(nrmA, nrmB, blend));
 }
 
 #endif

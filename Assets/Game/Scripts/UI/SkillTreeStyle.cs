@@ -27,6 +27,23 @@ public static class SkillTreeStyle
 
     // Le personnage à qui appartient la branche : c'est son nom, pas celui de la branche
     // ("Gardien"), qui parle au joueur.
+    // AJOUTÉ (2026-11-11) - personnage de la branche (index de MetaProgressionManager) et son déblocage.
+    public static int CharacterIndex(SkillTreeData.CharacterBranch branch)
+    {
+        switch (branch)
+        {
+            case SkillTreeData.CharacterBranch.Gardien: return 1;
+            case SkillTreeData.CharacterBranch.Fantome: return 2;
+            default: return 0;
+        }
+    }
+
+    public static bool IsCharacterUnlocked(SkillTreeData.CharacterBranch branch)
+    {
+        MetaProgressionManager meta = MetaProgressionManager.Instance;
+        return meta == null || meta.IsCharacterUnlocked(CharacterIndex(branch));
+    }
+
     public static string CharacterName(SkillTreeData.CharacterBranch branch)
     {
         switch (branch)

@@ -535,20 +535,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 835532497}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29e9c69af1e6ac64faef59b639f64357, type: 3}
+  m_Script: {fileID: 11500000, guid: b80e000191fa3e240b684aa36e1d945a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _particleSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  _particleCount: 50
-  _particleColor: {r: 1, g: 0.85, b: 0.55, a: 0.8}
   _bandMinY: 0
   _bandMaxY: 0.3
-  _swayAmplitude: 15
-  _swayFrequency: 0.4
-  _minSize: 4
-  _maxSize: 10
-  _minLifetime: 6
-  _maxLifetime: 14
+  _avoidCenterHalfWidth: 0
+  _count: 12
+  _lengthRange: {x: 26, y: 60}
+  _crystalSprites:
+  - {fileID: 21300000, guid: 3f7c6db80e1182f43aec0324b5720f72, type: 3}
+  - {fileID: 21300000, guid: cf8502787bf63994aa3c7ca833975d1c, type: 3}
+  _lifetimeRange: {x: 14, y: 24}
+  _additiveMaterial: {fileID: 2100000, guid: c13846b14f09c014fbeb531585f65342, type: 2}
 --- !u!1 &839794182
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,20 +1201,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1086551076}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29e9c69af1e6ac64faef59b639f64357, type: 3}
+  m_Script: {fileID: 11500000, guid: b80e000191fa3e240b684aa36e1d945a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _particleSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  _particleCount: 50
-  _particleColor: {r: 1, g: 0.85, b: 0.55, a: 0.8}
   _bandMinY: 0.75
   _bandMaxY: 1
-  _swayAmplitude: 15
-  _swayFrequency: 0.4
-  _minSize: 4
-  _maxSize: 10
-  _minLifetime: 6
-  _maxLifetime: 14
+  _avoidCenterHalfWidth: 400
+  _count: 12
+  _lengthRange: {x: 26, y: 60}
+  _crystalSprites:
+  - {fileID: 21300000, guid: 3f7c6db80e1182f43aec0324b5720f72, type: 3}
+  - {fileID: 21300000, guid: cf8502787bf63994aa3c7ca833975d1c, type: 3}
+  _lifetimeRange: {x: 14, y: 24}
+  _additiveMaterial: {fileID: 2100000, guid: c13846b14f09c014fbeb531585f65342, type: 2}
 --- !u!1 &1131251008
 GameObject:
   m_ObjectHideFlags: 0

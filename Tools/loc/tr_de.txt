@@ -107,7 +107,7 @@
 99| GRAFIK
 100| Bildqualität und visuelle Effekte
 101| Grafikqualität
-102| Globale Voreinstellung für das Rendering: Beleuchtung, Schatten und Schärfe.
+102| Leistung: flüssiger auf schwächeren PCs. Hoch: scharfe Schatten, glatte Kanten und Leuchteffekte.
 103| Schatten
 104| Schatten, die Figuren und Gegner werfen.
 105| Atmosphärische Effekte in Menüs
@@ -301,7 +301,7 @@
 285| +3 % / s, max. +30 %
 286| +5 % / s, max. +50 %
 287| Feuerrate
-288| Erhöht die Feuerrate deines Standardangriffs.
+288| Erhöht die Feuerrate all deiner Schusswaffen.
 289| Splitterwirkung
 290| Jedes 4. Projektil deines Standardangriffs explodiert beim Aufprall und fügt Gegnern in der Nähe vollen Schaden zu.
 291| Kristallschaden
@@ -312,9 +312,9 @@
 296| Erhöht deine maximalen LP.
 297| Erholung
 298| Jedes Projektil, das dein Dash oder dein Manaschild absorbiert, stellt LP wieder her.
-299| +20 LP pro Absorption
-300| +50 LP pro Absorption
-301| +80 LP pro Absorption
+299| +15 LP pro Absorption
+300| +35 LP pro Absorption
+301| +55 LP pro Absorption
 302| Zweiter Atem
 303| Einmal pro Run überlebst du einen tödlichen Treffer mit 1 LP und bist danach 3 Sekunden lang unverwundbar.
 304| Rüstung
@@ -388,7 +388,7 @@
 368| Dein Standardangriff feuert direkt nach dem ersten ein zweites Projektil
 369| Feuerball
 370| Schleudert einen Feuerball, der in der dichtesten Gegnergruppe explodiert
-371| Feuerrate+
+371| Feuerrate +
 372| +20 % Feuerrate für alle deine Schusswaffen
 373| Heilung
 374| Stellt 50 % deiner maximalen LP wieder her
@@ -696,3 +696,12 @@
 656| Besiegte Gegner: {0}  ·  Lvl. {1}  ·  Bosse: {2}
 657| +{0} % Feuerrate
 658| Schaltet Schockwelle frei: Die Aura stößt Gegner alle {0} Sekunden zurück
+659| Fenstergröße im Fenstermodus
+660| Im Vollbild wird immer die Auflösung des Bildschirms verwendet.
+661| Aktuelle Herausforderung
+662| Die Herausforderung dieses Runs und ihr Fortschritt.
+663| Schalte {0} frei, um diese Fähigkeit zu kaufen
+664| Die Stufe „Leistung“ zeigt keine Schatten.
+665| Herkunft der Splitter
+666| Herkunft des Goldes
+667| Erster Sieg

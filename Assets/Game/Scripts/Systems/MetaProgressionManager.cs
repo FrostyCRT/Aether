@@ -62,7 +62,10 @@ public class MetaProgressionManager : MonoBehaviour
     // les boss et la victoire.
     // MODIFIÉ (2026-11-07, retour utilisateur : "en Apocalyptique, en faisant une plutôt bonne partie je gagne que 50 éclats")
     // - 1 -> 2 : une partie perdue vers 10 min en Apocalyptique passe de ~50 à ~70 éclats, une victoire Modéré de 165 à 180.
-    public const int EclatsPerMinute = 2;
+    // MODIFIÉ (2026-11-12, choix de l'utilisateur) - 2 éclats toutes les 45 s au lieu de chaque minute (+33 % sur la survie :
+    // 15 min = 40 éclats au lieu de 30).
+    public const int EclatsPerTick = 2;
+    public const float EclatsTickSeconds = 45f;
     public const float RushBossRewardScale = 0.5f;             // 9 boss rapprochés : la moitié d'un boss du Classique
     public const float TitansBossRewardScale = 0.2f;           // ~1 à 2 min de partie : pas de ferme à or
     private static readonly int[] EclatsPerBoss = { 15, 30, 45 };   // boss 1, 2, 3 (2026-11-07 : 13 / 25 / 38 avant)
@@ -313,7 +316,7 @@ public class MetaProgressionManager : MonoBehaviour
 
         RecordCharacterRun(runTime, victory && classic, !classic);
 
-        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode, runTime);
+        int eclatsEarned = CalculateEclatsEarned(levelReached, bossKills, victory, mode, runTime, out int eclatsTime, out int eclatsBosses, out int eclatsVictory);
         int firstWinBonus = 0;
         if (victory && classic)
         {
@@ -339,6 +342,9 @@ public class MetaProgressionManager : MonoBehaviour
             goldChallenge = RunGoldFromChallenge,
             eclats = eclatsEarned,
             eclatsFirstWin = firstWinBonus,
+            eclatsTime = eclatsTime,
+            eclatsBosses = eclatsBosses,
+            eclatsVictory = eclatsVictory,
             runTime = runTime,
             kills = kills,
             level = levelReached,
@@ -534,40 +540,55 @@ public class MetaProgressionManager : MonoBehaviour
     //  - Sans fin : 9 boss comptés au plus (3 boucles), pas de victoire.
     //  - Ruée de boss : moitié moins par boss ; la victoire rapporte le bonus proportionnellement à la taille de la Ruée.
     //  - Choc des titans (~1 à 2 min) : seulement une petite prime de victoire, pas de ferme à éclats.
-    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode, float runTime)
+    // MODIFIÉ (2026-11-12) - rend aussi la part de chaque source (survie / boss / victoire), multiplicateur de difficulté
+    // compris, pour le détail du panneau « Dernière partie ». Le total arrondi est inchangé : l'écart d'arrondi va à la
+    // plus grosse part.
+    private int CalculateEclatsEarned(int levelReached, int bossKills, bool victory, GameMode mode, float runTime,
+        out int fromTime, out int fromBosses, out int fromVictory)
     {
         float tierMultiplier = DifficultyTiers.RewardMultiplier(DifficultyTiers.Current);
-        int minuteEclats = Mathf.FloorToInt(runTime / 60f) * EclatsPerMinute;
+        int minuteEclats = Mathf.FloorToInt(runTime / EclatsTickSeconds) * EclatsPerTick;
+        float time = 0f, bosses = 0f, win = 0f, scale = tierMultiplier;
         switch (mode)
         {
             case GameMode.Endless:
-            {
-                int total = minuteEclats;
-                for (int i = 0; i < Mathf.Min(bossKills, 9); i++) total += EclatsPerBoss[i % 3];
-                return Mathf.RoundToInt(total * tierMultiplier);
-            }
+                time = minuteEclats;
+                for (int i = 0; i < Mathf.Min(bossKills, 9); i++) bosses += EclatsPerBoss[i % 3];
+                break;
             case GameMode.BossRush:
             {
                 int total = 0;
                 for (int i = 0; i < bossKills; i++) total += EclatsPerBoss[GameModes.RushBossNumber(i) - 1];
-                total = Mathf.RoundToInt(total * RushBossRewardScale);
+                bosses = Mathf.RoundToInt(total * RushBossRewardScale);
                 if (victory)
                 {
                     int progress = Mathf.Max(1, GameModes.ClassicBossProgress(Data));
-                    total += (EclatsVictoryBonus * progress) / 3;
+                    win = (EclatsVictoryBonus * progress) / 3;
                 }
-                return Mathf.RoundToInt(total * tierMultiplier);
+                break;
             }
             case GameMode.Titans:
-                return victory ? TitansVictoryEclats : 0;
+                win = victory ? TitansVictoryEclats : 0;
+                scale = 1f;   // pas de multiplicateur de difficulté dans ce mode (comme avant)
+                break;
             default:
-            {
-                int total = minuteEclats;
-                for (int i = 0; i < Mathf.Min(bossKills, 3); i++) total += EclatsPerBoss[i];
-                if (victory) total += EclatsVictoryBonus;
-                return Mathf.RoundToInt(total * tierMultiplier);
-            }
+                time = minuteEclats;
+                for (int i = 0; i < Mathf.Min(bossKills, 3); i++) bosses += EclatsPerBoss[i];
+                if (victory) win = EclatsVictoryBonus;
+                break;
         }
+        int grand = Mathf.RoundToInt((time + bosses + win) * scale);
+        fromTime = Mathf.RoundToInt(time * scale);
+        fromBosses = Mathf.RoundToInt(bosses * scale);
+        fromVictory = Mathf.RoundToInt(win * scale);
+        int diff = grand - (fromTime + fromBosses + fromVictory);
+        if (diff != 0)
+        {
+            if (fromBosses >= fromTime && fromBosses >= fromVictory) fromBosses += diff;
+            else if (fromTime >= fromVictory) fromTime += diff;
+            else fromVictory += diff;
+        }
+        return grand;
     }
 
     // =====================
@@ -753,12 +774,20 @@ public class MetaProgressionManager : MonoBehaviour
         return values[Mathf.Clamp(Data.concentrationLevel, 0, values.Length - 1)];
     }
 
+    // MODIFIÉ (2026-11-11, équilibrage choisi par l'utilisateur) - Cadence ne touchait que le tir de base (+10/20/35 %),
+    // bien plus faible que Concentration (tous les dégâts). Elle s'applique maintenant à toutes les armes de tir (tir de
+    // base, Boule de feu, Chaîne d'éclairs, Shurikens, Lames ricochets), à +8/16/25 %. Tableau statique : lu à chaque
+    // image par ces armes (CadenceMultiplier), sans allocation.
+    private static readonly float[] CadenceValues = { 0f, 0.08f, 0.16f, 0.25f };
+
     public float GetBonusCadence()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Guerrier)) return 0f;
-        float[] values = { 0f, 0.10f, 0.20f, 0.35f };
-        return values[Mathf.Clamp(Data.cadenceLevel, 0, values.Length - 1)];
+        return CadenceValues[Mathf.Clamp(Data.cadenceLevel, 0, CadenceValues.Length - 1)];
     }
+
+    // Multiplicateur de cadence des armes de tir autres que le tir de base (WeaponBase l'applique une fois à sa base).
+    public static float CadenceMultiplier => Instance != null ? 1f + Instance.GetBonusCadence() : 1f;
 
     public float GetBonusCrystalDamage()
     {
@@ -806,7 +835,7 @@ public class MetaProgressionManager : MonoBehaviour
     public float GetBonusRecuperation()
     {
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Gardien)) return 0f;
-        float[] values = { 0f, 20f, 50f, 80f };
+        float[] values = { 0f, 15f, 35f, 55f }; // MODIFIÉ (2026-11-11) 20/50/80 -> 15/35/55, équilibrage des branches (Gardien trop fort en survie)
         return values[Mathf.Clamp(Data.recuperationLevel, 0, values.Length - 1)];
     }
 

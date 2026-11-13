@@ -1,0 +1,14 @@
+DEBUT c1_sans_0 perso=Player_Kael(Clone) branche=Gardien pvmax=2000 cadence=1
+T chrono=60 niv=1 kills=15 boss=0 degats=700 (700/min) soins=240 recharges=0 dashs=2 absorptions=2 clones=0 pvmax=2000 plusGrosCoup=125
+T chrono=120 niv=1 kills=37 boss=0 degats=825 (412/min) soins=540 recharges=0 dashs=2 absorptions=2 clones=0 pvmax=2000 plusGrosCoup=125
+T chrono=180 niv=2 kills=84 boss=0 degats=2990 (997/min) soins=835 recharges=1 dashs=4 absorptions=4 clones=0 pvmax=2000 plusGrosCoup=250
+T chrono=240 niv=7 kills=357 boss=0 degats=11120 (2780/min) soins=1080 recharges=7 dashs=21 absorptions=25 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=300 niv=9 kills=691 boss=0 degats=17955 (3591/min) soins=1355 recharges=13 dashs=37 absorptions=46 clones=0 pvmax=2000 plusGrosCoup=500
+T chrono=360 niv=12 kills=1175 boss=1 degats=27670 (4611/min) soins=1990 recharges=20 dashs=54 absorptions=73 clones=0 pvmax=2300 plusGrosCoup=500
+T chrono=420 niv=14 kills=1706 boss=1 degats=30665 (4381/min) soins=2270 recharges=22 dashs=69 absorptions=91 clones=0 pvmax=2300 plusGrosCoup=500
+T chrono=480 niv=15 kills=2243 boss=1 degats=33205 (4150/min) soins=3435 recharges=23 dashs=85 absorptions=107 clones=0 pvmax=2600 plusGrosCoup=500
+T chrono=540 niv=16 kills=2735 boss=1 degats=45155 (5017/min) soins=3665 recharges=30 dashs=100 absorptions=114 clones=0 pvmax=2600 plusGrosCoup=500
+T chrono=600 niv=16 kills=3019 boss=1 degats=57505 (5750/min) soins=3890 recharges=37 dashs=114 absorptions=120 clones=0 pvmax=2600 plusGrosCoup=515
+T chrono=660 niv=19 kills=3497 boss=2 degats=80160 (7287/min) soins=4820 recharges=50 dashs=139 absorptions=131 clones=0 pvmax=2600 plusGrosCoup=1100
+T chrono=720 niv=20 kills=4051 boss=2 degats=88665 (7388/min) soins=5045 recharges=56 dashs=147 absorptions=134 clones=0 pvmax=2600 plusGrosCoup=1100
+FIN chrono=729 niv=20 kills=4144 boss=2 degats=91210 (7503/min) soins=5085 recharges=56 dashs=150 absorptions=134 clones=0 pvmax=2600 plusGrosCoup=1565 dernierPV=0 bossTemps=37s,84s, reel=296s

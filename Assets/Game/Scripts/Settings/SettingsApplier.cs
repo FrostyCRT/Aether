@@ -136,6 +136,7 @@ public class SettingsApplier : MonoBehaviour
         GameSettings.Flush();
         InputBindings.Flush();
         UpdateFps();
+        HandleFullscreenKey();
 
         if (!Mathf.Approximately(_duck, _duckTarget))            // temps réel : le jeu est à l'arrêt pendant la pause
         {
@@ -193,6 +194,7 @@ public class SettingsApplier : MonoBehaviour
     {
         _duckTarget = 1f;                                        // jamais de son étouffé qui survit à un changement de scène
         ApplyShadows();
+        ApplyQualityExtras();                                    // caméras de la nouvelle scène : lissage des bords, bloom
         PlaceFps(scene);
         ApplyShowFps();
     }
@@ -206,11 +208,16 @@ public class SettingsApplier : MonoBehaviour
     private void PlaceFps(Scene scene)
     {
         if (_fpsText == null) return;
+        // CORRIGÉ (2026-11-11, retour utilisateur : "un bug de transition quand on change de scène [...] il faut cacher les
+        // fps en fondu, et les réafficher au bon format dans l'autre scène") - le texte gardait l'ancien format jusqu'à la
+        // mesure suivante (0,4 s) : il est réécrit tout de suite dans le nouveau. Le fondu suit celui de la transition (UpdateFps).
         _fpsCompact = scene.name == "MainMenu";
         _fpsText.fontSize = _fpsCompact ? 20f : 24f;
         _fpsText.alignment = _fpsCompact ? TextAlignmentOptions.Center : TextAlignmentOptions.TopLeft;
         _fpsText.rectTransform.sizeDelta = new Vector2(_fpsCompact ? 136f : 420f, _fpsCompact ? 60f : 40f);
-        _fpsText.rectTransform.anchoredPosition = new Vector2(_fpsCompact ? 0f : 14f, _fpsCompact ? -19f : -8f);
+        // menu : 1 px à gauche à la demande de l'utilisateur (2026-11-11), bien que mesuré à 29 px de chaque côté
+        _fpsText.rectTransform.anchoredPosition = new Vector2(_fpsCompact ? -1f : 14f, _fpsCompact ? -19f : -8f);
+        if (_fpsLastAvg > 0f) WriteFps(_fpsLastAvg);
     }
 
     // ---- audio ----------------------------------------------------------------------------------------------------
@@ -257,6 +264,26 @@ public class SettingsApplier : MonoBehaviour
     }
 
     // ---- affichage -------------------------------------------------------------------------------------------------
+    // AJOUTÉ (2026-11-10, demande utilisateur : "quand on appuie sur F11, ça met en fenêtré, mais qui prend toute la page") -
+    // F11 passe en fenêtré sans bordure (plein écran), et un second appui revient au mode d'avant (fenêtré par défaut).
+    // Passe par le réglage « Mode d'affichage » : la page Paramètres et la prochaine session restent cohérentes.
+    private const int BorderlessMode = 1, WindowedMode = 2;
+    private int _modeBeforeBorderless = WindowedMode;
+
+    private void HandleFullscreenKey()
+    {
+        UnityEngine.InputSystem.Keyboard kb = UnityEngine.InputSystem.Keyboard.current;
+        if (kb == null || !kb.f11Key.wasPressedThisFrame) return;
+        int current = GameSettings.GetInt(GameSettings.DisplayMode);
+        if (current == BorderlessMode)
+            GameSettings.SetInt(GameSettings.DisplayMode, _modeBeforeBorderless);
+        else
+        {
+            _modeBeforeBorderless = current;
+            GameSettings.SetInt(GameSettings.DisplayMode, BorderlessMode);
+        }
+    }
+
     public static FullScreenMode ModeFromSetting(int mode)
     {
         switch (mode)
@@ -346,30 +373,128 @@ public class SettingsApplier : MonoBehaviour
         return true;
     }
 
+    // MODIFIÉ (2026-11-10, retours utilisateur) :
+    //  - "quand on met la résolution en dessous de 1920x1080, puis qu'on revient en plein écran exclusif, l'image ne
+    //    remplit pas parfaitement l'écran" : les deux pleins écrans utilisent toujours la résolution native de l'écran
+    //    (la « Résolution » des Paramètres ne règle plus que la taille de la fenêtre), et la résolution est réappliquée
+    //    quelques images plus tard si Windows ne l'a pas prise au passage fenêtre -> plein écran ;
+    //  - "en fenêtré, une résolution légèrement plus petite, pour anticiper la barre des tâches, et que la fenêtre ne
+    //    dépasse pas sur les côtés s'il y a plus d'un écran" : la fenêtre est réduite (mêmes proportions) pour tenir dans
+    //    l'espace libre de son écran, barre de titre comprise, puis centrée sur cet écran.
+    private const int WindowSideMargin = 32, WindowVerticalMargin = 120, WindowTitleOffset = 20;
+    private Coroutine _displayFollowUp;
+
     private void ApplyDisplay()
     {
         FullScreenMode mode = ModeFromSetting(GameSettings.GetInt(GameSettings.DisplayMode));
-
-        Vector2Int res;
-        if (mode == FullScreenMode.FullScreenWindow)
-        {
-            // plein écran sans bordure : toujours la résolution du bureau
-            res = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
-            if (Application.isEditor) res = new Vector2Int(Screen.width, Screen.height);
-        }
-        else if (!TryParseResolution(GameSettings.GetString(GameSettings.Resolution), out res))
-        {
-            res = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
-        }
-
         if (Application.isEditor) return;    // la fenêtre Game de l'éditeur ne se redimensionne pas
+
+        DisplayInfo display = Screen.mainWindowDisplayInfo;
+        Vector2Int native = display.width > 0
+            ? new Vector2Int(display.width, display.height)
+            : new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
+
+        Vector2Int res = native;
+        if (mode == FullScreenMode.Windowed)
+        {
+            if (!TryParseResolution(GameSettings.GetString(GameSettings.Resolution), out res)) res = native;
+            res = FitInWorkArea(res, display);
+        }
+
         Screen.SetResolution(res.x, res.y, mode);
+        if (_displayFollowUp != null) StopCoroutine(_displayFollowUp);
+        _displayFollowUp = StartCoroutine(DisplayFollowUp(res, mode, display));
+    }
+
+    // Taille réelle de la fenêtre pour une résolution choisie, sur l'écran actuel : affichée telle quelle dans les Paramètres
+    // ("c'est écrit 1920x1080 alors que ça ne prend pas tout l'écran, il faut que ça corresponde à ce que ça dit").
+    public static Vector2Int WindowSizeFor(Vector2Int res) => FitInWorkArea(res, Screen.mainWindowDisplayInfo);
+
+    // Résolution native de l'écran du jeu (celle des deux modes plein écran).
+    public static Vector2Int NativeResolution()
+    {
+        DisplayInfo d = Screen.mainWindowDisplayInfo;
+        return d.width > 0 ? new Vector2Int(d.width, d.height)
+                           : new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
+    }
+
+    private static Vector2Int FitInWorkArea(Vector2Int res, DisplayInfo display)
+    {
+        RectInt area = display.workArea;
+        if (area.width <= 0 || area.height <= 0) area = new RectInt(0, 0, display.width, display.height);
+        if (area.width <= 0 || area.height <= 0) return res;
+        float scale = Mathf.Min(1f, (area.width - WindowSideMargin) / (float)res.x, (area.height - WindowVerticalMargin) / (float)res.y);
+        return new Vector2Int(Mathf.RoundToInt(res.x * scale), Mathf.RoundToInt(res.y * scale));
+    }
+
+    // Quelques images après le changement : le plein écran doit avoir pris la résolution demandée (sinon on la redemande),
+    // et une fenêtre est recentrée dans l'espace libre de son écran.
+    private System.Collections.IEnumerator DisplayFollowUp(Vector2Int res, FullScreenMode mode, DisplayInfo display)
+    {
+        for (int i = 0; i < 3; i++) yield return null;
+        if (mode != FullScreenMode.Windowed)
+        {
+            if (Screen.width != res.x || Screen.height != res.y || Screen.fullScreenMode != mode)
+                Screen.SetResolution(res.x, res.y, mode);
+        }
+        else
+        {
+            RectInt area = display.workArea;
+            if (area.width <= 0 || area.height <= 0) area = new RectInt(0, 0, display.width, display.height);
+            Vector2Int pos = new Vector2Int(
+                area.x + Mathf.Max(0, (area.width - res.x) / 2),
+                area.y + Mathf.Max(0, (area.height - res.y) / 2) + WindowTitleOffset);
+            AsyncOperation op = Screen.MoveMainWindowTo(display, pos);
+            while (op != null && !op.isDone) yield return null;
+        }
+        _displayFollowUp = null;
     }
 
     private void ApplyQuality()
     {
         int q = Mathf.Clamp(GameSettings.GetInt(GameSettings.Quality), 0, QualitySettings.names.Length - 1);
         if (QualitySettings.GetQualityLevel() != q) QualitySettings.SetQualityLevel(q, true);
+        ApplyQualityExtras();
+    }
+
+    // AJOUTÉ (2026-11-11, retour utilisateur : "est-ce que la Qualité graphique a vraiment un impact en jeu ? Il faut que le
+    // joueur voie la différence, surtout entre Performance et Élevé") - les trois profils URP ont été refaits (Performance :
+    // rendu 3D à 75 % agrandi par FSR, sans ombres ; Équilibré : ombres 2048 ; Élevé : MSAA x4, ombres 4096 nettes), et ce qui
+    // ne se règle pas dans un profil URP est appliqué ici, à chaque changement de niveau et à chaque scène :
+    //  - lissage des bords par caméra : SMAA en Équilibré (Élevé a déjà le MSAA x4, Performance n'en a pas) ;
+    //  - lueur douce (bloom) des effets lumineux en Élevé seulement, par un volume global créé ici (la scène n'en a pas).
+    private const int QualityBalanced = 1, QualityHigh = 2;
+    private UnityEngine.Rendering.Volume _qualityVolume;
+
+    private void ApplyQualityExtras()
+    {
+        int q = QualitySettings.GetQualityLevel();
+        foreach (Camera cam in Camera.allCameras)
+        {
+            UniversalAdditionalCameraData data = cam.GetUniversalAdditionalCameraData();
+            if (data == null || data.renderType != CameraRenderType.Base) continue;
+            data.antialiasing = q == QualityBalanced ? AntialiasingMode.SubpixelMorphologicalAntiAliasing : AntialiasingMode.None;
+            data.antialiasingQuality = AntialiasingQuality.Medium;
+            if (q == QualityHigh) data.renderPostProcessing = true;   // nécessaire au bloom
+        }
+
+        if (_qualityVolume == null)
+        {
+            var go = new GameObject("[QualityVolume]");
+            go.transform.SetParent(transform, false);
+            _qualityVolume = go.AddComponent<UnityEngine.Rendering.Volume>();
+            _qualityVolume.isGlobal = true;
+            _qualityVolume.priority = 100f;
+            var profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();
+            profile.hideFlags = HideFlags.HideAndDontSave;
+            Bloom bloom = profile.Add<Bloom>(true);
+            bloom.threshold.Override(1.0f);        // seuls les points plus lumineux que le blanc (effets, cristaux) rayonnent
+            bloom.intensity.Override(0.45f);
+            bloom.scatter.Override(0.6f);
+            bloom.highQualityFiltering.Override(true);
+            _qualityVolume.sharedProfile = profile;
+        }
+        _qualityVolume.enabled = q == QualityHigh;
     }
 
     private void ApplyVSyncAndCap()
@@ -479,17 +604,34 @@ public class SettingsApplier : MonoBehaviour
         _fpsText.outlineColor = new Color32(0, 0, 0, 255);
     }
 
+    private float _fpsLastAvg;
+    private CanvasGroup _fpsGroup;
+
     private void UpdateFps()
     {
         if (!_fpsText.gameObject.activeSelf) return;
+
+        // caché pendant le noir des transitions de scène, en fondu avec lui (le compteur est dessiné au-dessus du noir)
+        if (_fpsGroup == null) _fpsGroup = _fpsText.gameObject.AddComponent<CanvasGroup>();
+        float black = SceneTransitionFader.Instance != null ? SceneTransitionFader.Instance.BlackAlpha : 0f;
+        float target = 1f - Mathf.Clamp01(black * 1.25f);
+        // disparaît avec le noir ; réapparaît en 0,3 s au moins (même si le noir s'efface très vite)
+        _fpsGroup.alpha = target < _fpsGroup.alpha ? target
+                        : Mathf.MoveTowards(_fpsGroup.alpha, target, Mathf.Min(Time.unscaledDeltaTime, 1f / 30f) / 0.3f);
+
         _fpsAccum += Time.unscaledDeltaTime;
         _fpsFrames++;
         _fpsTime += Time.unscaledDeltaTime;
         if (_fpsTime < 0.4f) return;
-        float avg = _fpsAccum / Mathf.Max(1, _fpsFrames);
+        WriteFps(_fpsAccum / Mathf.Max(1, _fpsFrames));
+        _fpsAccum = 0f; _fpsFrames = 0; _fpsTime = 0f;
+    }
+
+    private void WriteFps(float avg)
+    {
+        _fpsLastAvg = avg;
         // Unités et virgule selon la langue : « IPS » en français, « FPS » ailleurs, « мс » en russe (Loc).
         string fps = Mathf.RoundToInt(1f / Mathf.Max(0.0001f, avg)) + " " + Loc.T("IPS"), ms = Loc.Num(avg * 1000f, "0.0") + " " + Loc.T("ms");
         _fpsText.text = _fpsCompact ? fps + "\n" + ms : fps + "  (" + ms + ")";
-        _fpsAccum = 0f; _fpsFrames = 0; _fpsTime = 0f;
     }
 }

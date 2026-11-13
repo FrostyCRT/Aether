@@ -89,8 +89,8 @@ public class SkillTreeBackground : MonoBehaviour
     private static byte[] BuildLuminanceMap(Texture source)
     {
         RenderTexture rt = RenderTexture.GetTemporary(MapW, MapH, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+        RenderTexture previous = RenderTexture.active;   // AVANT Blit, qui change la texture active (2026-11-11)
         Graphics.Blit(source, rt);
-        RenderTexture previous = RenderTexture.active;
         RenderTexture.active = rt;
         var read = new Texture2D(MapW, MapH, TextureFormat.RGBA32, false, false);
         read.ReadPixels(new Rect(0, 0, MapW, MapH), 0, 0, false);

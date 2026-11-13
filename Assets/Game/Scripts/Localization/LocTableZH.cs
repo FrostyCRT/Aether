@@ -37,7 +37,7 @@ public static class LocTableZH
         { "Limite d'images par seconde", "帧率上限" }, { "Plafonne le nombre d'images affichées par seconde", "限制每秒显示的帧数" },
         { "Sans effet tant que la synchronisation verticale est activée.", "开启垂直同步时无效。" }, { "Luminosité", "亮度" }, { "Éclaircit ou assombrit toute l'image, menus compris.", "调亮或调暗整个画面，包括菜单。" },
         { "Afficher les images par seconde", "显示帧率" }, { "Affiche le nombre d'images par seconde en haut à gauche.", "在左上角显示帧率。" },
-        { "GRAPHISMES", "图形" }, { "Qualité de l'image et effets visuels", "画质与视觉效果" }, { "Qualité graphique", "画质" }, { "Préréglage global du rendu : éclairage, ombres et netteté.", "整体渲染预设：光照、阴影与清晰度。" },
+        { "GRAPHISMES", "图形" }, { "Qualité de l'image et effets visuels", "画质与视觉效果" }, { "Qualité graphique", "画质" }, { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "性能：在配置较低的电脑上更流畅。高：阴影清晰、边缘平滑，并带有光晕。" },
         { "Ombres", "阴影" }, { "Ombres projetées par les personnages et les ennemis.", "角色与敌人投下的阴影。" }, { "Effets d'ambiance des menus", "菜单氛围特效" },
         { "Poussières et halos lumineux animés dans les menus", "菜单中飘动的尘埃与光晕" }, { "AUDIO", "音频" }, { "Volumes et comportement du son", "音量与声音设置" },
         { "Volume général", "主音量" }, { "Règle le volume de tout le jeu.", "调节整个游戏的音量。" }, { "Musique", "音乐" }, { "Volume de la musique des menus et des parties.", "菜单和对局中的音乐音量。" },
@@ -113,11 +113,12 @@ public static class LocTableZH
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "专注" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "每持续 1 秒未受伤害，伤害就会提升，直至上限。每次受到攻击时，加成都会归零。" },
         { "+2% / s, plafond +15%", "+2%/秒，上限 +15%" }, { "+3% / s, plafond +30%", "+3%/秒，上限 +30%" }, { "+5% / s, plafond +50%", "+5%/秒，上限 +50%" },
-        { "Cadence", "射速" }, { "Augmente la cadence de ton tir de base.", "提升普通攻击的射速。" }, { "Fragmentation", "碎裂" }, { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "普通攻击每 4 发投射物中有 1 发会在命中时爆炸，对附近的敌人造成全额伤害。" },
+        { "Cadence", "射速" }, { "Augmente la cadence de toutes tes armes de tir.", "提升所有射击武器的射速。" }, { "Fragmentation", "碎裂" },
+        { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "普通攻击每 4 发投射物中有 1 发会在命中时爆炸，对附近的敌人造成全额伤害。" },
         { "Dégâts Cristal", "水晶伤害" }, { "Augmente les dégâts de l'ultime et de la Nova.", "提升大招和新星的伤害。" }, { "Surpuissance", "力量过载" },
         { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "释放大招后，你的伤害翻倍，持续 10 秒。" }, { "Vitalité", "活力" },
         { "Augmente tes points de vie maximum.", "提升生命值上限。" }, { "Récupération", "回复" }, { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "冲刺或法力护盾每吸收一个投射物，都会恢复生命值。" },
-        { "+20 PV par absorption", "每次吸收 +20 生命值" }, { "+50 PV par absorption", "每次吸收 +50 生命值" }, { "+80 PV par absorption", "每次吸收 +80 生命值" },
+        { "+15 PV par absorption", "每次吸收 +15 生命值" }, { "+35 PV par absorption", "每次吸收 +35 生命值" }, { "+55 PV par absorption", "每次吸收 +55 生命值" },
         { "Second Souffle", "绝处逢生" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "每局一次，受到致命一击时以 1 点生命值存活，随后 3 秒内无敌。" },
         { "Armure", "护甲" }, { "Réduit les dégâts reçus de tous les ennemis.", "减少所有敌人对你造成的伤害。" }, { "Bouclier de Mana", "法力护盾" },
         { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "拥有 3 层充能的护盾泡会格挡敌方投射物，并像冲刺一样将其吸收。充能：每 3 秒恢复 1 层，护盾泡破碎后暂停 4 秒。" },
@@ -150,7 +151,7 @@ public static class LocTableZH
         { "Orbe Rebondissant", "弹跳法球" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "发射在竞技场中不停弹跳的法球，伤害每个被击中的敌人" },
         { "Dégâts +", "伤害＋" }, { "+20% de dégâts sur toutes tes attaques", "所有攻击伤害 +20%" }, { "Double Tir", "双重射击" }, { "Ton tir de base tire un second projectile juste après le premier", "普通攻击会在第一发之后紧接着发射第二枚投射物" },
         { "Boule de Feu", "火球" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "发射一枚火球，在敌人最密集处爆炸" },
-        { "Cadence+", "射速＋" }, { "+20% de cadence sur toutes tes armes de tir", "所有射击类武器射速 +20%" }, { "Soin", "治疗" }, { "Restaure 50% de tes PV max", "恢复最大生命值的 50%" },
+        { "Cadence +", "射速＋" }, { "+20% de cadence sur toutes tes armes de tir", "所有射击类武器射速 +20%" }, { "Soin", "治疗" }, { "Restaure 50% de tes PV max", "恢复最大生命值的 50%" },
         { "Couteaux", "飞刀" }, { "Lance des salves de couteaux qui transpercent les ennemis", "连续齐射可穿透敌人的飞刀" }, { "Chaîne de Foudre", "连锁闪电" },
         { "Décharge électrique qui rebondit sur les ennemis proches", "在附近敌人之间跳跃的电流" }, { "Boue", "泥沼" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成泥潭，减速并伤害其中的敌人" },
         { "Orbitaux", "环绕弹" }, { "Des éclats tournent autour de toi et frappent les ennemis au contact", "碎片环绕在你身边，碰到敌人即造成伤害" },
@@ -164,7 +165,7 @@ public static class LocTableZH
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "解锁光环：Kael 的专属武器" }, { "+{0}% rayon", "范围 +{0}%" }, { "Ralentissement porté à {0}%", "减速提升至 {0}%" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "解锁飞刀齐射：Lyra 的专属武器" }, { "Débloque un couteau supplémentaire dans la salve", "齐射增加一把飞刀" },
         { "+{0} ennemis perforés en plus", "额外穿透 {0} 名敌人" }, { "+{0} ennemi perforé en plus", "额外穿透 {0} 名敌人" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "解锁一颗可穿透敌人的弹跳法球" },
-        { "+{0}% vitesse des orbes", "法球速度 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "+1 颗弹跳法球" },
+        { "+{0}% vitesse de l'orbe", "法球速度 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "+1 颗弹跳法球" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "远程" }, { "ZONE", "范围" }, { "BRÛLURE", "灼烧" }, { "MÊLÉE", "近战" }, { "AURA", "光环" }, { "RALENTISSEMENT", "减速" },
@@ -264,5 +265,9 @@ public static class LocTableZH
         { "DERNIÈRE PARTIE", "上一局" }, { "VICTOIRE", "胜利" }, { "ABANDON", "放弃" }, { "Ennemis", "敌人" }, { "Victoire", "胜利" },
         { "Défi", "挑战" }, { "Prime de 1re victoire : +{0}", "首胜奖励：+{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "击败的敌人：{0}  ·  Lv.{1}  ·  首领：{2}" },
         { "+{0}% cadence", "射速 +{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "解锁冲击波：光环每 {0} 秒击退敌人" },
+        { "Taille de la fenêtre en mode fenêtré", "窗口模式下的窗口大小" }, { "Le plein écran utilise toujours la résolution de l'écran.", "全屏始终使用屏幕分辨率。" },
+        { "Défi en cours", "当前挑战" }, { "Le défi de la partie et sa progression.", "本局的挑战及其进度。" }, { "Débloque {0} pour acheter cette compétence", "解锁 {0} 后即可购买此技能" },
+        { "Le niveau Performance n'affiche pas d'ombres.", "「性能」档不显示阴影。" }, { "Sources des éclats", "碎片来源" }, { "Sources de l'or", "金币来源" },
+        { "1re victoire", "首胜" },
     };
 }

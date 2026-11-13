@@ -4630,8 +4630,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 100
-  m_fontSizeBase: 100
+  m_fontSize: 82
+  m_fontSizeBase: 82
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19494,6 +19494,7 @@ MonoBehaviour:
   _row1: 66
   _row2: 130
   _row3: 194
+  _rightColumnLift: 8
   _rowIconSize: 58
   _iconGap: 24
   _rightTextFontSize: 38
@@ -19508,8 +19509,8 @@ MonoBehaviour:
   _hpMedallion: 64
   _hpBarInset: 44
   _hpFontSize: 26
-  _hpTextLeft: 48
-  _hpTextRight: -10
+  _hpTextLeft: 19
+  _hpTextRight: 0
   _lifeColorByTier: 1
   _xpThickness: 20
   _bossBarThickness: 30
@@ -20371,7 +20372,7 @@ MonoBehaviour:
   _toggleEnemiesInvincibleKey: 288
   _spawnSmallGemKey: 289
   _spawnMediumGemKey: 290
-  _spawnLargeGemKey: 292
+  _spawnLargeGemKey: 277
   _clearEnemiesKey: 293
 --- !u!1 &1733652938
 GameObject:

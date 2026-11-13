@@ -2,8 +2,20 @@ C:\Users\jules\My project\Aether Storm Survivor
 npx @anthropic-ai/claude-code
 C:\Users\jules\My project\Aether
 instagram-skill Plugin claude pour tout le côté marketing de Insta.
+https://github.com/Panniantong/Agent-Reach.git
 
 
 Mode coop ? deux joueurs dans la partie.
+
+loading screen, barre de chargement, revoir les timing, rendre la progression 
+
+dans le tuto, faire en sorte que au début, aucun personnage n'est sélectionner, et que donc le fond d'écran est sans Aether et son baton, une fois que dans le tuto on passe au personnage, et qu'on le sélectionne, et qu'on revient dans l'accueil, là on voit la petite fondue avec Aether et son baton. L'animation est déjà en place dans le code, il faut juste garder cette idée en tête.
+Il faut aussi lancer cette animation à chaque fois que on change de scene, et qu'on revient dans la scene menu, ça fait la fondue du personnage qui arrive
+
+##
+Dans la nouvelle session, tu peux simplement écrire : « lis la section REPRENDRE ICI de NOTES.md ». Et pense à refaire une build : rien de ces trois jours n'a encore été testé hors de l'éditeur.
+
+
+
 
 

@@ -54,7 +54,7 @@ public class PlayerController : MonoBehaviour
     // OBSOLÈTE (2026-09-19) : la touche se règle désormais dans Paramètres > Commandes (GameAction.PhantomClone).
     // Le champ est conservé pour ne pas casser la sérialisation des prefabs joueur.
     //[SerializeField, HideInInspector] private KeyCode _phantomCloneKey = KeyCode.C;
-    [SerializeField] private float _phantomCloneCooldown = 8f;
+    [SerializeField] private float _phantomCloneCooldown = 8f; // 6 s essayé le 2026-11-11 puis annulé : la recharge démarre dès la pose du clone, 6 s le rendait trop fort
     [SerializeField] private float _phantomCloneDuration = 2f;
     [SerializeField] private float _phantomAttractRadius = 10f;
     [SerializeField] private int _phantomMaxAttracted = 14;

@@ -43,7 +43,7 @@ public static class LocTableES
         { "Luminosité", "Brillo" }, { "Éclaircit ou assombrit toute l'image, menus compris.", "Aclara u oscurece toda la imagen, menús incluidos." },
         { "Afficher les images par seconde", "Mostrar FPS" }, { "Affiche le nombre d'images par seconde en haut à gauche.", "Muestra los fotogramas por segundo en la esquina superior izquierda." },
         { "GRAPHISMES", "GRÁFICOS" }, { "Qualité de l'image et effets visuels", "Calidad de imagen y efectos visuales" },
-        { "Qualité graphique", "Calidad gráfica" }, { "Préréglage global du rendu : éclairage, ombres et netteté.", "Ajuste global del renderizado: iluminación, sombras y nitidez." },
+        { "Qualité graphique", "Calidad gráfica" }, { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "Rendimiento: más fluido en equipos modestos. Alta: sombras nítidas, bordes suavizados y brillos." },
         { "Ombres", "Sombras" }, { "Ombres projetées par les personnages et les ennemis.", "Sombras que proyectan los personajes y los enemigos." },
         { "Effets d'ambiance des menus", "Efectos de ambiente en los menús" }, { "Poussières et halos lumineux animés dans les menus", "Polvo y destellos de luz animados en los menús" },
         { "AUDIO", "AUDIO" }, { "Volumes et comportement du son", "Volumen y comportamiento del sonido" }, { "Volume général", "Volumen general" },
@@ -136,13 +136,13 @@ public static class LocTableES
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "Concentración" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "Cada segundo sin recibir daño aumenta tu daño, hasta un límite. La bonificación vuelve a cero cada vez que te golpean." },
         { "+2% / s, plafond +15%", "+2% / s, máx. +15%" }, { "+3% / s, plafond +30%", "+3% / s, máx. +30%" }, { "+5% / s, plafond +50%", "+5% / s, máx. +50%" },
-        { "Cadence", "Cadencia" }, { "Augmente la cadence de ton tir de base.", "Aumenta la cadencia de tu ataque básico." },
+        { "Cadence", "Cadencia" }, { "Augmente la cadence de toutes tes armes de tir.", "Aumenta la cadencia de todas tus armas de disparo." },
         { "Fragmentation", "Fragmentación" }, { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "Uno de cada 4 proyectiles de tu ataque básico explota al impactar e inflige todo su daño a los enemigos cercanos." },
         { "Dégâts Cristal", "Daño de cristal" }, { "Augmente les dégâts de l'ultime et de la Nova.", "Aumenta el daño de la definitiva y de la Nova." },
         { "Surpuissance", "Sobrecarga" }, { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "Tras usar la definitiva, tu daño se duplica durante 10 segundos." },
         { "Vitalité", "Vitalidad" }, { "Augmente tes points de vie maximum.", "Aumenta tus puntos de vida máximos." }, { "Récupération", "Recuperación" },
         { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "Cada proyectil que absorbes con el dash o con el Escudo de maná te restaura PV." },
-        { "+20 PV par absorption", "+20 PV por absorción" }, { "+50 PV par absorption", "+50 PV por absorción" }, { "+80 PV par absorption", "+80 PV por absorción" },
+        { "+15 PV par absorption", "+15 PV por absorción" }, { "+35 PV par absorption", "+35 PV por absorción" }, { "+55 PV par absorption", "+55 PV por absorción" },
         { "Second Souffle", "Segundo aliento" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "Una vez por partida, sobrevives a un golpe mortal con 1 PV y luego eres invulnerable durante 3 segundos." },
         { "Armure", "Armadura" }, { "Réduit les dégâts reçus de tous les ennemis.", "Reduce el daño que recibes de todos los enemigos." },
         { "Bouclier de Mana", "Escudo de maná" }, { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "Una burbuja de 3 cargas bloquea los proyectiles enemigos y los absorbe como el dash. Recarga: 1 carga cada 3 segundos, en pausa 4 segundos si la burbuja se rompe." },
@@ -178,7 +178,7 @@ public static class LocTableES
         { "Dégâts +", "Daño +" }, { "+20% de dégâts sur toutes tes attaques", "+20% de daño en todos tus ataques" }, { "Double Tir", "Disparo doble" },
         { "Ton tir de base tire un second projectile juste après le premier", "Tu ataque básico dispara un segundo proyectil justo después del primero" },
         { "Boule de Feu", "Bola de fuego" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "Lanza una bola de fuego que explota sobre el grupo de enemigos más denso" },
-        { "Cadence+", "Cadencia+" }, { "+20% de cadence sur toutes tes armes de tir", "+20% de cadencia en todas tus armas de disparo" },
+        { "Cadence +", "Cadencia +" }, { "+20% de cadence sur toutes tes armes de tir", "+20% de cadencia en todas tus armas de disparo" },
         { "Soin", "Curación" }, { "Restaure 50% de tes PV max", "Restaura el 50% de tus PV máximos" }, { "Couteaux", "Cuchillos" },
         { "Lance des salves de couteaux qui transpercent les ennemis", "Lanza ráfagas de cuchillos que atraviesan a los enemigos" },
         { "Chaîne de Foudre", "Rayo en cadena" }, { "Décharge électrique qui rebondit sur les ennemis proches", "Descarga eléctrica que salta entre los enemigos cercanos" },
@@ -197,7 +197,7 @@ public static class LocTableES
         { "+{0}% rayon", "+{0}% de radio" }, { "Ralentissement porté à {0}%", "Ralentización aumentada al {0}%" }, { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "Desbloquea la Ráfaga de cuchillos: equipa el arma exclusiva de Lyra" },
         { "Débloque un couteau supplémentaire dans la salve", "Añade un cuchillo más a la ráfaga" }, { "+{0} ennemis perforés en plus", "Perfora a {0} enemigos más" },
         { "+{0} ennemi perforé en plus", "Perfora a {0} enemigo más" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "Desbloquea un orbe rebotador que atraviesa a los enemigos" },
-        { "+{0}% vitesse des orbes", "+{0}% de velocidad de los orbes" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe rebotador adicional" },
+        { "+{0}% vitesse de l'orbe", "+{0}% de velocidad del orbe" }, { "+1 orbe rebondissant supplémentaire", "+1 orbe rebotador adicional" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "DISTANCIA" }, { "ZONE", "ÁREA" }, { "BRÛLURE", "QUEMADURA" }, { "MÊLÉE", "CUERPO A CUERPO" }, { "AURA", "AURA" },
@@ -318,5 +318,9 @@ public static class LocTableES
         { "Victoire", "Victoria" }, { "Défi", "Desafío" }, { "Prime de 1re victoire : +{0}", "Bonificación de primera victoria: +{0}" },
         { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "Enemigos derrotados: {0}  ·  Nv. {1}  ·  Jefes: {2}" },
         { "+{0}% cadence", "+{0}% de cadencia" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "Desbloquea Onda de choque: el aura repele a los enemigos cada {0} segundos" },
+        { "Taille de la fenêtre en mode fenêtré", "Tamaño de la ventana en modo ventana" }, { "Le plein écran utilise toujours la résolution de l'écran.", "La pantalla completa siempre usa la resolución de la pantalla." },
+        { "Défi en cours", "Desafío en curso" }, { "Le défi de la partie et sa progression.", "El desafío de la partida y su progreso." },
+        { "Débloque {0} pour acheter cette compétence", "Desbloquea a {0} para comprar esta habilidad" }, { "Le niveau Performance n'affiche pas d'ombres.", "El nivel Rendimiento no muestra sombras." },
+        { "Sources des éclats", "Origen de los fragmentos" }, { "Sources de l'or", "Origen del oro" }, { "1re victoire", "1.ª victoria" },
     };
 }

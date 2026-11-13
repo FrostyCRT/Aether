@@ -37,6 +37,16 @@ public class CustomCursor : MonoBehaviour
     private static Texture2D _blankCursor;
     private int _reapplyFrames;
 
+    // AJOUTÉ (2026-11-10, retour utilisateur : "si on est en fenêtré, j'aimerais que si on appuie sur la touche Échap, on
+    // puisse sortir le curseur de la fenêtre du jeu") - en fenêtré (avec ou sans bordure), Échap libère la souris ; le
+    // prochain clic dans le jeu la retient de nouveau. En plein écran exclusif, elle reste toujours retenue.
+    private static bool _released;
+
+    private static bool CanRelease => Screen.fullScreenMode != FullScreenMode.ExclusiveFullScreen;
+
+    public static CursorLockMode DesiredLockState =>
+        _released && CanRelease ? CursorLockMode.None : CursorLockMode.Confined;
+
     // Masque le curseur Windows dans la fenêtre du jeu (le gantelet, lui, est une image UI : voir Update).
     public static void HideSystemCursor()
     {
@@ -49,7 +59,7 @@ public class CustomCursor : MonoBehaviour
         }
         Cursor.SetCursor(_blankCursor, Vector2.zero, CursorMode.Auto);
         Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.lockState = DesiredLockState;
     }
 
     // CORRIGÉ (2026-11-07, retour utilisateur : "quand on Alt+Tab et qu'on met le curseur sur la page sans avoir cliqué
@@ -57,11 +67,53 @@ public class CustomCursor : MonoBehaviour
     // suit plus la souris (le jeu ne reçoit plus ses mouvements), il est donc masqué, et c'est la flèche Windows normale
     // qui s'affiche au-dessus de la fenêtre, comme pour n'importe quelle application en arrière-plan. Au clic qui rend le
     // focus, HideSystemCursor reprend la main et le gantelet revient.
+    // MODIFIÉ (2026-11-10, retour utilisateur : "quand je Alt + Tab du jeu, ça me reprend la souris de Windows au lieu de
+    // garder la souris du jeu") - sans le focus, le curseur de la fenêtre n'est plus la flèche Windows mais le gantelet,
+    // en curseur matériel : Windows l'affiche lui-même au-dessus du jeu (l'image UI, elle, reste masquée : jamais deux).
     public static void ShowSystemCursor()
     {
-        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        Vector2 hotspot = Vector2.zero;
+        Texture2D gauntlet = Instance != null ? Instance.HardwareGauntlet(out hotspot) : null;
+        if (gauntlet != null) Cursor.SetCursor(gauntlet, hotspot, CursorMode.Auto);
+        else Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private Sprite _sprite;
+    private Texture2D _hardware;
+
+    // Copie du gantelet à la taille affichée en jeu (48 px en 1080p), créée à la demande puis gardée.
+    private Texture2D HardwareGauntlet(out Vector2 hotspot)
+    {
+        int size = Mathf.Clamp(Mathf.RoundToInt(_displaySize.y * Screen.height / 1080f), 32, 128);
+        hotspot = new Vector2(_hotspotPivot.x * size, (1f - _hotspotPivot.y) * size);
+        if (_sprite == null) return null;
+        if (_hardware != null && _hardware.width == size) return _hardware;
+        if (_hardware != null) Destroy(_hardware);
+
+        // Comme l'image UI (preserveAspect) : le dessin garde ses proportions, centré en largeur dans un carré de size px,
+        // pour que le point de clic (_hotspotPivot, exprimé dans ce carré) tombe au même endroit du doigt.
+        Texture source = _sprite.texture;
+        Rect r = _sprite.textureRect;
+        int w = Mathf.Clamp(Mathf.RoundToInt(size * r.width / r.height), 1, size);
+        RenderTexture rt = RenderTexture.GetTemporary(w, size, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+        RenderTexture previous = RenderTexture.active;   // AVANT Blit, qui change la texture active (2026-11-11)
+        Graphics.Blit(source, rt, new Vector2(r.width / source.width, r.height / source.height),
+                      new Vector2(r.x / source.width, r.y / source.height));
+        RenderTexture.active = rt;
+        var drawing = new Texture2D(w, size, TextureFormat.RGBA32, false, false);
+        drawing.ReadPixels(new Rect(0, 0, w, size), 0, 0, false);
+        RenderTexture.active = previous;
+        RenderTexture.ReleaseTemporary(rt);
+
+        _hardware = new Texture2D(size, size, TextureFormat.RGBA32, false, false);
+        _hardware.SetPixels32(new Color32[size * size]);
+        _hardware.SetPixels32((size - w) / 2, 0, w, size, drawing.GetPixels32());
+        _hardware.Apply();
+        _hardware.hideFlags = HideFlags.HideAndDontSave;
+        Destroy(drawing);
+        return _hardware;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -103,6 +155,7 @@ public class CustomCursor : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        _sprite = sprite;
 
         GameObject canvasGO = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler));
         canvasGO.transform.SetParent(transform, false);
@@ -149,8 +202,13 @@ public class CustomCursor : MonoBehaviour
 
         if (Application.isFocused)
         {
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (CanRelease && keyboard != null && keyboard.escapeKey.wasPressedThisFrame) _released = true;
+            else if (_released && mouse != null && mouse.leftButton.wasPressedThisFrame) _released = false;
+
             if (_reapplyFrames > 0) { _reapplyFrames--; HideSystemCursor(); }
-            else if (Cursor.visible || Cursor.lockState != CursorLockMode.Confined) HideSystemCursor();
+            else if (Cursor.visible || Cursor.lockState != DesiredLockState) HideSystemCursor();
         }
 
         // CORRIGÉ (2026-10-11, retour utilisateur : "je veux le même système qu'avant") - le gantelet s'affichait
@@ -173,6 +231,7 @@ public class CustomCursor : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_hardware != null) Destroy(_hardware);
         if (Instance == this)
         {
             Instance = null;

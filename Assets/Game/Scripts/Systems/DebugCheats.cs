@@ -37,7 +37,8 @@ public class DebugCheats : MonoBehaviour
     [Tooltip("Fait apparaitre une gemme d'XP MOYENNE pres du joueur.")]
     [SerializeField] private KeyCode _spawnMediumGemKey = KeyCode.F9;
     [Tooltip("Fait apparaitre une gemme d'XP GRANDE pres du joueur.")]
-    [SerializeField] private KeyCode _spawnLargeGemKey = KeyCode.F11;
+    // Inser au lieu de F11 (2026-11-10) : F11 bascule maintenant le plein écran sans bordure (SettingsApplier).
+    [SerializeField] private KeyCode _spawnLargeGemKey = KeyCode.Insert;
     [Tooltip("Retire tous les ennemis normaux actuellement sur la carte (boss non compris).")]
     [SerializeField] private KeyCode _clearEnemiesKey = KeyCode.F12;
 

@@ -222,6 +222,9 @@ public class LastRunSummary
     public bool valid;
     public int gold, goldKills, goldTime, goldBosses, goldVictory, goldChallenge;
     public int eclats, eclatsFirstWin;
+    // AJOUTÉ (2026-11-12, « voir la source des gains d'éclats dans Dernière Partie ») - après multiplicateur de difficulté ;
+    // eclatsTime + eclatsBosses + eclatsVictory + eclatsFirstWin = eclats. 0 partout sur une sauvegarde plus ancienne.
+    public int eclatsTime, eclatsBosses, eclatsVictory;
     public float runTime;
     public int kills, level, bossKills;
     public bool victory, abandoned;

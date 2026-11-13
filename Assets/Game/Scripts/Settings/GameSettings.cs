@@ -47,6 +47,7 @@ public static class GameSettings
     public const string ShowTimer = "settings_show_timer";
     public const string ShowGold = "settings_show_gold";
     public const string ShowKills = "settings_show_kills";
+    public const string ShowChallenge = "settings_show_challenge";   // défi en cours en haut à droite (2026-11-11)
     public const string ShowKeyLegend = "settings_show_keylegend";   // légende des touches à gauche du HUD
     // Manette
     public const string PadDeadZone = "settings_pad_deadzone";
@@ -113,6 +114,7 @@ public static class GameSettings
         { ShowTimer,        B(true) },
         { ShowGold,         B(true) },
         { ShowKills,        B(true) },
+        { ShowChallenge,    B(true) },
         { ShowKeyLegend,    B(true) },
 
         { PadDeadZone,      F(0.20f, 0.05f, 0.50f) },

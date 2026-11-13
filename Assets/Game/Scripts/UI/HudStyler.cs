@@ -60,9 +60,12 @@ public class HudStyler : MonoBehaviour
     [Tooltip("Marge gauche (Left) du texte « 1850 / 2000 » dans la barre.")]
     // MODIFIÉ (2026-10-29, retour utilisateur : "recentrer en X l'affichage du nombre de vie") - 42 -> 54 : le texte est centré
     // sur la partie VISIBLE de la barre (le cœur, 64 px, en cache le début), plus sur la barre entière.
-    [SerializeField] private float _hpTextLeft = 48f;
+    // MODIFIÉ (2026-11-11, retour utilisateur : "je veux juste qu'il y ait le même écart entre le bord droit du cœur et la fin de
+    // la barre") - marges comptées depuis le début de la barre (après le cœur) : 19 / 0 place le centre du texte au milieu exact
+    // entre le bord droit du cœur dessiné (62 px) et le bout de la barre, contour compris (521 px).
+    [SerializeField] private float _hpTextLeft = 19f;
     [Tooltip("Marge droite (Right) du texte : comme dans l'inspecteur de Unity, une valeur négative fait dépasser le texte à droite.")]
-    [SerializeField] private float _hpTextRight = -10f;
+    [SerializeField] private float _hpTextRight = 0f;
     [Tooltip("Coché : la barre de vie change de couleur selon les points de vie (vert, vert clair, orange, rouge), comme à l'origine. Décoché : couleur fixe « Life Color » de la palette.")]
     [SerializeField] private bool _lifeColorByTier = true;
 
@@ -319,6 +322,8 @@ public class HudStyler : MonoBehaviour
     }
 
     // ---------------------------------------------------------------------------------------------------------------
+    private TextMeshProUGUI _hpText;
+
     private void ApplyBars()
     {
         // vie : en haut à gauche, centrée sur la même ligne que le chrono et l'or
@@ -341,7 +346,12 @@ public class HudStyler : MonoBehaviour
             hpRt.pivot = new Vector2(0f, 0.5f);
             hpRt.sizeDelta = new Vector2(_hpLength, 40f);
             hpRt.anchoredPosition = Vector2.zero;
-            var hpText = Find<TextMeshProUGUI>("Health/HPText");
+            // CORRIGÉ (2026-11-11, retour utilisateur : "le centrage des PV n'est pas le même depuis Unity et depuis un build") - le
+            // texte quitte "Health/HPText" dès le premier habillage (HudBar le range dans la barre). Dans l'éditeur, OnValidate
+            // relance Apply au chargement : le chemin ne trouvait plus rien et le texte restait rattaché au bloc entier (44 px plus
+            // à gauche que dans une build, où Apply ne tourne qu'une fois). Référence gardée : même résultat partout.
+            if (_hpText == null) _hpText = Find<TextMeshProUGUI>("Health/HPText");
+            var hpText = _hpText;
             HudBar life = HudBar.Attach(hp, HudBar.Kind.Health, _hpThickness, _hpBarInset, _heartSprite != null ? _heartSprite : HudSprites.Heart,
                           Color.Lerp(_lifeColor, Color.white, 0.12f), _hpMedallion, hpText, _hpFontSize, false, 1f, _heartSprite != null && _iconsHaveOwnFrame);
             if (life != null)
@@ -605,6 +615,13 @@ public class HudStyler : MonoBehaviour
 
         // défi : l'icône passe à DROITE (même colonne que l'or et les éliminations), texte aligné à droite juste à côté
         Transform cg = transform.Find("ChallengeGroup");
+
+        // AJOUTÉ (2026-11-11) - empilement des lignes visibles (voir HudRightColumn)
+        HudRightColumn column = GetComponent<HudRightColumn>();
+        if (column == null) column = gameObject.AddComponent<HudRightColumn>();
+        column.Configure(Find<TextMeshProUGUI>("StatsGroup/GoldText"), Find<TextMeshProUGUI>("StatsGroup/KillCountText"), cg as RectTransform,
+                         new[] { -_row1 + _rightColumnLift, -_row2 + _rightColumnLift, -_row3 + _rightColumnLift }, _killsTextOffsetY);
+
         if (cg == null) return;
 
         var rt = (RectTransform)cg;

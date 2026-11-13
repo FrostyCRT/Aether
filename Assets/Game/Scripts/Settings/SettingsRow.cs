@@ -223,6 +223,8 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
             case RowKind.Choice:
             {
+                // libellés recalculés (2026-11-11) : la liste des résolutions change avec le mode d'affichage
+                if (Def.dynamicOptions != null) _options = Def.dynamicOptions();
                 int i = Def.getIndex != null ? Def.getIndex() : GameSettings.GetInt(Def.key);
                 i = Mathf.Clamp(i, 0, Mathf.Max(0, _options.Length - 1));
                 _choiceText.text = _options.Length > 0 ? _options[i] : "";

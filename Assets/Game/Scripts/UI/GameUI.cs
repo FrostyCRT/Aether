@@ -354,6 +354,9 @@ public class GameUI : MonoBehaviour
             UpdateGold(MetaProgressionManager.Instance.RunGold);
 
         UpdateKillCount(0);
+        // AJOUTÉ (2026-11-11, retour utilisateur : "pendant l'animation du défi au lancement, le timer a l'ancien format des
+        // 2 points sans les espaces") - le texte de la scène (« 00:00 ») restait affiché tant que le chrono ne tournait pas.
+        if (_timerText != null) _timerText.text = TimeText.Clock(0, 0);
         ApplyUserSettings();
         RefreshCloneKey();
         StyleEndScreenTexts();
@@ -428,6 +431,7 @@ public class GameUI : MonoBehaviour
             case GameSettings.ShowTimer:
             case GameSettings.ShowGold:
             case GameSettings.ShowKills:
+            case GameSettings.ShowChallenge:
                 ApplyUserSettings(); break;
         }
     }
@@ -451,7 +455,13 @@ public class GameUI : MonoBehaviour
         if (_timerText != null) _timerText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowTimer));
         if (_goldText != null) _goldText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowGold));
         if (_killCountText != null) _killCountText.gameObject.SetActive(GameSettings.GetBool(GameSettings.ShowKills));
+        if (_challengeGroup != null) _challengeGroup.SetActive(_challengeShownByGame && GameSettings.GetBool(GameSettings.ShowChallenge));
     }
+
+    // AJOUTÉ (2026-11-11, retour utilisateur : "tu as oublié la possibilité d'enlever l'affichage des défis dans les paramètres
+    // d'interface") - le défi s'affiche si le jeu en a un à montrer (UpdateChallengeDisplay / HideChallengeDisplay) ET si le
+    // joueur ne l'a pas masqué. L'annonce en grand au lancement, elle, reste jouée.
+    private bool _challengeShownByGame;
 
     public void UpdateUltStack(int stacks)
     {
@@ -486,7 +496,8 @@ public class GameUI : MonoBehaviour
 
     public void UpdateChallengeDisplay(string challengeName, string progressText, bool failed)
     {
-        if (_challengeGroup != null) _challengeGroup.SetActive(true);
+        _challengeShownByGame = true;
+        if (_challengeGroup != null) _challengeGroup.SetActive(GameSettings.GetBool(GameSettings.ShowChallenge));
         if (_challengeText == null) return;
 
         if (failed)
@@ -497,7 +508,15 @@ public class GameUI : MonoBehaviour
         else
         {
             _challengeText.text = $"{challengeName} — {progressText}";
-            _challengeText.color = Color.white;
+            // AJOUTÉ (2026-11-12, retour utilisateur : « quand on réussit un défi en jeu, ça fait juste l'actualisation
+            // du x/objectif ») - défi acquis : texte vert + badge coché qui « tamponne » l'icône du défi (une fois).
+            bool succeeded = ChallengeManager.Instance != null && ChallengeManager.Instance.IsCurrentlySucceeding();
+            _challengeText.color = succeeded ? ChallengeSuccessGreen : Color.white;
+            if (succeeded && !_challengeSuccessPlayed)
+            {
+                _challengeSuccessPlayed = true;
+                StartCoroutine(PlayChallengeSuccess());
+            }
         }
 
         // AJOUTÉ (2026-10-13) - première fois que le défi s'affiche dans CETTE run (jamais rejoué aux mises à jour
@@ -516,11 +535,12 @@ public class GameUI : MonoBehaviour
             string introDesc = progressText;
             if (def != null)
             {
-                string difficultyHex = ColorUtility.ToHtmlStringRGB(GetDifficultyColor(def.difficulty));
                 string rewardText = ChallengeManager.Instance != null
                     ? ChallengeManager.FormatRewardGold(ChallengeManager.Instance.GetCurrentRewardGold())
                     : "";
-                introTitle = Loc.F("{0} : Niv. {1}", challengeName, $"<color=#{difficultyHex}>{GetDifficultyLabel(def.difficulty)}</color>");
+                // MODIFIÉ (2026-11-11) - mot de la difficulté mis en valeur (DifficultyStyle : couleur vive, contour de sa teinte)
+                introTitle = Loc.F("{0} : Niv. {1}", challengeName,
+                    DifficultyStyle.Wrap(_challengeText != null ? _challengeText.font : null, def.difficulty, GetDifficultyLabel(def.difficulty)));
                 // MODIFIÉ (2026-10-16, retour utilisateur : "il y a de la place, [...] pour comprendre exactement
                 // ce qu'il faut faire") - LongDescription (phrase complète) au lieu de Description (version
                 // courte à 35 car. pensée pour l'espace réduit du menu Pause, voir PauseMenuUI.PullChallengeInfo).
@@ -538,20 +558,7 @@ public class GameUI : MonoBehaviour
     // MODIFIÉ (2026-10-25, analyse de lisibilité) - l'annonce s'affiche sur le parchemin clair (#ECDDBB), pas sur le
     // fond sombre du menu Pause : le vert/ambre d'origine y tombaient à 1,7:1 et 1,6:1 de contraste (mesuré sur
     // capture). Mêmes teintes, assombries pour l'encre sur parchemin (4,7 à 5,4:1) ; le menu Pause garde les siennes.
-    private static readonly Color DifficultyEasyColor = new Color32(0x2F, 0x6B, 0x1E, 0xFF);    // vert (était #6FBF54)
-    private static readonly Color DifficultyMediumColor = new Color32(0x8E, 0x52, 0x08, 0xFF);  // ambre (était #E8A33D)
-    private static readonly Color DifficultyHardColor = new Color32(0x9A, 0x33, 0x22, 0xFF);    // rouge (était #B5533E)
-
-    private static Color GetDifficultyColor(ChallengeDifficulty difficulty)
-    {
-        switch (difficulty)
-        {
-            case ChallengeDifficulty.Easy: return DifficultyEasyColor;
-            case ChallengeDifficulty.Medium: return DifficultyMediumColor;
-            case ChallengeDifficulty.Hard: return DifficultyHardColor;
-            default: return Color.white;
-        }
-    }
+    // MODIFIÉ (2026-11-11) - couleurs des difficultés : DifficultyStyle (communes à l'annonce et au menu Pause).
 
     private static string GetDifficultyLabel(ChallengeDifficulty difficulty)
     {
@@ -564,10 +571,100 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // ---------- Défi réussi en cours de partie ----------
+    private static readonly Color ChallengeSuccessGreen = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54, vert « Réussi » du menu Pause
+    private bool _challengeSuccessPlayed;
+    private static Sprite _checkBadgeSprite;
+
+    private IEnumerator PlayChallengeSuccess()
+    {
+        if (_challengeGroup == null) yield break;
+        RectTransform group = _challengeGroup.transform as RectTransform;
+        Transform iconT = _challengeGroup.transform.Find("ChallengeIcon");
+        RectTransform anchor = iconT != null ? (RectTransform)iconT : group;
+
+        // Badge : disque vert bordé, coche blanche, posé dans le coin haut-droit de l'icône comme un tampon. L'icône du défi
+        // est tournée de 180° dans la scène (ChallengeIcon) : ancres et rotation du badge compensent ce demi-tour.
+        float baseAngle = anchor != group ? -anchor.localEulerAngles.z : 0f;
+        GameObject badgeGo = new GameObject("ChallengeCheck", typeof(RectTransform), typeof(Image));
+        RectTransform badge = (RectTransform)badgeGo.transform;
+        badge.SetParent(anchor, false);
+        float size = Mathf.Clamp(anchor.rect.height * 0.75f, 26f, 48f);
+        Vector2 corner = new Vector2(0.85f, 0.8f);
+        if (Mathf.Abs(Mathf.DeltaAngle(anchor.localEulerAngles.z, 180f)) < 1f && anchor != group) corner = Vector2.one - corner;
+        badge.anchorMin = badge.anchorMax = corner;
+        badge.pivot = new Vector2(0.5f, 0.5f);
+        badge.sizeDelta = new Vector2(size, size);
+        Image img = badgeGo.GetComponent<Image>();
+        img.sprite = CheckBadgeSprite();
+        img.raycastTarget = false;
+
+        // Animation (temps réel, la partie peut être en pause) : le badge tombe en grossissant puis se pose ; le groupe
+        // fait un petit rebond et le texte passe brièvement au blanc éclatant.
+        Vector3 groupScale = group.localScale;
+        const float stampDur = 0.35f, bounceDur = 0.45f;
+        float t = 0f;
+        while (t < bounceDur)
+        {
+            t += Time.unscaledDeltaTime;
+            float s = Mathf.Clamp01(t / stampDur);
+            float stamp = s < 1f ? Mathf.Lerp(2.4f, 1f, 1f - (1f - s) * (1f - s)) : 1f;
+            badge.localScale = Vector3.one * stamp;
+            badge.localEulerAngles = new Vector3(0f, 0f, baseAngle + Mathf.Lerp(-35f, -8f, s));
+            img.color = new Color(1f, 1f, 1f, Mathf.Clamp01(s * 2.5f));
+            float b = Mathf.Clamp01(t / bounceDur);
+            group.localScale = groupScale * (1f + 0.18f * Mathf.Sin(b * Mathf.PI) * (1f - b * 0.5f));
+            if (_challengeText != null) _challengeText.color = Color.Lerp(Color.white, ChallengeSuccessGreen, b);
+            yield return null;
+        }
+        group.localScale = groupScale;
+        badge.localScale = Vector3.one;
+        img.color = Color.white;
+        if (_challengeText != null) _challengeText.color = ChallengeSuccessGreen;
+    }
+
+    private static Sprite CheckBadgeSprite()
+    {
+        if (_checkBadgeSprite != null) return _checkBadgeSprite;
+        const int n = 96;
+        Texture2D tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "CheckBadge" };
+        Color green = ChallengeSuccessGreen, rim = new Color32(0x1E, 0x2E, 0x14, 255), dark = new Color32(10, 6, 3, 255);
+        Vector2 a = new Vector2(0.28f, 0.52f), m = new Vector2(0.44f, 0.34f), e = new Vector2(0.74f, 0.70f);
+        Color[] px = new Color[n * n];
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                Vector2 p = new Vector2((x + 0.5f) / n, (y + 0.5f) / n);
+                float r = Vector2.Distance(p, new Vector2(0.5f, 0.5f));
+                float disc = Mathf.Clamp01((0.49f - r) * n);              // bord extérieur lissé
+                float inner = Mathf.Clamp01((0.43f - r) * n);             // liseré sombre de ~6 %
+                Color c = Color.Lerp(rim, green * (1.08f - 0.25f * p.y + 0.12f), inner);
+                float d = Mathf.Min(SegDist(p, a, m), SegDist(p, m, e));
+                float stroke = Mathf.Clamp01((0.075f - d) * n);           // coche blanche
+                float strokeEdge = Mathf.Clamp01((0.105f - d) * n);       // contour sombre de la coche
+                c = Color.Lerp(c, dark, strokeEdge * 0.85f * inner);
+                c = Color.Lerp(c, Color.white, stroke);
+                c.a = disc;
+                px[y * n + x] = c;
+            }
+        tex.SetPixels(px);
+        tex.Apply(false, true);
+        _checkBadgeSprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+        return _checkBadgeSprite;
+
+        static float SegDist(Vector2 p, Vector2 s0, Vector2 s1)
+        {
+            Vector2 d = s1 - s0;
+            float k = Mathf.Clamp01(Vector2.Dot(p - s0, d) / d.sqrMagnitude);
+            return Vector2.Distance(p, s0 + d * k);
+        }
+    }
+
     // AJOUTE (2026-09-15) - masque le rappel de defi du HUD (voir
     // ChallengeManager.RefreshDisplay/IsRewardAlreadyClaimedThisHour).
     public void HideChallengeDisplay()
     {
+        _challengeShownByGame = false;
         if (_challengeGroup != null) _challengeGroup.SetActive(false);
     }
 
@@ -698,6 +795,7 @@ public class GameUI : MonoBehaviour
         _challengeIntroTitleText.fontSizeMin = 32f;
         _challengeIntroTitleText.fontSizeMax = _challengeIntroTitleFontSize;
         if (_challengeText != null) _challengeIntroTitleText.font = _challengeText.font;
+        _challengeIntroTitleText.extraPadding = true;   // contour et lueur du mot de la difficulté (DifficultyStyle)
 
         GameObject descGO = new GameObject("Desc", typeof(RectTransform), typeof(TextMeshProUGUI));
         var descRt = (RectTransform)descGO.transform;
@@ -2631,6 +2729,7 @@ public class GameUI : MonoBehaviour
         FillEndInfoStats(victoryInfo, mins, secs, killCount, level, victoryBossKills);
         PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardGold);
         ShowFirstWinChip();
+        ShowUnlockChip();
         LayoutEndInfoBox(_victoryPanel, victoryInfo);
         PopulateVictoryPortrait();
         int victoryTileCount = PopulateBuildGrid(_victoryBuildGridContent);
@@ -3446,19 +3545,46 @@ public class GameUI : MonoBehaviour
 
     private void ShowFirstWinChip()
     {
-        if (string.IsNullOrEmpty(_victoryFirstWinMessage) || _victoryRecordHighlightText == null) return;
+        if (string.IsNullOrEmpty(_victoryFirstWinMessage)) return;
+        if (AddVictoryChip("FirstWinChip", TintEclatReward(_victoryFirstWinMessage)))
+            _victoryRecordHighlight.SetActive(false);
+    }
+
+    // AJOUTÉ (2026-11-12, retour utilisateur : « j'ai débloqué Lyra, sauf que ça ne s'est pas affiché ») - seul le Game Over
+    // lisait PendingUnlockNotification ; Lyra ne se débloquant QUE sur une victoire, son annonce n'apparaissait jamais (et
+    // restait en attente pour la défaite suivante). Même bandeau que « Défi réussi », placé en tête des messages.
+    private void ShowUnlockChip()
+    {
+        string unlocked = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.ConsumePendingUnlockNotification() : null;
+        if (unlocked == null) return;
+        if (_victoryQuietLineText != null) _victoryQuietLineText.gameObject.SetActive(false);   // le cadre a déjà son message
+        if (!AddVictoryChip("UnlockChip", Loc.F("Nouveau personnage débloqué : {0} !", "<color=" + RewardGoldHex + ">" + unlocked + "</color>"))
+            && _victoryRecordHighlight != null && _victoryRecordHighlightText != null)
+        {
+            // Repli (cadre sans chip à dupliquer) : la ligne de record simple porte l'annonce.
+            _victoryRecordHighlight.SetActive(true);
+            _victoryRecordHighlightText.text = Loc.F("Nouveau personnage débloqué : {0} !", unlocked);
+        }
+    }
+
+    // Copie le chip « Défi réussi » (bandeau sombre) à la place de la ligne de record ; false si impossible.
+    private bool AddVictoryChip(string name, string richText)
+    {
+        if (_victoryRecordHighlightText == null) return false;
         GameObject chipRoot = ChallengeChipRoot(_victoryChallengeText);
-        if (chipRoot == null || chipRoot.transform.parent != _victoryRecordHighlightText.transform.parent) return;
+        if (chipRoot == null || chipRoot.transform.parent != _victoryRecordHighlightText.transform.parent) return false;
+        Transform old = chipRoot.transform.parent.Find(name);
+        if (old != null) Destroy(old.gameObject);
         GameObject copy = Instantiate(chipRoot, chipRoot.transform.parent);
-        copy.name = "FirstWinChip";
+        copy.name = name;
         copy.transform.SetSiblingIndex(_victoryRecordHighlightText.transform.GetSiblingIndex());
         copy.SetActive(true);
         if (copy.TryGetComponent(out CanvasGroup cg)) cg.alpha = 1f;
         if (copy.TryGetComponent(out Image bg)) bg.color = ChipDarkBg;
         TextMeshProUGUI text = copy.GetComponentInChildren<TextMeshProUGUI>(true);
         text.color = ChipLightText;
-        text.text = TintEclatReward(_victoryFirstWinMessage);
-        _victoryRecordHighlight.SetActive(false);
+        text.text = richText;
+        return true;
     }
 
     // « Première victoire en X : +N éclats » : colore du signe + jusqu'à la fin du message (toutes les langues y placent le montant).

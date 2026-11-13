@@ -280,7 +280,19 @@ public class UpgradeUI : MonoBehaviour
         _pickContext = new PickAnimContext[_cards.Length];
 
         if (_levelUpTitleText != null)
+        {
             _titleDefaultY = _levelUpTitleText.anchoredPosition.y;
+
+            // CORRIGÉ (2026-11-11, retour utilisateur : "le texte Niveau Supérieur ! me semble flou par rapport aux cartes") - le
+            // titre utilisait le matériau commun de la police, dont le contour ressort en liseré GRIS semi-transparent : mêlé au
+            // décor flouté derrière le panneau, il donnait un bord baveux. Contour sombre et opaque, comme le nombre de PV.
+            TMPro.TMP_Text title = _levelUpTitleText.GetComponent<TMPro.TMP_Text>();
+            if (title != null)
+            {
+                Material crisp = HudBar.OutlinedMaterial(title.fontSharedMaterial, 0.24f, new Color32(18, 11, 6, 255));
+                if (crisp != null) title.fontSharedMaterial = crisp;
+            }
+        }
 
         _defaultNameY = new float[_cards.Length];
         _defaultIconSize = new Vector2[_cards.Length];
@@ -314,6 +326,16 @@ public class UpgradeUI : MonoBehaviour
                     fx = _cards[i].chooseButton.gameObject.AddComponent<LevelUpCardHoverFX>();
                 GameObject root = _cards[i].cardRoot != null ? _cards[i].cardRoot : _cards[i].chooseButton.gameObject;
                 fx.Init(this, (RectTransform)root.transform);
+
+                // CORRIGÉ (2026-11-11, retour utilisateur : "quand on met le curseur sur les dots, l'animation de survol se
+                // termine, comme si la souris était hors de la carte") - la rangée des pastilles est dessinée PAR-DESSUS le
+                // bouton et captait la souris : sortie du bouton (fin du survol) et clic sans effet. Elle laisse passer le pointeur.
+                if (_cards[i].tierDotsContainer != null)
+                {
+                    Transform row = _cards[i].tierDotsContainer.transform.parent;
+                    if (row == null || row == root.transform) row = _cards[i].tierDotsContainer.transform;
+                    foreach (Graphic g in row.GetComponentsInChildren<Graphic>(true)) g.raycastTarget = false;
+                }
             }
 
             // CORRIGÉ (2026-10-07, retour utilisateur : "il faut trouver une autre couleur de texte qui vient sur

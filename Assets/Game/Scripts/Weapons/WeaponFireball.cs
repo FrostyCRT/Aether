@@ -73,7 +73,7 @@ public class WeaponFireball : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
         _cooldownTimer += Time.deltaTime;
-        float cooldownDuration = _fireRate > 0f ? (1f / _fireRate) : 9999f;
+        float cooldownDuration = _fireRate > 0f ? (1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) : 9999f; // Cadence (arbre)
         if (_cooldownTimer >= cooldownDuration)
         {
             if (FindDensestClusterPoint(out Vector3 aimPoint))

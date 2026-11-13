@@ -109,7 +109,7 @@
 99| GRAFIKA
 100| Jakość obrazu i efekty wizualne
 101| Jakość grafiki
-102| Ogólne ustawienie renderowania: oświetlenie, cienie i ostrość.
+102| Wydajność: płynniej na słabszych komputerach. Wysoka: ostre cienie, wygładzone krawędzie i poświata.
 103| Cienie
 104| Cienie rzucane przez postacie i wrogów.
 105| Efekty otoczenia w menu
@@ -303,7 +303,7 @@
 285| +3% / s, maks. +30%
 286| +5% / s, maks. +50%
 287| Szybkostrzelność
-288| Zwiększa szybkostrzelność twojego podstawowego ataku.
+288| Zwiększa szybkostrzelność wszystkich twoich broni strzeleckich.
 289| Fragmentacja
 290| Co 4. pocisk twojego podstawowego ataku wybucha przy trafieniu i zadaje pełne obrażenia pobliskim wrogom.
 291| Obrażenia kryształu
@@ -314,9 +314,9 @@
 296| Zwiększa twoje maksymalne punkty życia.
 297| Odnowa
 298| Każdy pocisk pochłonięty zrywem lub Tarczą many przywraca PŻ.
-299| +20 PŻ za pochłonięcie
-300| +50 PŻ za pochłonięcie
-301| +80 PŻ za pochłonięcie
+299| +15 PŻ za pochłonięcie
+300| +35 PŻ za pochłonięcie
+301| +55 PŻ za pochłonięcie
 302| Drugi oddech
 303| Raz na rozgrywkę przeżywasz śmiertelny cios z 1 PŻ, a przez kolejne 3 sekundy nic nie może cię zranić.
 304| Pancerz
@@ -390,7 +390,7 @@
 368| Twój podstawowy atak wystrzeliwuje drugi pocisk tuż po pierwszym
 369| Kula ognia
 370| Ciska kulą ognia, która wybucha w największym skupisku wrogów
-371| Szybkostrzelność+
+371| Szybkostrzelność +
 372| +20% szybkostrzelności wszystkich broni strzelających
 373| Leczenie
 374| Przywraca 50% maksymalnych PŻ
@@ -424,7 +424,7 @@
 402| Przebija o {0} wrogów więcej
 403| Przebija o {0} wroga więcej
 404| Odblokowuje sprężystą kulę, która przenika przez wrogów
-405| +{0}% szybkości kul
+405| +{0}% szybkości kuli
 406| +1 dodatkowa sprężysta kula
 
 ## Personnages
@@ -704,3 +704,12 @@
 656| Pokonani wrogowie: {0}  ·  Poz. {1}  ·  Bossowie: {2}
 657| +{0}% szybkostrzelności
 658| Odblokowuje Falę uderzeniową: aura co {0} s odpycha wrogów
+659| Rozmiar okna w trybie okienkowym
+660| Pełny ekran zawsze używa rozdzielczości monitora.
+661| Bieżące wyzwanie
+662| Wyzwanie tej rozgrywki i jego postęp.
+663| Odblokuj postać {0}, aby kupić tę umiejętność
+664| Poziom Wydajność nie wyświetla cieni.
+665| Źródła odłamków
+666| Źródła złota
+667| Pierwsze zwycięstwo

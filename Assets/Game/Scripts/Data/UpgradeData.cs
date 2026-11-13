@@ -285,7 +285,8 @@ public class UpgradeData : ScriptableObject
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.F("+{0}% vitesse des orbes", PercentOf(v));
+            // MODIFIÉ (2026-11-11, retour utilisateur) - singulier : à ce palier, une seule orbe est déployée
+            case 1: return Loc.F("+{0}% vitesse de l'orbe", PercentOf(v));
             case 2:
             case 3: return Loc.T("+1 orbe rebondissant supplémentaire");
             default: return Description;

@@ -89,10 +89,39 @@ public class QuitConfirm : MonoBehaviour
         if (inRun && !GameManager.Instance.IsPaused) GameManager.Instance.TogglePause();
 
         _title.text = Loc.T("QUITTER LE JEU ?");
-        _body.text = inRun ? Loc.T("Ta partie en cours sera perdue") : Loc.T("Le jeu va se fermer. Tes réglages sont enregistrés.");
+        // MODIFIÉ (2026-11-11, retour utilisateur : "quand on quitte sous Alt F4, c'est quand même écrit que ça sauvegarde les
+        // paramètres choisis, alors qu'on n'était pas forcément dans la page des paramètres, enlève ce message") - hors partie,
+        // plus de message : la fenêtre se resserre sur le titre et les boutons.
+        _body.text = inRun ? Loc.T("Ta partie en cours sera perdue") : "";
+        ApplyLayout(inRun);
         _yesText.text = Loc.T("Quitter");
         _noText.text = Loc.T("Annuler");
         _dialogRoot.SetActive(true);
+    }
+
+    // Fenêtre sans message : 90 px de moins en hauteur, titre et boutons gardent leur distance aux bords.
+    private const float NoBodyShrink = 90f;
+    private bool _layoutCached;
+    private Vector2 _boxSize, _titlePos, _yesPos, _noPos;
+
+    private void ApplyLayout(bool withBody)
+    {
+        RectTransform box = _title.rectTransform.parent as RectTransform;
+        RectTransform yes = (RectTransform)_yes.transform, no = (RectTransform)_no.transform;
+        if (!_layoutCached)
+        {
+            _layoutCached = true;
+            _boxSize = box.sizeDelta;
+            _titlePos = _title.rectTransform.anchoredPosition;
+            _yesPos = yes.anchoredPosition;
+            _noPos = no.anchoredPosition;
+        }
+        float half = withBody ? 0f : NoBodyShrink * 0.5f;
+        box.sizeDelta = _boxSize - new Vector2(0f, half * 2f);
+        _title.rectTransform.anchoredPosition = _titlePos - new Vector2(0f, half);
+        yes.anchoredPosition = _yesPos + new Vector2(0f, half);
+        no.anchoredPosition = _noPos + new Vector2(0f, half);
+        _body.gameObject.SetActive(withBody);
     }
 
     private void Close()

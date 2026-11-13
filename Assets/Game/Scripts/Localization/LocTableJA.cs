@@ -40,8 +40,8 @@ public static class LocTableJA
         { "Sans effet tant que la synchronisation verticale est activée.", "垂直同期がオンの間は無効。" }, { "Luminosité", "明るさ" }, { "Éclaircit ou assombrit toute l'image, menus compris.", "メニューを含む画面全体を明るく、または暗くする。" },
         { "Afficher les images par seconde", "FPSを表示" }, { "Affiche le nombre d'images par seconde en haut à gauche.", "左上にフレームレートを表示する。" },
         { "GRAPHISMES", "グラフィック" }, { "Qualité de l'image et effets visuels", "画質と視覚効果" }, { "Qualité graphique", "グラフィック品質" },
-        { "Préréglage global du rendu : éclairage, ombres et netteté.", "描画の総合プリセット：ライティング、影、シャープネス。" }, { "Ombres", "影" },
-        { "Ombres projetées par les personnages et les ennemis.", "キャラクターと敵が落とす影。" }, { "Effets d'ambiance des menus", "メニューの演出効果" },
+        { "Performance : plus fluide sur les petites configurations. Élevé : ombres nettes, bords lissés et lueurs.", "パフォーマンス：低スペックのPCでもなめらか。高品質：くっきりした影、なめらかな輪郭、光のにじみ。" },
+        { "Ombres", "影" }, { "Ombres projetées par les personnages et les ennemis.", "キャラクターと敵が落とす影。" }, { "Effets d'ambiance des menus", "メニューの演出効果" },
         { "Poussières et halos lumineux animés dans les menus", "メニューで舞うほこりや光のエフェクト" }, { "AUDIO", "サウンド" }, { "Volumes et comportement du son", "音量とサウンドの設定" },
         { "Volume général", "マスター音量" }, { "Règle le volume de tout le jeu.", "ゲーム全体の音量を調整する。" }, { "Musique", "BGM" }, { "Volume de la musique des menus et des parties.", "メニューとプレイ中のBGMの音量。" },
         { "Effets sonores", "効果音" }, { "Volume des bruitages : coups, sorts, interface.", "効果音の音量：攻撃、魔法、インターフェース。" }, { "Couper le son en arrière-plan", "バックグラウンドで消音" },
@@ -116,12 +116,12 @@ public static class LocTableJA
         // ======================================================== Arbre de compétences (SkillTreeData / SkillDetailPanel / SkillTreeUI)
         { "Concentration", "集中" }, { "Chaque seconde sans subir de dégâts augmente tes dégâts, jusqu'à un plafond. Le bonus retombe à zéro à chaque coup reçu.", "ダメージを受けない時間が1秒続くごとに、与えるダメージが上限まで上昇する。攻撃を受けるとボーナスは0に戻る。" },
         { "+2% / s, plafond +15%", "毎秒+2%、上限+15%" }, { "+3% / s, plafond +30%", "毎秒+3%、上限+30%" }, { "+5% / s, plafond +50%", "毎秒+5%、上限+50%" },
-        { "Cadence", "連射速度" }, { "Augmente la cadence de ton tir de base.", "通常攻撃の連射速度を上げる。" }, { "Fragmentation", "フラグメント" },
+        { "Cadence", "連射速度" }, { "Augmente la cadence de toutes tes armes de tir.", "すべての射撃武器の連射速度を上げる。" }, { "Fragmentation", "フラグメント" },
         { "Un projectile sur 4 de ton tir de base explose à l'impact et inflige tous ses dégâts aux ennemis proches.", "通常攻撃の弾は4発に1発が着弾時に爆発し、周りの敵に全ダメージを与える。" },
         { "Dégâts Cristal", "クリスタルダメージ" }, { "Augmente les dégâts de l'ultime et de la Nova.", "必殺技とノヴァのダメージを上げる。" }, { "Surpuissance", "オーバーパワー" },
         { "Après l'Ultime, tes dégâts sont doublés pendant 10 secondes.", "必殺技を使ったあと、10秒間ダメージが2倍になる。" }, { "Vitalité", "生命力" },
         { "Augmente tes points de vie maximum.", "最大HPを上げる。" }, { "Récupération", "回復" }, { "Chaque projectile absorbé, par le dash ou par le Bouclier de Mana, restaure des PV.", "ダッシュかマナシールドで弾を吸収するたびにHPが回復する。" },
-        { "+20 PV par absorption", "吸収ごとにHP+20" }, { "+50 PV par absorption", "吸収ごとにHP+50" }, { "+80 PV par absorption", "吸収ごとにHP+80" },
+        { "+15 PV par absorption", "吸収ごとにHP+15" }, { "+35 PV par absorption", "吸収ごとにHP+35" }, { "+55 PV par absorption", "吸収ごとにHP+55" },
         { "Second Souffle", "起死回生" }, { "Une fois par partie, tu survis à un coup fatal avec 1 PV, puis tu deviens invincible pendant 3 secondes.", "1プレイに1回、致命的な一撃をHP1で耐え、その後3秒間無敵になる。" },
         { "Armure", "アーマー" }, { "Réduit les dégâts reçus de tous les ennemis.", "すべての敵から受けるダメージを減らす。" }, { "Bouclier de Mana", "マナシールド" },
         { "Bulle de 3 charges qui bloque les projectiles ennemis et les absorbe comme le dash. Recharge : 1 charge toutes les 3 secondes, bloquée 4 secondes si la bulle est brisée.", "3チャージのバリアが敵の弾を防ぎ、ダッシュと同じように吸収する。回復：3秒ごとに1チャージ、バリアが割れると4秒間停止。" },
@@ -155,7 +155,7 @@ public static class LocTableJA
         { "Orbe Rebondissant", "バウンドオーブ" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "アリーナ中を跳ね回り続けるオーブを放ち、当たった敵にダメージを与える" },
         { "Dégâts +", "ダメージ＋" }, { "+20% de dégâts sur toutes tes attaques", "すべての攻撃のダメージ+20%" }, { "Double Tir", "ダブルショット" },
         { "Ton tir de base tire un second projectile juste après le premier", "通常攻撃が1発目の直後に2発目の弾を撃つ" }, { "Boule de Feu", "ファイアボール" },
-        { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "敵が最も密集した場所で爆発する火の玉を放つ" }, { "Cadence+", "連射速度＋" },
+        { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "敵が最も密集した場所で爆発する火の玉を放つ" }, { "Cadence +", "連射速度＋" },
         { "+20% de cadence sur toutes tes armes de tir", "射撃系のすべての武器の連射速度+20%" }, { "Soin", "回復" }, { "Restaure 50% de tes PV max", "最大HPの50%を回復" },
         { "Couteaux", "ナイフ" }, { "Lance des salves de couteaux qui transpercent les ennemis", "敵を貫くナイフを連続で投げる" }, { "Chaîne de Foudre", "連鎖雷撃" },
         { "Décharge électrique qui rebondit sur les ennemis proches", "近くの敵の間を跳ね回る電撃" }, { "Boue", "泥沼" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "泥だまりを作り出し、中にいる敵を減速させてダメージを与える" },
@@ -170,7 +170,7 @@ public static class LocTableJA
         { "Débloque l'Aura : équipe l'arme exclusive de Kael", "オーラを解放：Kaelの専用武器" }, { "+{0}% rayon", "範囲+{0}%" }, { "Ralentissement porté à {0}%", "減速が{0}%に上昇" },
         { "Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra", "ナイフ一斉投擲を解放：Lyraの専用武器" }, { "Débloque un couteau supplémentaire dans la salve", "一斉投擲のナイフを1本追加する" },
         { "+{0} ennemis perforés en plus", "貫通する敵の数+{0}" }, { "+{0} ennemi perforé en plus", "貫通する敵の数+{0}" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "敵を貫通するバウンドオーブを解放する" },
-        { "+{0}% vitesse des orbes", "オーブのスピード+{0}%" }, { "+1 orbe rebondissant supplémentaire", "バウンドオーブ+1" },
+        { "+{0}% vitesse de l'orbe", "オーブのスピード+{0}%" }, { "+1 orbe rebondissant supplémentaire", "バウンドオーブ+1" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "遠距離" }, { "ZONE", "範囲" }, { "BRÛLURE", "炎上" }, { "MÊLÉE", "近接" }, { "AURA", "オーラ" }, { "RALENTISSEMENT", "減速" },
@@ -275,5 +275,9 @@ public static class LocTableJA
         { "DERNIÈRE PARTIE", "前回のプレイ" }, { "VICTOIRE", "勝利" }, { "ABANDON", "中断" }, { "Ennemis", "敵" }, { "Victoire", "勝利" },
         { "Défi", "チャレンジ" }, { "Prime de 1re victoire : +{0}", "初勝利ボーナス：+{0}" }, { "Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", "撃破数：{0}  ·  Lv.{1}  ·  ボス：{2}" },
         { "+{0}% cadence", "連射速度+{0}%" }, { "Débloque l'Onde de choc : l'aura repousse les ennemis toutes les {0} secondes", "衝撃波を解放：オーラが{0}秒ごとに敵を押し返す" },
+        { "Taille de la fenêtre en mode fenêtré", "ウィンドウモードでのウィンドウサイズ" }, { "Le plein écran utilise toujours la résolution de l'écran.", "フルスクリーンでは常に画面の解像度が使われる。" },
+        { "Défi en cours", "現在のチャレンジ" }, { "Le défi de la partie et sa progression.", "このプレイのチャレンジと進み具合。" }, { "Débloque {0} pour acheter cette compétence", "このスキルを購入するには{0}を解放しよう" },
+        { "Le niveau Performance n'affiche pas d'ombres.", "「パフォーマンス」では影は表示されない。" }, { "Sources des éclats", "欠片の内訳" },
+        { "Sources de l'or", "ゴールドの内訳" }, { "1re victoire", "初勝利" },
     };
 }

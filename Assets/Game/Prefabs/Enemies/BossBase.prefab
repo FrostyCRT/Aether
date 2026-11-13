@@ -96,7 +96,7 @@ MonoBehaviour:
   _chargeTelegraphColor: {r: 1, g: 0, b: 0, a: 0.4}
   _chargeTelegraphHeightOffset: 0.05
   _contactDamage: 300
-  _contactDamageCooldown: 0.8
+  _contactDamageCooldown: 1
   _chargeDamage: 450
   _chargeHitRadius: 2.5
   _chargeDistance: 12

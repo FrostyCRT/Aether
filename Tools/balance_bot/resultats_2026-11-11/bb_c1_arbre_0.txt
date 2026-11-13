@@ -1,0 +1,16 @@
+DEBUT c1_arbre_0 perso=Player_Kael(Clone) branche=Gardien pvmax=3000 cadence=1
+T chrono=60 niv=2 kills=46 boss=0 degats=2795 (2791/min) soins=969 recharges=1 dashs=7 absorptions=15 clones=0 pvmax=3000 plusGrosCoup=188
+T chrono=120 niv=4 kills=192 boss=0 degats=6384 (3192/min) soins=2274 recharges=2 dashs=15 absorptions=30 clones=0 pvmax=3000 plusGrosCoup=188
+T chrono=180 niv=6 kills=331 boss=0 degats=9581 (3194/min) soins=4569 recharges=2 dashs=29 absorptions=56 clones=0 pvmax=3000 plusGrosCoup=188
+T chrono=240 niv=8 kills=584 boss=0 degats=13841 (3460/min) soins=7109 recharges=3 dashs=42 absorptions=84 clones=0 pvmax=3000 plusGrosCoup=188
+T chrono=300 niv=9 kills=858 boss=0 degats=16110 (3222/min) soins=8515 recharges=4 dashs=49 absorptions=99 clones=0 pvmax=3000 plusGrosCoup=188
+T chrono=360 niv=13 kills=1349 boss=1 degats=21560 (3593/min) soins=14948 recharges=4 dashs=70 absorptions=153 clones=0 pvmax=3900 plusGrosCoup=225
+T chrono=420 niv=14 kills=1865 boss=1 degats=23038 (3291/min) soins=16529 recharges=4 dashs=83 absorptions=180 clones=0 pvmax=3900 plusGrosCoup=225
+T chrono=480 niv=14 kills=2284 boss=1 degats=25288 (3161/min) soins=17208 recharges=4 dashs=90 absorptions=184 clones=0 pvmax=3900 plusGrosCoup=281
+T chrono=540 niv=15 kills=2546 boss=1 degats=28400 (3156/min) soins=18123 recharges=5 dashs=97 absorptions=192 clones=0 pvmax=3900 plusGrosCoup=281
+T chrono=600 niv=15 kills=2833 boss=1 degats=34185 (3418/min) soins=19533 recharges=7 dashs=106 absorptions=205 clones=0 pvmax=3900 plusGrosCoup=281
+T chrono=660 niv=18 kills=3080 boss=2 degats=44544 (4049/min) soins=24603 recharges=9 dashs=125 absorptions=234 clones=0 pvmax=3900 plusGrosCoup=825
+T chrono=720 niv=19 kills=3440 boss=2 degats=49200 (4100/min) soins=25258 recharges=11 dashs=135 absorptions=238 clones=0 pvmax=3900 plusGrosCoup=825
+T chrono=780 niv=20 kills=3926 boss=2 degats=64245 (4942/min) soins=27273 recharges=16 dashs=150 absorptions=258 clones=0 pvmax=3900 plusGrosCoup=825
+T chrono=840 niv=21 kills=4433 boss=2 degats=79169 (5655/min) soins=28960 recharges=22 dashs=165 absorptions=278 clones=0 pvmax=3900 plusGrosCoup=825
+FIN15 chrono=900 niv=22 kills=4911 boss=2 degats=93049 (6203/min) soins=30224 recharges=27 dashs=181 absorptions=293 clones=0 pvmax=3900 plusGrosCoup=825 bossTemps=42s,63s,

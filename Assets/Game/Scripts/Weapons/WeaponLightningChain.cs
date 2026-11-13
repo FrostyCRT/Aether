@@ -46,7 +46,7 @@ public class WeaponLightningChain : MonoBehaviour
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
         _cooldownTimer += Time.deltaTime;
-        if (_cooldownTimer >= 1f / _fireRate)
+        if (_cooldownTimer >= 1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) // Cadence (arbre)
         {
             Transform nearest = FindNearestEnemy();
             if (nearest != null)
