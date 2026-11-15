@@ -147,6 +147,12 @@ public class SaveData
     public int titansWins = 0;
     public float titansBestTime = 0f;
     public int titansBestBossKills = 0;
+    // AJOUTÉ (2026-11-14) - Escarmouche : records à part. Pas de « meilleur temps » : le chrono se fige pendant les boss,
+    // une victoire durerait toujours 5:00 au chrono. 0 par défaut : anciens saves compatibles.
+    public int skirmishRuns = 0;
+    public int skirmishWins = 0;
+    public int skirmishBestKills = 0;
+    public int skirmishBestBossKills = 0;
     public int selectedCharacterIndex = 0;
 
     // AJOUTE - déblocage des personnages. Aether est toujours disponible.
@@ -214,6 +220,9 @@ public class SaveData
 
     // AJOUTÉ (2026-11-07) - gains de la dernière partie terminée, affichés en haut à gauche du menu d'accueil.
     public LastRunSummary lastRun = new LastRunSummary();
+
+    // AJOUTÉ (2026-11-15) - Grimoire : identifiants des premières découvertes ("card:...", "fusion:...", "boss:N"), voir Grimoire.cs.
+    public List<string> grimoire = new List<string>();
 }
 
 [System.Serializable]
@@ -225,6 +234,8 @@ public class LastRunSummary
     // AJOUTÉ (2026-11-12, « voir la source des gains d'éclats dans Dernière Partie ») - après multiplicateur de difficulté ;
     // eclatsTime + eclatsBosses + eclatsVictory + eclatsFirstWin = eclats. 0 partout sur une sauvegarde plus ancienne.
     public int eclatsTime, eclatsBosses, eclatsVictory;
+    // AJOUTÉ (2026-11-15) - prime des premières découvertes du Grimoire ; compte dans eclats.
+    public int eclatsDiscoveries;
     public float runTime;
     public int kills, level, bossKills;
     public bool victory, abandoned;

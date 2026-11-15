@@ -5,7 +5,8 @@ public enum GameMode
     Classic = 0,    // 3 boss (5 / 10 / 15 min), victoire au 3e
     Endless = 1,    // les boss reviennent en boucle 1-2-3-1-2-3..., tout se renforce, fin uniquement par la mort
     BossRush = 2,   // un boss par minute, seulement ceux déjà battus en classique, chacun 3 fois et de plus en plus fort
-    Titans = 3      // build complet dès le départ, aucun ennemi normal, les 3 boss en même temps : les tuer tous les 3
+    Titans = 3,     // build complet dès le départ, aucun ennemi normal, les 3 boss en même temps : les tuer tous les 3
+    Skirmish = 4    // partie de 15 min compressée en 5 : Boss 1 à 1:30, Boss 2 à 3:00, Frénésie à 4:00, Boss 3 à 5:00 (voir CONCEPTION_ESCARMOUCHE.md)
 }
 
 // Mode de jeu choisi dans le menu principal (persistant) + toutes les règles propres à chaque mode (échelle du sans fin,
@@ -24,6 +25,10 @@ public static class GameModes
     }
 
     public static int Count => System.Enum.GetValues(typeof(GameMode)).Length;
+
+    // Ordre des flèches du sélecteur de mode (2026-11-14). Tout nouveau mode doit y figurer pour être sélectionnable.
+    public static readonly GameMode[] SelectorOrder =
+        { GameMode.Classic, GameMode.Skirmish, GameMode.Endless, GameMode.BossRush, GameMode.Titans };
 
     private static GameMode? _cached;
 
@@ -48,18 +53,58 @@ public static class GameModes
     public static bool IsEndless => Current == GameMode.Endless;
     public static bool IsBossRush => Current == GameMode.BossRush;
     public static bool IsTitans => Current == GameMode.Titans;
+    public static bool IsSkirmish => Current == GameMode.Skirmish;
+
+    // AJOUTÉ (2026-11-14, mode Escarmouche) - modes où le palier de difficulté a un vrai effet de jeu (carte, PV/dégâts,
+    // spawn, récompenses, décor). Remplace les « IsClassic || IsEndless || IsBossRush » répétés dans tout le projet.
+    public static bool UsesDifficultyTier => IsClassic || IsEndless || IsBossRush || IsSkirmish;
 
     // Fusions d'armes (2026-09-27) : réservées au Classique et au Sans fin, où une run a le temps de maxer 2 armes.
     // La Ruée de boss et le Choc des titans ont leurs propres règles de build (voir WaveManager.TitansStart /
     // GrantFullBuild) et ne passent jamais par le tirage de cartes normal.
-    public static bool FusionsEnabled => IsClassic || IsEndless;
+    // L'Escarmouche y a droit aussi (2026-11-14) : sa montée en puissance est faite pour en obtenir une.
+    public static bool FusionsEnabled => IsClassic || IsEndless || IsSkirmish;
 
     // AJOUTÉ (2026-10-23, demande utilisateur : "la fusion de 2 compétences doit être débloquable que à partir de 10
     // minutes de jeu") - avant ce temps de partie (GameManager.RunTimer), aucune carte de fusion n'est proposée, même
     // si les 2 armes sources sont déjà au max. La carte apparaît au premier tirage qui suit (level-up ou coffre de boss).
+    // Escarmouche : 10 min de temps compressé = 3:00 réelles (ScaledRunSeconds).
     public const float FusionUnlockTime = 600f;
     public static bool FusionsUnlockedNow =>
-        FusionsEnabled && GameManager.Instance != null && GameManager.Instance.RunTimer >= FusionUnlockTime;
+        FusionsEnabled && GameManager.Instance != null && ScaledRunSeconds(GameManager.Instance.RunTimer) >= FusionUnlockTime;
+
+    // ---- Escarmouche (AJOUTÉ 2026-11-14, décisions de l'utilisateur dans CONCEPTION_ESCARMOUCHE.md §9) ---------------------
+    // Une partie de 15 min COMPRESSÉE en 5 : tout ce qui dépend du chrono (phases d'apparition, types et PV des ennemis,
+    // déblocage des fusions, montée de l'Ultime) lit ScaledRunSeconds au lieu du chrono brut. L'XP arrive donc déjà 3 fois
+    // plus vite (les ennemis aussi), sans toucher à la courbe ; SkirmishXpMultiplier s'y ajoute pour l'excès.
+    // Premiers jets : à régler au bot (cibles : niveau ~10 à 1:30, ~20 à 3:00, ~30 à 5:00).
+    public const float SkirmishTimeCompression = 3f;
+    public const float SkirmishXpMultiplier = 1.5f;
+    private static readonly float[] SkirmishBossTimes = { 90f, 180f, 300f };    // secondes de chrono : 1:30, 3:00 puis 5:00 (MODIFIÉ 2026-11-14, retour utilisateur : ajouter le Boss 2)
+    private static readonly int[] SkirmishBossNumbers = { 1, 2, 3 };       // Boss 1, Boss 2, puis Boss 3 (la Source corrompue)
+    private static readonly float[] SkirmishBossHealths = { 25000f, 60000f, 165000f };   // avant le multiplicateur de palier ; un peu sous le Classique Modéré (30 000 / 63 000 / 240 000), comme le joueur arrive moins développé
+    public static int SkirmishBossCount => SkirmishBossTimes.Length;
+    public const int SkirmishChestPicks = 4;                               // coffres des boss intermédiaires (2 ailleurs)
+    // Frénésie : la dernière minute avant le boss final (MODIFIÉ 2026-11-14, retour utilisateur : 4:30 -> 4:00).
+    public const float SkirmishFrenzyStart = 240f;
+    public const float FrenzySpawnMultiplier = 2f;      // ennemis par vague
+    public const float FrenzyMaxEnemiesMultiplier = 1.25f;   // plafond 160 -> 200 (le max du Sans fin) : sans ça le x2 bute sur le plafond
+    public const float FrenzyXpMultiplier = 2f;
+    public const float FrenzyMusicPitch = 1.12f;
+
+    public static float ScaledRunSeconds(float runSeconds) => IsSkirmish ? runSeconds * SkirmishTimeCompression : runSeconds;
+
+    public static float SkirmishBossTime(int spawnIndex) => SkirmishBossTimes[Mathf.Clamp(spawnIndex, 0, SkirmishBossTimes.Length - 1)];
+    public static int SkirmishBossNumber(int spawnIndex) => SkirmishBossNumbers[Mathf.Clamp(spawnIndex, 0, SkirmishBossNumbers.Length - 1)];
+    public static float SkirmishBossHealth(int spawnIndex) => SkirmishBossHealths[Mathf.Clamp(spawnIndex, 0, SkirmishBossHealths.Length - 1)];
+
+    // Vrai pendant la Frénésie : de 4:00 jusqu'à l'apparition du boss final (le chrono se fige pendant les combats).
+    public static bool FrenzyActive =>
+        IsSkirmish && GameManager.Instance != null && !GameManager.Instance.IsGameOver
+        && GameManager.Instance.RunTimer >= SkirmishFrenzyStart
+        && (WaveManager.Instance == null || WaveManager.Instance.SkirmishBossesSpawned < SkirmishBossCount);
+
+    public static int BossChestPicks(int defaultPicks) => IsSkirmish ? SkirmishChestPicks : defaultPicks;
 
     // Accord singulier / pluriel pour les textes affichés (jamais de "(s)").
     public static string Plural(int count, string singular, string plural)
@@ -78,6 +123,7 @@ public static class GameModes
             case GameMode.Endless: return Loc.T("SANS FIN");
             case GameMode.BossRush: return Loc.T("RUÉE DE BOSS");
             case GameMode.Titans: return Loc.T("CHOC DES TITANS");
+            case GameMode.Skirmish: return Loc.T("ESCARMOUCHE");
             default: return Loc.T("CLASSIQUE");
         }
     }
@@ -148,6 +194,12 @@ public static class GameModes
                     description = IsUnlocked(mode, data)
                         ? Loc.T("Toutes les améliorations au maximum et aucun ennemi, mais les 3 boss en même temps. Survis et abats-les tous.")
                         : LockedHint(mode)
+                };
+            case GameMode.Skirmish:
+                return new ModeInfo
+                {
+                    name = ShortName(mode),
+                    description = Loc.T("Une partie complète en 5 minutes : monte en puissance à toute vitesse, survis à la Frénésie et abats le boss final")
                 };
             default:
                 return new ModeInfo
@@ -266,9 +318,13 @@ public static class GameModes
         return 1f + RushDamagePerSpawn * spawnIndex;
     }
 
-    // XP gagnée : x3 en ruée de boss, x1 ailleurs.
+    // XP gagnée : x1,5 en ruée de boss, x1 ailleurs.
     // Choc des titans : aucune XP (le build est déjà complet, aucune carte à proposer).
-    public static float XpMultiplier => IsBossRush ? RushXpMultiplier : IsTitans ? 0f : 1f;
+    // Escarmouche : x1,5, x2 de plus pendant la Frénésie.
+    public static float XpMultiplier => IsBossRush ? RushXpMultiplier
+        : IsTitans ? 0f
+        : IsSkirmish ? SkirmishXpMultiplier * (FrenzyActive ? FrenzyXpMultiplier : 1f)
+        : 1f;
 
     // ---- Choc des titans ------------------------------------------------------------------------------------------------
     // Le joueur démarre avec TOUTES les améliorations au maximum (comme le raccourci de debug F6) et affronte les 3 boss
@@ -309,7 +365,7 @@ public static class GameModes
     // Sans fin et Ruée de boss, plus seulement le Classique (x1 pour Choc des titans, qui n'a pas de palier).
     // Toujours inclus dans EnemyDamageScale ci-dessous, quel que soit le chemin qui l'a écrit en dernier (Sans fin,
     // Ruée de boss ou reset).
-    private static float DifficultyMultiplier => (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+    private static float DifficultyMultiplier => UsesDifficultyTier
         ? DifficultyTiers.DamageMultiplier(DifficultyTiers.Current) : 1f;
 
     public static void UpdateScaling(float runMinutes)

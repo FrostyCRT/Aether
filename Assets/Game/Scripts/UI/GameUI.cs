@@ -337,6 +337,14 @@ public class GameUI : MonoBehaviour
         InputBindings.Changed += OnBindingChanged;
         GameInput.DeviceChanged += RefreshCloneKey;      // manette <-> clavier : la pastille du clone change de libellé
         Loc.Changed += OnLanguageChanged;
+
+        // AJOUTÉ (2026-11-15, retour utilisateur : « mettre la même bordure que le pause panel pour le Victory panel et le
+        // game over panel ») - même cadre (filets + losanges aux coins) sur la carte centrale des deux écrans de fin.
+        foreach (GameObject panel in new[] { _victoryPanel, _gameOverPanel })
+        {
+            Transform card = panel != null ? panel.transform.Find("CenterCard") : null;
+            if (card != null && card.GetComponent<BrassFrameBorder>() == null) card.gameObject.AddComponent<BrassFrameBorder>();
+        }
     }
 
     private void OnDestroy()
@@ -503,7 +511,12 @@ public class GameUI : MonoBehaviour
         if (failed)
         {
             _challengeText.text = $"<s>{challengeName}</s> — " + Loc.T("Échoué");
-            _challengeText.color = new Color(0.55f, 0.55f, 0.55f);
+            _challengeText.color = ChallengeFailedText;
+            if (!_challengeFailPlayed)   // croix rouge sur l'icône (2026-11-15), remplace la coche éventuelle
+            {
+                _challengeFailPlayed = true;
+                StartCoroutine(PlayChallengeBadge(true));
+            }
         }
         else
         {
@@ -515,7 +528,7 @@ public class GameUI : MonoBehaviour
             if (succeeded && !_challengeSuccessPlayed)
             {
                 _challengeSuccessPlayed = true;
-                StartCoroutine(PlayChallengeSuccess());
+                StartCoroutine(PlayChallengeBadge(false));
             }
         }
 
@@ -571,40 +584,58 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    // ---------- Défi réussi en cours de partie ----------
+    // ---------- Défi réussi / échoué en cours de partie ----------
+    // MODIFIÉ (2026-11-15, retour utilisateur : « la coche touche le rond, la faire plus petite et centrée ; l'afficher aussi
+    // dans le menu Pause ; si le défi est échoué, une croix rouge ») - badge commun au HUD et au menu Pause
+    // (AttachChallengeBadge) : coche blanche réduite et centrée dans le disque vert, ou croix blanche dans un disque rouge.
+    // Un défi réussi peut encore échouer ensuite (ex. « sans ultime ») : la croix remplace alors la coche.
     private static readonly Color ChallengeSuccessGreen = new Color(0.435f, 0.749f, 0.329f);   // #6FBF54, vert « Réussi » du menu Pause
-    private bool _challengeSuccessPlayed;
-    private static Sprite _checkBadgeSprite;
+    private static readonly Color ChallengeFailedRed = new Color(0.78f, 0.24f, 0.18f);          // proche du rouge « Échoué » du menu Pause
+    private static readonly Color ChallengeFailedText = new Color(0.55f, 0.55f, 0.55f);
+    private bool _challengeSuccessPlayed, _challengeFailPlayed;
+    private static Sprite _checkBadgeSprite, _crossBadgeSprite;
 
-    private IEnumerator PlayChallengeSuccess()
+    // Pose (ou remplace) le badge sur l'icône d'un défi. L'icône est tournée de 180° dans les scènes (HUD et menu Pause) :
+    // ancres et rotation du badge compensent ce demi-tour. Renvoie le badge ; baseAngle sert à l'animation du HUD.
+    public static RectTransform AttachChallengeBadge(RectTransform anchor, bool failed, float minSize, float maxSize, out float baseAngle)
+    {
+        Transform old = anchor.Find("ChallengeCheck");
+        if (old != null) { old.gameObject.SetActive(false); old.name = "ChallengeCheck_old"; Destroy(old.gameObject); }
+        baseAngle = -anchor.localEulerAngles.z;
+        GameObject badgeGo = new GameObject("ChallengeCheck", typeof(RectTransform), typeof(Image));
+        RectTransform badge = (RectTransform)badgeGo.transform;
+        badge.SetParent(anchor, false);
+        float size = Mathf.Clamp(anchor.rect.height * 0.75f, minSize, maxSize);
+        Vector2 corner = new Vector2(0.85f, 0.8f);
+        if (Mathf.Abs(Mathf.DeltaAngle(anchor.localEulerAngles.z, 180f)) < 1f) corner = Vector2.one - corner;
+        badge.anchorMin = badge.anchorMax = corner;
+        badge.pivot = new Vector2(0.5f, 0.5f);
+        badge.sizeDelta = new Vector2(size, size);
+        badge.localEulerAngles = new Vector3(0f, 0f, baseAngle - 8f);
+        Image img = badgeGo.GetComponent<Image>();
+        img.sprite = ChallengeBadgeSprite(failed);
+        img.raycastTarget = false;
+        return badge;
+    }
+
+    private IEnumerator PlayChallengeBadge(bool failed)
     {
         if (_challengeGroup == null) yield break;
         RectTransform group = _challengeGroup.transform as RectTransform;
         Transform iconT = _challengeGroup.transform.Find("ChallengeIcon");
         RectTransform anchor = iconT != null ? (RectTransform)iconT : group;
 
-        // Badge : disque vert bordé, coche blanche, posé dans le coin haut-droit de l'icône comme un tampon. L'icône du défi
-        // est tournée de 180° dans la scène (ChallengeIcon) : ancres et rotation du badge compensent ce demi-tour.
-        float baseAngle = anchor != group ? -anchor.localEulerAngles.z : 0f;
-        GameObject badgeGo = new GameObject("ChallengeCheck", typeof(RectTransform), typeof(Image));
-        RectTransform badge = (RectTransform)badgeGo.transform;
-        badge.SetParent(anchor, false);
-        float size = Mathf.Clamp(anchor.rect.height * 0.75f, 26f, 48f);
-        Vector2 corner = new Vector2(0.85f, 0.8f);
-        if (Mathf.Abs(Mathf.DeltaAngle(anchor.localEulerAngles.z, 180f)) < 1f && anchor != group) corner = Vector2.one - corner;
-        badge.anchorMin = badge.anchorMax = corner;
-        badge.pivot = new Vector2(0.5f, 0.5f);
-        badge.sizeDelta = new Vector2(size, size);
-        Image img = badgeGo.GetComponent<Image>();
-        img.sprite = CheckBadgeSprite();
-        img.raycastTarget = false;
+        RectTransform badge = AttachChallengeBadge(anchor, failed, 26f, 48f, out float baseAngle);
+        if (anchor == group) baseAngle = 0f;
+        Image img = badge.GetComponent<Image>();
+        Color endText = failed ? ChallengeFailedText : ChallengeSuccessGreen;
 
         // Animation (temps réel, la partie peut être en pause) : le badge tombe en grossissant puis se pose ; le groupe
         // fait un petit rebond et le texte passe brièvement au blanc éclatant.
         Vector3 groupScale = group.localScale;
         const float stampDur = 0.35f, bounceDur = 0.45f;
         float t = 0f;
-        while (t < bounceDur)
+        while (t < bounceDur && badge != null)
         {
             t += Time.unscaledDeltaTime;
             float s = Mathf.Clamp01(t / stampDur);
@@ -614,22 +645,29 @@ public class GameUI : MonoBehaviour
             img.color = new Color(1f, 1f, 1f, Mathf.Clamp01(s * 2.5f));
             float b = Mathf.Clamp01(t / bounceDur);
             group.localScale = groupScale * (1f + 0.18f * Mathf.Sin(b * Mathf.PI) * (1f - b * 0.5f));
-            if (_challengeText != null) _challengeText.color = Color.Lerp(Color.white, ChallengeSuccessGreen, b);
+            if (_challengeText != null) _challengeText.color = Color.Lerp(Color.white, endText, b);
             yield return null;
         }
         group.localScale = groupScale;
-        badge.localScale = Vector3.one;
-        img.color = Color.white;
-        if (_challengeText != null) _challengeText.color = ChallengeSuccessGreen;
+        if (badge != null) { badge.localScale = Vector3.one; img.color = Color.white; }
+        if (_challengeText != null) _challengeText.color = endText;
     }
 
-    private static Sprite CheckBadgeSprite()
+    public static Sprite ChallengeBadgeSprite(bool failed)
     {
-        if (_checkBadgeSprite != null) return _checkBadgeSprite;
+        if (!failed && _checkBadgeSprite != null) return _checkBadgeSprite;
+        if (failed && _crossBadgeSprite != null) return _crossBadgeSprite;
         const int n = 96;
-        Texture2D tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "CheckBadge" };
-        Color green = ChallengeSuccessGreen, rim = new Color32(0x1E, 0x2E, 0x14, 255), dark = new Color32(10, 6, 3, 255);
-        Vector2 a = new Vector2(0.28f, 0.52f), m = new Vector2(0.44f, 0.34f), e = new Vector2(0.74f, 0.70f);
+        Texture2D tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = failed ? "CrossBadge" : "CheckBadge" };
+        Color fill = failed ? ChallengeFailedRed : ChallengeSuccessGreen;
+        Color rim = failed ? (Color)new Color32(0x3A, 0x12, 0x0C, 255) : (Color)new Color32(0x1E, 0x2E, 0x14, 255);
+        Color dark = new Color32(10, 6, 3, 255);
+        // Coche réduite à ~72 % et recentrée (centre de sa boîte englobante = centre du disque) ; croix : deux diagonales
+        // de même encombrement. Les deux restent nettement à l'intérieur du liseré sombre.
+        Vector2 a, b, c, d;
+        if (!failed) { a = new Vector2(0.335f, 0.50f); b = new Vector2(0.45f, 0.37f); c = b; d = new Vector2(0.665f, 0.63f); }
+        else { a = new Vector2(0.37f, 0.37f); b = new Vector2(0.63f, 0.63f); c = new Vector2(0.37f, 0.63f); d = new Vector2(0.63f, 0.37f); }
+        const float strokeW = 0.062f, edgeW = 0.088f;
         Color[] px = new Color[n * n];
         for (int y = 0; y < n; y++)
             for (int x = 0; x < n; x++)
@@ -638,25 +676,26 @@ public class GameUI : MonoBehaviour
                 float r = Vector2.Distance(p, new Vector2(0.5f, 0.5f));
                 float disc = Mathf.Clamp01((0.49f - r) * n);              // bord extérieur lissé
                 float inner = Mathf.Clamp01((0.43f - r) * n);             // liseré sombre de ~6 %
-                Color c = Color.Lerp(rim, green * (1.08f - 0.25f * p.y + 0.12f), inner);
-                float d = Mathf.Min(SegDist(p, a, m), SegDist(p, m, e));
-                float stroke = Mathf.Clamp01((0.075f - d) * n);           // coche blanche
-                float strokeEdge = Mathf.Clamp01((0.105f - d) * n);       // contour sombre de la coche
-                c = Color.Lerp(c, dark, strokeEdge * 0.85f * inner);
-                c = Color.Lerp(c, Color.white, stroke);
-                c.a = disc;
-                px[y * n + x] = c;
+                Color col = Color.Lerp(rim, fill * (1.08f - 0.25f * p.y + 0.12f), inner);
+                float dist = Mathf.Min(SegDist(p, a, b), SegDist(p, c, d));
+                float stroke = Mathf.Clamp01((strokeW - dist) * n);       // trait blanc
+                float strokeEdge = Mathf.Clamp01((edgeW - dist) * n);     // contour sombre du trait
+                col = Color.Lerp(col, dark, strokeEdge * 0.85f * inner);
+                col = Color.Lerp(col, Color.white, stroke);
+                col.a = disc;
+                px[y * n + x] = col;
             }
         tex.SetPixels(px);
         tex.Apply(false, true);
-        _checkBadgeSprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
-        return _checkBadgeSprite;
+        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+        if (failed) _crossBadgeSprite = sprite; else _checkBadgeSprite = sprite;
+        return sprite;
 
         static float SegDist(Vector2 p, Vector2 s0, Vector2 s1)
         {
-            Vector2 d = s1 - s0;
-            float k = Mathf.Clamp01(Vector2.Dot(p - s0, d) / d.sqrMagnitude);
-            return Vector2.Distance(p, s0 + d * k);
+            Vector2 dd = s1 - s0;
+            float k = Mathf.Clamp01(Vector2.Dot(p - s0, dd) / dd.sqrMagnitude);
+            return Vector2.Distance(p, s0 + dd * k);
         }
     }
 
@@ -1834,7 +1873,10 @@ public class GameUI : MonoBehaviour
                 refs.sourceIconBottom.color = refs.sourceIconBottom.sprite != null ? sourceIconColor : new Color(0f, 0f, 0f, 0f);
             }
             if (refs.fusionDivider != null)
+            {
                 refs.fusionDivider.gameObject.SetActive(true);
+                StyleFusionDivider(refs.fusionDivider, owned);
+            }
             // AJOUTE (2026-09-30, retour utilisateur : "mets un petit + entre les 2 icônes de droite pour
             // montrer que c'est une fusion de 2 items") - purement décoratif, toujours "+" (pas de sprite/texte
             // par arme), juste activé/désactivé avec le reste du visuel de fusion.
@@ -2225,6 +2267,50 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // AJOUTÉ (2026-11-14, retour utilisateur : « rendre plus graphique la barre verticale qui sépare l'icône de fusion des
+    // icônes des sous-upgrades dans le menu pause ») - filet brun « encre » (même encre que le liseré végétal du parchemin :
+    // un filet doré disparaissait sur le papier clair) qui s'estompe aux deux bouts, et un losange de laiton au milieu (même
+    // famille que le cadre bois + laiton des menus). Seuls sprite / couleur / épaisseur changent : position et longueur
+    // restent celles réglées dans UpgradeSlot.prefab. Éteint (gris) si la fusion n'est pas obtenue, comme ses icônes.
+    private static readonly Color FusionRuleGold = new Color(0.40f, 0.25f, 0.11f, 0.95f);
+
+    private static void StyleFusionDivider(Image divider, bool owned)
+    {
+        Color c = owned ? FusionRuleGold : new Color(0.55f, 0.52f, 0.48f, 0.7f);
+        divider.sprite = OrnamentSprites.Rule(fadeEnds: true);
+        divider.type = Image.Type.Simple;
+        divider.color = c;
+        RectTransform rt = divider.rectTransform;
+        rt.sizeDelta = new Vector2(rt.sizeDelta.x, 8f);   // filet couché tourné de 90° : y = épaisseur (halo compris)
+
+        Transform gemT = divider.transform.Find("Gem");
+        Image gem;
+        if (gemT == null)
+        {
+            gem = new GameObject("Gem", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            gem.transform.SetParent(divider.transform, false);
+            gem.raycastTarget = false;
+            RectTransform g = gem.rectTransform;
+            g.anchorMin = g.anchorMax = g.pivot = new Vector2(0.5f, 0.5f);
+            g.sizeDelta = new Vector2(20f, 20f);
+            g.anchoredPosition = Vector2.zero;
+            gem.sprite = HudSprites.Diamond;
+            gem.preserveAspect = true;
+
+            Image core = new GameObject("Core", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            core.transform.SetParent(gem.transform, false);
+            core.raycastTarget = false;
+            RectTransform k = core.rectTransform;
+            k.anchorMin = k.anchorMax = k.pivot = new Vector2(0.5f, 0.5f);
+            k.sizeDelta = new Vector2(11f, 11f);
+            core.sprite = HudSprites.Diamond;
+            core.preserveAspect = true;
+        }
+        else gem = gemT.GetComponent<Image>();
+        gem.color = owned ? new Color(0.33f, 0.20f, 0.08f, 1f) : new Color(0.3f, 0.3f, 0.3f, 0.8f);   // contour laiton sombre
+        gem.transform.GetChild(0).GetComponent<Image>().color = owned ? new Color(1f, 0.78f, 0.32f, 1f) : new Color(0.62f, 0.60f, 0.56f, 0.9f);
+    }
+
     private UpgradeData FindUpgradeByType(UpgradeType type)
     {
         if (LevelUpManager.Instance == null || LevelUpManager.Instance.AllUpgrades == null) return null;
@@ -2546,6 +2632,7 @@ public class GameUI : MonoBehaviour
             int total = GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null);
             boss = Loc.F("Boss {0}/{1}", bossKills, total);
         }
+        else if (GameModes.IsSkirmish) boss = Loc.F("Boss {0}/{1}", bossKills, GameModes.SkirmishBossCount);
         else boss = Loc.F("Boss {0}/{1}", bossKills, 3);
 
         return TimeText.SpaceColons(Loc.F("Survie {0:00}:{1:00}    ·    Éliminations {2}    ·    Niveau {3}    ·    {4}", mins, secs, killCount, level, boss));
@@ -2582,6 +2669,8 @@ public class GameUI : MonoBehaviour
                 : Loc.F("{0} titans abattus", bossKillCount);
             return Loc.F("{0} sur 3. Les trois ensemble ne pardonnent pas — reviens plus fort.", killed);
         }
+        if (GameModes.IsSkirmish)
+            return Loc.F("{0} boss sur {1}. Cinq minutes, c'est court — relance une escarmouche", bossKillCount, GameModes.SkirmishBossCount);
 
         string line = Loc.T(_endlessEndLines[UnityEngine.Random.Range(0, _endlessEndLines.Length)]);
         return line.Replace("{t}", FormatTime(runTime)).Replace("{b}", bossKillCount.ToString());
@@ -2600,6 +2689,11 @@ public class GameUI : MonoBehaviour
         if (GameModes.IsTitans)
         {
             _victoryRecapText.text = Loc.F("Les 3 titans terrassés en {0}. Rien ne t'arrête.", FormatTime(runTime));
+            return;
+        }
+        if (GameModes.IsSkirmish)
+        {
+            _victoryRecapText.text = Loc.F("Escarmouche remportée en {0}  ·  Éliminations : {1}", FormatTime(runTime), Loc.Int(killCount));
             return;
         }
 
@@ -2854,6 +2948,60 @@ public class GameUI : MonoBehaviour
         _ultVfxImage.color = new Color(UltVfxColor.r, UltVfxColor.g, UltVfxColor.b, 0f);
         _ultVfxImage.raycastTarget = false;
         rootGO.SetActive(false);
+    }
+
+    // AJOUTÉ (2026-11-14, mode Escarmouche) - bandeau « FRÉNÉSIE ! » au début des 30 dernières secondes : le titre surgit
+    // (léger dépassement d'échelle), tient, puis s'efface. Police du chrono (Bangers), construit par le code au premier
+    // appel. Masqué tant que le jeu est figé (choix de carte, pause) pour ne jamais passer par-dessus un panneau.
+    private TextMeshProUGUI _frenzyBannerText;
+    private Coroutine _frenzyBannerRoutine;
+    private static readonly Color FrenzyBannerColor = new Color(1f, 0.42f, 0.18f, 1f);
+
+    public void ShowFrenzyBanner()
+    {
+        if (_timerText == null || _timerText.canvas == null) return;
+        if (_frenzyBannerText == null)
+        {
+            GameObject go = new GameObject("FrenzyBanner", typeof(RectTransform));
+            go.transform.SetParent(_timerText.canvas.transform, false);
+            RectTransform rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.68f);
+            rt.sizeDelta = new Vector2(1400f, 200f);
+            _frenzyBannerText = go.AddComponent<TextMeshProUGUI>();
+            _frenzyBannerText.font = _timerText.font;
+            _frenzyBannerText.fontSize = 120f;
+            _frenzyBannerText.alignment = TextAlignmentOptions.Center;
+            _frenzyBannerText.enableWordWrapping = false;
+            _frenzyBannerText.raycastTarget = false;
+            _frenzyBannerText.color = FrenzyBannerColor;
+            ApplyReadableOutline(_frenzyBannerText);
+        }
+        _frenzyBannerText.text = Loc.T("FRÉNÉSIE !");
+        _frenzyBannerText.transform.SetAsLastSibling();
+        if (_frenzyBannerRoutine != null) StopCoroutine(_frenzyBannerRoutine);
+        _frenzyBannerRoutine = StartCoroutine(FrenzyBannerRoutine());
+    }
+
+    private IEnumerator FrenzyBannerRoutine()
+    {
+        const float popIn = 0.25f, hold = 1.3f, fadeOut = 0.5f;
+        GameObject go = _frenzyBannerText.gameObject;
+        go.SetActive(true);
+        float t = 0f;
+        while (t < popIn + hold + fadeOut)
+        {
+            bool frozen = Time.timeScale == 0f;
+            if (!frozen) t += Time.unscaledDeltaTime;
+            float scale = t < popIn ? Mathf.LerpUnclamped(1.6f, 1f, EaseOutBack(t / popIn)) : 1f;
+            float alpha = t < popIn ? t / popIn : t < popIn + hold ? 1f : 1f - (t - popIn - hold) / fadeOut;
+            go.transform.localScale = new Vector3(scale, scale, 1f);
+            Color c = FrenzyBannerColor;
+            c.a = frozen ? 0f : Mathf.Clamp01(alpha);
+            _frenzyBannerText.color = c;
+            yield return null;
+        }
+        go.SetActive(false);
+        _frenzyBannerRoutine = null;
     }
 
     public void ShowUltEffect(bool show)
@@ -3463,6 +3611,7 @@ public class GameUI : MonoBehaviour
             string boss;
             if (GameModes.IsEndless) boss = bossKills.ToString();
             else if (GameModes.IsBossRush) boss = $"{bossKills}/{GameModes.RushBossCount(MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null)}";
+            else if (GameModes.IsSkirmish) boss = $"{bossKills}/{GameModes.SkirmishBossCount}";
             else boss = $"{bossKills}/3";
             stats.Add((boss, Loc.T("Boss")));
         }

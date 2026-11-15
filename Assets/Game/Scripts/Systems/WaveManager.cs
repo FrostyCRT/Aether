@@ -19,6 +19,9 @@ public class WaveManager : MonoBehaviour
     private bool _bossAlive = false;
     public bool BossAlive => _bossAlive;
     public int CurrentWave => _bossCount + 1;
+    // Escarmouche : nombre de boss déjà apparus (0 à 3), lu par GameModes.FrenzyActive.
+    public int SkirmishBossesSpawned => GameModes.IsSkirmish ? _bossCount : 0;
+    private bool _frenzyStarted;
 
     private EnemySpawner _enemySpawner;
 
@@ -176,6 +179,35 @@ public class WaveManager : MonoBehaviour
                 : TimeText.SpaceColons(Loc.F("Boucle {0} · boss dans {1:0}:{2:00}", loop, Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f)));
             GameUI.Instance.UpdateChallengeDisplay(Loc.T("Sans fin"), progress, false);
         }
+        else if (GameModes.IsSkirmish)
+        {
+            string progress;
+            if (_bossAlive) progress = _bossCount >= GameModes.SkirmishBossCount ? Loc.T("Boss final en cours") : Loc.T("Boss en cours");
+            else if (GameModes.FrenzyActive) progress = Loc.T("Frénésie !");
+            else
+            {
+                float remaining = Mathf.Max(0f, GameModes.SkirmishBossTime(_bossCount) - runTimer);
+                string clock = TimeText.Clock(Mathf.FloorToInt(remaining / 60f), Mathf.FloorToInt(remaining % 60f));
+                progress = _bossCount + 1 >= GameModes.SkirmishBossCount
+                    ? Loc.F("Boss final dans {0}", clock)
+                    : Loc.F("Boss dans {0}", clock);
+            }
+            GameUI.Instance.UpdateChallengeDisplay(Loc.T("Escarmouche"), progress, false);
+        }
+    }
+
+    // AJOUTÉ (2026-11-14, mode Escarmouche) - début et fin de la Frénésie : bandeau et musique accélérée. Les ennemis en plus
+    // et l'XP x2 lisent directement GameModes.FrenzyActive (EnemySpawner, GameModes.XpMultiplier).
+    private void UpdateFrenzy()
+    {
+        if (!GameModes.IsSkirmish) return;
+        bool active = GameModes.FrenzyActive;
+        if (active == _frenzyStarted) return;
+        _frenzyStarted = active;
+        if (active && GameUI.Instance != null) GameUI.Instance.ShowFrenzyBanner();
+        // Fin de Frénésie = vitesse normale tout de suite : sinon la musique du boss final démarrait (~0,5 s) avant la fin du
+        // retour progressif (1,5 s) et sa 1re seconde était jouée trop vite.
+        if (MusicStarter.Instance != null) MusicStarter.Instance.SetPitch(active ? GameModes.FrenzyMusicPitch : 1f, active ? 1.5f : 0f);
     }
 
     private void OnDestroy()
@@ -185,7 +217,8 @@ public class WaveManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance == null) return;
+        if (GameManager.Instance.IsGameOver) { UpdateFrenzy(); return; }   // mort pendant la Frénésie : musique remise à vitesse normale
         if (GameManager.Instance.IsPaused) return;
 
         // Choc des titans : pas de planning de boss ; on ne fait qu'afficher le chrono et l'état du mode.
@@ -197,7 +230,9 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        if (_bossAlive) return;
+        // MODIFIÉ (2026-11-14) - la ligne du mode est rafraîchie aussi pendant un combat : ses textes « boss en cours » ne
+        // s'affichaient jamais (la ligne restait figée sur « boss dans 0:00 »).
+        if (_bossAlive) { UpdateModeHud(GameManager.Instance.RunTimer); return; }
 
         // On utilise le timer de GameManager — un seul timer pour tout
         float runTimer = GameManager.Instance.RunTimer;
@@ -214,6 +249,16 @@ public class WaveManager : MonoBehaviour
             // toujours ~60 s d'ennemis normaux (XP, montée de niveau).
             if (_bossCount < _rushBossTotal && runTimer >= GameModes.RushBossInterval * (_bossCount + 1))
                 SpawnBoss(GameModes.RushBossNumber(_bossCount));
+        }
+        else if (GameModes.IsSkirmish)
+        {
+            // ESCARMOUCHE : Boss 1 à 2:30, Boss 3 à 5:00 (chrono figé pendant les combats, comme en Classique).
+            UpdateFrenzy();
+            if (_bossCount < GameModes.SkirmishBossCount && runTimer >= GameModes.SkirmishBossTime(_bossCount))
+            {
+                SpawnBoss(GameModes.SkirmishBossNumber(_bossCount));
+                UpdateFrenzy();   // l'apparition du boss final arrête la Frénésie dans la même frame
+            }
         }
         else if (_bossCount < 3 || GameModes.IsEndless)
         {
@@ -319,6 +364,11 @@ public class WaveManager : MonoBehaviour
                 GameModes.SetRushBossDamage(GameModes.RushBossDamageScale(spawnIndex));
             }
 
+            // Escarmouche (2026-11-14) : PV fixés d'après la puissance attendue du joueur à 2:30 et à 5:00 (premiers jets,
+            // voir GameModes.SkirmishBossHealths) ; le multiplicateur de palier s'y ajoute plus bas, comme en Ruée.
+            if (bossScript != null && GameModes.IsSkirmish)
+                bossScript.SetHealthOverride(GameModes.SkirmishBossHealth(_bossCount - 1));
+
             // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté ; x1 au palier
             // Modéré, donc SetDifficultyHealthMultiplier(1f) ne change rien (la garde Mathf.Max(1f,...) dans
             // BossBase laisse _maxHealth intact dans ce cas).
@@ -326,7 +376,7 @@ public class WaveManager : MonoBehaviour
             // du scale") - s'applique maintenant aussi en Sans fin et Ruée de boss, EN PLUS de leur propre
             // multiplicateur/valeur imposée (voir BossBase.InitUI, qui les cumule maintenant au lieu de les
             // traiter comme mutuellement exclusifs).
-            if (bossScript != null && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
+            if (bossScript != null && GameModes.UsesDifficultyTier)
             {
                 // MODIFIÉ (2026-10-21, retour utilisateur : "le boss 2 a trop de vie dans apocalyptique") - le Boss 2
                 // (BossDeer, PV de base 90000 à l'époque, bien au-dessus du Boss 1 à 20000) devenait disproportionné
@@ -449,7 +499,9 @@ public class WaveManager : MonoBehaviour
 
         _bossAlive = false;
         _bossCount = Mathf.Max(0, spawnIndex);
-        SpawnBoss(GameModes.IsBossRush ? GameModes.RushBossNumber(_bossCount) : (_bossCount % 3) + 1);
+        SpawnBoss(GameModes.IsBossRush ? GameModes.RushBossNumber(_bossCount)
+            : GameModes.IsSkirmish ? GameModes.SkirmishBossNumber(_bossCount)
+            : (_bossCount % 3) + 1);
     }
 
     public void OnBossDied()
@@ -481,6 +533,11 @@ public class WaveManager : MonoBehaviour
         if (GameModes.IsBossRush)
         {
             if (_bossCount >= _rushBossTotal && _rushBossTotal > 0)
+                GameManager.Instance.TriggerVictory();
+        }
+        else if (GameModes.IsSkirmish)
+        {
+            if (_bossCount >= GameModes.SkirmishBossCount)
                 GameManager.Instance.TriggerVictory();
         }
         else if (_bossCount >= 3 && !GameModes.IsEndless)

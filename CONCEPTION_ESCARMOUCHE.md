@@ -1,6 +1,12 @@
 # Mode Escarmouche — document de conception
 
-*Rédigé le 2026-11-13. Rien n'est codé. Les points ❓ sont des décisions à prendre par toi. Les chiffres marqués « à mesurer » seront réglés avec le bot de test une fois la première version jouable.*
+*Rédigé le 2026-11-13. Les chiffres marqués « à mesurer » seront réglés avec le bot de test une fois la première version jouable.*
+
+> **2026-11-14 : décisions prises et mode codé** (compile sans erreur, **pas encore testé en jeu** : Unity MCP déconnecté). Décisions : XP ×1,5 · Boss 1 (2:30) puis Boss 3 (5:00) · tous les boss dès le départ · Frénésie finale + coffre généreux (4 tirages) · les 3 paliers · nom « Escarmouche ».
+>
+> **2026-11-14, après le 1er test de l'utilisateur : 3 boss au lieu de 2.** Boss 1 à **1:30** (25 000 PV), Boss 2 à **3:00** (60 000 PV), Boss 3 à **5:00** (165 000 PV) ; les deux premiers coffres donnent 4 tirages ; **Frénésie à 4:00** (la dernière minute). Vérifié en Play (Modéré) : chaque boss apparaît à l'heure avec ses PV, coffres après les Boss 1 et 2 sans victoire, Frénésie active à 4:00 (XP ×3 au total, bandeau, musique), arrêtée à l'apparition du Boss 3, victoire à sa mort. Les §4 à §8 ci-dessous décrivent la version à 2 boss, sauf le tableau du §4.
+>
+> Tous les réglages sont au même endroit : `GameModes.cs`, section « Escarmouche » (compression ×3, XP, temps et PV des boss, coffre, Frénésie : ennemis par vague ×2, plafond ×1,25, XP ×2, musique ×1,12) ; récompenses dans `MetaProgressionManager` (`Skirmish…`). Records à part dans la sauvegarde (`skirmishRuns/Wins/BestKills/BestBossKills`) : pas de « meilleur temps », le chrono se fige pendant les boss donc une victoire dure toujours 5:00 au chrono. Dans le sélecteur, l'Escarmouche vient juste après le Classique.
 
 ---
 
@@ -65,11 +71,10 @@ Comme les ennemis arrivent 3 fois plus tôt et plus nombreux, l'**XP arrive auss
 |---|---|
 | 0:00 | Tir de base seul. Premiers ennemis dès les premières secondes (pas de démarrage mou). |
 | ~0:15 | Premier niveau. Puis un niveau toutes les ~10 s au début. |
-| **2:30** | **Boss intermédiaire.** Le chrono s'arrête pendant le combat, comme en Classique. Son coffre donne des cartes gratuites : gros pic de puissance. |
-| 3:00 | Les fusions deviennent possibles. |
-| 4:00 | Apocalypse finale : densité maximale, Brutes. |
-| **4:30** | **Frénésie** (voir §5) : 30 dernières secondes avant le boss final. |
-| **5:00** | **Boss final.** Le battre = victoire. |
+| **1:30** | **Boss 1.** Le chrono s'arrête pendant le combat, comme en Classique. Son coffre donne des cartes gratuites : gros pic de puissance. |
+| **3:00** | **Boss 2.** Les fusions deviennent possibles. Son coffre donne aussi 4 cartes. |
+| **4:00** | **Frénésie** (voir §5) : la dernière minute avant le boss final. Apocalypse finale : densité maximale, Brutes. |
+| **5:00** | **Boss 3 (final).** Le battre = victoire. |
 
 ❓ **Décision 2 : quels boss ?**
 

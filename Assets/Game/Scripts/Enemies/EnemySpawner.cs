@@ -4,6 +4,9 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     private const float ModerateEarlyHealthScale = 0.75f;   // PV des ennemis en Modéré au début de partie
+    // MODIFIÉ (2026-11-15, retour utilisateur : « le mode est trop simple par rapport à avant ») - la baisse x0,85 du Violent
+    // en début de partie est retirée (1 = PV normaux dès le début), Lyra ayant été renforcée depuis.
+    private const float ViolentEarlyHealthScale = 1f;
     private const float ModerateEaseEndMinutes = 8f;        // retour aux PV normaux (rampe de 6 à 8 min)
 
     [System.Serializable]
@@ -78,7 +81,7 @@ public class EnemySpawner : MonoBehaviour
         // FindFreeSpawnPosition ci-dessous) confine naturellement chaque candidat à la forme réelle de la carte -
         // un ennemi qui "déborderait" du tunnel ou de la boîte est simplement ramené sur le mur le plus proche.
         // ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée de boss.
-        _tierScalingActive = GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush;
+        _tierScalingActive = GameModes.UsesDifficultyTier;
         _spawnCountMultiplier = _tierScalingActive
             ? DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current) : 1f;
 
@@ -117,7 +120,8 @@ public class EnemySpawner : MonoBehaviour
     // qu'un compteur local ; `while` pour rattraper plusieurs phases d'un coup si besoin.
     private void CheckPhaseProgression()
     {
-        float runSeconds = GameManager.Instance != null ? GameManager.Instance.RunTimer : _gameTimer;
+        // Escarmouche (2026-11-14) : phases 3 fois plus tôt (GameModes.ScaledRunSeconds), x1 ailleurs.
+        float runSeconds = GameModes.ScaledRunSeconds(GameManager.Instance != null ? GameManager.Instance.RunTimer : _gameTimer);
         while (_currentPhaseIndex + 1 < _phasesDeJeu.Count
                && runSeconds >= _phasesDeJeu[_currentPhaseIndex + 1].tempsDebutMinutes * 60f)
         {
@@ -163,10 +167,21 @@ public class EnemySpawner : MonoBehaviour
         // qui allouait un tableau à chaque vague (jusqu'à ~2 fois par seconde avec 160 ennemis).
         int currentEnemies = EnemySpatialGrid.Count;
 
-        if (currentEnemies >= _maxEnemies) return;
+        // AJOUTÉ (2026-11-14, mode Escarmouche) - Frénésie (4:30 -> boss final) : deux fois plus d'ennemis par vague, et un
+        // plafond relevé pour que ce x2 ne bute pas aussitôt dessus. Calculé ici sans toucher aux valeurs de la phase :
+        // rien à remettre en place quand la Frénésie s'arrête.
+        int maxEnemies = _maxEnemies;
+        int enemiesPerWave = _enemiesPerWave;
+        if (GameModes.FrenzyActive)
+        {
+            maxEnemies = Mathf.RoundToInt(maxEnemies * GameModes.FrenzyMaxEnemiesMultiplier);
+            enemiesPerWave = Mathf.RoundToInt(enemiesPerWave * GameModes.FrenzySpawnMultiplier);
+        }
 
-        int spaceLeft = _maxEnemies - currentEnemies;
-        int spawnCount = Mathf.Min(_enemiesPerWave, spaceLeft);
+        if (currentEnemies >= maxEnemies) return;
+
+        int spaceLeft = maxEnemies - currentEnemies;
+        int spawnCount = Mathf.Min(enemiesPerWave, spaceLeft);
 
         for (int i = 0; i < spawnCount; i++)
         {
@@ -204,11 +219,12 @@ public class EnemySpawner : MonoBehaviour
         if (ObjectPool.Instance == null) return;
 
         // Mode sans fin : les PV continuent de croître au-delà de 15 min (x1 en classique, voir GameModes).
-        float runMinutes = GameManager.Instance != null ? GameManager.Instance.RunTimer / 60f : 0f;
+        // Escarmouche : temps compressé x3, donc la rampe « Modéré » de 6-8 min tombe à 2:00-2:40 (ScaledRunSeconds).
+        float runMinutes = GameManager.Instance != null ? GameModes.ScaledRunSeconds(GameManager.Instance.RunTimer) / 60f : 0f;
         // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté) - palier de difficulté, x1 au palier
         // Modéré. ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée
         // de boss, plus seulement le Classique.
-        float difficultyMultiplier = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+        float difficultyMultiplier = GameModes.UsesDifficultyTier
             ? DifficultyTiers.HealthMultiplier(DifficultyTiers.Current) : 1f;
         float timeBasedMultiplier = palier.healthMultiplier * GameModes.EndlessHealthScale(runMinutes);
         float healthMultiplier = timeBasedMultiplier * difficultyMultiplier;
@@ -216,9 +232,15 @@ public class EnemySpawner : MonoBehaviour
         // AJOUTÉ (2026-10-29, retour utilisateur : "mettre moins de pv aux ennemis du début jusqu'à 8 min pour la
         // difficulté modéré") - en Modéré, -25 % de PV jusqu'à 6 min, puis retour progressif à la normale à 8 min (pas
         // de saut brutal). L'XP donnée ne change pas (SetXpHealthMultiplier ci-dessous lit timeBasedMultiplier).
-        float earlyEase = DifficultyTiers.Current == DifficultyTier.Moderate
-            ? Mathf.Lerp(ModerateEarlyHealthScale, 1f, Mathf.InverseLerp(ModerateEaseEndMinutes - 2f, ModerateEaseEndMinutes, runMinutes))
-            : 1f;
+        // AJOUTÉ (2026-11-15, retour utilisateur : « Violent pas fun avec Lyra, il faut courir sans arrêt » ; mesuré au bot,
+        // arbre et Réputation au max : Lyra subit 2,2x plus de dégâts qu'en Modéré dès les 3 premières minutes et compte
+        // 13 à 19 « morts évitées » avant 5:00, contre 0 en Modéré) - l'écart de PV en début de partie était de x1,67
+        // (Modéré 0,75 contre Violent 1,25), la plus grosse marche entre deux paliers. Le Violent a maintenant sa propre
+        // rampe, plus légère : x0,85 jusqu'à 6 min, puis retour progressif à x1 à 8 min (même calendrier que le Modéré).
+        float earlyScale = DifficultyTiers.Current == DifficultyTier.Moderate ? ModerateEarlyHealthScale
+                         : DifficultyTiers.Current == DifficultyTier.Violent && GameModes.UsesDifficultyTier ? ViolentEarlyHealthScale
+                         : 1f;
+        float earlyEase = Mathf.Lerp(earlyScale, 1f, Mathf.InverseLerp(ModerateEaseEndMinutes - 2f, ModerateEaseEndMinutes, runMinutes));
         healthMultiplier *= earlyEase;
 
         GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth * earlyEase);
@@ -290,7 +312,7 @@ public class EnemySpawner : MonoBehaviour
                 0f,
                 _playerTransform.position.z + randomCircle.y * radius
             );
-            candidatePos = MapBoundaryUtils.ClampToZone(candidatePos);
+            candidatePos = KeepSpawnDistance(candidatePos, radius);
 
             // Ignore les décors et le sol, vérifie uniquement la superposition d'ennemis
             bool isOccupied = Physics.CheckSphere(candidatePos, minDistance, layerMask, QueryTriggerInteraction.Ignore);
@@ -316,6 +338,46 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return Vector3.zero;
+    }
+
+    // AJOUTÉ (2026-11-15, retour utilisateur : « en Violent avec Lyra, il faut courir sans arrêt pour survivre ») - le point
+    // tiré au hasard autour du joueur était simplement recollé au mur s'il sortait de la carte (tunnel du Violent Z = ±12,
+    // boîte de l'Apocalyptique ±22). Joueur qui longe un mur : la moitié des ennemis apparaissait alors à quelques mètres de
+    // lui au lieu de 15-17 (mesuré au bot : 2,2x plus de dégâts subis qu'en Modéré dès les 3 premières minutes, coups
+    // groupés 3x plus gros). Si le point recollé est trop près, l'apparition est repoussée le long de l'axe libre (X dans
+    // le tunnel) à la bonne distance, en gardant la coordonnée recollée au mur. Carte sans limite (Modéré) : inchangé.
+    // MODIFIÉ (2026-11-15, retour utilisateur : Violent devenu trop simple) - en Violent, les apparitions repoussées peuvent
+    // être plus proches : 60 % de la distance normale au lieu de 80 % (plus de pression, mais jamais collées au mur près du
+    // joueur comme avant le correctif). Apocalyptique : 80 % inchangé.
+    private const float MinSpawnDistanceRatio = 0.8f;
+    private const float ViolentMinSpawnDistanceRatio = 0.6f;
+
+    private Vector3 KeepSpawnDistance(Vector3 candidate, float radius)
+    {
+        Vector3 clamped = MapBoundaryUtils.ClampToZone(candidate);
+        Vector3 p = _playerTransform.position; p.y = 0f;
+        float min = radius * (DifficultyTiers.Current == DifficultyTier.Violent ? ViolentMinSpawnDistanceRatio : MinSpawnDistanceRatio);
+        if (FlatDistance(clamped, p) >= min) return clamped;
+
+        for (int axis = 0; axis < 2; axis++)   // 0 : on se déplace sur X (Z recollé gardé), 1 : sur Z (X recollé gardé)
+        {
+            float fixedOffset = axis == 0 ? clamped.z - p.z : clamped.x - p.x;
+            float along = Mathf.Sqrt(Mathf.Max(0f, radius * radius - fixedOffset * fixedOffset));
+            float sign = (axis == 0 ? candidate.x - p.x : candidate.z - p.z) >= 0f ? 1f : -1f;
+            for (int side = 0; side < 2; side++, sign = -sign)
+            {
+                Vector3 c = axis == 0 ? new Vector3(p.x + sign * along, 0f, clamped.z) : new Vector3(clamped.x, 0f, p.z + sign * along);
+                c = MapBoundaryUtils.ClampToZone(c);
+                if (FlatDistance(c, p) >= min) return c;
+            }
+        }
+        return clamped;   // aucune place à la bonne distance (ne se produit pas avec les cartes actuelles)
+    }
+
+    private static float FlatDistance(Vector3 a, Vector3 b)
+    {
+        float dx = a.x - b.x, dz = a.z - b.z;
+        return Mathf.Sqrt(dx * dx + dz * dz);
     }
 
     // Getters / Setters requis par les autres managers
@@ -370,7 +432,7 @@ public class EnemySpawner : MonoBehaviour
 
     private PalierEnnemis GetCurrentPalier()
     {
-        float minutes = GameManager.Instance != null ? GameManager.Instance.RunTimer / 60f : 0f;
+        float minutes = GameManager.Instance != null ? GameModes.ScaledRunSeconds(GameManager.Instance.RunTimer) / 60f : 0f;
 
         PalierEnnemis current = _paliersEnnemis.Count > 0 ? _paliersEnnemis[0] : default;
         for (int i = 0; i < _paliersEnnemis.Count; i++)

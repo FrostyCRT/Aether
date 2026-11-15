@@ -17,7 +17,7 @@ public class GameSceneSettingsApplier : MonoBehaviour
             // ÉTENDU (2026-10-20, carrousel de difficulté) - s'applique maintenant aussi en Sans fin et Ruée de
             // boss (le palier y a un vrai effet de jeu désormais, plus seulement le Classique) ; Choc des titans
             // reste à Modéré par défaut, seul mode sans palier de difficulté.
-            DifficultyTier tier = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush) ? DifficultyTiers.Current : DifficultyTier.Moderate;
+            DifficultyTier tier = GameModes.UsesDifficultyTier ? DifficultyTiers.Current : DifficultyTier.Moderate;
             _directionalLight.color = DifficultyTiers.LightColor(tier);
             _directionalLight.intensity = DifficultyTiers.LightIntensity(tier);
         }

@@ -61,13 +61,25 @@ public class BossChest : MonoBehaviour
 
     // Appelé par BossBase.Die() juste après ObjectPool.Get(). groundY = même hauteur que celle déjà calculée pour
     // les gemmes de boss (BossBase.Die, gemSpawnPos.y), pour reposer visuellement au même niveau que le reste du loot.
-    public void Init(float groundY)
+    // MODIFIÉ (2026-11-15, retour utilisateur : « pendant le boss 3, si on tue un mini boss, ça fait drop un coffre qui donne
+    // 1 niveau, pas 2 ») - picks > 0 impose le nombre de niveaux (coffre d'un écho invoqué : 1, quel que soit le mode) ;
+    // sizeScale réduit le coffre pour le distinguer de celui d'un vrai boss.
+    private int _picksOverride;
+    private float _sizeScale = 1f;
+
+    public void Init(float groundY, int picks = 0, float sizeScale = 1f)
     {
         _groundY = groundY;
+        _picksOverride = picks;
+        _sizeScale = sizeScale;
     }
+
+    private Vector3 TargetScale => _baseScale * _sizeScale;
 
     private void OnEnable()
     {
+        _picksOverride = 0;   // remis à zéro avant Init (ObjectPool.Get active l'objet, puis BossBase appelle Init)
+        _sizeScale = 1f;
         _collected = false;
         _spawnTime = Time.time;
         transform.localScale = Vector3.zero;
@@ -83,11 +95,11 @@ public class BossChest : MonoBehaviour
         if (t < _popDuration)
         {
             float p = Mathf.Clamp01(t / _popDuration);
-            transform.localScale = _baseScale * EaseOutBack(p);
+            transform.localScale = TargetScale * EaseOutBack(p);
             return;
         }
 
-        transform.localScale = _baseScale;
+        transform.localScale = TargetScale;
         float bob = Mathf.Sin((t - _popDuration) * _bobSpeed + _bobPhase) * _bobHeight;
         Vector3 pos = transform.position;
         pos.y = _groundY + 0.5f + bob;
@@ -127,7 +139,9 @@ public class BossChest : MonoBehaviour
         // barre d'xp, alors que ça devrait le faire") - le coffre donne de VRAIS niveaux (+_freePicks au niveau affiché,
         // voir XPSystem.GrantBonusLevels) : la barre d'XP se remplit une fois par niveau puis revient à son avancement
         // d'avant. Jeu figé pendant cette animation (HUD visible), puis les choix de cartes s'ouvrent comme avant.
-        float levelGain = XPSystem.Instance != null ? XPSystem.Instance.GrantBonusLevels(_freePicks) : 0f;
+        // Escarmouche (2026-11-14) : coffre généreux, 4 tirages au lieu de 2 (GameModes.BossChestPicks).
+        int picks = _picksOverride > 0 ? _picksOverride : GameModes.BossChestPicks(_freePicks);
+        float levelGain = XPSystem.Instance != null ? XPSystem.Instance.GrantBonusLevels(picks) : 0f;
         if (levelGain > 0f)
         {
             Time.timeScale = 0f;
@@ -138,7 +152,7 @@ public class BossChest : MonoBehaviour
         }
 
         if (LevelUpManager.Instance != null)
-            LevelUpManager.Instance.GrantFreePicks(_freePicks);
+            LevelUpManager.Instance.GrantFreePicks(picks);
 
         if (ObjectPool.Instance != null)
             ObjectPool.Instance.ReturnToPool(_poolKey, gameObject);

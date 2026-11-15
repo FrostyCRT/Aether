@@ -83,7 +83,7 @@ public class InfiniteDecorStreamer : MonoBehaviour
     {
         // ÉTENDU (2026-10-20, carrousel de difficulté) - le palier Violent (et son tunnel) s'applique maintenant
         // aussi en Sans fin et Ruée de boss, voir MapBoundaryUtils.ResetForNewRun.
-        _active = (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush) && DifficultyTiers.Current == DifficultyTier.Violent;
+        _active = GameModes.UsesDifficultyTier && DifficultyTiers.Current == DifficultyTier.Violent;
         if (!_active) return;
 
         DifficultyTiers.GetBounds(DifficultyTier.Violent, out _, out _, out _minZ, out _maxZ);

@@ -115,6 +115,31 @@ public class MusicStarter : MonoBehaviour
         SwitchTo(_defaultClip);
     }
 
+    // AJOUTÉ (2026-11-14, Frénésie de l'Escarmouche) - accélère (ou ramène) la musique en douceur. Le pitch d'une
+    // AudioSource change aussi la hauteur : rester sous ~1,15 pour que le morceau reste reconnaissable.
+    private Coroutine _pitchCoroutine;
+
+    public void SetPitch(float target, float duration = 1.5f)
+    {
+        if (_audioSource == null) return;
+        if (_pitchCoroutine != null) StopCoroutine(_pitchCoroutine);
+        _pitchCoroutine = StartCoroutine(PitchRoutine(target, duration));
+    }
+
+    private IEnumerator PitchRoutine(float target, float duration)
+    {
+        float start = _audioSource.pitch;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            _audioSource.pitch = Mathf.Lerp(start, target, elapsed / duration);
+            yield return null;
+        }
+        _audioSource.pitch = target;
+        _pitchCoroutine = null;
+    }
+
     public void FadeOutAndStop(float duration)
     {
         if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);

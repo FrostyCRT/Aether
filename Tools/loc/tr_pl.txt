@@ -326,13 +326,13 @@
 308| Impuls Novy
 309| Jeśli Nova wywołana pochłonięciem zabije choć jednego wroga, czas odnowienia zrywu natychmiast się zeruje.
 310| Ulepszony zryw
-311| Skraca czas odnowienia zrywu.
+311| Skraca czas odnowienia zrywu. Twój zryw rani też wrogów, przez których przechodzi: 150 / 250 / 400 obrażeń zależnie od poziomu.
 312| Mistrzostwo kryształu
 313| Zmniejsza liczbę ładunków potrzebnych do supermocy.
 314| Szeroka Nova
 315| Zwiększa promień Kryształowej Novy.
 316| Widmowy zryw
-317| Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 3 sekundy przyciąga wszystkich wrogów, a nic nie może cię zranić. Odnowienie: 8 sekund.
+317| Odblokowuje widmowego klona przywoływanego osobnym klawiszem: przez 3 sekundy przyciąga wszystkich wrogów, a nic nie może cię zranić, po czym wybucha i zadaje 1200 obrażeń wokół siebie. Odnowienie: 8 sekund.
 318| UNIKALNY TALENT
 319| POZIOM {0} / {1}
 320| odblokowanie
@@ -395,7 +395,7 @@
 373| Leczenie
 374| Przywraca 50% maksymalnych PŻ
 375| Noże
-376| Rzuca salwy noży przebijających wrogów
+376| Rzuca salwy noży przebijających wrogów, które potem wracają
 377| Łańcuch błyskawic
 378| Wyładowanie elektryczne przeskakujące między pobliskimi wrogami
 379| Błoto
@@ -447,7 +447,7 @@
 423| STRAŻNIK
 424| Przetrwanie i wytrzymałość
 425| Salwa noży
-426| Rzuca salwę noży, które przebijają wrogów
+426| Rzuca salwę noży, które przebijają wrogów i wracają
 427| Dodatkowy nóż / Szybkostrzelność / Przebicie
 428| WIDMO
 429| Mobilność i zryw
@@ -643,7 +643,7 @@
 602| Wystrzeliwuje {0} kul, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
 603| {0} odłamków krąży wokół ciebie i rani wrogów przy kontakcie
 604| Tworzy {0} kałuż błota, które spowalniają i ranią stojących w nich wrogów
-605| Rzuca salwy {0} noży przebijających wrogów
+605| Rzuca salwy {0} noży przebijających wrogów, które potem wracają
 606| Wyładowanie elektryczne przeskakujące na {0} pobliskich wrogów
 + Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés#few| Wystrzeliwuje {0} kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
 + {0} éclats tournent autour de toi et frappent les ennemis au contact#few| {0} odłamki krążą wokół ciebie i ranią wrogów przy kontakcie
@@ -713,3 +713,33 @@
 665| Źródła odłamków
 666| Źródła złota
 667| Pierwsze zwycięstwo
+668| POTYCZKA
+669| Pełna rozgrywka w 5 minut: rośnij w siłę w zawrotnym tempie, przetrwaj Szał i pokonaj ostatniego bossa
+670| Ostatni boss w toku
+671| Boss w toku
+672| Szał!
+673| Ostatni boss za {0}
+674| Boss za {0}
+675| Potyczka
+676| SZAŁ!
+677| Pokonani bossowie: {0} z {1}. Pięć minut mija szybko — zagraj kolejną potyczkę
+678| Potyczka wygrana w {0}  ·  Zabójstwa: {1}
+679| Nowy rekord zabójstw w Potyczce: {0}!
+680| Rekord zabójstw: {0}  ·  {1} {2}
+681| Jeszcze nie grano w Potyczce
+
+682| Grimuar
+683| Karty
+684| Fuzje
+685| Odkrycia
+686| Nowość w Grimuarze: {0}
+687| Wybierz tę kartę po raz pierwszy: +{0} odłamków
+688| Zdobądź tę fuzję po raz pierwszy: +{0} odłamków
+689| Pokonaj tego bossa po raz pierwszy: +{0} odłamków
+690| Boss nr {0}
+691| Najedź na ilustrację, aby przeczytać jej stronę
+692| Odkrycia: {0} / {1}
+693| Zdobyte odłamki: {0}
+694| Obszar roboczy ({0})
+695| Zasięg: noże lecą o {0} m dalej, zanim wrócą
+696| Szerokie ostrza: większe noże trafiające w szerszym pasie

@@ -245,7 +245,7 @@ public static class SkillTreeData
         AddNode("dash", new NodeData
         {
             displayName = "Dash Amélioré",
-            description = "Réduit le temps de recharge du dash.",
+            description = "Réduit le temps de recharge du dash. Ton dash blesse aussi les ennemis qu'il traverse : 150 / 250 / 400 dégâts selon le niveau.",
             isUnique = false,
             level1Desc = "Recharge -0,3 s",
             level2Desc = "Recharge -0,6 s",
@@ -301,7 +301,7 @@ public static class SkillTreeData
             // Pas de nom de touche ici : depend des futurs parametres de remapping.
             // CORRIGÉ (2026-10-25) - valeurs réelles du prefab de Lyra : 3 s (et non 2), recharge 8 s, TOUS les ennemis
             // ciblent le clone (PlayerController.TryAttractToPhantom, sans rayon) et le joueur est invincible pendant ce temps.
-            description = "Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible. Recharge : 8 secondes.",
+            description = "Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible, puis il explose et inflige 1 200 dégâts autour de lui. Recharge : 8 secondes.",
             isUnique = true,
             costLevel1 = 120000,
             prerequisites = new[] { "crystalMastery", "novaRadius" },

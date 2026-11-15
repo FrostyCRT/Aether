@@ -39,9 +39,21 @@ public class PlayerBuffs : MonoBehaviour
     // et Surpuissance (CrystalSystem, x2 pendant 5 s après l'Ultime). Avant, Surpuissance passait par
     // WeaponBase.SetDamageMultiplier et ne doublait que le TIR DE BASE, alors que sa description dit "tes dégâts
     // sont doublés" : toutes les armes qui lisent ce multiplicateur sont maintenant concernées.
-    public static float OutgoingDamageMultiplier => _concentrationFactor * _overpowerFactor;
+    // MODIFIÉ (2026-11-14, choix de l'utilisateur : « Lyra ne met pas assez de dégâts [...] ce personnage on ne peut le
+    // débloquer que si le joueur a déjà gagné une partie, donc un multiplicateur de dégâts sur toutes ses armes est plutôt
+    // bien, x1,4 ») - 3e facteur, propre au personnage joué (CharacterDamageFactor). Revient sur la décision « pas de stats
+    // différentes par personnage » (NOTES.md, tableau du 2026-11-11) pour Lyra seulement, à la demande de l'utilisateur.
+    // Passe par ce multiplicateur commun : TOUTES ses sources de dégâts en profitent (armes, fusions, zones, Ultime, Nova).
+    public static float OutgoingDamageMultiplier => _concentrationFactor * _overpowerFactor * _characterFactor;
     private static float _concentrationFactor = 1f;
     private static float _overpowerFactor = 1f;
+    private static float _characterFactor = 1f;
+
+
+    // MODIFIÉ (2026-11-15, retour utilisateur : « maintenant qu'elle a plus de sources de dégâts, elle en met trop ») -
+    // x1,4 retiré : Lyra revient au même niveau que les autres (facteur 1 pour tout le monde). Le facteur reste en place
+    // au cas où un futur réglage par personnage serait voulu.
+    public static float CharacterDamageFactor(CharacterType type) => 1f;
 
     public static void SetOverpowerActive(bool active) => _overpowerFactor = active ? 2f : 1f;
 
@@ -52,6 +64,7 @@ public class PlayerBuffs : MonoBehaviour
     {
         _concentrationFactor = 1f;
         _overpowerFactor = 1f;
+        _characterFactor = TryGetComponent(out CharacterIdentity identity) ? CharacterDamageFactor(identity.Type) : 1f;
         _concentrationCap = MetaProgressionManager.Instance != null
             ? MetaProgressionManager.Instance.GetBonusConcentrationCap()
             : 0f;
@@ -136,5 +149,6 @@ public class PlayerBuffs : MonoBehaviour
     {
         _concentrationFactor = 1f;
         _overpowerFactor = 1f;
+        _characterFactor = 1f;
     }
 }

@@ -71,7 +71,7 @@ public class MainMenuManager : MonoBehaviour
     private void Update()
     {
         int dir = GameInput.PadDown(PadButton.LeftShoulder) ? -1 : GameInput.PadDown(PadButton.RightShoulder) ? 1 : 0;
-        if (dir == 0 || SettingsPage.ModalOpen || QuitConfirm.IsOpen) return;
+        if (dir == 0 || SettingsPage.ModalOpen || QuitConfirm.IsOpen || GrimoireUI.IsOpen) return;   // + fenêtre du Grimoire (2026-11-15)
 
         GameObject[] order = { _upgradesPanel, _characterSelectPanel, _menuPanel, _reputationPanel, _settingsPanel };
         int i = System.Array.IndexOf(order, _currentPanel);

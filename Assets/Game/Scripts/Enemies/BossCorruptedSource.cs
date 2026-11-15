@@ -87,6 +87,13 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _minSummonInterval = 25f;
     private float _lastSummonRealTime = -999f;
 
+    // AJOUTÉ (2026-11-15, retour utilisateur : « un délai de 15 s quand on tue un mini boss avant qu'il y ait une probabilité
+    // que ça respawn ») - aucune invocation (tirée au sort OU garantie à mi-vie) moins de 15 s après la disparition d'un écho.
+    [SerializeField] private float _summonDelayAfterMiniDeath = 15f;
+    private float _miniBossGoneTime = -999f;
+    private bool _miniBossTracked;
+    private bool SummonCooldownAfterMini => Time.time - _miniBossGoneTime < _summonDelayAfterMiniDeath;
+
     // AJOUTÉ (2026-10-01) - retour utilisateur : l'ancien cercle violet "ressemblait à un bug de cercle aléatoire".
     // Le nouvel effet (cercle runique qui grandit et tourne, halo, étincelles, anneau qui se resserre, pilier de lumière,
     // éclat à l'apparition) est construit par SummonPortalFX ; le mini-boss, lui, émerge en grandissant.
@@ -179,6 +186,11 @@ public class BossCorruptedSource : BossBase
 
         if (MiniBossAlive && _activeMiniBossInstance.activeInHierarchy == false)
             _activeMiniBossInstance = null;
+        if (_miniBossTracked && !MiniBossAlive)
+        {
+            _miniBossTracked = false;
+            _miniBossGoneTime = Time.time;
+        }
     }
 
     // Pas de mouvement classique : le seul déplacement du corps passe par le repositionnement Slither.
@@ -240,7 +252,7 @@ public class BossCorruptedSource : BossBase
 
     private AttackType ChooseNextAttack(List<AttackType> pool)
     {
-        if (!_halfLifeSummonDone && _currentHealth <= _maxHealth * 0.5f && !MiniBossAlive)
+        if (!_halfLifeSummonDone && _currentHealth <= _maxHealth * 0.5f && !MiniBossAlive && !SummonCooldownAfterMini)
         {
             _halfLifeSummonDone = true;
             _lastSummonRealTime = Time.time;
@@ -258,7 +270,7 @@ public class BossCorruptedSource : BossBase
 
         if (choice == AttackType.Implosion && MiniBossAlive)
             choice = AttackType.CrystalPulse;
-        if (choice == AttackType.Summon && (MiniBossAlive || Time.time - _lastSummonRealTime < _minSummonInterval))
+        if (choice == AttackType.Summon && (MiniBossAlive || SummonCooldownAfterMini || Time.time - _lastSummonRealTime < _minSummonInterval))
             choice = AttackType.RearingStrike;
 
         if (choice == AttackType.Summon)
@@ -564,6 +576,7 @@ public class BossCorruptedSource : BossBase
 
         GameObject mini = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
         _activeMiniBossInstance = mini;
+        _miniBossTracked = true;
 
         mini.TryGetComponent(out BossBase boss);
         if (boss != null)

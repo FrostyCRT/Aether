@@ -9,6 +9,11 @@ public class EnemyProjectile : MonoBehaviour
     // pour un tireur différent qui n'a jamais demandé d'override.
     private float _baseSpeed = -1f;
     [SerializeField] private float _maxRange = 40f;
+    // AJOUTÉ (2026-11-14, retour utilisateur : « faire en sorte que les projectiles des boss aillent plus loin ») - les 3 boss
+    // tirent ce même projectile partagé (portée 20 sur le prefab, réglée pour les tireurs normaux) : seuls les tirs marqués
+    // "boss" (BossBase, BossDeer, BossCorruptedSource) portent BossRangeMultiplier fois plus loin. Gobelins / Bulbes inchangés.
+    private const float BossRangeMultiplier = 1.75f;
+    private float _rangeThisShot;
     [SerializeField] private float _damage = 10f; // Ajout de la stat de dégâts manquante
 
     private Vector3 _direction;
@@ -42,6 +47,7 @@ public class EnemyProjectile : MonoBehaviour
 
         _startPosition = transform.position;
         _hasHit = false;
+        _rangeThisShot = damageSource == "boss" ? _maxRange * BossRangeMultiplier : _maxRange;
     }
 
     private void Update()
@@ -54,7 +60,7 @@ public class EnemyProjectile : MonoBehaviour
         transform.position += _direction * _speed * Time.deltaTime;
 
         // OPTIMISATION : SqrMagnitude est plus performant que Vector3.Distance pour les vérifications de portée
-        if (Vector3.SqrMagnitude(transform.position - _startPosition) >= _maxRange * _maxRange)
+        if (Vector3.SqrMagnitude(transform.position - _startPosition) >= _rangeThisShot * _rangeThisShot)
         {
             Despawn();
         }

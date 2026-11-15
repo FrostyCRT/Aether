@@ -688,6 +688,7 @@ public class EnemyBase : MonoBehaviour
     public static bool DebugInvincible = false;
 
     private bool _isDead;
+    private Renderer _deathRenderer;
 
     // AJOUTÉ (2026-10-28) - numéro de vie, +1 à chaque sortie du pool : un effet qui garde une référence vers un ennemi
     // pendant un moment (saut de la Chaîne de foudre) vérifie qu'il frappe toujours LE MÊME ennemi, et non l'objet
@@ -832,6 +833,14 @@ public class EnemyBase : MonoBehaviour
         CacheSpriteRenderer();
         Color fxColor = _spriteBaseColorCaptured ? _spriteBaseColor : DefaultDeathFxColor;
         EnemyDeathFX.Play(transform.position + Vector3.up * 0.5f, fxColor);
+        // AJOUTÉ (2026-11-14) - copie visuelle qui se dissout à sa place (voir EnemyDeathDissolve) : l'ennemi lui-même
+        // repart au pool tout de suite, plus bas, comme avant.
+        if (_deathRenderer == null)
+        {
+            VATAnimatedRenderer vat = GetComponentInChildren<VATAnimatedRenderer>();
+            _deathRenderer = vat != null ? vat.GetComponent<Renderer>() : FindVisibleRenderer();
+        }
+        EnemyDeathDissolve.Play(_deathRenderer);
 
         // MODIFIE (2026-10-07, retour utilisateur : "au bout de plus de 8 min environ, les petits xp verts ne
         // donnent plus rien... j'suis arrivé qu'au niveau 18" en 15 min) - _xpValue restait fixe alors que

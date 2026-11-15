@@ -324,13 +324,13 @@
 308| Nova-Impuls
 309| Tötet die durch eine Absorption ausgelöste Nova mindestens einen Gegner, wird die Abklingzeit deines Dash sofort zurückgesetzt.
 310| Verbesserter Dash
-311| Verkürzt die Abklingzeit deines Dash.
+311| Verkürzt die Abklingzeit deines Dash. Dein Dash verletzt außerdem die Gegner, die er durchquert: 150 / 250 / 400 Schaden je nach Stufe.
 312| Kristallmeisterschaft
 313| Verringert die Anzahl der Ladungen, die deine Ultimate braucht.
 314| Weite Nova
 315| Vergrößert den Radius der Kristallnova.
 316| Phantom-Dash
-317| Schaltet einen Spektralklon frei, den du mit einer eigenen Taste rufst: 3 Sekunden lang zieht er alle Gegner auf sich und du bist unverwundbar. Abklingzeit: 8 Sekunden.
+317| Schaltet einen Spektralklon frei, den du mit einer eigenen Taste rufst: 3 Sekunden lang zieht er alle Gegner auf sich und du bist unverwundbar, dann explodiert er und verursacht 1.200 Schaden um sich herum. Abklingzeit: 8 Sekunden.
 318| EINZIGARTIGES TALENT
 319| STUFE {0} / {1}
 320| freigeschaltet
@@ -393,7 +393,7 @@
 373| Heilung
 374| Stellt 50 % deiner maximalen LP wieder her
 375| Messer
-376| Wirft Messersalven, die Gegner durchbohren
+376| Wirft Messersalven, die Gegner durchbohren und dann zurückkehren
 377| Kettenblitz
 378| Elektrische Entladung, die zwischen nahen Gegnern überspringt
 379| Schlamm
@@ -445,7 +445,7 @@
 423| WÄCHTER
 424| Überleben und Widerstandskraft
 425| Messersalve
-426| Wirft eine Salve von Messern, die Gegner durchbohren
+426| Wirft eine Salve von Messern, die Gegner durchbohren und dann zurückkehren
 427| Extra-Messer / Feuerrate / Durchbohren
 428| PHANTOM
 429| Mobilität und Dash
@@ -638,7 +638,7 @@
 602| Schießt {0} Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
 603| {0} Splitter kreisen um dich und treffen Gegner bei Berührung
 604| Erzeugt {0} Schlammpfützen, die Gegner darin verlangsamen und verletzen
-605| Wirft Salven aus {0} Messern, die Gegner durchbohren
+605| Wirft Salven aus {0} Messern, die Gegner durchbohren und dann zurückkehren
 606| Elektrische Entladung, die auf {0} nahe Gegner überspringt
 
 ## Écrans de fin : intitulés des cases de stats
@@ -705,3 +705,33 @@
 665| Herkunft der Splitter
 666| Herkunft des Goldes
 667| Erster Sieg
+668| SCHARMÜTZEL
+669| Ein ganzer Run in 5 Minuten: Werde rasend schnell stärker, überstehe die Raserei und besiege den Endboss
+670| Endboss im Kampf
+671| Boss im Kampf
+672| Raserei!
+673| Endboss in {0}
+674| Boss in {0}
+675| Scharmützel
+676| RASEREI!
+677| Besiegte Bosse: {0} von {1}. Fünf Minuten vergehen schnell – starte gleich das nächste Scharmützel
+678| Scharmützel gewonnen in {0}  ·  Kills: {1}
+679| Neuer Kill-Rekord im Scharmützel: {0}!
+680| Kill-Rekord: {0}  ·  {1} {2}
+681| Noch kein Scharmützel gespielt
+
+682| Grimoire
+683| Karten
+684| Fusionen
+685| Entdeckungen
+686| Neu im Grimoire: {0}
+687| Wähle diese Karte zum ersten Mal: +{0} Splitter
+688| Erhalte diese Fusion zum ersten Mal: +{0} Splitter
+689| Besiege diesen Boss zum ersten Mal: +{0} Splitter
+690| Boss Nr. {0}
+691| Fahre über eine Illustration, um ihre Seite zu lesen
+692| {0} / {1} Entdeckungen
+693| {0} Splitter erhalten
+694| Arbeitsbereich ({0})
+695| Reichweite: Die Messer fliegen {0} m weiter, bevor sie zurückkehren
+696| Breite Klingen: größere Messer, die auf einem breiteren Streifen treffen

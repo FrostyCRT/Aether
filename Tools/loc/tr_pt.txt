@@ -324,13 +324,13 @@
 308| Impulso Nova
 309| Se a Nova disparada por uma absorção matar pelo menos um inimigo, a recarga do dash zera na hora.
 310| Dash Aprimorado
-311| Reduz o tempo de recarga do dash.
+311| Reduz o tempo de recarga do dash. Seu dash também fere os inimigos que atravessa: 150 / 250 / 400 de dano conforme o nível.
 312| Maestria do Cristal
 313| Reduz o número de cargas necessárias para a suprema.
 314| Nova Ampliada
 315| Aumenta o raio da Nova de Cristal.
 316| Dash Fantasma
-317| Desbloqueia um clone espectral, ativado por uma tecla própria: por 3 segundos ele atrai todos os inimigos e você fica invencível. Recarga: 8 segundos.
+317| Desbloqueia um clone espectral, ativado por uma tecla própria: por 3 segundos ele atrai todos os inimigos e você fica invencível; depois ele explode e causa 1.200 de dano ao redor. Recarga: 8 segundos.
 318| TALENTO ÚNICO
 319| NÍVEL {0} / {1}
 320| desbloqueado
@@ -393,7 +393,7 @@
 373| Cura
 374| Restaura 50% dos seus PV máximos
 375| Facas
-376| Lança rajadas de facas que atravessam os inimigos
+376| Lança rajadas de facas que atravessam os inimigos e depois voltam
 377| Raio em Cadeia
 378| Descarga elétrica que salta entre os inimigos próximos
 379| Lama
@@ -445,7 +445,7 @@
 423| GUARDIÃO
 424| Sobrevivência e resistência
 425| Rajada de Facas
-426| Lança uma rajada de facas que atravessam os inimigos
+426| Lança uma rajada de facas que atravessam os inimigos e depois voltam
 427| Faca extra / Cadência / Perfuração
 428| FANTASMA
 429| Mobilidade e dash
@@ -638,7 +638,7 @@
 602| Lança {0} orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
 603| {0} fragmentos giram ao seu redor e atingem os inimigos ao contato
 604| Cria {0} poças de lama que deixam os inimigos lentos e os ferem
-605| Lança rajadas de {0} facas que atravessam os inimigos
+605| Lança rajadas de {0} facas que atravessam os inimigos e depois voltam
 606| Descarga elétrica que salta para {0} inimigos próximos
 
 ## Écrans de fin : intitulés des cases de stats
@@ -705,3 +705,33 @@
 665| Origem dos fragmentos
 666| Origem do ouro
 667| 1ª vitória
+668| ESCARAMUÇA
+669| Uma partida completa em 5 minutos: fique mais forte a toda velocidade, sobreviva ao Frenesi e derrote o chefe final
+670| Chefe final em andamento
+671| Chefe em andamento
+672| Frenesi!
+673| Chefe final em {0}
+674| Chefe em {0}
+675| Escaramuça
+676| FRENESI!
+677| Chefes derrotados: {0} de {1}. Cinco minutos passam rápido — comece outra escaramuça
+678| Escaramuça vencida em {0}  ·  Abates: {1}
+679| Novo recorde de abates na Escaramuça: {0}!
+680| Recorde de abates: {0}  ·  {1} {2}
+681| Nenhuma escaramuça jogada ainda
+
+682| Grimório
+683| Cartas
+684| Fusões
+685| Descobertas
+686| Novo no Grimório: {0}
+687| Escolha esta carta pela primeira vez: +{0} fragmentos
+688| Obtenha esta fusão pela primeira vez: +{0} fragmentos
+689| Derrote este chefe pela primeira vez: +{0} fragmentos
+690| Chefe n.º {0}
+691| Passe o cursor sobre uma ilustração para ler sua página
+692| {0} / {1} descobertas
+693| {0} fragmentos obtidos
+694| Área de trabalho ({0})
+695| Alcance: as facas vão {0} m mais longe antes de voltar
+696| Lâminas largas: facas maiores que acertam numa faixa mais larga

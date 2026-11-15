@@ -325,13 +325,13 @@
 308| Impulso Nova
 309| Si la Nova provocada por una absorción mata al menos a un enemigo, el tiempo de recarga del dash se reinicia al instante.
 310| Dash mejorado
-311| Reduce el tiempo de recarga del dash.
+311| Reduce el tiempo de recarga del dash. Tu dash también hiere a los enemigos que atraviesa: 150 / 250 / 400 de daño según el nivel.
 312| Maestría del cristal
 313| Reduce el número de cargas que necesita la definitiva.
 314| Nova amplia
 315| Aumenta el radio de la Nova de cristal.
 316| Dash fantasma
-317| Desbloquea un clon espectral que se activa con su propia tecla: durante 3 segundos atrae a todos los enemigos y eres invulnerable. Recarga: 8 segundos.
+317| Desbloquea un clon espectral que se activa con su propia tecla: durante 3 segundos atrae a todos los enemigos y eres invulnerable; después explota e inflige 1200 de daño a su alrededor. Recarga: 8 segundos.
 318| TALENTO ÚNICO
 319| NIVEL {0} / {1}
 320| desbloqueado
@@ -394,7 +394,7 @@
 373| Curación
 374| Restaura el 50% de tus PV máximos
 375| Cuchillos
-376| Lanza ráfagas de cuchillos que atraviesan a los enemigos
+376| Lanza ráfagas de cuchillos que atraviesan a los enemigos y luego regresan
 377| Rayo en cadena
 378| Descarga eléctrica que salta entre los enemigos cercanos
 379| Barro
@@ -446,7 +446,7 @@
 423| GUARDIÁN
 424| Supervivencia y resistencia
 425| Ráfaga de cuchillos
-426| Lanza una ráfaga de cuchillos que atraviesan a los enemigos
+426| Lanza una ráfaga de cuchillos que atraviesan a los enemigos y luego regresan
 427| Cuchillo extra / Cadencia / Perforación
 428| FANTASMA
 429| Movilidad y dash
@@ -639,7 +639,7 @@
 602| Lanza {0} orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan
 603| {0} fragmentos giran a tu alrededor y golpean a los enemigos al contacto
 604| Crea {0} charcos de barro que ralentizan y hieren a los enemigos que los pisan
-605| Lanza ráfagas de {0} cuchillos que atraviesan a los enemigos
+605| Lanza ráfagas de {0} cuchillos que atraviesan a los enemigos y luego regresan
 606| Descarga eléctrica que salta a {0} enemigos cercanos
 
 ## Écrans de fin : intitulés des cases de stats
@@ -706,3 +706,33 @@
 665| Origen de los fragmentos
 666| Origen del oro
 667| 1.ª victoria
+668| ESCARAMUZA
+669| Una partida completa en 5 minutos: hazte más fuerte a toda velocidad, sobrevive al Frenesí y derrota al jefe final
+670| Jefe final en curso
+671| Jefe en curso
+672| ¡Frenesí!
+673| Jefe final en {0}
+674| Jefe en {0}
+675| Escaramuza
+676| ¡FRENESÍ!
+677| Jefes derrotados: {0} de {1}. Cinco minutos pasan volando: lanza otra escaramuza
+678| Escaramuza ganada en {0}  ·  Bajas: {1}
+679| ¡Nuevo récord de bajas en Escaramuza: {0}!
+680| Récord de bajas: {0}  ·  {1} {2}
+681| Aún no has jugado ninguna escaramuza
+
+682| Grimorio
+683| Cartas
+684| Fusiones
+685| Descubrimientos
+686| Nuevo en el Grimorio: {0}
+687| Elige esta carta por primera vez: +{0} fragmentos
+688| Consigue esta fusión por primera vez: +{0} fragmentos
+689| Derrota a este jefe por primera vez: +{0} fragmentos
+690| Jefe n.º {0}
+691| Pasa el cursor sobre una ilustración para leer su página
+692| {0} / {1} descubrimientos
+693| {0} fragmentos obtenidos
+694| Área de trabajo ({0})
+695| Alcance: los cuchillos llegan {0} m más lejos antes de regresar
+696| Hojas anchas: cuchillos más grandes que golpean en una franja más ancha

@@ -319,13 +319,13 @@
 308	Impulsion Nova	Nova Impulse
 309	Si la Nova déclenchée par une absorption tue au moins un ennemi, le temps de recharge du dash est immédiatement réinitialisé.	If the Nova triggered by an absorb kills at least one enemy, your dash cooldown is instantly reset.
 310	Dash Amélioré	Improved Dash
-311	Réduit le temps de recharge du dash.	Reduces the dash cooldown.
+311	Réduit le temps de recharge du dash. Ton dash blesse aussi les ennemis qu'il traverse : 150 / 250 / 400 dégâts selon le niveau.	Reduces the dash cooldown. Your dash also hurts the enemies it passes through: 150 / 250 / 400 damage depending on the level.
 312	Maîtrise du Cristal	Crystal Mastery
 313	Réduit de 1 le nombre de charges de Nova nécessaires pour obtenir l'Ultime (6 à 5).	Reduces the number of Nova charges needed for your Ultimate by 1 (6 to 5).
 314	Nova Étendue	Wide Nova
 315	Augmente le rayon de la Nova de Cristal.	Increases the radius of the Crystal Nova.
 316	Clone Spectral	Spectral Clone
-317	Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible. Recharge : 8 secondes.	Unlocks a Spectral Clone, triggered with a dedicated key: for 3 seconds it draws every enemy to it and you become invincible. Cooldown: 8 seconds.
+317	Débloque un Clone spectral, activable via une touche dédiée : pendant 3 secondes, il attire tous les ennemis et tu deviens invincible, puis il explose et inflige 1 200 dégâts autour de lui. Recharge : 8 secondes.	Unlocks a Spectral Clone, triggered with a dedicated key: for 3 seconds it draws every enemy to it and you become invincible, then it explodes and deals 1,200 damage around it. Cooldown: 8 seconds.
 318	TALENT UNIQUE	UNIQUE TALENT
 319	NIVEAU {0} / {1}	LEVEL {0} / {1}
 320	débloqué	unlocked
@@ -388,7 +388,7 @@
 373	Soin	Heal
 374	Restaure 50% de tes PV max	Restores 50% of your max HP
 375	Couteaux	Knives
-376	Lance des salves de couteaux qui transpercent les ennemis	Throws volleys of knives that pierce through enemies
+376	Lance des salves de couteaux qui transpercent les ennemis puis reviennent	Throws volleys of knives that pierce through enemies, then fly back
 377	Chaîne de Foudre	Chain Lightning
 378	Décharge électrique qui rebondit sur les ennemis proches	An electric discharge that bounces between nearby enemies
 379	Boue	Mud
@@ -440,7 +440,7 @@
 423	GARDIEN	GUARDIAN
 424	Survie et résilience	Survival and resilience
 425	Salve de couteaux	Knife volley
-426	Lance une salve de couteaux qui transpercent les ennemis	Throws a volley of knives that pierce through enemies
+426	Lance une salve de couteaux qui transpercent les ennemis puis reviennent	Throws a volley of knives that pierce through enemies, then fly back
 427	Couteau en plus / Cadence / Perforation	Extra knife / Fire rate / Pierce
 428	FANTÔME	PHANTOM
 429	Mobilité et dash	Mobility and dash
@@ -633,7 +633,7 @@
 602	Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés	Launches {0} orbs that bounce endlessly around the arena, hurting every enemy they hit
 603	{0} éclats tournent autour de toi et frappent les ennemis au contact	{0} shards orbit around you and strike enemies on contact
 604	Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent	Spawns {0} mud puddles that slow and hurt the enemies standing in them
-605	Lance des salves de {0} couteaux qui transpercent les ennemis	Throws volleys of {0} knives that pierce through enemies
+605	Lance des salves de {0} couteaux qui transpercent les ennemis puis reviennent	Throws volleys of {0} knives that pierce through enemies, then fly back
 606	Décharge électrique qui rebondit sur {0} ennemis proches	An electric discharge that bounces to {0} nearby enemies
 607	Survie	Survival
 608	Éliminations	Kills
@@ -698,3 +698,34 @@
 665	Sources des éclats	Shard sources
 666	Sources de l'or	Gold sources
 667	1re victoire	First win
+668	ESCARMOUCHE	SKIRMISH
+669	Une partie complète en 5 minutes : monte en puissance à toute vitesse, survis à la Frénésie et abats le boss final	A full run in 5 minutes: power up at full speed, survive the Frenzy and take down the final boss
+670	Boss final en cours	Final boss in progress
+671	Boss en cours	Boss in progress
+672	Frénésie !	Frenzy!
+673	Boss final dans {0}	Final boss in {0}
+674	Boss dans {0}	Boss in {0}
+675	Escarmouche	Skirmish
+676	FRÉNÉSIE !	FRENZY!
+677	{0} boss sur {1}. Cinq minutes, c'est court — relance une escarmouche	{0} bosses out of {1}. Five minutes go fast — start another skirmish
+678	Escarmouche remportée en {0}  ·  Éliminations : {1}	Skirmish won in {0}  ·  Kills: {1}
+679	Nouveau record d'éliminations en escarmouche : {0} !	New skirmish kill record: {0}!
+680	Record d'éliminations : {0}  ·  {1} {2}	Kill record: {0}  ·  {1} {2}
+681	Aucune escarmouche jouée	No skirmish played yet
+
+## Grimoire (2026-11-15) ----
+682	Grimoire	Grimoire
+683	Cartes	Cards
+684	Fusions	Fusions
+685	Découvertes	Discoveries
+686	Nouveau dans le Grimoire : {0}	New in the Grimoire: {0}
+687	Choisis cette carte une première fois : +{0} éclats	Pick this card for the first time: +{0} shards
+688	Obtiens cette fusion une première fois : +{0} éclats	Get this fusion for the first time: +{0} shards
+689	Bats ce boss une première fois : +{0} éclats	Defeat this boss for the first time: +{0} shards
+690	Boss n°{0}	Boss #{0}
+691	Survole une illustration pour en lire la page	Hover over an illustration to read its page
+692	{0} / {1} découvertes	{0} / {1} discoveries
+693	{0} éclats gagnés	{0} shards earned
+694	Espace de travail ({0})	Work area ({0})
+695	Portée : les couteaux vont {0} m plus loin avant de revenir	Range: knives fly {0} m farther before coming back
+696	Lames larges : couteaux plus gros qui touchent sur une bande plus large	Wide blades: bigger knives that hit across a wider strip

@@ -80,14 +80,18 @@ public class GameModeSelector : MonoBehaviour
         // (GameModes.IsShippable, ex: Choc des titans) : le joueur ne peut plus s'y arrêter en tournant les
         // flèches, sans rien retirer du code/des données qui le sous-tendent. Boucle bornée à `count` tours pour
         // rester sûr même si, un jour, TOUS les modes devenaient non commercialisés par erreur.
-        int count = GameModes.Count;
-        int next = (int)GameModes.Current;
+        // MODIFIÉ (2026-11-14) - ordre d'affichage (GameModes.SelectorOrder) au lieu de l'ordre de l'enum, qui est figé par
+        // les sauvegardes : l'Escarmouche, jouable dès la 1re partie, vient juste après le Classique.
+        GameMode[] order = GameModes.SelectorOrder;
+        int count = order.Length;
+        int next = System.Array.IndexOf(order, GameModes.Current);
+        if (next < 0) next = 0;
         for (int i = 0; i < count; i++)
         {
             next = (next + direction + count) % count;
-            if (GameModes.IsShippable((GameMode)next)) break;
+            if (GameModes.IsShippable(order[next])) break;
         }
-        GameModes.Current = (GameMode)next;
+        GameModes.Current = order[next];
         Refresh(animate: true);
     }
 
@@ -159,6 +163,11 @@ public class GameModeSelector : MonoBehaviour
                         ? Loc.F("Meilleur temps : {0}  ·  {1} {2}", Clock(data.titansBestTime), data.titansWins, GameModes.Plural(data.titansWins, "victoire", "victoires"))
                         : Loc.F("Meilleur : {0}/3 titans  ·  aucune victoire", data.titansBestBossKills))
                     : Loc.T("Aucune partie jouée");
+                break;
+            case GameMode.Skirmish:
+                _recordText.text = data.skirmishRuns > 0
+                    ? Loc.F("Record d'éliminations : {0}  ·  {1} {2}", Loc.Int(data.skirmishBestKills), data.skirmishWins, GameModes.Plural(data.skirmishWins, "victoire", "victoires"))
+                    : Loc.T("Aucune escarmouche jouée");
                 break;
             default:
             {

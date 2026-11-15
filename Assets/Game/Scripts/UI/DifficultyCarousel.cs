@@ -64,7 +64,7 @@ public class DifficultyCarousel : MonoBehaviour
     private void Update()
     {
         if (_contentRoot == null) return;
-        bool shouldShow = GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush;
+        bool shouldShow = GameModes.UsesDifficultyTier;
         if (_contentRoot.activeSelf != shouldShow)
         {
             _contentRoot.SetActive(shouldShow);

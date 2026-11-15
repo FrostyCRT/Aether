@@ -371,8 +371,54 @@ public class PlayerController : MonoBehaviour
 
         if (_isDashing)
         {
+            DashBladeTick();
             _dashTimer -= Time.deltaTime;
             if (_dashTimer <= 0f) StopDash();
+        }
+    }
+
+    // AJOUTÉ (2026-11-15) - Lame fantôme (Lyra, branche Fantôme, voir MetaProgressionManager.GetDashBladeDamage) : chaque
+    // ennemi traversé pendant le dash est touché une fois par dash.
+    private readonly HashSet<int> _dashBladeHits = new HashSet<int>();
+    private static readonly Collider[] _phantomHitBuffer = new Collider[64];
+    private const float DashBladeRadius = 1.7f;
+    private static readonly Color PhantomStrikeColor = new Color(0.74f, 0.48f, 1f);
+
+    private void DashBladeTick()
+    {
+        MetaProgressionManager meta = MetaProgressionManager.Instance;
+        float damage = meta != null ? meta.GetDashBladeDamage() : 0f;
+        if (damage <= 0f) return;
+        damage *= PlayerBuffs.OutgoingDamageMultiplier;
+        Vector3 p = transform.position;
+        int n = Physics.OverlapCapsuleNonAlloc(new Vector3(p.x, 0.2f, p.z), new Vector3(p.x, 1.8f, p.z), DashBladeRadius, _phantomHitBuffer, EnemyLayers.Mask);
+        for (int i = 0; i < n; i++)
+        {
+            Collider c = _phantomHitBuffer[i];
+            if (c == null || !c.CompareTag("Enemy") || !_dashBladeHits.Add(c.GetInstanceID())) continue;
+            if (PhantomHit(c, damage)) ImpactSparkVFX.Spawn(c.bounds.center, PhantomStrikeColor, 1.2f);
+        }
+    }
+
+    private static bool PhantomHit(Collider c, float damage)
+    {
+        if (c.TryGetComponent(out EnemyBase enemy)) { enemy.TakeDamage(damage, DamageNumberSpawner.ColorKnives); return true; }
+        if (c.TryGetComponent(out BossBase boss)) { boss.TakeDamage(damage, DamageNumberSpawner.ColorKnives); return true; }
+        return false;
+    }
+
+    // AJOUTÉ (2026-11-15) - Éclat spectral : le Clone spectral explose en disparaissant (il vient d'attirer les ennemis).
+    private static void CloneBurst(Vector3 position)
+    {
+        float damage = MetaProgressionManager.CloneBurstDamage * PlayerBuffs.OutgoingDamageMultiplier;
+        Vector3 ground = new Vector3(position.x, 0.2f, position.z);
+        ArcaneBurstVFX.Spawn(ground, MetaProgressionManager.CloneBurstRadius, PhantomStrikeColor);
+        CameraShakeFX.Shake(0.25f);
+        int n = Physics.OverlapCapsuleNonAlloc(ground, ground + Vector3.up * 1.6f, MetaProgressionManager.CloneBurstRadius, _phantomHitBuffer, EnemyLayers.Mask);
+        for (int i = 0; i < n; i++)
+        {
+            Collider c = _phantomHitBuffer[i];
+            if (c != null && c.CompareTag("Enemy")) PhantomHit(c, damage);
         }
     }
 
@@ -384,6 +430,7 @@ public class PlayerController : MonoBehaviour
         _isInvincible = true;
         _dashTimer = _dashDuration;
         _dashCooldownTimer = _dashCooldown;
+        _dashBladeHits.Clear();
         _canAbsorb = true;
         _absorptionTimer = _absorptionWindow;
 
@@ -668,6 +715,7 @@ public class PlayerController : MonoBehaviour
         }
 
         OnPhantomDestroyed?.Invoke();
+        if (clone != null && GameManager.Instance != null && !GameManager.Instance.IsGameOver) CloneBurst(clone.transform.position);
 
         ActivePhantomClone = null;
         PhantomAttractedCount = 0;

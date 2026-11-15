@@ -137,6 +137,7 @@ public class SettingsApplier : MonoBehaviour
         InputBindings.Flush();
         UpdateFps();
         HandleFullscreenKey();
+        UpdateWindowSnap();
 
         if (!Mathf.Approximately(_duck, _duckTarget))            // temps réel : le jeu est à l'arrêt pendant la pause
         {
@@ -294,21 +295,35 @@ public class SettingsApplier : MonoBehaviour
         }
     }
 
-    // Résolutions proposées : celles du moniteur, sans doublon (largeur x hauteur), du plus petit au plus grand,
-    // au moins 1024 x 576.
-    public static List<Vector2Int> AvailableResolutions()
+    // MODIFIÉ (2026-11-15, retour utilisateur : « toutes les résolutions proposées en fenêtré doivent être des rectangles
+    // pour afficher tous les éléments, jusqu'à 1920x1080, plus une option qui tient compte de la barre des tâches et de la
+    // barre de titre ») - en fenêtré, la liste ne propose plus que des formats 16:9 (ceux qui tiennent sur l'écran), puis
+    // « Espace de travail » : le plus grand 16:9 qui tient entre la barre des tâches et le haut de l'écran, barre de titre
+    // comprise (WorkAreaKey, choix par défaut). Les deux pleins écrans gardent la résolution native de l'écran.
+    public const string WorkAreaKey = "work";
+    private static readonly Vector2Int[] WindowPresets =
     {
-        List<Vector2Int> list = new List<Vector2Int>();
-        foreach (Resolution r in Screen.resolutions)
-        {
-            if (r.width < 1024 || r.height < 576) continue;
-            Vector2Int v = new Vector2Int(r.width, r.height);
-            if (!list.Contains(v)) list.Add(v);
-        }
-        Vector2Int cur = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
-        if (!list.Contains(cur)) list.Add(cur);
-        list.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
-        return list;
+        new Vector2Int(1024, 576), new Vector2Int(1280, 720), new Vector2Int(1366, 768), new Vector2Int(1600, 900),
+        new Vector2Int(1920, 1080), new Vector2Int(2560, 1440), new Vector2Int(3200, 1800), new Vector2Int(3840, 2160),
+    };
+
+    // Clés des choix du mode fenêtré, du plus petit au plus grand, « Espace de travail » en dernier.
+    public static List<string> WindowedResolutionKeys()
+    {
+        Vector2Int native = NativeResolution();
+        List<string> keys = new List<string>();
+        foreach (Vector2Int p in WindowPresets)
+            if (p.x <= native.x && p.y <= native.y) keys.Add(ResolutionKey(p));
+        if (keys.Count == 0) keys.Add(ResolutionKey(WindowPresets[0]));
+        keys.Add(WorkAreaKey);
+        return keys;
+    }
+
+    // Taille de la zone de jeu (sans la barre de titre) pour une clé de résolution du mode fenêtré.
+    public static Vector2Int WindowSizeForKey(string key)
+    {
+        if (string.IsNullOrEmpty(key) || key == WorkAreaKey || !TryParseResolution(key, out Vector2Int v)) return WorkAreaWindowSize();
+        return v;
     }
 
     public static string ResolutionKey(Vector2Int v) => v.x + "x" + v.y;
@@ -373,15 +388,12 @@ public class SettingsApplier : MonoBehaviour
         return true;
     }
 
-    // MODIFIÉ (2026-11-10, retours utilisateur) :
-    //  - "quand on met la résolution en dessous de 1920x1080, puis qu'on revient en plein écran exclusif, l'image ne
-    //    remplit pas parfaitement l'écran" : les deux pleins écrans utilisent toujours la résolution native de l'écran
-    //    (la « Résolution » des Paramètres ne règle plus que la taille de la fenêtre), et la résolution est réappliquée
-    //    quelques images plus tard si Windows ne l'a pas prise au passage fenêtre -> plein écran ;
-    //  - "en fenêtré, une résolution légèrement plus petite, pour anticiper la barre des tâches, et que la fenêtre ne
-    //    dépasse pas sur les côtés s'il y a plus d'un écran" : la fenêtre est réduite (mêmes proportions) pour tenir dans
-    //    l'espace libre de son écran, barre de titre comprise, puis centrée sur cet écran.
-    private const int WindowSideMargin = 32, WindowVerticalMargin = 120, WindowTitleOffset = 20;
+    // MODIFIÉ (2026-11-10, retours utilisateur) : les deux pleins écrans utilisent toujours la résolution native de l'écran
+    // (la « Résolution » des Paramètres ne règle que la taille de la fenêtre), et la résolution est réappliquée quelques
+    // images plus tard si Windows ne l'a pas prise au passage fenêtre -> plein écran.
+    // MODIFIÉ (2026-11-15) - la fenêtre a exactement la taille choisie (formats 16:9, plus de réduction automatique) ;
+    // « Espace de travail » est calculé avec la vraie barre de titre et la vraie barre des tâches (Win32, voir plus bas).
+    // Une fenêtre qui ne tient pas dans l'espace libre est collée en haut à gauche de celui-ci (barre de titre visible).
     private Coroutine _displayFollowUp;
 
     private void ApplyDisplay()
@@ -389,26 +401,13 @@ public class SettingsApplier : MonoBehaviour
         FullScreenMode mode = ModeFromSetting(GameSettings.GetInt(GameSettings.DisplayMode));
         if (Application.isEditor) return;    // la fenêtre Game de l'éditeur ne se redimensionne pas
 
-        DisplayInfo display = Screen.mainWindowDisplayInfo;
-        Vector2Int native = display.width > 0
-            ? new Vector2Int(display.width, display.height)
-            : new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
-
-        Vector2Int res = native;
-        if (mode == FullScreenMode.Windowed)
-        {
-            if (!TryParseResolution(GameSettings.GetString(GameSettings.Resolution), out res)) res = native;
-            res = FitInWorkArea(res, display);
-        }
+        Vector2Int native = NativeResolution();
+        Vector2Int res = mode == FullScreenMode.Windowed ? WindowSizeForKey(GameSettings.GetString(GameSettings.Resolution)) : native;
 
         Screen.SetResolution(res.x, res.y, mode);
         if (_displayFollowUp != null) StopCoroutine(_displayFollowUp);
-        _displayFollowUp = StartCoroutine(DisplayFollowUp(res, mode, display));
+        _displayFollowUp = StartCoroutine(DisplayFollowUp(res, mode));
     }
-
-    // Taille réelle de la fenêtre pour une résolution choisie, sur l'écran actuel : affichée telle quelle dans les Paramètres
-    // ("c'est écrit 1920x1080 alors que ça ne prend pas tout l'écran, il faut que ça corresponde à ce que ça dit").
-    public static Vector2Int WindowSizeFor(Vector2Int res) => FitInWorkArea(res, Screen.mainWindowDisplayInfo);
 
     // Résolution native de l'écran du jeu (celle des deux modes plein écran).
     public static Vector2Int NativeResolution()
@@ -418,18 +417,22 @@ public class SettingsApplier : MonoBehaviour
                            : new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
     }
 
-    private static Vector2Int FitInWorkArea(Vector2Int res, DisplayInfo display)
+    // Plus grand 16:9 qui tient dans l'espace libre de l'écran (sans la barre des tâches), cadre de la fenêtre compris.
+    public static Vector2Int WorkAreaWindowSize()
     {
-        RectInt area = display.workArea;
-        if (area.width <= 0 || area.height <= 0) area = new RectInt(0, 0, display.width, display.height);
-        if (area.width <= 0 || area.height <= 0) return res;
-        float scale = Mathf.Min(1f, (area.width - WindowSideMargin) / (float)res.x, (area.height - WindowVerticalMargin) / (float)res.y);
-        return new Vector2Int(Mathf.RoundToInt(res.x * scale), Mathf.RoundToInt(res.y * scale));
+        RectInt work = WorkAreaRect();
+        Vector2Int frame = WindowFrameSize();
+        int availW = Mathf.Max(320, work.width - frame.x);
+        int availH = Mathf.Max(180, work.height - frame.y);
+        int h = Mathf.Min(availH, Mathf.FloorToInt(availW * 9f / 16f));
+        int w = Mathf.RoundToInt(h * 16f / 9f);
+        if (w > availW) { w = availW; h = Mathf.FloorToInt(w * 9f / 16f); }
+        return new Vector2Int(w, h);
     }
 
     // Quelques images après le changement : le plein écran doit avoir pris la résolution demandée (sinon on la redemande),
-    // et une fenêtre est recentrée dans l'espace libre de son écran.
-    private System.Collections.IEnumerator DisplayFollowUp(Vector2Int res, FullScreenMode mode, DisplayInfo display)
+    // et une fenêtre est replacée dans l'espace libre de son écran.
+    private System.Collections.IEnumerator DisplayFollowUp(Vector2Int res, FullScreenMode mode)
     {
         for (int i = 0; i < 3; i++) yield return null;
         if (mode != FullScreenMode.Windowed)
@@ -439,16 +442,125 @@ public class SettingsApplier : MonoBehaviour
         }
         else
         {
-            RectInt area = display.workArea;
-            if (area.width <= 0 || area.height <= 0) area = new RectInt(0, 0, display.width, display.height);
-            Vector2Int pos = new Vector2Int(
-                area.x + Mathf.Max(0, (area.width - res.x) / 2),
-                area.y + Mathf.Max(0, (area.height - res.y) / 2) + WindowTitleOffset);
-            AsyncOperation op = Screen.MoveMainWindowTo(display, pos);
-            while (op != null && !op.isDone) yield return null;
+            if (Screen.width != res.x || Screen.height != res.y) Screen.SetResolution(res.x, res.y, mode);
+            yield return null;
+            PlaceWindowInWorkArea();
         }
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        _lastWindowTop = int.MinValue;
+#endif
         _displayFollowUp = null;
     }
+
+    // ---- fenêtre glissée en haut de l'écran = « Espace de travail » (AJOUTÉ 2026-11-15) --------------------------------
+    // Retour utilisateur : « si on glisse la fenêtre en haut de l'écran et qu'on relâche, elle passe en grand dans
+    // l'espace de travail, comme Windows ». La fenêtre reste non redimensionnable (toujours 16:9) : le jeu le fait lui-même.
+    // Bouton gauche relâché, haut de la fenêtre contre le haut de l'espace libre, taille différente de l'espace de travail
+    // -> choix « Espace de travail » (enregistré dans les Paramètres, comme si le joueur l'avait choisi).
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+    private float _snapCheckTimer;
+    private int _lastWindowTop = int.MinValue;
+#endif
+
+    private void UpdateWindowSnap()
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        if (Screen.fullScreenMode != FullScreenMode.Windowed || _displayFollowUp != null || !Application.isFocused) return;
+        _snapCheckTimer -= Time.unscaledDeltaTime;
+        if (_snapCheckTimer > 0f) return;
+        _snapCheckTimer = 0.2f;
+        if ((Win32.GetAsyncKeyState(0x01) & 0x8000) != 0) return;   // glissement en cours
+        System.IntPtr hwnd = Win32.GameWindow();
+        if (hwnd == System.IntPtr.Zero || !Win32.GetWindowRect(hwnd, out Win32.RECT wr)) return;
+        bool moved = _lastWindowTop != int.MinValue && wr.top != _lastWindowTop;
+        _lastWindowTop = wr.top;
+        if (!moved) return;
+        RectInt work = WorkAreaRect();
+        if (wr.top > work.y + 2) return;
+        Vector2Int target = WorkAreaWindowSize();
+        if (Screen.width == target.x && Screen.height == target.y) { PlaceWindowInWorkArea(); return; }
+        if (GameSettings.GetString(GameSettings.Resolution) == WorkAreaKey) ApplyDisplay();
+        else GameSettings.SetString(GameSettings.Resolution, WorkAreaKey);   // -> OnSettingChanged -> ApplyDisplay
+#endif
+    }
+
+    // Centre la fenêtre dans l'espace libre de son écran ; collée en haut si elle est aussi haute que lui.
+    private static void PlaceWindowInWorkArea()
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        System.IntPtr hwnd = Win32.GameWindow();
+        if (hwnd == System.IntPtr.Zero || !Win32.GetWindowRect(hwnd, out Win32.RECT wr)) return;
+        RectInt work = WorkAreaRect();
+        int w = wr.right - wr.left, h = wr.bottom - wr.top;
+        int x = work.x + Mathf.Max(0, (work.width - w) / 2);
+        int y = work.y + Mathf.Max(0, (work.height - h) / 2);
+        Win32.SetWindowPos(hwnd, System.IntPtr.Zero, x, y, 0, 0, Win32.SWP_NOSIZE | Win32.SWP_NOZORDER | Win32.SWP_NOACTIVATE);
+#endif
+    }
+
+    // Espace libre de l'écran de la fenêtre (sans la barre des tâches), en pixels du bureau.
+    private static RectInt WorkAreaRect()
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        System.IntPtr hwnd = Win32.GameWindow();
+        if (hwnd != System.IntPtr.Zero)
+        {
+            System.IntPtr mon = Win32.MonitorFromWindow(hwnd, 2 /* MONITOR_DEFAULTTONEAREST */);
+            Win32.MONITORINFO mi = new Win32.MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Win32.MONITORINFO)) };
+            if (mon != System.IntPtr.Zero && Win32.GetMonitorInfo(mon, ref mi))
+                return new RectInt(mi.rcWork.left, mi.rcWork.top, mi.rcWork.right - mi.rcWork.left, mi.rcWork.bottom - mi.rcWork.top);
+        }
+#endif
+        DisplayInfo d = Screen.mainWindowDisplayInfo;
+        RectInt area = d.workArea;
+        if (area.width <= 0 || area.height <= 0) area = new RectInt(0, 0, Mathf.Max(1024, d.width), Mathf.Max(576, d.height - 48));
+        return area;
+    }
+
+    // Place prise par le cadre de la fenêtre autour de la zone de jeu (barre de titre + bords), en pixels.
+    private static Vector2Int WindowFrameSize()
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        System.IntPtr hwnd = Win32.GameWindow();
+        if (hwnd != System.IntPtr.Zero && Screen.fullScreenMode == FullScreenMode.Windowed
+            && Win32.GetWindowRect(hwnd, out Win32.RECT wr) && Win32.GetClientRect(hwnd, out Win32.RECT cr))
+        {
+            int fw = (wr.right - wr.left) - (cr.right - cr.left), fh = (wr.bottom - wr.top) - (cr.bottom - cr.top);
+            if (fw >= 0 && fh > 0 && fh < 200) return new Vector2Int(fw, fh);
+        }
+#endif
+        return new Vector2Int(16, 39);   // valeurs Windows 10/11 à 100 % (barre de titre 31 + bords) quand on ne peut pas mesurer
+    }
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+    private static class Win32
+    {
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public struct RECT { public int left, top, right, bottom; }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public struct MONITORINFO { public int cbSize; public RECT rcMonitor; public RECT rcWork; public uint dwFlags; }
+
+        public const uint SWP_NOSIZE = 0x0001, SWP_NOZORDER = 0x0004, SWP_NOACTIVATE = 0x0010;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern System.IntPtr GetActiveWindow();
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern bool GetWindowRect(System.IntPtr hWnd, out RECT rect);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern bool GetClientRect(System.IntPtr hWnd, out RECT rect);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern System.IntPtr MonitorFromWindow(System.IntPtr hWnd, uint flags);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern bool GetMonitorInfo(System.IntPtr hMonitor, ref MONITORINFO info);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern bool SetWindowPos(System.IntPtr hWnd, System.IntPtr after, int x, int y, int cx, int cy, uint flags);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] public static extern short GetAsyncKeyState(int key);
+
+        private static System.IntPtr _hwnd;
+
+        // Fenêtre du jeu : mémorisée la première fois qu'elle est active (GetActiveWindow ne renvoie rien sans le focus).
+        public static System.IntPtr GameWindow()
+        {
+            if (_hwnd == System.IntPtr.Zero && Application.isFocused) _hwnd = GetActiveWindow();
+            return _hwnd;
+        }
+    }
+#endif
 
     private void ApplyQuality()
     {

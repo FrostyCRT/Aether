@@ -57,9 +57,21 @@ public class ProjectileBasic : MonoBehaviour
     // Ricochet (fusion), donc une seule traînée ici profite à 4 armes/fusions d'un coup. Couleur = _damageColor
     // (déjà par-arme, voir plus haut), donc chaque traînée reste identifiable comme les chiffres de dégâts.
     private TrailRenderer _trail;
+    private Vector3 _baseScale = Vector3.one;
+    private float _sizeScale = 1f;
+
+    // AJOUTÉ (2026-11-15, carte Couteaux « Lames larges ») - grossit le projectile (visuel + collider déclencheur, donc
+    // bande de touche plus large) et sa traînée. Remis à x1 par Init (projectile recyclé).
+    public void SetSizeScale(float scale)
+    {
+        _sizeScale = Mathf.Max(0.1f, scale);
+        transform.localScale = _baseScale * _sizeScale;
+        _trail.widthMultiplier = TrailWidth * _sizeScale;
+    }
 
     private void Awake()
     {
+        _baseScale = transform.localScale;
         _maxRangeSqr = _maxRange * _maxRange;
         _poolKey = name.Replace("(Clone)", "").Trim();
 
@@ -96,7 +108,12 @@ public class ProjectileBasic : MonoBehaviour
         _ricochetsLeft = 0;
         _hitInstanceIds.Clear();
         _pendingBosses.Clear();
+        _boomerangOwner = null;
+        _returning = false;
+        _boomerangLife = 0f;
 
+        _sizeScale = 1f;
+        transform.localScale = _baseScale;
         _trail.Clear(); // sans ça, un projectile recyclé depuis le pool dessinerait une traînée depuis sa position précédente
         _trail.startColor = FXSprites.A(_damageColor, 0.7f);
         _trail.widthMultiplier = TrailWidth;
@@ -141,6 +158,52 @@ public class ProjectileBasic : MonoBehaviour
         _burnDuration = duration;
     }
 
+    // AJOUTÉ (2026-11-15, couteaux de Lyra, choix D de l'utilisateur) - boomerang : après outDistance (ou quand sa
+    // perforation est épuisée), le projectile revient vers son lanceur en le suivant, avec une perforation neuve et la
+    // liste des ennemis touchés remise à zéro (il peut donc toucher une 2e fois les mêmes). Rattrapé à 0,8 du lanceur.
+    private Transform _boomerangOwner;
+    private bool _returning;
+    private float _boomerangOut, _boomerangLife;
+    private const float BoomerangReturnSpeedFactor = 1.2f, BoomerangCatchDistance = 0.8f, BoomerangMaxLife = 4f;
+
+    public void SetBoomerang(Transform owner, float outDistance)
+    {
+        _boomerangOwner = owner;
+        _boomerangOut = Mathf.Max(1f, outDistance);
+        _returning = false;
+        _boomerangLife = 0f;
+    }
+
+    private void StartReturn()
+    {
+        _returning = true;
+        _currentPierceHits = 0;
+        _hitInstanceIds.Clear();
+        _pendingBosses.Clear();
+    }
+
+    // Vrai si le projectile s'est occupé lui-même de son déplacement (boomerang) ; faux = trajectoire normale.
+    private bool UpdateBoomerang()
+    {
+        if (_boomerangOwner == null) return false;
+        _boomerangLife += Time.deltaTime;
+        if (_boomerangLife > BoomerangMaxLife || !_boomerangOwner.gameObject.activeInHierarchy) { ReturnToPool(); return true; }
+        if (!_returning)
+        {
+            transform.position += _direction * _speed * Time.deltaTime;
+            if ((transform.position - _startPosition).sqrMagnitude >= _boomerangOut * _boomerangOut) StartReturn();
+            return true;
+        }
+        Vector3 target = _boomerangOwner.position;
+        target.y = transform.position.y;
+        Vector3 to = target - transform.position;
+        float dist = to.magnitude;
+        if (dist <= BoomerangCatchDistance) { ReturnToPool(); return true; }
+        _direction = to / dist;
+        transform.position += _direction * Mathf.Min(dist, _speed * BoomerangReturnSpeedFactor * Time.deltaTime);
+        return true;
+    }
+
     public void SetPiercing(bool active, int maxPierceCount)
     {
         _hasPiercing = active;
@@ -155,7 +218,9 @@ public class ProjectileBasic : MonoBehaviour
 
     private void Update()
     {
-        transform.position += _direction * _speed * Time.deltaTime;
+        bool boomerang = UpdateBoomerang();
+        if (!gameObject.activeSelf) return;
+        if (!boomerang) transform.position += _direction * _speed * Time.deltaTime;
         for (int i = _pendingBosses.Count - 1; i >= 0 && gameObject.activeSelf; i--)
         {
             Collider c = _pendingBosses[i];
@@ -167,7 +232,7 @@ public class ProjectileBasic : MonoBehaviour
                 HandleHit(c);
             }
         }
-        if (!gameObject.activeSelf) return;
+        if (!gameObject.activeSelf || boomerang) return;
         float distanceTravelledSqr = (transform.position - _startPosition).sqrMagnitude;
         if (distanceTravelledSqr >= _maxRangeSqr)
         {
@@ -251,6 +316,9 @@ public class ProjectileBasic : MonoBehaviour
 
         if (_hasRicochet && _ricochetsLeft > 0 && TryRicochet())
             return;
+
+        // Boomerang : perforation épuisée à l'aller -> demi-tour au lieu de disparaître.
+        if (_boomerangOwner != null && !_returning) { StartReturn(); return; }
 
         ReturnToPool();
     }

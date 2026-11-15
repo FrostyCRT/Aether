@@ -19,6 +19,10 @@ public class LevelUpManager : MonoBehaviour
     private List<UpgradeData> _currentChoices = new List<UpgradeData>();
     private List<string> _chosenUpgrades = new List<string>();
     private int _pendingLevelUps = 0;
+    // AJOUTÉ (2026-11-14) - vrai pendant une rafale de choix (coffre, plusieurs niveaux d'un coup) : UpgradeUI accélère
+    // alors sa roulette. Lu au moment de l'affichage, _pendingLevelUps déjà décrémenté pour le choix en cours.
+    private bool _chainedPick;
+    public bool IsChainedPick => _pendingLevelUps > 0 || _chainedPick;
     private bool _waitingForChoice = false;
     private float _delayTimer = 0f;
     private bool _showingDelay = false;
@@ -107,6 +111,7 @@ public class LevelUpManager : MonoBehaviour
         _showingDelay = false;
         _preShowPending = false;
         _pendingLevelUps = 0;
+        _chainedPick = false;
 
         if (_levelUpPanel != null)
             _levelUpPanel.SetActive(false);
@@ -312,6 +317,7 @@ public class LevelUpManager : MonoBehaviour
         UpgradeData chosen = _currentChoices[index];
 
         chosen.Apply();
+        Grimoire.DiscoverUpgrade(chosen);   // 1re fois qu'on prend cette carte / fusion : entrée du Grimoire + prime
 
         _chosenUpgrades.Add(chosen.upgradeName);
 
@@ -328,6 +334,7 @@ public class LevelUpManager : MonoBehaviour
             if (health != null) health.SetInvincible();
         }
 
+        _chainedPick = _pendingLevelUps > 0;
         if (_pendingLevelUps > 0)
         {
             _showingDelay = true;
@@ -360,6 +367,18 @@ public class LevelUpManager : MonoBehaviour
                 pool.Add(upgrade);
         }
 
+        // AJOUTÉ (2026-11-14, retour utilisateur : « ne pas proposer Soin si la vie est à plus de 75 %, et si elle est en
+        // dessous de 25 %, un plus grand pourcentage que Soin apparaisse ») - retirée du tirage au-dessus de 75 % (sauf
+        // si c'est la seule carte restante : build complet), poids x HealLowHealthWeight sous 25 %.
+        float healthRatio = PlayerHealthRatio();
+        UpgradeData heal = pool.Find(u => u.upgradeType == UpgradeType.Heal);
+        if (heal != null && healthRatio > HealHideAboveRatio && pool.Count > 1)
+        {
+            pool.Remove(heal);
+            heal = null;
+        }
+        int healWeight = heal != null && healthRatio < HealBoostBelowRatio ? HealLowHealthWeight : 1;
+
         List<UpgradeData> result = new List<UpgradeData>();
         count = Mathf.Min(count, pool.Count);
 
@@ -381,11 +400,28 @@ public class LevelUpManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             int randomIndex = Random.Range(0, pool.Count);
+            // Soin pèse healWeight cartes : tirage dans [0, pool.Count + healWeight - 1[, les dernières valeurs = Soin.
+            if (healWeight > 1 && pool.Contains(heal))
+            {
+                int roll = Random.Range(0, pool.Count + healWeight - 1);
+                randomIndex = roll >= pool.Count ? pool.IndexOf(heal) : roll;
+            }
             result.Add(pool[randomIndex]);
             pool.RemoveAt(randomIndex);
         }
 
         return result;
+    }
+
+    private const float HealHideAboveRatio = 0.75f;
+    private const float HealBoostBelowRatio = 0.25f;
+    private const int HealLowHealthWeight = 3;
+
+    private static float PlayerHealthRatio()
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player == null || !player.TryGetComponent(out HealthSystem health) || health.MaxHealth <= 0f) return 0.5f;
+        return health.CurrentHealth / health.MaxHealth;
     }
 
     // AJOUTE - retrouve, dans le pool disponible, l'UpgradeData correspondant a

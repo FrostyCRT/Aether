@@ -66,43 +66,40 @@ public static class SettingsSchema
     // en fenêtré, la taille réelle de la fenêtre ; en plein écran (avec ou sans bordure), la résolution native de l'écran.
     private static bool IsWindowed => GameSettings.GetInt(GameSettings.DisplayMode) == 2;
 
+    // MODIFIÉ (2026-11-15) - en fenêtré : formats 16:9 + « Espace de travail (L × H) » (SettingsApplier.WindowedResolutionKeys) ;
+    // en plein écran : la seule résolution native (ligne grisée).
     private static string[] ResolutionNames()
     {
-        List<Vector2Int> list = SettingsApplier.AvailableResolutions();
-        string[] n = new string[list.Count];
-        for (int i = 0; i < n.Length; i++)
+        if (!IsWindowed)
         {
-            // en fenêtré : la taille réellement prise par la fenêtre (réduite pour tenir au-dessus de la barre des tâches)
-            Vector2Int size = IsWindowed ? SettingsApplier.WindowSizeFor(list[i]) : list[i];
-            n[i] = size.x + " × " + size.y;
+            Vector2Int n = SettingsApplier.NativeResolution();
+            return new[] { n.x + " × " + n.y };
         }
-        return n;
+        List<string> keys = SettingsApplier.WindowedResolutionKeys();
+        string[] names = new string[keys.Count];
+        for (int i = 0; i < names.Length; i++)
+        {
+            Vector2Int size = SettingsApplier.WindowSizeForKey(keys[i]);
+            string dims = size.x + " × " + size.y;
+            names[i] = keys[i] == SettingsApplier.WorkAreaKey ? Loc.F("Espace de travail ({0})", dims) : dims;
+        }
+        return names;
     }
 
     private static int ResolutionIndex()
     {
-        List<Vector2Int> list = SettingsApplier.AvailableResolutions();
-        if (!IsWindowed)
-        {
-            int native = list.IndexOf(SettingsApplier.NativeResolution());
-            return native >= 0 ? native : list.Count - 1;
-        }
-        if (SettingsApplier.TryParseResolution(GameSettings.GetString(GameSettings.Resolution), out Vector2Int saved))
-        {
-            int i = list.IndexOf(saved);
-            if (i >= 0) return i;
-        }
-        // rien d'enregistré (ou résolution disparue) : la résolution actuelle de la fenêtre
-        Vector2Int cur = new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height);
-        int idx = list.IndexOf(cur);
-        return idx >= 0 ? idx : list.Count - 1;
+        if (!IsWindowed) return 0;
+        List<string> keys = SettingsApplier.WindowedResolutionKeys();
+        int i = keys.IndexOf(GameSettings.GetString(GameSettings.Resolution));
+        return i >= 0 ? i : keys.Count - 1;   // rien d'enregistré, ou ancienne résolution hors liste : Espace de travail
     }
 
     private static void SetResolutionIndex(int i)
     {
-        List<Vector2Int> list = SettingsApplier.AvailableResolutions();
-        if (i < 0 || i >= list.Count) return;
-        GameSettings.SetString(GameSettings.Resolution, SettingsApplier.ResolutionKey(list[i]));
+        if (!IsWindowed) return;
+        List<string> keys = SettingsApplier.WindowedResolutionKeys();
+        if (i < 0 || i >= keys.Count) return;
+        GameSettings.SetString(GameSettings.Resolution, keys[i]);
     }
 
     // AJOUTÉ (2026-10-29, retour utilisateur : "choisir sur quel écran le joueur veut que le jeu s'affiche, dans les

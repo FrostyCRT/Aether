@@ -1,21 +1,18 @@
 C:\Users\jules\My project\Aether Storm Survivor
 npx @anthropic-ai/claude-code
-C:\Users\jules\My project\Aether
 instagram-skill Plugin claude pour tout le côté marketing de Insta.
 https://github.com/Panniantong/Agent-Reach.git
 
 
 Mode coop ? deux joueurs dans la partie.
 
-loading screen, barre de chargement, revoir les timing, rendre la progression 
-
 dans le tuto, faire en sorte que au début, aucun personnage n'est sélectionner, et que donc le fond d'écran est sans Aether et son baton, une fois que dans le tuto on passe au personnage, et qu'on le sélectionne, et qu'on revient dans l'accueil, là on voit la petite fondue avec Aether et son baton. L'animation est déjà en place dans le code, il faut juste garder cette idée en tête.
 Il faut aussi lancer cette animation à chaque fois que on change de scene, et qu'on revient dans la scene menu, ça fait la fondue du personnage qui arrive
 
-##
-Dans la nouvelle session, tu peux simplement écrire : « lis la section REPRENDRE ICI de NOTES.md ». Et pense à refaire une build : rien de ces trois jours n'a encore été testé hors de l'éditeur.
+Lyra est tournée quand elle marche, ça doit être à cause du moment où tu l'a redressée, ça à fait la même chose avec Aether quand tu l'avait redressé, après pendant sa marche il est tourné et ne marchait plus droit. Il faut que tu mette son LyraTripo rotation en y = 0 quand elle marche
 
+il faut revoir ce que font les autres up de la carte Couteaux, pour le +1 couteau c'est bon, mais pour les autres, ça ne va pas. Pour un des 2 on peut augmenter la range, que les couteaux partent plus loin.
 
+mettre la même bordure que le pause panel pour le Victory panel et le game over panel.
 
-
-
+Enlève le boost de dégâts qu'on avait mis à Lyra, maintenant qu'elle a plus de sources de dégâts, elle en met trop maintenant. Donc remet au même niveau que les autres personnages.

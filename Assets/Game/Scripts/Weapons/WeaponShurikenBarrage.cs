@@ -2,22 +2,45 @@ using UnityEngine;
 public class WeaponShurikenBarrage : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField] private float _damage = 180f; // MODIFIE - x10, cf. rescale global des degats/PV ; MODIFIÉ (2026-11-11) 120 -> 180 (+50 %), Lyra tuait ~2x moins qu Aether et Kael
-    [SerializeField] private float _fireRate = 0.4f;
+    // MODIFIÉ (2026-11-15, retour utilisateur : « Lyra ne tue pas assez vite, elle n'a que des couteaux, le buff de dégâts
+    // n'était pas ce qui faisait la différence » ; choix A + C + D de l'utilisateur) - l'arme tirait RAREMENT (1 salve
+    // toutes les 2,5 s) et EN LIGNE, alors qu'Aether (explosions) et Kael (aura permanente) touchent une zone : rien ne
+    // nettoyait autour de Lyra entre deux salves. Maintenant :
+    //  A. salve 2x plus fréquente (0,4 -> 0,8 / s), couteau un peu moins fort (180 -> 150), perforation 2 -> 3 ;
+    //  C. 3 couteaux de base en éventail ; 4 au palier « +1 couteau » : 2 côte à côte au centre (presque x2 sur la cible
+    //     visée, idée de l'utilisateur) + 1 de chaque côté ;
+    //  D. couteaux boomerang : arrivés au bout de leur aller (ou à court de perforation), ils reviennent vers Lyra et
+    //     peuvent toucher une 2e fois (ProjectileBasic.SetBoomerang).
+    // Les valeurs d'avant restent la référence de la fusion Lames Ricochet (voir FusionInheritedDamage).
+    // Réglage mesuré (arme seule au maximum, 4:30 en Violent, 45 s dans la horde) : 2,4-2,6 kills/s contre 2,8 pour la
+    // Boule de feu d'Aether et 1,3 pour l'Aura de Kael (avant : ~1,8 avec 110 / 0,65) ; Lame fantôme et explosion du
+    // clone en plus en vraie partie.
+    [SerializeField] private float _damage = 150f;
+    [SerializeField] private float _fireRate = 0.8f;
+    private const float LegacyBaseDamage = 180f, NewBaseDamage = 150f;
     [SerializeField] private float _detectionRange = 15f;
 
     // MODIFIE - reduit de 3 a 2 par couteau : la salve tire maintenant PLUSIEURS
     // couteaux simultanement (voir _knifeCount ci-dessous), donc chacun perce un
     // peu moins pour ne pas cumuler une perforation totale demesuree des le depart.
-    [SerializeField] private int _maxPierceCount = 2;
+    [SerializeField] private int _maxPierceCount = 3;
 
     // AJOUTE - c'est le coeur de la nouvelle identite "salve" : plusieurs couteaux
     // partent en meme temps en eventail, plutot qu'un seul tir precis comme le tir
     // de base. Base = 2, +1 au palier 1 de la carte.
     [Header("Salve (eventail)")]
-    [SerializeField] private int _knifeCount = 2;
+    [SerializeField] private int _knifeCount = 3;
     [Tooltip("Ecart angulaire entre deux couteaux adjacents de la salve, en degres.")]
-    [SerializeField] private float _fanAngleSpread = 15f;
+    [SerializeField] private float _fanAngleSpread = 18f;
+    [Tooltip("Nombre pair de couteaux : écart latéral de la paire centrale (les deux partent droit sur la cible).")]
+    [SerializeField] private float _centerPairOffset = 0.28f;
+
+    [Header("Boomerang")]
+    [Tooltip("Distance de l'aller avant le retour vers Lyra.")]
+    [SerializeField] private float _boomerangOutDistance = 9f;
+    // AJOUTÉ (2026-11-15, retour utilisateur : les cartes « +35 % cadence » et « +2 perforations » ne lui plaisaient pas)
+    // - paliers 2 et 3 de la carte : Portée (aller plus long) et Lames larges (couteaux plus gros = bande de touche plus large).
+    [SerializeField] private float _knifeSizeScale = 1f;
 
     private float _cooldownTimer = 0f;
     private static readonly Collider[] _detectionBuffer = new Collider[50];
@@ -26,7 +49,6 @@ public class WeaponShurikenBarrage : MonoBehaviour
     // une paire symetrique complete, ex: le 2e couteau sur une salve de base a 2
     // couteaux) d'un tir a l'autre, pour rester equilibre visuellement sur la
     // duree plutot que de toujours tirer du meme cote.
-    private bool _nextOddFlankOnRight = true;
 
     // AJOUTE - Knives n'appliquait jamais le bonus de Reputation Degats, meme
     // manque que Fireball et Aura.
@@ -72,41 +94,30 @@ public class WeaponShurikenBarrage : MonoBehaviour
         }
     }
 
-    // MODIFIE - un couteau part TOUJOURS pile au centre (garanti de toucher la
-    // cible verrouillee par FindNearestEnemy), les couteaux supplementaires
-    // s'ajoutent ensuite en PAIRES symetriques de part et d'autre. Avant ce
-    // correctif, une repartition purement symetrique sur un nombre PAIR de
-    // couteaux (2 a la base) ne tirait jamais droit sur la cible - les deux
-    // partaient decales de chaque cote (+7.5/-7.5 degres), ratant systematiquement
-    // un ennemi isole droit devant. Desormais : 2 couteaux -> [0, +15] (centre +
-    // 1 flanc, alterne de cote a chaque tir). 3 couteaux -> [0, +15, -15], un
-    // eventail symetrique complet avec le centre garanti.
-    // HYPOTHESE - rotation autour de Vector3.up, coherent avec un jeu sur le plan
-    // XZ (comme le reste du code, direction.y = 0f partout). Si le jeu est en 2D
-    // pur (plan XY), dis-le-moi et j'adapte l'axe de rotation.
+    // MODIFIÉ (2026-11-15) - disposition (choix de l'utilisateur) :
+    //  - nombre IMPAIR : 1 couteau pile au centre + des paires symétriques à ±18°, ±36°... (3 de base = centre, ±18°) ;
+    //  - nombre PAIR : 2 couteaux côte à côte au centre (décalés de ±0,28 sur le côté, tous deux droit sur la cible
+    //    verrouillée : presque x2 sur elle) + des paires à ±18°, ±36°... (4 = paire centrale, ±18°).
     private void FireSalvo(Vector3 centerDirection)
     {
-        // Le couteau central, toujours tire, quel que soit _knifeCount.
-        FireProjectile(centerDirection);
-
-        int extraKnives = _knifeCount - 1;
-        if (extraKnives <= 0) return;
-
-        int pairCount = extraKnives / 2;
-        bool hasOddFlank = extraKnives % 2 == 1;
-
-        for (int p = 1; p <= pairCount; p++)
+        Vector3 side = Vector3.Cross(Vector3.up, centerDirection).normalized;
+        int pairs;
+        if (_knifeCount % 2 == 1)
+        {
+            FireProjectile(centerDirection, Vector3.zero);
+            pairs = (_knifeCount - 1) / 2;
+        }
+        else
+        {
+            FireProjectile(centerDirection, side * _centerPairOffset);
+            FireProjectile(centerDirection, -side * _centerPairOffset);
+            pairs = (_knifeCount - 2) / 2;
+        }
+        for (int p = 1; p <= pairs; p++)
         {
             float angle = _fanAngleSpread * p;
-            FireProjectile(Quaternion.AngleAxis(angle, Vector3.up) * centerDirection);
-            FireProjectile(Quaternion.AngleAxis(-angle, Vector3.up) * centerDirection);
-        }
-
-        if (hasOddFlank)
-        {
-            float angle = _fanAngleSpread * (pairCount + 1) * (_nextOddFlankOnRight ? 1f : -1f);
-            FireProjectile(Quaternion.AngleAxis(angle, Vector3.up) * centerDirection);
-            _nextOddFlankOnRight = !_nextOddFlankOnRight;
+            FireProjectile(Quaternion.AngleAxis(angle, Vector3.up) * centerDirection, Vector3.zero);
+            FireProjectile(Quaternion.AngleAxis(-angle, Vector3.up) * centerDirection, Vector3.zero);
         }
     }
 
@@ -128,16 +139,18 @@ public class WeaponShurikenBarrage : MonoBehaviour
         }
         return nearest;
     }
-    private void FireProjectile(Vector3 direction)
+    private void FireProjectile(Vector3 direction, Vector3 offset)
     {
         if (ObjectPool.Instance == null) return;
-        GameObject projectileGO = ObjectPool.Instance.Get("ProjectileShuriken", transform.position, Quaternion.identity);
+        GameObject projectileGO = ObjectPool.Instance.Get("ProjectileShuriken", transform.position + offset, Quaternion.identity);
         if (projectileGO == null) return;
         projectileGO.TryGetComponent(out ProjectileBasic projectile);
         if (projectile != null)
         {
             projectile.Init(direction, _damage * PlayerBuffs.OutgoingDamageMultiplier, DamageNumberSpawner.ColorKnives); // + Concentration / Surpuissance (2026-10-16, audit)
             projectile.SetPiercing(true, _maxPierceCount);
+            projectile.SetBoomerang(transform, _boomerangOutDistance);
+            if (_knifeSizeScale != 1f) projectile.SetSizeScale(_knifeSizeScale);
         }
     }
     public void AddDamage(float value) => _damage += _damage * value;
@@ -145,6 +158,9 @@ public class WeaponShurikenBarrage : MonoBehaviour
 
     // Lu par UpgradeData.ApplyFusionResult() pour hériter des dégâts déjà accumulés au moment d'une fusion.
     public float CurrentDamage => _damage;
+    // Fusion Lames Ricochet : réglée sur les couteaux d'avant le 2026-11-15 (180 de base) ; elle hérite de la même valeur
+    // qu'avant pour ne pas devenir plus faible parce que le couteau seul a baissé (il tire plus souvent et revient).
+    public float FusionInheritedDamage => _damage * (LegacyBaseDamage / NewBaseDamage);
 
     // AJOUTE - palier 1 : +1 couteau a la salve.
     public void AddKnife() => _knifeCount += 1;
@@ -152,4 +168,16 @@ public class WeaponShurikenBarrage : MonoBehaviour
 
     // Appele par le palier 3 de la carte Couteaux
     public void AddPierce(int amount) => _maxPierceCount += Mathf.Max(1, amount);
+
+    // Palier 2 de la carte : les couteaux vont plus loin avant de revenir (+value mètres) ; la détection suit.
+    public void AddRange(float meters)
+    {
+        _boomerangOutDistance += meters;
+        _detectionRange = Mathf.Max(_detectionRange, _boomerangOutDistance + 4f);
+    }
+    public float OutDistance => _boomerangOutDistance;
+
+    // Palier 3 de la carte : couteaux plus gros (x value).
+    public void SetKnifeSize(float scale) => _knifeSizeScale = Mathf.Max(1f, scale);
+    public float KnifeSize => _knifeSizeScale;
 }

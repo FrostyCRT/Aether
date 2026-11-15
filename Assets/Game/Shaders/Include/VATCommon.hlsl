@@ -34,7 +34,40 @@ CBUFFER_END
 UNITY_INSTANCING_BUFFER_START(VatPerInstance)
     UNITY_DEFINE_INSTANCED_PROP(float, _VatFrame)
     UNITY_DEFINE_INSTANCED_PROP(float, _VatFrameNext)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Dissolve)
 UNITY_INSTANCING_BUFFER_END(VatPerInstance)
+
+// AJOUTÉ (2026-11-14, retour utilisateur : « quand les ennemis meurent [...] ils dépopent juste, on peut faire une fondue
+// rapide ? ») - fondu de la copie laissée par un ennemi mort (EnemyDeathDissolve) : _Dissolve 0 -> 1 en ~0,35 s.
+// MODIFIÉ (même jour, 2e retour : la 1re version, dissolution en blocs de pixels, « fait jeu rétro, pas dans la DA ») - vrai
+// fondu en transparence : la copie utilise une variante transparente du matériau (Blend SrcAlpha OneMinusSrcAlpha, file
+// Transparent), ApplyVatDeathFade règle son alpha. Seules les copies (quelques-unes à la fois) sont transparentes, jamais les
+// ennemis vivants : pour eux _Dissolve = 0 et rien ne change. L'ombre portée, elle, s'efface en pointillé
+// (ApplyVatDissolveClip, passe ShadowCaster seulement : une ombre n'a pas de transparence, et ce pointillé doux ne se voit
+// pas). Propriété PAR INSTANCE comme _VatFrame : aucune incidence sur le regroupement GPU.
+float VatDissolveNoise(float2 pixel)
+{
+    float2 cell = floor(pixel / 3.0);
+    return frac(sin(dot(cell, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+void ApplyVatDissolveClip(float4 positionCS)
+{
+    float d = UNITY_ACCESS_INSTANCED_PROP(VatPerInstance, _Dissolve);
+    if (d > 0.0) clip(VatDissolveNoise(positionCS.xy) - d);
+}
+
+// Alpha = 1 - _Dissolve, avec un léger éclaircissement chaud au tout début (le coup qui tue). Sans effet sur un matériau
+// opaque (Blend One Zero ignore l'alpha) : seul le matériau transparent de la copie en tient compte.
+half4 ApplyVatDeathFade(half4 color)
+{
+    float d = UNITY_ACCESS_INSTANCED_PROP(VatPerInstance, _Dissolve);
+    if (d <= 0.0) return color;
+    float flash = saturate(1.0 - d / 0.3);
+    color.rgb = lerp(color.rgb, half3(1.0, 0.96, 0.88), flash * 0.35);
+    color.a = 1.0 - d;
+    return color;
+}
 
 // vertexU : coordonnee horizontale du sommet dans la texture VAT, precalculee a la cuisson et stockee dans un
 // canal UV libre du mesh (voir VATBaker.cs - canal uv4/TEXCOORD3, inutilise par LitForwardPass.hlsl de base).

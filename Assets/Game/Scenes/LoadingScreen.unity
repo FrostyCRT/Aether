@@ -506,7 +506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &835532498
 RectTransform:
   m_ObjectHideFlags: 0
@@ -669,6 +669,72 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!1 &874566323
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 874566324}
+  - component: {fileID: 874566325}
+  m_Layer: 0
+  m_Name: ForestAmbience
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &874566324
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874566323}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1605876534}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &874566325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874566323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3baa37ef8a389f41a92c40bf6a41b86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _additiveMaterial: {fileID: 2100000, guid: c13846b14f09c014fbeb531585f65342, type: 2}
+  _fogColor: {r: 0.8, g: 0.88, b: 0.9, a: 1}
+  _fogAlphaBack: 0.22
+  _fogAlphaFront: 0.26
+  _shaftOrigin: {x: 0.385, y: 1.02}
+  _shaftAngle: 16
+  _shaftPeakAlpha: 0.75
+  _dustCount: 26
+  _leafCount: 6
+  _leafSize: {x: 22, y: 38}
+  _wind: 24
+  _leafLife: {x: 5, y: 9}
+  _maxStreaks: 2
+  _streakInterval: {x: 2.2, y: 4.5}
+  _streakAlpha: 0.75
+  _foreground: {fileID: 21300000, guid: 641b9f83a95ba934093a803d250feee9, type: 3}
+  _foregroundAnchorMin: {x: 0.13698, y: 0.10278}
+  _foregroundAnchorMax: {x: 0.84688, y: 0.73426}
 --- !u!1 &971286323
 GameObject:
   m_ObjectHideFlags: 0
@@ -1172,7 +1238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1086551077
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1786,6 +1852,7 @@ RectTransform:
   m_LocalScale: {x: 1.05, y: 1.05, z: 1.05}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 874566324}
   - {fileID: 1075781966}
   - {fileID: 2030153597}
   m_Father: {fileID: 1227585762}

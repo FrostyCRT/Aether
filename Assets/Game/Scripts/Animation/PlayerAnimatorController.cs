@@ -7,6 +7,16 @@ public class PlayerAnimatorController : MonoBehaviour
     private Animator _animator;
     private bool _hasWalkRate;
 
+    // AJOUTÉ (2026-11-15, retour utilisateur : « Lyra est tournée quand elle marche [...] mets son LyraTripo rotation en
+    // y = 0 quand elle marche ») - le modèle de Lyra garde ses 20° de rotation (réglés pour l'attente) seulement à l'arrêt ;
+    // en marche il revient à 0° (sinon la foulée part de travers, même souci qu'Aether avant). Fondu court (~0,15 s) pour
+    // suivre la transition Attente <-> Marche de l'Animator. Coché seulement sur Player_Lyra.
+    [SerializeField] private bool _straightenModelWhenWalking;
+    private Transform _straightenModel;
+    private float _idleYaw, _walkBlend;
+    private bool _walking;
+    private const float StraightenSpeed = 7f;
+
     void Awake()
     {
         // Cherche d'abord sur cet objet, puis dans les enfants
@@ -18,12 +28,36 @@ public class PlayerAnimatorController : MonoBehaviour
         else
             foreach (AnimatorControllerParameter p in _animator.parameters)
                 if (p.nameHash == WalkRateId) _hasWalkRate = true;
+
+        // Player_Lyra porte 2 exemplaires de ce composant (racine + LyraTripo) : seul celui de la racine reçoit SetWalking ;
+        // celui du modèle remettrait l'angle d'attente à chaque image, il ne s'en occupe donc pas.
+        bool outermost = transform.parent == null || transform.parent.GetComponentInParent<PlayerAnimatorController>() == null;
+        if (_straightenModelWhenWalking && outermost && _animator != null)
+        {
+            _straightenModel = _animator.transform;
+            _idleYaw = _straightenModel.localEulerAngles.y;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (_straightenModel == null) return;
+        _walkBlend = Mathf.MoveTowards(_walkBlend, _walking ? 1f : 0f, Time.deltaTime * StraightenSpeed);
+        ApplyStraighten();
+    }
+
+    private void ApplyStraighten()
+    {
+        Vector3 e = _straightenModel.localEulerAngles;
+        e.y = Mathf.LerpAngle(_idleYaw, 0f, _walkBlend);
+        _straightenModel.localEulerAngles = e;
     }
 
     public void SetWalking(bool isMoving)
     {
         if (_animator == null) return;
         _animator.SetBool("IsWalking", isMoving);
+        _walking = isMoving;
     }
 
     // AJOUTÉ (2026-11-08, retour utilisateur : "l'animation de walk [doit] être plus rapide par rapport à la vitesse du personnage,
@@ -56,5 +90,6 @@ public class PlayerAnimatorController : MonoBehaviour
         if (_animator == null) return;
         _animator.Play("Idle", 0, 0f);
         _animator.Update(0f);
+        if (_straightenModel != null) { _walkBlend = 0f; ApplyStraighten(); }
     }
 }

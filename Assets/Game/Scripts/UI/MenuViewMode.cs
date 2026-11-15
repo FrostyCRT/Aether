@@ -22,7 +22,7 @@ public class MenuViewMode : MonoBehaviour
         { "MenuBackground", "SettingsBackground", "PanelBackground", "Background", "Ambient" };
 
     private const float Fade = 0.3f;
-    private const float ButtonSize = 48f, Margin = 14f;
+    private const float ButtonSize = 56f, Margin = 14f;
 
     private MainMenuManager _menu;
     private RectTransform _canvasRect;
@@ -102,7 +102,7 @@ public class MenuViewMode : MonoBehaviour
 
         _icon = new GameObject("Eye", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
         _icon.transform.SetParent(_button, false);
-        Stretch(_icon.rectTransform, 10f);
+        Stretch(_icon.rectTransform, 12f);
         _icon.sprite = _eyeSprite;
         _icon.preserveAspect = true;
         _icon.color = new Color(0.95f, 0.88f, 0.72f, 1f);

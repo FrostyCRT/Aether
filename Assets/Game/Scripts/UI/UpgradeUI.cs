@@ -722,6 +722,48 @@ public class UpgradeUI : MonoBehaviour
     // StopIntro) - vérifié dans OnCardSelected(), le point d'entrée COMMUN à la souris et au clavier.
     private bool _introPlaying = false;
 
+    // AJOUTÉ (2026-11-14, retour utilisateur : « rendre l'animation de la roulette plus rapide quand on a 2 ou plus
+    // améliorations d'affilée [...] ou si on clique sur l'écran ça skip l'animation ») - les deux :
+    //  - rafale (coffre, plusieurs niveaux d'un coup, voir LevelUpManager.IsChainedPick) : toute l'intro x ChainedIntroSpeed ;
+    //  - un appui VOLONTAIRE pendant l'intro la termine d'un coup (StopIntro), voir SkipPressed. Ce même appui ne choisit
+    //    jamais de carte : le clic souris est ignoré jusqu'à son relâchement (_skipSwallow).
+    // CORRIGÉ (2026-11-14, retour utilisateur : « si on reste appuyé sur une touche, par exemple avancer, et que le level up
+    // panel arrive, la touche pressée est comptabilisée pour skip ») - le saut acceptait N'IMPORTE QUELLE touche
+    // (GameInput.AnyDown) : un déplacement, un dash ou un changement de direction au moment où le panneau s'ouvre sautait la
+    // roulette. Et le verrou se levait seulement quand TOUT était relâché (!Input.anyKey) : avec « avancer » maintenu, plus
+    // aucune carte ne pouvait être choisie à la souris. Désormais : seuls le clic, Entrée, les touches de cartes et A /
+    // Croix de la manette sautent, jamais pendant les SkipGraceSeconds premières secondes ; le verrou ne suit que le clic.
+    private const float ChainedIntroSpeed = 2f;
+    private const float SkipGraceSeconds = 0.2f;
+    private bool _skipSwallow;
+    private int _skipFrame;
+    private float _introStartTime;
+
+    private static bool SkipPressed()
+    {
+        return GameInput.PointerClickDown()
+            || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || GameInput.Down(GameAction.Card1) || GameInput.Down(GameAction.Card2) || GameInput.Down(GameAction.Card3)
+            || GameInput.PadDown(PadButton.South);
+    }
+
+    private void Update()
+    {
+        if (_introPlaying && Time.unscaledTime - _introStartTime >= SkipGraceSeconds && SkipPressed())
+        {
+            StopIntro();
+            _skipSwallow = true;
+            _skipFrame = Time.frameCount;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        // après l'EventSystem : le onClick du relâchement du clic qui a sauté l'intro a déjà été ignoré quand on lève le verrou.
+        // Les touches (Entrée, 1/2/3, A) choisissent à l'appui, pas au relâchement : rien à attendre pour elles.
+        if (_skipSwallow && Time.frameCount > _skipFrame && !Input.GetMouseButton(0)) _skipSwallow = false;
+    }
+
     // Apparition ou animation de choix en cours : le survol des cartes (LevelUpCardHoverFX) ne doit rien toucher.
     public bool CardsBusy => _introPlaying || _pickInProgress;
 
@@ -829,6 +871,7 @@ public class UpgradeUI : MonoBehaviour
         StopIntro();
         _introRoutine = StartCoroutine(PlayIntro());
         _introPlaying = true;
+        _introStartTime = Time.unscaledTime;
     }
 
     private void OnEnable()
@@ -1024,10 +1067,11 @@ public class UpgradeUI : MonoBehaviour
             totalDuration = Mathf.Max(totalDuration, s.delay + s.duration);
         }
 
+        float speed = LevelUpManager.Instance != null && LevelUpManager.Instance.IsChainedPick ? ChainedIntroSpeed : 1f;
         float elapsed = 0f;
         while (elapsed < totalDuration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.unscaledDeltaTime * speed;
 
             _panelGroup.alpha = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, _panelFadeDuration));
 
@@ -1116,7 +1160,7 @@ public class UpgradeUI : MonoBehaviour
     {
         if (LevelUpManager.Instance == null) return;
         if (_pickInProgress) return;
-        if (_introPlaying) return;
+        if (_introPlaying || _skipSwallow) return;
 
         if (gameObject.activeInHierarchy)
         {

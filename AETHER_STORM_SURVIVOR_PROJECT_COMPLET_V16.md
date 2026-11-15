@@ -32,7 +32,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Intégration Steam (SDK, succès, Cloud) | ⏳ Pas commencée |
 | Manette | ✅ Complète (2026-10-28/29) : nouvel Input System, boutons modifiables, icônes Xbox/PlayStation/Switch, curseur rond dans les menus, visée au stick droit, vibrations |
 | Accessibilité | 🟡 Pause automatique à la perte de focus ; pas encore d'option secousses d'écran / flashs |
-| Nouveaux contenus décidés (2026-11-13) | ⏳ Mode Escarmouche (5 min, document de conception, décisions en attente) · Grimoire (collection des découvertes) · événement Nuit des Éclats (session dédiée) · tutoriel |
+| Nouveaux contenus décidés (2026-11-13) | 🟡 Mode Escarmouche codé le 2026-11-14, à tester en jeu · ✅ Grimoire codé le 2026-11-15 (bouton livre de l'Accueil, 20 entrées, prime 205 éclats) · événement Nuit des Éclats (session dédiée) · tutoriel |
 
 ---
 
@@ -99,8 +99,9 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Classique | 3 boss en 15 min, victoire au Boss 3 | Dès le départ |
 | Sans fin | Les boss reviennent en boucle, de plus en plus forts | Avoir gagné une partie du Classique dans le palier choisi (ou un plus dur) |
 | Ruée de boss | Les boss s'enchaînent | Avoir battu 1 boss en Classique |
+| Escarmouche | 15 min compressées en 5 : Boss 1 à 1:30, Boss 2 à 3:00, Frénésie à 4:00, Boss 3 à 5:00 = victoire | Dès le départ |
 
-**Escarmouche** (5 min, partie de 15 min « compressée », montée en puissance rapide et volontairement excessive) : décidée le 2026-11-13, document `CONCEPTION_ESCARMOUCHE.md`, rien de codé, 6 décisions en attente.
+**Escarmouche** (codée le 2026-11-14, **pas encore testée en jeu**) : XP ×1,5, coffre du Boss 1 à 4 tirages, Frénésie (ennemis ×2, XP ×2, musique accélérée), les 3 paliers, récompenses ≤ Classique par minute, records à part, ne compte pas pour la progression. Document `CONCEPTION_ESCARMOUCHE.md` ; réglages dans `GameModes.cs`.
 
 Seul le Classique compte pour la progression (défis, déblocages). Sans fin et Ruée de boss ne sont pas encore validés par l'utilisateur et sont volontairement absents du trailer.
 
@@ -178,7 +179,7 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 - Nettoyage du projet (prefabs en double dans `Resources/`, scripts et assets inutilisés).
 
 **Décidés le 2026-11-13 (conception avant code)**
-- Mode **Escarmouche** (5 min) : `CONCEPTION_ESCARMOUCHE.md`, décisions de l'utilisateur en attente.
+- Mode **Escarmouche** (5 min) : décidé et codé le 2026-11-14 ; reste une partie de test par palier puis le réglage au bot.
 - **Grimoire** : collection des premières découvertes (cartes, fusions, boss) avec petite prime d'éclats ; un bouton discret, pas de nouvelle page, pas sur la Réputation.
 - **Nuit des Éclats** : événement de mi-partie déclenché par un objet à ramasser, éclairage de nuit ; session dédiée, conséquences à étudier une par une.
 - **Tutoriel** (reporté).

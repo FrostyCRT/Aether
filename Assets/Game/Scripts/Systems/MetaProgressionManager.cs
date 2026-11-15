@@ -57,6 +57,17 @@ public class MetaProgressionManager : MonoBehaviour
     public const int ClassicVictoryGold = 3700;
     public const int RushVictoryGold = 1850;
     public const int TitansVictoryGold = 600;
+    // AJOUTÉ (2026-11-14) - Escarmouche (5 min) : par minute jouée, jamais plus rentable que le Classique
+    // (CONCEPTION_ESCARMOUCHE.md §6) - or et éclats de survie au même taux, boss à moitié prix, victoire au tiers, pas de
+    // prime de 1re victoire (réservée au Classique).
+    public const int SkirmishVictoryGold = 1200;
+    public const float SkirmishBossRewardScale = 0.5f;
+    public const int SkirmishVictoryEclats = 20;
+    // AJOUTÉ (2026-11-14, retour utilisateur : « en 5 min on peut beaucoup gagner par rapport à une vraie partie qu'on joue
+    // jusqu'à 5 min. Donc divise par 1,75 les récompenses ») - appliqué à TOUT l'or (kills, minutes, boss, victoire) et à
+    // tous les éclats de l'Escarmouche, par-dessus les valeurs ci-dessus.
+    public const float SkirmishRewardDivisor = 1.75f;
+    private static float SkirmishRewardScale => GameModes.IsSkirmish ? 1f / SkirmishRewardDivisor : 1f;
     public const float BossGoldScale = 15f;                    // valeur des prefabs (60 / 120 / 200) -> 900 / 1 800 / 3 000
     // Éclats à chaque minute pleine du chrono (Classique, Sans fin) : même une partie perdue en rapporte, plus seulement
     // les boss et la victoire.
@@ -121,12 +132,28 @@ public class MetaProgressionManager : MonoBehaviour
     // Remet à zéro l'or de la partie et son détail (fin de partie).
     public void ResetRunGold()
     {
+        RunEclatsFromDiscoveries = 0;
         RunGold = 0;
         RunGoldFromKills = RunGoldFromTime = RunGoldFromBosses = RunGoldFromVictory = RunGoldFromChallenge = 0;
         RunKillGoldValueRaw = 0;
         _killGoldCarry = 0f;
         _killRate = 0f;
         _killRateTime = 0f;
+    }
+
+    // AJOUTÉ (2026-11-15) - Grimoire : une découverte est enregistrée tout de suite dans la sauvegarde en mémoire (écrite sur
+    // le disque en fin de partie, avec le reste), et sa prime s'ajoute aux éclats de la partie (SaveRunResults, abandon compris).
+    // Faux si déjà découverte.
+    public int RunEclatsFromDiscoveries { get; private set; }
+
+    public bool RegisterDiscovery(string id, int eclats)
+    {
+        if (Data == null) LoadData();
+        if (Data.grimoire == null) Data.grimoire = new System.Collections.Generic.List<string>();
+        if (Data.grimoire.Contains(id)) return false;
+        Data.grimoire.Add(id);
+        RunEclatsFromDiscoveries += eclats;
+        return true;
     }
 
     // Saves d'avant les modes de jeu : on retrouve la progression boss d'après les déblocages existants
@@ -162,7 +189,7 @@ public class MetaProgressionManager : MonoBehaviour
         float now = Time.time;
         if (_killRateTime > 0f && now > _killRateTime) _killRate *= Mathf.Exp(-(now - _killRateTime) / KillRateWindow);
         _killRateTime = now;
-        _killGoldCarry += enemyGoldValue * KillGoldPerValue * KillGoldHalfRate / (KillGoldHalfRate + _killRate);
+        _killGoldCarry += enemyGoldValue * KillGoldPerValue * KillGoldHalfRate / (KillGoldHalfRate + _killRate) * SkirmishRewardScale;
         _killRate += 1f;
         RunKillGoldValueRaw += enemyGoldValue;
         if (_killGoldCarry < 1f) return;
@@ -174,14 +201,17 @@ public class MetaProgressionManager : MonoBehaviour
     // Or d'un boss, réduit dans les modes qui enchaînent les boss bien plus vite que le Classique.
     public void AddBossGold(int bossGoldValue)
     {
-        float scale = GameModes.IsTitans ? TitansBossRewardScale : GameModes.IsBossRush ? RushBossRewardScale : 1f;
+        float scale = GameModes.IsTitans ? TitansBossRewardScale
+            : GameModes.IsBossRush ? RushBossRewardScale
+            : GameModes.IsSkirmish ? SkirmishBossRewardScale
+            : 1f;
         AddRunGold(Mathf.RoundToInt(bossGoldValue * scale * BossGoldScale), true, GoldSource.Bosses);
     }
 
     // Appelé par GameManager à chaque minute pleine du chrono.
     public void AddSurvivalMinuteGold()
     {
-        if (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)
+        if (GameModes.UsesDifficultyTier)
             AddRunGold(GoldPerMinute, true, GoldSource.Time);
     }
 
@@ -191,6 +221,7 @@ public class MetaProgressionManager : MonoBehaviour
         if (GameModes.IsTitans) AddRunGold(TitansVictoryGold, true, GoldSource.Victory);
         else if (GameModes.IsBossRush) AddRunGold(RushVictoryGold, true, GoldSource.Victory);
         else if (GameModes.IsClassic) AddRunGold(ClassicVictoryGold, true, GoldSource.Victory);
+        else if (GameModes.IsSkirmish) AddRunGold(SkirmishVictoryGold, true, GoldSource.Victory);
     }
 
     // Prime du défi de l'heure : calculée sur un or déjà majoré, elle ne repasse pas dans le multiplicateur.
@@ -206,8 +237,10 @@ public class MetaProgressionManager : MonoBehaviour
         // petit montant.
         // MODIFIÉ (2026-10-27) - applyDifficulty = false pour la prime du défi de l'heure : elle était repassée dans ce
         // multiplicateur alors qu'elle était calculée sur un or DÉJÀ majoré (x2,5 au lieu de x2 en Apocalyptique).
-        if (applyDifficulty && (GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush))
+        if (applyDifficulty && GameModes.UsesDifficultyTier)
             amount = Mathf.RoundToInt(amount * DifficultyTiers.RewardMultiplier(DifficultyTiers.Current));
+        // les kills sont déjà divisés en amont (AddKillGold), sur la fraction reportée : sinon 1 or arrondi resterait 1
+        if (source != GoldSource.Kills) amount = Mathf.RoundToInt(amount * SkirmishRewardScale);
 
         RunGold += amount;
         switch (source)
@@ -288,6 +321,16 @@ public class MetaProgressionManager : MonoBehaviour
                 if (victory) Data.titansWins++;
                 break;
             }
+            case GameMode.Skirmish:
+            {
+                if (Data.skirmishRuns > 0 && kills > Data.skirmishBestKills)
+                    LastRunRecordMessage = Loc.F("Nouveau record d'éliminations en escarmouche : {0} !", Loc.Int(kills));
+                if (kills > Data.skirmishBestKills) Data.skirmishBestKills = kills;
+                if (bossKills > Data.skirmishBestBossKills) Data.skirmishBestBossKills = bossKills;
+                Data.skirmishRuns++;
+                if (victory) Data.skirmishWins++;
+                break;
+            }
             default:
             {
                 // MODIFIÉ (2026-10-20, carrousel de difficulté) - le record de survie du Classique se tient
@@ -327,6 +370,8 @@ public class MetaProgressionManager : MonoBehaviour
                 LastRunRecordMessage = FirstWinMessage(DifficultyTiers.Current, firstWinBonus);
             }
         }
+        int eclatsDiscoveries = RunEclatsFromDiscoveries;   // prime du Grimoire : ni palier ni mode, montant fixe
+        eclatsEarned += eclatsDiscoveries;
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
 
@@ -345,6 +390,7 @@ public class MetaProgressionManager : MonoBehaviour
             eclatsTime = eclatsTime,
             eclatsBosses = eclatsBosses,
             eclatsVictory = eclatsVictory,
+            eclatsDiscoveries = eclatsDiscoveries,
             runTime = runTime,
             kills = kills,
             level = levelReached,
@@ -379,7 +425,8 @@ public class MetaProgressionManager : MonoBehaviour
             case GameMode.Endless: return Mathf.Max(1, Data.endlessRuns);
             case GameMode.BossRush: return Mathf.Max(1, Data.rushRuns);
             case GameMode.Titans: return Mathf.Max(1, Data.titansRuns);
-            default: return Mathf.Max(1, Data.totalRuns - Data.endlessRuns - Data.rushRuns - Data.titansRuns);
+            case GameMode.Skirmish: return Mathf.Max(1, Data.skirmishRuns);
+            default: return Mathf.Max(1, Data.totalRuns - Data.endlessRuns - Data.rushRuns - Data.titansRuns - Data.skirmishRuns);
         }
     }
 
@@ -548,7 +595,7 @@ public class MetaProgressionManager : MonoBehaviour
     {
         float tierMultiplier = DifficultyTiers.RewardMultiplier(DifficultyTiers.Current);
         int minuteEclats = Mathf.FloorToInt(runTime / EclatsTickSeconds) * EclatsPerTick;
-        float time = 0f, bosses = 0f, win = 0f, scale = tierMultiplier;
+        float time = 0f, bosses = 0f, win = 0f, scale = tierMultiplier * SkirmishRewardScale;
         switch (mode)
         {
             case GameMode.Endless:
@@ -570,6 +617,13 @@ public class MetaProgressionManager : MonoBehaviour
             case GameMode.Titans:
                 win = victory ? TitansVictoryEclats : 0;
                 scale = 1f;   // pas de multiplicateur de difficulté dans ce mode (comme avant)
+                break;
+            case GameMode.Skirmish:
+                // Survie au même taux que le Classique ; boss à moitié prix (Boss 1, 2 puis 3) ; victoire au tiers ; le tout / 1,75.
+                time = minuteEclats;
+                for (int i = 0; i < Mathf.Min(bossKills, GameModes.SkirmishBossCount); i++)
+                    bosses += EclatsPerBoss[GameModes.SkirmishBossNumber(i) - 1] * SkirmishBossRewardScale;
+                if (victory) win = SkirmishVictoryEclats;
                 break;
             default:
                 time = minuteEclats;
@@ -874,6 +928,22 @@ public class MetaProgressionManager : MonoBehaviour
         if (!IsBranchActive(SkillTreeData.CharacterBranch.Fantome)) return 0f;
         float[] values = { 0f, 0.30f, 0.60f, 1.00f };
         return values[Mathf.Clamp(Data.novaRadiusLevel, 0, values.Length - 1)];
+    }
+
+    // AJOUTÉ (2026-11-15, retour utilisateur : « son arbre sert surtout sa mobilité, son kit manque cruellement de dégâts » ;
+    // choix B) - la mobilité de Lyra devient aussi ses dégâts :
+    //  - Lame fantôme : chaque niveau de « Dash Amélioré » fait blesser les ennemis traversés par le dash
+    //    (PlayerController.DashBladeTick) ;
+    //  - Éclat spectral : le Clone spectral explose en disparaissant, sur les ennemis qu'il a attirés autour de lui.
+    // Dégâts de base, multipliés ensuite par PlayerBuffs.OutgoingDamageMultiplier (plus de x1,4 propre à Lyra depuis le 2026-11-15).
+    private static readonly float[] DashBladeDamages = { 0f, 150f, 250f, 400f };   // dash rechargé en 1 s au niveau 3 : rester raisonnable
+    public const float CloneBurstDamage = 1200f;
+    public const float CloneBurstRadius = 4.5f;
+
+    public float GetDashBladeDamage()
+    {
+        if (!IsBranchActive(SkillTreeData.CharacterBranch.Fantome) || Data == null) return 0f;
+        return DashBladeDamages[Mathf.Clamp(Data.dashLevel, 0, DashBladeDamages.Length - 1)];
     }
 
     public bool HasCrystalMastery()

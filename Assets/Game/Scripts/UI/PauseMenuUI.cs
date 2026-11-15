@@ -145,15 +145,12 @@ public class PauseMenuUI : MonoBehaviour
             if (_mainFrameCanvasGroup == null)
                 _mainFrameCanvasGroup = _mainFrame.gameObject.AddComponent<CanvasGroup>();
 
-            // AJOUTÉ (2026-11-12, retour utilisateur : « rajouter une petite bordure sur chaque côté du pause panel ») -
-            // le bord du parchemin se fondait dans le sol : liseré sombre de 3 px tout autour, de la teinte des contours.
-            if (_mainFrame.TryGetComponent(out Image frameImage) && !frameImage.TryGetComponent(out Outline _))
-            {
-                Outline border = frameImage.gameObject.AddComponent<Outline>();
-                border.effectColor = new Color32(0x2A, 0x1C, 0x10, 0xF0);
-                border.effectDistance = new Vector2(3f, -3f);
-                border.useGraphicAlpha = true;
-            }
+            // AJOUTÉ (2026-11-12, retour utilisateur : « rajouter une petite bordure sur chaque côté du pause panel »).
+            // MODIFIÉ (2026-11-14, retour utilisateur : « tu enlèves les traits noirs et à la place tu mets le même style de
+            // barre que pour la séparation de la carte de fusion, [...] le losange aux 4 coins ») - le liseré sombre (Outline)
+            // est remplacé par des filets de laiton avec un losange à chaque coin (voir BrassFrameBorder).
+            if (_mainFrame.GetComponent<BrassFrameBorder>() == null)
+                _mainFrame.gameObject.AddComponent<BrassFrameBorder>();
         }
 
         // AJOUTÉ (2026-10-25, audit de lisibilité) - les infos du défi (blanc fin, 21 px) se perdaient sur le parchemin
@@ -643,6 +640,12 @@ public class PauseMenuUI : MonoBehaviour
 
         if (_challengeSeparator != null) _challengeSeparator.gameObject.SetActive(showStatusColumn);
 
+        // AJOUTÉ (2026-11-15, retour utilisateur) - même badge que le HUD sur l'icône du défi : coche verte si réussi,
+        // croix rouge si échoué, rien sinon.
+        bool failedNow = showStatusColumn && ChallengeManager.Instance.IsFailed;
+        bool succeededNow = showStatusColumn && !failedNow && ChallengeManager.Instance.IsCurrentlySucceeding();
+        UpdateChallengeBadge(failedNow ? 2 : succeededNow ? 1 : 0);
+
         if (!showStatusColumn)
         {
             _challengeStatusText.text = "";
@@ -669,6 +672,28 @@ public class PauseMenuUI : MonoBehaviour
 
         string colorHex = ColorUtility.ToHtmlStringRGB(statusColor);
         _challengeStatusText.text = Loc.T("Statut") + $"\n<color=#{colorHex}>{statusLabel}</color>";
+    }
+
+    private RectTransform _challengeHeaderIcon;
+    private int _challengeBadgeState;   // 0 aucun, 1 coche, 2 croix
+
+    private void UpdateChallengeBadge(int state)
+    {
+        if (_challengeHeaderIcon == null)
+        {
+            foreach (RectTransform rt in GetComponentsInChildren<RectTransform>(true))
+                if (rt.name == "ChallengeHeaderIcon") { _challengeHeaderIcon = rt; break; }
+            if (_challengeHeaderIcon == null) return;
+        }
+        Transform current = _challengeHeaderIcon.Find("ChallengeCheck");
+        if (state == _challengeBadgeState && (state == 0) == (current == null)) return;
+        _challengeBadgeState = state;
+        if (state == 0)
+        {
+            if (current != null) Destroy(current.gameObject);
+            return;
+        }
+        GameUI.AttachChallengeBadge(_challengeHeaderIcon, state == 2, 30f, 44f, out _);
     }
 
     // AJOUTE (2026-09-15) - decale le separateur vertical ET la colonne Statut

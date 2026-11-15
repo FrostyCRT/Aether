@@ -260,8 +260,8 @@ public class UpgradeData : ScriptableObject
         switch (tier)
         {
             case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve");
-            case 2: return Loc.F("+{0}% cadence", PercentOf(v));
-            case 3: { int pierce = Mathf.Max(1, Mathf.RoundToInt(v)); return pierce > 1 ? Loc.F("+{0} ennemis perforés en plus", pierce) : Loc.F("+{0} ennemi perforé en plus", pierce); }
+            case 2: return Loc.F("Portée : les couteaux vont {0} m plus loin avant de revenir", Mathf.RoundToInt(v));
+            case 3: return Loc.T("Lames larges : couteaux plus gros qui touchent sur une bande plus large");
             default: return Description;
         }
     }
@@ -338,7 +338,7 @@ public class UpgradeData : ScriptableObject
                 {
                     WeaponShurikenBarrage knives = player != null ? player.GetComponent<WeaponShurikenBarrage>() : null;
                     if (knives == null) return Description;
-                    return Loc.F("Lance des salves de {0} couteaux qui transpercent les ennemis", knives.KnifeCount);
+                    return Loc.F("Lance des salves de {0} couteaux qui transpercent les ennemis puis reviennent", knives.KnifeCount);
                 }
             case UpgradeType.Lightning:
                 {
@@ -580,8 +580,9 @@ public class UpgradeData : ScriptableObject
                     switch (tier)
                     {
                         case 1: knives.AddKnife(); break;
-                        case 2: knives.AddFireRate(v); break;   // était +X% dégâts (2026-11-07)
-                        case 3: knives.AddPierce(Mathf.Max(1, Mathf.RoundToInt(v))); break;
+                        // MODIFIÉ (2026-11-15, retour utilisateur) - était +35 % cadence / +2 perforations : Portée et Lames larges.
+                        case 2: knives.AddRange(v); break;
+                        case 3: knives.SetKnifeSize(v); break;
                         default:
                             Debug.LogWarning($"[UpgradeData] Knives : palier {newLevel} inattendu (max {TotalAllowedPicks}), aucun effet appliqué.");
                             break;
@@ -893,7 +894,7 @@ public class UpgradeData : ScriptableObject
                     WeaponShurikenBarrage knives = playerGO.GetComponent<WeaponShurikenBarrage>();
                     WeaponBouncingOrb orb = playerGO.GetComponent<WeaponBouncingOrb>();
 
-                    float inheritedKnives = knives != null ? knives.CurrentDamage : 0f;
+                    float inheritedKnives = knives != null ? knives.FusionInheritedDamage : 0f;
                     float inheritedOrb = orb != null ? orb.CurrentDamage : 0f;
                     int inheritedKnifeCount = knives != null ? knives.KnifeCount : 0;
                     int inheritedOrbCount = orb != null ? orb.OrbCount : 0;

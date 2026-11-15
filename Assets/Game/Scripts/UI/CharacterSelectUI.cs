@@ -281,7 +281,7 @@ public class CharacterSelectUI : MonoBehaviour
                 displayName           = "LYRA",
                 tags                 = new[] { "DISTANCE", "PERFORANT", "SALVE" },
                 weaponName           = "Salve de couteaux",
-                weaponDescription    = "Lance une salve de couteaux qui transpercent les ennemis",
+                weaponDescription    = "Lance une salve de couteaux qui transpercent les ennemis puis reviennent",
                 weaponUpgrades       = "Couteau en plus / Cadence / Perforation",
                 branch               = SkillTreeData.CharacterBranch.Fantome,
                 branchName           = "FANTÔME",

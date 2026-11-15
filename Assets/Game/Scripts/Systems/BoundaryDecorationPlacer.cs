@@ -57,7 +57,7 @@ public class BoundaryDecorationPlacer : MonoBehaviour
     // bande de décor pour les signaler.
     private void Start()
     {
-        if (!(GameModes.IsClassic || GameModes.IsEndless || GameModes.IsBossRush)) return;
+        if (!GameModes.UsesDifficultyTier) return;
         if (DifficultyTiers.Current != DifficultyTier.Apocalyptic) return;
 
         DifficultyTiers.GetBounds(DifficultyTier.Apocalyptic, out float minX, out float maxX, out float minZ, out float maxZ);

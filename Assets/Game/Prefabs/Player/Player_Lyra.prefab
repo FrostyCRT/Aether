@@ -227,6 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 1
 --- !u!114 &4315217424790490425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -456,6 +457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 1
 --- !u!4 &7906416658336717766 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6502182839619065283, guid: 82b217c481d63f642a4fe9803ff0895e,

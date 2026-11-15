@@ -325,13 +325,13 @@
 308| Impulso Nova
 309| Se la Nova innescata da un assorbimento uccide almeno un nemico, la ricarica dello scatto si azzera all'istante.
 310| Scatto potenziato
-311| Riduce il tempo di ricarica dello scatto.
+311| Riduce il tempo di ricarica dello scatto. Il tuo scatto ferisce anche i nemici che attraversa: 150 / 250 / 400 danni in base al livello.
 312| Maestria del cristallo
 313| Riduce il numero di cariche necessarie per la suprema.
 314| Nova estesa
 315| Aumenta il raggio della Nova di cristallo.
 316| Scatto fantasma
-317| Sblocca un clone spettrale, attivabile con un tasto dedicato: per 3 secondi attira tutti i nemici e diventi invulnerabile. Ricarica: 8 secondi.
+317| Sblocca un clone spettrale, attivabile con un tasto dedicato: per 3 secondi attira tutti i nemici e diventi invulnerabile, poi esplode e infligge 1.200 danni intorno a sé. Ricarica: 8 secondi.
 318| TALENTO UNICO
 319| LIVELLO {0} / {1}
 320| sbloccato
@@ -394,7 +394,7 @@
 373| Cura
 374| Ripristina il 50% dei tuoi PS massimi
 375| Coltelli
-376| Lancia raffiche di coltelli che trafiggono i nemici
+376| Lancia raffiche di coltelli che trafiggono i nemici e poi tornano indietro
 377| Fulmine a catena
 378| Scarica elettrica che rimbalza tra i nemici vicini
 379| Fango
@@ -446,7 +446,7 @@
 423| GUARDIANO
 424| Sopravvivenza e resistenza
 425| Raffica di coltelli
-426| Lancia una raffica di coltelli che trafiggono i nemici
+426| Lancia una raffica di coltelli che trafiggono i nemici e poi tornano indietro
 427| Coltello extra / Cadenza / Perforazione
 428| FANTASMA
 429| Mobilità e scatto
@@ -639,7 +639,7 @@
 602| Lancia {0} sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono
 603| {0} frammenti ti orbitano intorno e colpiscono i nemici al contatto
 604| Fa comparire {0} pozze di fango che rallentano e feriscono i nemici al loro interno
-605| Lancia raffiche di {0} coltelli che trafiggono i nemici
+605| Lancia raffiche di {0} coltelli che trafiggono i nemici e poi tornano indietro
 606| Scarica elettrica che rimbalza su {0} nemici vicini
 
 ## Écrans de fin : intitulés des cases de stats
@@ -706,3 +706,33 @@
 665| Origine dei frammenti
 666| Origine dell'oro
 667| 1ª vittoria
+668| SCHERMAGLIA
+669| Una partita completa in 5 minuti: potenziati a tutta velocità, sopravvivi alla Frenesia e abbatti il boss finale
+670| Boss finale in corso
+671| Boss in corso
+672| Frenesia!
+673| Boss finale tra {0}
+674| Boss tra {0}
+675| Schermaglia
+676| FRENESIA!
+677| Boss sconfitti: {0} su {1}. Cinque minuti volano: lancia un'altra schermaglia
+678| Schermaglia vinta in {0}  ·  Uccisioni: {1}
+679| Nuovo record di uccisioni in Schermaglia: {0}!
+680| Record di uccisioni: {0}  ·  {1} {2}
+681| Nessuna schermaglia giocata
+
+682| Grimorio
+683| Carte
+684| Fusioni
+685| Scoperte
+686| Novità nel Grimorio: {0}
+687| Scegli questa carta per la prima volta: +{0} frammenti
+688| Ottieni questa fusione per la prima volta: +{0} frammenti
+689| Sconfiggi questo boss per la prima volta: +{0} frammenti
+690| Boss n. {0}
+691| Passa il cursore su un'illustrazione per leggerne la pagina
+692| {0} / {1} scoperte
+693| {0} frammenti ottenuti
+694| Area di lavoro ({0})
+695| Portata: i coltelli vanno {0} m più lontano prima di tornare
+696| Lame larghe: coltelli più grandi che colpiscono su una fascia più ampia

@@ -123,6 +123,7 @@ public class BossBase : MonoBehaviour
     // de 1400) - retour utilisateur, "les mini boss donnent bien trop d'xp".
     public float XPValue => _xpValue;
     public bool IsSummoned { get; set; } = false;
+    public const int MiniBossChestPicks = 1;   // coffre d'un écho de La Source (2026-11-15)
     public bool RageDisabled { get; set; } = false;
 
     protected float _speedMultiplier = 1f;
@@ -613,10 +614,14 @@ public class BossBase : MonoBehaviour
     // ne faut pas lancer le Victory panel tout de suite, il faut abattre le mini boss même si la source est
     // morte") - mise à mort immédiate, sans passer par TakeDamage(). Réservé à ce genre de mise à mort scriptée
     // (voir BossCorruptedSource.Die()), jamais aux dégâts du joueur.
+    // Mort forcée par le code (ex. écho tué en même temps que La Source) : pas de coffre d'écho dans ce cas.
+    private bool _forcedKill;
+
     public void ForceKill()
     {
         if (_deathTriggered) return;
         _deathTriggered = true;
+        _forcedKill = true;
         _currentHealth = 0f;
         Die();
     }
@@ -650,6 +655,14 @@ public class BossBase : MonoBehaviour
                     if (chest != null) chest.Init(gemSpawnPos.y);
                 }
             }
+            // AJOUTÉ (2026-11-15, retour utilisateur) - écho invoqué par La Source tué par le joueur : petit coffre d'un seul
+            // niveau (1 tirage), aussi en Escarmouche. Toujours aucune XP (voir plus bas).
+            else if (!_forcedKill && ObjectPool.Instance != null)
+            {
+                GameObject chestGO = ObjectPool.Instance.Get("BossChest", gemSpawnPos, Quaternion.identity);
+                BossChest chest = chestGO != null ? chestGO.GetComponent<BossChest>() : null;
+                if (chest != null) chest.Init(gemSpawnPos.y, MiniBossChestPicks, 0.75f);
+            }
             // Mini-boss sans XP (SetXPValue(0) sans fraction de barre, voir BossCorruptedSource.InitSummonedBoss).
             else if (XPGemSpawner.Instance != null && (_xpValue > 0f || _xpBarFraction > 0f))
             {
@@ -672,6 +685,7 @@ public class BossBase : MonoBehaviour
 
         if (!IsSummoned && GameManager.Instance != null)
             GameManager.Instance.AddBossKill();
+        if (!IsSummoned) Grimoire.DiscoverBoss(this, Loc.T(_bossName));   // 1re victoire sur ce boss : entrée du Grimoire + prime
 
         if (!IsSummoned)
         {

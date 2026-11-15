@@ -73,7 +73,8 @@ public class CrystalSystem : MonoBehaviour
     {
         if (GameManager.Instance == null || _ultScaleRampDuration <= 0f) return 1f;
 
-        float t = Mathf.Clamp01(GameManager.Instance.RunTimer / _ultScaleRampDuration);
+        // Escarmouche (2026-11-14) : montée compressée x3, x4 atteint à 5:00 au lieu de 15:00.
+        float t = Mathf.Clamp01(GameModes.ScaledRunSeconds(GameManager.Instance.RunTimer) / _ultScaleRampDuration);
         return Mathf.Lerp(1f, _ultScaleMaxMultiplier, t);
     }
 

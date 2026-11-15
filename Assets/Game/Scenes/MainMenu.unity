@@ -12401,6 +12401,82 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -72}
   m_SizeDelta: {x: 120, y: 36}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &379662500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 379662501}
+  - component: {fileID: 379662502}
+  m_Layer: 0
+  m_Name: Grimoire
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &379662501
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379662500}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 968883080}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &379662502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379662500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d041fc1d574974f8fa606c3ef47f1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _titleFont: {fileID: 11400000, guid: 975333bb0c642bc4698e9d96f2919389, type: 2}
+  _eclatIcon: {fileID: 21300000, guid: 58397f5e34ebcf34295e0229f0a8c733, type: 3}
+  _upgrades:
+  - {fileID: 11400000, guid: dbd1afd4a82613549874513ff6145136, type: 2}
+  - {fileID: 11400000, guid: a1af927bfec8e294998d4b4093439cfc, type: 2}
+  - {fileID: 11400000, guid: b14ecde0aa358ea4a84fd2051421212f, type: 2}
+  - {fileID: 11400000, guid: cbcd3acdfe739eb4f8d3d91de89aae9d, type: 2}
+  - {fileID: 11400000, guid: d1bbe4325b259f646baa57f19b2479ba, type: 2}
+  - {fileID: 11400000, guid: 2bd3dbd8545646c49a15dec8df45751a, type: 2}
+  - {fileID: 11400000, guid: c38cdd3a6bf396c48810047417fabb08, type: 2}
+  - {fileID: 11400000, guid: 9cb5291f56507c14787893b5b98d5d50, type: 2}
+  - {fileID: 11400000, guid: 5893213f1aa6f554db5dde33e9a2a737, type: 2}
+  - {fileID: 11400000, guid: 1e724c58e599f5642b9bd099d96101fa, type: 2}
+  - {fileID: 11400000, guid: 1b657d379a65e8c4cb2fcd6f8d6d2706, type: 2}
+  - {fileID: 11400000, guid: bc0e51a3426eaa441b290163eb0a9716, type: 2}
+  - {fileID: 11400000, guid: 617e1cc61e9006d43b5a7b4f0dda1a21, type: 2}
+  - {fileID: 11400000, guid: c8547c7b811527d48b2c54787fab94e4, type: 2}
+  - {fileID: 11400000, guid: 6c2ddb4ec3905214bb4cd89df6ac5526, type: 2}
+  - {fileID: 11400000, guid: 8f749f99b902e6849b0b66ade2f422ec, type: 2}
+  - {fileID: 11400000, guid: 6dd365096ac1899e54106ce03ddd6bb7, type: 2}
+  _bossPortraits:
+  - {fileID: 21300000, guid: c410602d0a0df684d9e31dfb0cdac5be, type: 3}
+  - {fileID: 21300000, guid: d48f9272b1885f64fb0f6b2dda195700, type: 3}
+  - {fileID: 21300000, guid: 56aab9e28264db747900b7396ebf9198, type: 3}
+  _bossNames:
+  - Le Dragon de Mana
+  - Le Cerf Ancestral
+  - La Source Corrompue
 --- !u!1 &383517989
 GameObject:
   m_ObjectHideFlags: 0
@@ -27635,6 +27711,7 @@ RectTransform:
   - {fileID: 2066887414}
   - {fileID: 1356857677}
   - {fileID: 120853714}
+  - {fileID: 379662501}
   m_Father: {fileID: 2073577236}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

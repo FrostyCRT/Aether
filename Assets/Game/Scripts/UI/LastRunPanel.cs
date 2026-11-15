@@ -60,9 +60,13 @@ public class LastRunPanel : MonoBehaviour
     // AJOUTÉ (2026-11-12, retour utilisateur : « voir la source des gains d'éclats dans Dernière Partie, avec un bouton ») -
     // le bouton sous les éclats fait basculer la barre et sa légende entre la répartition de l'or et celle des éclats ;
     // le montant qui n'est pas détaillé s'estompe. La prime de 1re victoire devient une ligne de la légende des éclats.
+    // MODIFIÉ (2026-11-14, retour utilisateur : « 2 boutons à la place de juste 1 [...] 'Sources des éclats', et à côté
+    // 'Sources de l'or', un peu comme si c'était des catégories ») - deux onglets, chacun sous le montant qu'il détaille ;
+    // l'onglet actif est éclairé à la couleur de sa monnaie, l'autre reste sombre. Sans détail des éclats (anciennes
+    // parties), seul l'onglet de l'or reste affiché.
     private bool _showEclats;
-    private RectTransform _sourceButton;
-    private TextMeshProUGUI _sourceLabel;
+    private Image _goldTab, _eclatTab;
+    private TextMeshProUGUI _goldTabLabel, _eclatTabLabel;
     private Graphic[] _goldBlock, _eclatBlock;
     private static readonly Color[] EclatSourceColors =
     {
@@ -70,7 +74,7 @@ public class LastRunPanel : MonoBehaviour
         new Color(0.69f, 0.48f, 0.91f, 1f),   // boss
         new Color(0.95f, 0.76f, 0.31f, 1f),   // victoire
         new Color(0.00f, 0.93f, 0.89f, 1f),   // prime de 1re victoire
-        new Color(0f, 0f, 0f, 0f),
+        new Color(0.56f, 0.84f, 0.45f, 1f),   // découvertes du Grimoire (2026-11-15)
     };
 
     // Réduction / agrandissement
@@ -158,13 +162,8 @@ public class LastRunPanel : MonoBehaviour
         _goldBlock = new Graphic[] { _root.Find("GoldIcon").GetComponent<Image>(), _goldValue };
         _eclatBlock = new Graphic[] { _root.Find("EclatsIcon").GetComponent<Image>(), _eclatValue };
 
-        _sourceButton = NewButton("SourceToggle", _root, () => { _showEclats = !_showEclats; Refresh(); });
-        Place(_sourceButton, pad + half + 8f, y - 58f, 190f, 22f);
-        CenterPivot(_sourceButton);
-        _sourceLabel = NewText("Label", _sourceButton, GameFonts.Body, 14f, Parchment, TextAlignmentOptions.Center);
-        Stretch(_sourceLabel.rectTransform, 0f);
-        _sourceLabel.enableAutoSizing = true; _sourceLabel.fontSizeMax = 14f; _sourceLabel.fontSizeMin = 10f;
-        _sourceLabel.margin = new Vector4(10f, 0f, 10f, 0f);
+        _goldTabLabel = SourceTab("GoldSourcesTab", pad, y - 60f, false, out _goldTab);
+        _eclatTabLabel = SourceTab("EclatSourcesTab", pad + half + 8f, y - 60f, true, out _eclatTab);
         y -= 82f;
 
         // Barre de répartition de l'or.
@@ -357,16 +356,19 @@ public class LastRunPanel : MonoBehaviour
                          + TimeText.SpaceColons((secs / 60) + ":" + (secs % 60).ToString("00"));   // « 15 : 00 », comme partout (2026-11-11)
 
         // Détail des éclats disponible seulement pour les parties enregistrées depuis le 2026-11-12 (parts == total).
-        bool eclatDetail = run.eclats > 0 && run.eclatsTime + run.eclatsBosses + run.eclatsVictory + run.eclatsFirstWin == run.eclats;
+        bool eclatDetail = run.eclats > 0 && run.eclatsTime + run.eclatsBosses + run.eclatsVictory + run.eclatsFirstWin + run.eclatsDiscoveries == run.eclats;
         if (!eclatDetail) _showEclats = false;
-        _sourceButton.gameObject.SetActive(eclatDetail);
-        _sourceLabel.text = _showEclats ? Loc.T("Sources de l'or") : Loc.T("Sources des éclats");
+        _eclatTab.gameObject.SetActive(eclatDetail);
+        _goldTabLabel.text = Loc.T("Sources de l'or");
+        _eclatTabLabel.text = Loc.T("Sources des éclats");
+        StyleTab(_goldTab, _goldTabLabel, !_showEclats, GoldText);
+        StyleTab(_eclatTab, _eclatTabLabel, _showEclats, EclatText);
 
         int[] parts = _showEclats
-            ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, 0 }
+            ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, run.eclatsDiscoveries }
             : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge };
         string[] labels = _showEclats
-            ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), "" }
+            ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), Loc.T("Découvertes") }
             : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi") };
         Color[] colors = _showEclats ? EclatSourceColors : SourceColors;
         string unit = _showEclats ? Loc.T("Éclats") : Loc.T("Or");
@@ -380,7 +382,7 @@ public class LastRunPanel : MonoBehaviour
         }
         foreach (Graphic g in _goldBlock) g.color = WithAlpha(g.color, _showEclats ? 0.45f : 1f);   // montant non détaillé estompé
 
-        Layout(eclatDetail, parts);
+        Layout(true, parts);   // l'onglet de l'or est toujours affiché
         _stats.text = Loc.F("Ennemis vaincus : {0}  ·  Niv. {1}  ·  Boss : {2}", Loc.Int(run.kills), run.level, run.bossKills);
 
         bool animate = run.unixTime != _lastAnimatedRun && isActiveAndEnabled;
@@ -483,6 +485,26 @@ public class LastRunPanel : MonoBehaviour
         img.color = color;
         img.raycastTarget = false;
         return img;
+    }
+
+    private TextMeshProUGUI SourceTab(string name, float x, float y, bool eclats, out Image background)
+    {
+        RectTransform tab = NewButton(name, _root, () => { _showEclats = eclats; Refresh(); });
+        Place(tab, x, y, 160f, 20f);   // plus petits (retour 2026-11-15 ; avant 190 x 24, police 14)
+        CenterPivot(tab);
+        background = tab.GetComponent<Image>();
+        TextMeshProUGUI label = NewText("Label", tab, GameFonts.Body, 14f, Parchment, TextAlignmentOptions.Center);
+        Stretch(label.rectTransform, 0f);
+        label.enableAutoSizing = true; label.fontSizeMax = 12.5f; label.fontSizeMin = 9f;
+        label.margin = new Vector4(8f, 0f, 8f, 0f);
+        return label;
+    }
+
+    private static void StyleTab(Image background, TextMeshProUGUI label, bool active, Color accent)
+    {
+        background.color = active ? new Color(accent.r * 0.45f, accent.g * 0.45f, accent.b * 0.45f, 0.85f) : new Color(0f, 0f, 0f, 0.25f);
+        label.color = active ? Color.Lerp(accent, Color.white, 0.35f) : Muted;
+        // pas de gras sur l'onglet actif (retour 2026-11-15) : seuls le fond et la couleur le distinguent
     }
 
     // Zone cliquable avec un fond (survol / clic teintés), pour le bouton « réduire » et la barre réduite.
