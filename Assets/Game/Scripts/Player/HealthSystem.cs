@@ -34,6 +34,8 @@ public class HealthSystem : MonoBehaviour
     // AJOUTÉ (2026-10-03) - même pattern que EnemyBase.CurrentHealth : utile pour tout outil de test/debug qui doit
     // lire les PV du joueur sans réflexion (ex. le bot de playtest d'équilibrage, voir GameInput.DebugMoveOverride).
     public float CurrentHealth => _currentHealth;
+    public static bool DebugNeverDie;          // tests uniquement, voir TakeDamage
+    public static int DebugPreventedDeaths;    // morts évitées par DebugNeverDie depuis la dernière remise à 0
 
     // AJOUTE (2026-10-07, retour utilisateur : "même si on a pas pris réputation régén, on récupère 5pv toutes
     // les secondes") - jusqu'ici _regenPerSecond venait UNIQUEMENT du nœud méta "Réputation - Régénération" :
@@ -195,6 +197,16 @@ public class HealthSystem : MonoBehaviour
                 TriggerSecondWind();
                 return;
             }
+        }
+
+        // TESTS UNIQUEMENT (bot d'équilibrage, 2026-11-15 ; faux par défaut, jamais activé par le jeu) : un coup mortel laisse
+        // le joueur à 1 PV et compte une mort, pour mesurer une partie jusqu'au bout sans qu'elle s'arrête.
+        if (DebugNeverDie && _currentHealth - damage <= 0f)
+        {
+            _currentHealth = 1f;
+            DebugPreventedDeaths++;
+            if (GameUI.Instance != null) GameUI.Instance.UpdateHPBar(_currentHealth, _maxHealth);
+            return;
         }
 
         _currentHealth -= damage;

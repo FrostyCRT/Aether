@@ -735,3 +735,57 @@
 694| Arbeitsbereich ({0})
 695| Reichweite: Die Messer fliegen {0} m weiter, bevor sie zurückkehren
 696| Breite Klingen: größere Messer, die auf einem breiteren Streifen treffen
+697| den linken Stick
+698| dem Cursor des Controllers
+699| Weiter
+700| Bestätigen?
+701| Tutorial überspringen
+702| WILLKOMMEN
+703| Los geht's
+704| CHARAKTERE
+705| HELDEN
+706| PARTIE
+707| GRIMOIRE
+708| Fähigkeiten sind dauerhafte Boni, die mit dem in Partien verdienten Gold gekauft werden. Klicke auf einen Knoten, um seine Details zu sehen.
+709| TRAINING
+710| Eine geführte Trainingspartie stellt die Steuerung vor. Du kannst auch direkt eine Partie ohne Hilfe starten.
+711| Training
+712| Überspringen
+713| ERSTE PARTIE ABGESCHLOSSEN
+714| Das angesammelte Gold reicht für einen ersten Knoten bei den Fähigkeiten.
+715| Der erste Knoten kostet {0} Gold; du hast {1}. Spiele weiter, um ihn dir leisten zu können.
+716| Verstanden
+717| BEWEGUNG
+718| LEVELAUFSTIEG
+719| Wähle eine Karte ({0}): eine neue Waffe oder die Verbesserung einer vorhandenen.
+720| BOSS
+721| LEBEN
+722| Lebensleiste. Bei null ist die Partie verloren.
+723| ERFAHRUNG
+724| Sammle die Kristalle der Monster ein, um aufzusteigen.
+725| AKTIONEN
+726| Dash ({0}) und Ultimate ({1}).
+727| Beenden
+728| START
+729| Wähle zuerst einen Charakter
+730| Aether Storm Survivor ist ein Überlebensspiel: Bekämpfe Monsterhorden, stärke deinen Helden und überlebe. Wähle deine Sprache, um zu beginnen.
+731| Es ist kein Held ausgewählt. Öffne den Reiter Charaktere, um einen zu wählen.
+732| Jeder Held hat seinen eigenen Kampfstil und Fähigkeitenbaum. Wähle Aether, um zu beginnen.
+733| Jeder Held hat seinen eigenen Kampfstil und Fähigkeitenbaum. Weitere Helden werden mit dem Fortschritt freigeschaltet.
+734| Wähle einen Spielmodus und eine Schwierigkeit und starte dann mit Spielen. Höhere Schwierigkeiten werden mit dem Fortschritt freigeschaltet.
+735| Das Grimoire listet deine Entdeckungen auf und belohnt die erste jeder Art.
+736| Splitter kaufen hier dauerhafte Boni.
+737| AUTOFEUER
+738| Ein Gegner nähert sich. Dein Held zielt und schießt automatisch: Konzentriere dich auf deine Bewegung und halte Abstand.
+739| Besiegte Gegner hinterlassen Erfahrungskristalle. Laufe darüber, um sie aufzusammeln.
+740| Besiege Gegner und sammle ihre Kristalle ein, bis die Erfahrungsleiste voll ist.
+741| Dashe durch das Geschoss ({0}). Der Dash macht dich unverwundbar: Das Geschoss wird absorbiert, löst eine Nova aus, die nahe Gegner verletzt, und lädt den Ultimate-Kristall auf.
+742| OFFENSIVER DASH
+743| Der Dash ist nicht nur eine Fortbewegung, sondern eine Waffe. Ein absorbiertes Geschoss verursacht Schaden mit der Nova und lädt das Ultimate auf, doch ein schlecht getimter Dash lässt dich ungeschützt.
+744| ABSORPTION
+745| Absorbiere die Geschosse der Goblins mit dem Dash, um den Ultimate-Kristall zu füllen.
+746| Der Kristall ist geladen: {0} löst das Ultimate aus. Es verletzt alle Gegner, verlangsamt sie und zieht alle Kristalle am Boden an.
+747| TRAINING ABGESCHLOSSEN
+748| Du kennst nun das Wichtigste. Die echten Runs warten.
+749| Training überspringen
+750| Bewege dich mit {0}.

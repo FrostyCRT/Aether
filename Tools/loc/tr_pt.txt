@@ -735,3 +735,57 @@
 694| Área de trabalho ({0})
 695| Alcance: as facas vão {0} m mais longe antes de voltar
 696| Lâminas largas: facas maiores que acertam numa faixa mais larga
+697| o analógico esquerdo
+698| o cursor do controle
+699| Próximo
+700| Confirmar?
+701| Pular o tutorial
+702| BEM-VINDO
+703| Começar
+704| PERSONAGENS
+705| HERÓIS
+706| PARTIDA
+707| GRIMÓRIO
+708| As habilidades são bônus permanentes comprados com o ouro ganho nas partidas. Clique em um nó para ver os detalhes dele.
+709| TREINO
+710| Uma partida de treino guiada apresenta os controles. Também é possível começar uma partida direto, sem ajuda.
+711| Treino
+712| Pular
+713| PRIMEIRA PARTIDA CONCLUÍDA
+714| O ouro acumulado basta para comprar um primeiro nó em Habilidades.
+715| O primeiro nó custa {0} de ouro; você tem {1}. Continue jogando para conseguir.
+716| Entendi
+717| MOVIMENTO
+718| NOVO NÍVEL
+719| Escolha uma carta ({0}): uma arma nova ou o aprimoramento de uma existente.
+720| CHEFE
+721| VIDA
+722| Barra de vida. Em zero, a partida está perdida.
+723| EXPERIÊNCIA
+724| Pegue as gemas soltas pelos monstros para subir de nível.
+725| AÇÕES
+726| Dash ({0}) e Suprema ({1}).
+727| Concluir
+728| INÍCIO
+729| Selecione primeiro um personagem
+730| Aether Storm Survivor é um jogo de sobrevivência: enfrente hordas de monstros, fortaleça o seu herói e sobreviva. Escolha o seu idioma para começar.
+731| Nenhum herói está selecionado. Abra a aba Personagens para escolher um.
+732| Cada herói tem o seu próprio estilo de combate e árvore de habilidades. Selecione Aether para começar.
+733| Cada herói tem o seu próprio estilo de combate e árvore de habilidades. Os outros heróis são desbloqueados com o progresso.
+734| Escolha um modo de jogo e uma dificuldade e comece com Jogar. Dificuldades maiores são desbloqueadas com o progresso.
+735| O Grimório lista as suas descobertas e recompensa a primeira de cada uma.
+736| Os fragmentos compram aqui bônus permanentes.
+737| TIRO AUTOMÁTICO
+738| Um inimigo se aproxima. Seu herói mira e atira automaticamente: concentre-se em se mover para manter a distância.
+739| Inimigos derrotados soltam gemas de experiência. Passe por cima delas para pegá-las.
+740| Derrote inimigos e pegue as gemas deles até encher a barra de experiência.
+741| Faça um dash através do projétil ({0}). O dash deixa você invencível: o projétil é absorvido, aciona uma Nova que fere os inimigos próximos e carrega o Cristal da suprema.
+742| DASH OFENSIVO
+743| O dash não é apenas uma forma de se mover: é uma arma. Absorver um projétil causa dano com a Nova e carrega a suprema, mas um dash mal cronometrado deixa você exposto.
+744| ABSORÇÃO
+745| Absorva os projéteis dos goblins com o dash para encher o Cristal da suprema.
+746| O Cristal está carregado: {0} aciona a Suprema. Ela fere todos os inimigos, os deixa mais lentos e atrai todas as gemas do chão.
+747| TREINAMENTO CONCLUÍDO
+748| Você já conhece o essencial. As partidas de verdade esperam por você.
+749| Pular o treinamento
+750| Mova-se com {0}.

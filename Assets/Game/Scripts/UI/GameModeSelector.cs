@@ -33,6 +33,7 @@ public class GameModeSelector : MonoBehaviour
     // laisserait ce texte affiché sur l'ancien palier jusqu'au prochain changement de MODE. Polling léger, même
     // style que DifficultySelector.Update() juste à côté.
     private DifficultyTier _lastSeenTier;
+    private bool _lastNoHero;
 
     private void Awake()
     {
@@ -60,6 +61,7 @@ public class GameModeSelector : MonoBehaviour
 
     private void Update()
     {
+        if (Tutorial.NoHeroYet != _lastNoHero) Refresh(animate: false);
         if (DifficultyTiers.Current != _lastSeenTier)
         {
             _lastSeenTier = DifficultyTiers.Current;
@@ -104,6 +106,9 @@ public class GameModeSelector : MonoBehaviour
         // MODIFIÉ (2026-10-29) - un mode débloqué peut encore être bloqué par la difficulté choisie (palier pas encore
         // débloqué, ou Sans fin sans victoire dans ce palier) : bouton Jouer grisé et raison à la place de la description.
         string blocked = GameModes.BlockReason(mode, DifficultyTiers.Current, data);
+        // 1er lancement : Jouer reste grisé tant qu'aucun héros n'est choisi (didacticiel).
+        if (blocked.Length == 0 && Tutorial.NoHeroYet) blocked = Loc.T("Sélectionnez d'abord un personnage");
+        _lastNoHero = Tutorial.NoHeroYet;
 
         if (_nameText != null)
         {

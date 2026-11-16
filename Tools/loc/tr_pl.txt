@@ -743,3 +743,57 @@
 694| Obszar roboczy ({0})
 695| Zasięg: noże lecą o {0} m dalej, zanim wrócą
 696| Szerokie ostrza: większe noże trafiające w szerszym pasie
+697| lewej gałki
+698| kursora pada
+699| Dalej
+700| Potwierdzić?
+701| Pomiń samouczek
+702| WITAJ
+703| Zaczynamy
+704| POSTACIE
+705| BOHATEROWIE
+706| ROZGRYWKA
+707| GRIMUAR
+708| Umiejętności to stałe bonusy kupowane za złoto zdobyte w rozgrywkach. Kliknij węzeł, aby zobaczyć jego szczegóły.
+709| TRENING
+710| Prowadzona rozgrywka treningowa przedstawia sterowanie. Możesz też od razu zacząć rozgrywkę bez pomocy.
+711| Trening
+712| Pomiń
+713| PIERWSZA ROZGRYWKA UKOŃCZONA
+714| Zgromadzone złoto wystarczy na pierwszy węzeł w Umiejętnościach.
+715| Pierwszy węzeł kosztuje {0} złota; masz {1}. Graj dalej, aby go zdobyć.
+716| Jasne
+717| RUCH
+718| NOWY POZIOM
+719| Wybierz kartę ({0}): nową broń albo ulepszenie istniejącej.
+720| BOSS
+721| ZDROWIE
+722| Pasek zdrowia. Przy zerze rozgrywka jest przegrana.
+723| DOŚWIADCZENIE
+724| Zbieraj kryształy zostawiane przez potwory, aby awansować.
+725| AKCJE
+726| Dash ({0}) i Supermoc ({1}).
+727| Zakończ
+728| START
+729| Najpierw wybierz postać
+730| Aether Storm Survivor to gra o przetrwaniu: walcz z hordami potworów, wzmacniaj bohatera i przeżyj. Wybierz język, aby zacząć.
+731| Nie wybrano żadnego bohatera. Otwórz zakładkę Postacie, aby go wybrać.
+732| Każdy bohater ma własny styl walki i własne drzewko umiejętności. Wybierz Aethera, aby zacząć.
+733| Każdy bohater ma własny styl walki i własne drzewko umiejętności. Pozostali bohaterowie odblokowują się z postępem.
+734| Wybierz tryb gry i poziom trudności, a potem zacznij przyciskiem Graj. Wyższe poziomy trudności odblokowują się z postępem.
+735| Grimuar zawiera listę twoich odkryć i nagradza pierwsze z każdego rodzaju.
+736| Odłamki kupują tu stałe bonusy.
+737| AUTOMATYCZNY OGIEŃ
+738| Zbliża się wróg. Twój bohater celuje i strzela automatycznie: skup się na ruchu, aby utrzymać dystans.
+739| Pokonani wrogowie zostawiają kryształy doświadczenia. Przejdź po nich, aby je zebrać.
+740| Pokonuj wrogów i zbieraj ich kryształy, aż pasek doświadczenia się zapełni.
+741| Wykonaj dash przez pocisk ({0}). Dash czyni cię niezwyciężonym: pocisk zostaje pochłonięty, wyzwala Novę raniącą pobliskich wrogów i ładuje Kryształ supermocy.
+742| OFENSYWNY DASH
+743| Dash to nie tylko sposób na poruszanie się: to broń. Pochłonięty pocisk zadaje obrażenia Novą i ładuje supermoc, ale źle wymierzony dash zostawia cię bez ochrony.
+744| POCHŁANIANIE
+745| Pochłaniaj pociski goblinów dashem, aby napełnić Kryształ supermocy.
+746| Kryształ jest naładowany: {0} uruchamia Supermoc. Rani wszystkich wrogów, spowalnia ich i przyciąga wszystkie kryształy z ziemi.
+747| TRENING UKOŃCZONY
+748| Znasz już podstawy. Prawdziwe rozgrywki czekają.
+749| Pomiń trening
+750| Poruszaj się za pomocą {0}.

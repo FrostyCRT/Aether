@@ -60,6 +60,8 @@ public class LevelUpManager : MonoBehaviour
     public bool IsChoosing => _waitingForChoice || _showingDelay || _preShowPending;
 
     public UpgradeData[] AllUpgrades => _allUpgrades;
+    // Cartes affichées à l'écran de choix (lecture seule ; bot d'équilibrage, 2026-11-15).
+    public IReadOnlyList<UpgradeData> CurrentChoices => _currentChoices;
 
     public IReadOnlyList<UpgradeData> ObtainedOrder => _obtainedOrder;
 

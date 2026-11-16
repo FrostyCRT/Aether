@@ -33,6 +33,13 @@ public class MainMenuManager : MonoBehaviour
     // d'ouverture (OnEnable) alors que rien n'avait changé.
     private GameObject _currentPanel;
     public GameObject CurrentPanel => _currentPanel;
+    // AJOUTÉ (2026-11-16, didacticiel) - racine de l'interface du menu (le didacticiel y cherche les éléments à mettre en lumière).
+    public Transform CanvasRoot => _menuPanel != null ? _menuPanel.transform.parent : null;
+    public GameObject UpgradesPanelObject => _upgradesPanel;
+    public GameObject MenuPanelObject => _menuPanel;
+    public GameObject SettingsPanelObject => _settingsPanel;
+    public GameObject CharacterSelectPanelObject => _characterSelectPanel;
+    public GameObject ReputationPanelObject => _reputationPanel;
 
     // AJOUTÉ (2026-11-08) - bouton œil « contemplation » (voir MenuViewMode).
     private MenuViewMode _viewMode;
@@ -63,6 +70,7 @@ public class MainMenuManager : MonoBehaviour
             Transform bar = _tabBarFX != null ? _tabBarFX.transform : null;
             _viewMode.Init(this, canvasRect, bar);
         }
+        MenuTutorial.Install(this);   // didacticiel (2026-11-16) : visite guidée au 1er lancement, bouton « ? » de l'Accueil
     }
 
     // ---- manette (2026-10-28) ------------------------------------------------------------------------------------
@@ -71,7 +79,7 @@ public class MainMenuManager : MonoBehaviour
     private void Update()
     {
         int dir = GameInput.PadDown(PadButton.LeftShoulder) ? -1 : GameInput.PadDown(PadButton.RightShoulder) ? 1 : 0;
-        if (dir == 0 || SettingsPage.ModalOpen || QuitConfirm.IsOpen || GrimoireUI.IsOpen) return;   // + fenêtre du Grimoire (2026-11-15)
+        if (dir == 0 || SettingsPage.ModalOpen || QuitConfirm.IsOpen || GrimoireUI.IsOpen || TutorialOverlay.IsShowing) return;   // + fenêtre du Grimoire (2026-11-15), didacticiel (2026-11-16)
 
         GameObject[] order = { _upgradesPanel, _characterSelectPanel, _menuPanel, _reputationPanel, _settingsPanel };
         int i = System.Array.IndexOf(order, _currentPanel);
@@ -159,6 +167,7 @@ public class MainMenuManager : MonoBehaviour
         // Un mode verrouillé (ex. Ruée de boss sans progression en Classique) ne se lance pas ; le bouton est déjà grisé
         // par GameModeSelector, ceci couvre un éventuel raccourci clavier.
         SaveData data = MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.Data : null;
+        if (Tutorial.NoHeroYet) return;   // didacticiel : aucun héros choisi, Jouer est grisé
         GameModes.EnsureCurrentIsAvailable(data);
         if (!GameModes.CanPlay(GameModes.Current, DifficultyTiers.Current, data)) return;   // palier verrouillé (2026-10-29)
 

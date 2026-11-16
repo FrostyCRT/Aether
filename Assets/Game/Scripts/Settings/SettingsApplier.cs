@@ -258,7 +258,7 @@ public class SettingsApplier : MonoBehaviour
         if (!focus && !Application.isEditor && GameSettings.GetBool(GameSettings.PauseOnFocusLoss))
         {
             GameManager gm = GameManager.Instance;
-            if (gm != null && !gm.IsPaused && !gm.IsGameOver
+            if (gm != null && !gm.IsPaused && !gm.IsGameOver && !TutorialOverlay.IsShowing
                 && !(LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice))
                 gm.TogglePause();
         }

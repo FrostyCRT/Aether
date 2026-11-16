@@ -50,6 +50,8 @@ public class CrystalSystem : MonoBehaviour
 
     public int CurrentCharges => _currentCharges;
     public int MaxCharges => _maxCharges;
+    public bool UltimateLocked;   // didacticiel (partie d'entraînement) : l'Ultime ne part pas tant que c'est vrai
+    public int StoredUlts => _storedUlts;   // didacticiel (2026-11-16) : Ultime(s) pret(s)
 
     private void Start()
     {
@@ -85,7 +87,7 @@ public class CrystalSystem : MonoBehaviour
         // l'annonce du défi : l'Ultime partait derrière le menu et son hitstop relançait le temps (voir HitstopRoutine).
         if (GameManager.Instance.IsPaused) return;
 
-        if (_storedUlts >= 1 && GameInput.Down(GameAction.Ultimate))
+        if (_storedUlts >= 1 && !UltimateLocked && GameInput.Down(GameAction.Ultimate))
             TriggerUlt();
     }
 

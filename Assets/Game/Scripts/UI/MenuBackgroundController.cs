@@ -28,6 +28,9 @@ public class MenuBackgroundController : MonoBehaviour
     [SerializeField] private Sprite[] _day = new Sprite[3];           // Modéré
     [SerializeField] private Sprite[] _dusk = new Sprite[3];          // Violent
     [SerializeField] private Sprite[] _night = new Sprite[3];         // Apocalyptique
+    // AJOUTÉ (2026-11-16, didacticiel) - décor SANS personnage (MenuBackground.png, jour) : montré au tout premier lancement tant
+    // que le héros n'est pas choisi, et à chaque entrée dans la scène du menu avant que le héros n'arrive en fondu.
+    [SerializeField] private Sprite _empty;
     [SerializeField] private Shader _windShader;
     [SerializeField] private float _fadeSeconds = 0.9f;
     [Tooltip("Part du rognage vertical retirée EN BAS (0 = on garde tout le bas de l'image, 1 = tout le haut).")]
@@ -153,10 +156,14 @@ public class MenuBackgroundController : MonoBehaviour
         // 1re ouverture : instantané. Ouvertures suivantes : fondu si le personnage ou la difficulté a changé.
         if (_currentKey < 0)
         {
+            // MODIFIÉ (2026-11-16, retour utilisateur : « lancer cette animation à chaque fois qu'on revient dans la scène menu,
+            // la fondue du personnage qui arrive ») - on entre sur le décor vide, puis le héros apparaît en fondu par-dessus.
             int key = WantedKey();
-            int slot = Assign(key);
+            int firstKey = _empty != null ? EmptyKey : key;
+            if (firstKey != key) _entryUntil = Time.unscaledTime + 0.45f;
+            int slot = Assign(firstKey);
             for (int i = 0; i < SlotCount; i++) { _alpha[i] = i == slot ? 1f : 0f; SetLayerAlpha(i, _alpha[i]); }
-            _currentKey = key;
+            _currentKey = firstKey;
         }
         _dirtyLayout = true;
     }
@@ -167,10 +174,15 @@ public class MenuBackgroundController : MonoBehaviour
         return meta != null ? Mathf.Clamp(meta.GetSelectedCharacterIndex(), 0, 2) : 0;
     }
 
-    private static int WantedKey() => SelectedIndex() * 3 + Mathf.Clamp((int)DifficultyTiers.Current, 0, 2);
+    private const int EmptyKey = 9;   // « pas de personnage » : après les 9 fonds (3 personnages x 3 difficultés)
+    private float _entryUntil;
+
+    // Didacticiel : tant que le héros n'est pas choisi, le décor est vide.
+    private int WantedKey() => (Tutorial.NoHeroYet && _empty != null) ? EmptyKey : SelectedIndex() * 3 + Mathf.Clamp((int)DifficultyTiers.Current, 0, 2);
 
     private Sprite SpriteFor(int key)
     {
+        if (key == EmptyKey) return _empty;
         int c = key / 3, tier = key % 3;
         Sprite[] set = tier == 0 ? _day : tier == 1 ? _dusk : _night;
         Sprite s = set != null && c < set.Length ? set[c] : null;
@@ -208,6 +220,7 @@ public class MenuBackgroundController : MonoBehaviour
 
         // ---- fond du personnage et de la difficulté : le nouveau apparaît en fondu PAR-DESSUS l'ancien ----
         int wanted = WantedKey();
+        if (Time.unscaledTime < _entryUntil && _currentKey == EmptyKey && wanted != EmptyKey) wanted = EmptyKey;   // court temps sur le décor vide
         int top = -1;
         for (int i = 0; i < SlotCount; i++) if (_slotKey[i] == wanted && _slots[i] != null) top = i;
         if (wanted != _currentKey || top < 0)
@@ -268,7 +281,8 @@ public class MenuBackgroundController : MonoBehaviour
 
     private void ApplyZones(Material m, int character)
     {
-        Zone[] extra = PerCharacter[Mathf.Clamp(character, 0, 2)];
+        bool noHero = character > 2;   // décor vide : seulement le décor commun
+        Zone[] extra = noHero ? new Zone[0] : PerCharacter[Mathf.Clamp(character, 0, 2)];
         int n = Common.Length + extra.Length;
         Vector4[] a = new Vector4[12], b = new Vector4[12];
         for (int i = 0; i < n && i < 12; i++)
@@ -282,7 +296,7 @@ public class MenuBackgroundController : MonoBehaviour
         m.SetVectorArray("_WindB", b);
         m.SetFloat("_WindCount", Mathf.Min(12, n));
 
-        Vector4[] prot = Protected[Mathf.Clamp(character, 0, 2)];
+        Vector4[] prot = noHero ? new Vector4[0] : Protected[Mathf.Clamp(character, 0, 2)];
         Vector4[] pa = new Vector4[4];
         for (int i = 0; i < prot.Length && i < 4; i++)
             pa[i] = new Vector4(prot[i].x / ArtWidth, 1f - prot[i].y / ArtHeight, prot[i].z / ArtWidth, prot[i].w / ArtHeight);

@@ -17,6 +17,7 @@ public class EnemyProjectile : MonoBehaviour
     [SerializeField] private float _damage = 10f; // Ajout de la stat de dégâts manquante
 
     private Vector3 _direction;
+    public Vector3 Direction => _direction;   // didacticiel : sens de déplacement
     private Vector3 _startPosition;
     private bool _hasHit = false;
 

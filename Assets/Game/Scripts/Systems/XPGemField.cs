@@ -65,6 +65,25 @@ public class XPGemField : MonoBehaviour
 
     public static int Count => _instance != null ? _instance._count : 0;
 
+    // didacticiel : XP total des gemmes encore au sol, et leurs positions (pour les flèches)
+    public static float TotalXp
+    {
+        get
+        {
+            if (_instance == null) return 0f;
+            float t = 0f;
+            for (int i = 0; i < _instance._count; i++) t += _instance._gems[i].xp;
+            return t;
+        }
+    }
+
+    public static void CollectPositions(System.Collections.Generic.List<Vector3> into, int max)
+    {
+        into.Clear();
+        if (_instance == null) return;
+        for (int i = 0; i < _instance._count && into.Count < max; i++) into.Add(_instance._gems[i].pos);
+    }
+
     private Gem[] _gems = new Gem[512];
     private int _count;
 
@@ -231,6 +250,21 @@ public class XPGemField : MonoBehaviour
             if (!all && (_gems[i].pos - center).sqrMagnitude > rangeSqr) continue;
             BeginAttraction(ref _gems[i], 1f, fast ? 1.6f : 1f);
         }
+    }
+
+    // TESTS UNIQUEMENT (bot d'équilibrage, 2026-11-15) : gemme posée au sol la plus proche de 'from' (en XZ), dans maxDist.
+    public bool TryGetNearest(Vector3 from, float maxDist, out Vector3 position)
+    {
+        position = Vector3.zero;
+        float best = maxDist * maxDist;
+        bool found = false;
+        for (int i = 0; i < _count; i++)
+        {
+            if (_gems[i].state == GemState.Attracted) continue;
+            float dx = _gems[i].pos.x - from.x, dz = _gems[i].pos.z - from.z, d = dx * dx + dz * dz;
+            if (d < best) { best = d; position = _gems[i].pos; found = true; }
+        }
+        return found;
     }
 
     // TESTS UNIQUEMENT (sondes de mesure de puissance, jamais appelé par le jeu) : retire toutes les gemmes sans créditer

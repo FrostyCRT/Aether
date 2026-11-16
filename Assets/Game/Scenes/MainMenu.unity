@@ -61277,6 +61277,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ff04e190bd98fb54bb66557bd79086ec, type: 3}
   - {fileID: 21300000, guid: f9796cc225487074b8d9988ec8337782, type: 3}
   - {fileID: 21300000, guid: aa914b488de7c024987aa53a5fc1b13f, type: 3}
+  _empty: {fileID: 21300000, guid: 022b8b380b7f24445b2341f7dc912c94, type: 3}
   _windShader: {fileID: 4800000, guid: a944b17170e773b42908ac0ff9df214b, type: 3}
   _fadeSeconds: 0.9
   _bottomCropBias: 0.12

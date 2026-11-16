@@ -41,8 +41,26 @@ public static class SaveSystem
             Debug.LogError($"Erreur lors de la sauvegarde : {e.Message}");
         }
     }
+    // AJOUTÉ (2026-11-16, demande utilisateur : « au Build and Run, j'arrive dans le tuto comme si c'était la première fois ») -
+    // dans un JOUEUR construit (jamais dans l'éditeur), la 1re ouverture de CHAQUE nouvelle build efface la sauvegarde : le jeu
+    // démarre vierge et lance le didacticiel. Les lancements suivants de la même build gardent leur sauvegarde (on peut tester le
+    // conseil « après la 1re partie »). Repérée par Application.buildGUID. À METTRE À false avant une vraie sortie.
+    private const bool FreshSaveOnNewBuild = true;
+
+    private static void WipeSaveOnNewBuild()
+    {
+        if (!FreshSaveOnNewBuild || Application.isEditor) return;
+        const string key = "AetherFreshSaveBuild";
+        if (PlayerPrefs.GetString(key, "") == Application.buildGUID) return;
+        try { if (File.Exists(_savePath)) File.Delete(_savePath); if (File.Exists(_backupPath)) File.Delete(_backupPath); }
+        catch (Exception e) { Debug.LogWarning($"Effacement de la sauvegarde impossible : {e.Message}"); }
+        PlayerPrefs.SetString(key, Application.buildGUID);
+        PlayerPrefs.Save();
+    }
+
     public static SaveData Load()
     {
+        WipeSaveOnNewBuild();
         if (!File.Exists(_savePath))
         {
             if (File.Exists(_backupPath))
@@ -223,6 +241,16 @@ public class SaveData
 
     // AJOUTÉ (2026-11-15) - Grimoire : identifiants des premières découvertes ("card:...", "fusion:...", "boss:N"), voir Grimoire.cs.
     public List<string> grimoire = new List<string>();
+
+    // AJOUTÉ (2026-11-16) - didacticiel (voir Tutorial.cs). tutorialInit : la migration des anciennes sauvegardes a eu lieu
+    // (un joueur qui a déjà joué ne revoit pas le didacticiel) ; tutorialMenuDone : visite du menu faite ou passée ;
+    // tutorialHeroChosen : le héros a été choisi pendant la visite (avant : décor sans personnage) ; tutorialHints : masque de
+    // bits des conseils de partie déjà montrés (Tutorial.Hint).
+    public bool tutorialInit = false;
+    public bool tutorialMenuDone = false;
+    public bool tutorialHeroChosen = false;
+    public int tutorialHints = 0;
+    public int tutorialPages = 0;   // bit par page du menu dont la visite guidée a été vue (voir Tutorial.Page)
 }
 
 [System.Serializable]

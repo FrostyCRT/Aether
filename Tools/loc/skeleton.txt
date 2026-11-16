@@ -729,3 +729,59 @@
 694	Espace de travail ({0})	Work area ({0})
 695	Portée : les couteaux vont {0} m plus loin avant de revenir	Range: knives fly {0} m farther before coming back
 696	Lames larges : couteaux plus gros qui touchent sur une bande plus large	Wide blades: bigger knives that hit across a wider strip
+
+## didacticiel (2026-11-16, refonte 2) ----
+697	le stick gauche	the left stick
+698	le curseur de la manette	the gamepad cursor
+699	Suivant	Next
+700	Confirmer ?	Confirm?
+701	Passer le didacticiel	Skip the tutorial
+702	BIENVENUE	WELCOME
+703	Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres pendant 15 minutes, jusqu'au 3<sup>ème</sup> boss. Choisissez votre langue pour commencer.	Aether Storm Survivor is a survival game: fight hordes of monsters for 15 minutes, up to the 3<sup>rd</sup> boss. Choose your language to begin.
+704	Commencer	Start
+705	PERSONNAGES	CHARACTERS
+706	Ouvrez l'onglet Personnages.	Open the Characters tab.
+707	HÉROS	HEROES
+708	Chaque héros dispose de son propre style de combat. Sélectionnez Aether pour commencer.	Each hero has their own combat style. Select Aether to begin.
+709	ACCUEIL	HOME
+710	Retournez à l'onglet Accueil.	Return to the Home tab.
+711	PARTIE	MATCH
+712	Choisissez un mode de jeu et une difficulté, puis lancez la partie avec Jouer. D'autres modes se débloquent en progressant.	Choose a game mode and a difficulty, then start with Play. More modes unlock as you progress.
+713	GRIMOIRE	GRIMOIRE
+714	Le Grimoire recense vos découvertes et récompense la première de chacune. Ouvrez-le, puis refermez-le.	The Grimoire records your discoveries and rewards the first of each. Open it, then close it.
+715	Refermez le Grimoire pour continuer.	Close the Grimoire to continue.
+716	Ouvrez l'onglet Compétences.	Open the Skills tab.
+717	Les compétences sont des bonus permanents achetés avec l'Or gagné en partie. Cliquez sur un nœud pour consulter son détail.	Skills are permanent bonuses bought with the Gold earned in matches. Click a node to view its details.
+718	Les Éclats achètent ici des bonus permanents. Ouvrez l'onglet Réputation.	Shards buy permanent bonuses here. Open the Reputation tab.
+719	ENTRAÎNEMENT	TRAINING
+720	Une partie d'entraînement guidée présente les commandes. Vous pouvez aussi lancer directement une partie sans assistance.	A guided training match introduces the controls. You can also start a match directly, without assistance.
+721	Entraînement	Training
+722	Passer	Skip
+723	PREMIÈRE PARTIE TERMINÉE	FIRST RUN COMPLETE
+724	L'Or accumulé suffit pour acheter un premier nœud dans Compétences.	The accumulated Gold is enough to buy a first node in Skills.
+725	Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.	The first node costs {0} Gold; you have {1}. Keep playing to afford it.
+726	Compris	Got it
+727	Fermer	Close
+728	Plus de conseils	No more tips
+729	DÉPLACEMENT	MOVEMENT
+730	Déplacez-vous avec {0}. Votre héros attaque automatiquement.	Move with {0}. Your hero attacks automatically.
+731	NIVEAU SUPÉRIEUR	LEVEL UP
+732	Choisissez une carte ({0}) : une nouvelle arme ou l'amélioration d'une arme existante.	Choose a card ({0}): a new weapon or an upgrade to an existing one.
+733	La carte violette fusionne deux armes au niveau maximum.	The purple card fuses two maxed weapons.
+734	{0} : esquive invincible. Traverser un projectile ennemi l'absorbe et charge le Cristal.	{0}: invincible dodge. Passing through an enemy projectile absorbs it and charges the Crystal.
+735	Cristal chargé : {0} déclenche l'Ultime.	Crystal charged: {0} triggers the Ultimate.
+736	ORBITAUX	ORBITALS
+737	{0} et {1} règlent la distance des orbitaux.	{0} and {1} adjust the orbitals' distance.
+738	COFFRE	CHEST
+739	Marchez sur le coffre du boss pour obtenir 2 tirages de cartes.	Walk onto the boss's chest to get 2 card draws.
+740	BOSS	BOSS
+741	Le chrono s'arrête pendant le combat. Esquivez ses attaques et éliminez-le pour obtenir un coffre.	The timer stops during the fight. Dodge its attacks and defeat it to get a chest.
+742	VIE	HEALTH
+743	Barre de vie. À zéro, la partie est perdue.	Health bar. At zero, the run is lost.
+744	EXPÉRIENCE	EXPERIENCE
+745	Ramassez les gemmes laissées par les monstres pour monter de niveau.	Pick up the gems dropped by monsters to level up.
+746	COMPTEURS	COUNTERS
+747	Chrono, éliminations et Or. Un boss apparaît toutes les 5 minutes.	Timer, kills and Gold. A boss appears every 5 minutes.
+748	ACTIONS	ACTIONS
+749	Dash ({0}) et Ultime ({1}).	Dash ({0}) and Ultimate ({1}).
+750	Terminer	Finish

@@ -736,3 +736,57 @@
 694| Area di lavoro ({0})
 695| Portata: i coltelli vanno {0} m più lontano prima di tornare
 696| Lame larghe: coltelli più grandi che colpiscono su una fascia più ampia
+697| lo stick sinistro
+698| il cursore del controller
+699| Avanti
+700| Confermare?
+701| Salta il tutorial
+702| BENVENUTO
+703| Inizia
+704| PERSONAGGI
+705| EROI
+706| PARTITA
+707| GRIMORIO
+708| Le abilità sono bonus permanenti acquistati con le monete d'oro guadagnate nelle partite. Clicca su un nodo per vederne i dettagli.
+709| ALLENAMENTO
+710| Una partita di allenamento guidata presenta i comandi. Puoi anche avviare direttamente una partita, senza assistenza.
+711| Allenamento
+712| Salta
+713| PRIMA PARTITA COMPLETATA
+714| Le monete d'oro accumulate bastano per acquistare un primo nodo in Abilità.
+715| Il primo nodo costa {0} monete d'oro; ne hai {1}. Continua a giocare per ottenerlo.
+716| Capito
+717| MOVIMENTO
+718| LIVELLO SUPERIORE
+719| Scegli una carta ({0}): un'arma nuova o il potenziamento di una esistente.
+720| BOSS
+721| VITA
+722| Barra della vita. A zero, la partita è persa.
+723| ESPERIENZA
+724| Raccogli le gemme lasciate dai mostri per salire di livello.
+725| AZIONI
+726| Scatto ({0}) e Suprema ({1}).
+727| Fine
+728| HOME
+729| Seleziona prima un personaggio
+730| Aether Storm Survivor è un gioco di sopravvivenza: affronta orde di mostri, potenzia il tuo eroe e sopravvivi. Scegli la lingua per iniziare.
+731| Nessun eroe è selezionato. Apri la scheda Personaggi per sceglierne uno.
+732| Ogni eroe ha il proprio stile di combattimento e il proprio albero delle abilità. Seleziona Aether per iniziare.
+733| Ogni eroe ha il proprio stile di combattimento e il proprio albero delle abilità. Gli altri eroi si sbloccano progredendo.
+734| Scegli una modalità di gioco e una difficoltà, poi avvia con Gioca. Le difficoltà superiori si sbloccano progredendo.
+735| Il Grimorio elenca le tue scoperte e premia la prima di ciascuna.
+736| I frammenti comprano qui bonus permanenti.
+737| FUOCO AUTOMATICO
+738| Un nemico si avvicina. Il tuo eroe mira e spara automaticamente: concentrati sugli spostamenti per mantenere le distanze.
+739| I nemici sconfitti lasciano gemme di esperienza. Passaci sopra per raccoglierle.
+740| Sconfiggi i nemici e raccogli le loro gemme fino a riempire la barra dell'esperienza.
+741| Esegui uno scatto attraverso il proiettile ({0}). Lo scatto ti rende invincibile: il proiettile viene assorbito, scatena una Nova che ferisce i nemici vicini e carica il Cristallo della suprema.
+742| SCATTO OFFENSIVO
+743| Lo scatto non serve solo a muoversi: è un'arma. Assorbire un proiettile infligge danni con la Nova e carica la suprema, ma uno scatto mal calibrato ti lascia esposto.
+744| ASSORBIMENTO
+745| Assorbi i proiettili dei goblin con lo scatto per riempire il Cristallo della suprema.
+746| Il Cristallo è carico: {0} attiva la Suprema. Colpisce tutti i nemici, li rallenta e attira tutte le gemme a terra.
+747| ADDESTRAMENTO COMPLETATO
+748| Conosci l'essenziale. Le partite vere ti aspettano.
+749| Salta l'addestramento
+750| Muoviti con {0}.

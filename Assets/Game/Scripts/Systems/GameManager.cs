@@ -317,6 +317,7 @@ public class GameManager : MonoBehaviour
 
         // la page Paramètres (ouverte depuis le menu pause) garde la touche Pause pour se refermer
         if (GameInput.Down(GameAction.Pause) && !SettingsPage.InGameOpen && SettingsPage.ClosedFrame != Time.frameCount
+            && !TutorialOverlay.IsShowing
             && !QuitConfirm.IsOpen && QuitConfirm.ClosedFrame != Time.frameCount)
         {
             if (LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice) return;
@@ -326,6 +327,7 @@ public class GameManager : MonoBehaviour
         // d'abandon si elle est ouverte (le menu pause revient, voir AbandonConfirmReturnToPause), sinon reprend la
         // partie. Pas pendant les Paramètres ni la fenêtre Quitter, qui gèrent leur propre B.
         else if (IsPaused && GameInput.PadBackDown() && !SettingsPage.InGameOpen && SettingsPage.ClosedFrame != Time.frameCount
+                 && !TutorialOverlay.IsShowing
                  && !QuitConfirm.IsOpen && QuitConfirm.ClosedFrame != Time.frameCount
                  && !(LevelUpManager.Instance != null && LevelUpManager.Instance.IsWaitingForChoice))
         {

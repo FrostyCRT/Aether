@@ -518,6 +518,28 @@ public class CharacterSelectUI : MonoBehaviour
         _panelBackgroundImageRect.sizeDelta = new Vector2(width, height);
     }
 
+    private static CharacterSelectUI _tutorialInstance;
+
+    /// <summary>Bouton « Sélectionner » (mis en lumière par le didacticiel).</summary>
+    public static RectTransform SelectButtonRect
+    {
+        get
+        {
+            if (_tutorialInstance == null) _tutorialInstance = FindAnyObjectByType<CharacterSelectUI>(FindObjectsInactive.Include);
+            return _tutorialInstance != null && _tutorialInstance._selectButton != null ? (RectTransform)_tutorialInstance._selectButton.transform : null;
+        }
+    }
+
+    /// <summary>Héros affiché dans la page Personnages (didacticiel).</summary>
+    public static int ViewedIndex => _tutorialInstance != null ? _tutorialInstance._currentIndex : 0;
+    public static RectTransform LeftArrowRect { get { var u = Instance(); return u != null && u._leftArrow != null ? (RectTransform)u._leftArrow.transform : null; } }
+    public static RectTransform RightArrowRect { get { var u = Instance(); return u != null && u._rightArrow != null ? (RectTransform)u._rightArrow.transform : null; } }
+    private static CharacterSelectUI Instance()
+    {
+        if (_tutorialInstance == null) _tutorialInstance = FindAnyObjectByType<CharacterSelectUI>(FindObjectsInactive.Include);
+        return _tutorialInstance;
+    }
+
     public void OnSelectClicked()
     {
         if (MetaProgressionManager.Instance == null) return;
@@ -525,6 +547,7 @@ public class CharacterSelectUI : MonoBehaviour
 
         // CORRIGÉ — SetSelectedCharacter appelé ici et UNIQUEMENT ici
         MetaProgressionManager.Instance.SetSelectedCharacter(_currentIndex);
+        Tutorial.NotifyHeroChosen();   // didacticiel (2026-11-16) : le décor de l'Accueil peut accueillir le héros
 
         if (SkillTreeUI.Instance != null)
             SkillTreeUI.Instance.RefreshAllNodes();
@@ -657,7 +680,7 @@ public class CharacterSelectUI : MonoBehaviour
         _selectButton.gameObject.SetActive(true);
 
         int savedIndex = MetaProgressionManager.Instance.GetSelectedCharacterIndex();
-        bool isSelected = savedIndex == _currentIndex;
+        bool isSelected = savedIndex == _currentIndex && !Tutorial.NoHeroYet;   // didacticiel : tant que le héros n'est pas choisi, rien n'est « Sélectionné »
 
         _selectButton.interactable = !isSelected;
 

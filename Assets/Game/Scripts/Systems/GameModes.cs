@@ -155,7 +155,9 @@ public static class GameModes
     // scaling et tout le code de WaveManager restent intacts - seul le sélecteur de mode ne peut plus s'y arrêter
     // (voir GameModeSelector.Step ci-dessous et EnsureCurrentIsAvailable) - récupérable en 1 ligne pour un futur
     // mode "New Game+"/défi post-lancement sans aucun travail de reconstruction.
-    public static bool IsShippable(GameMode mode) => mode != GameMode.Titans;
+    // MODIFIÉ (2026-11-16, retour utilisateur) : Sans fin et Ruée de boss sont aussi masqués ; seuls Classique et Escarmouche restent
+    // sélectionnables (retrait non destructif, comme pour les Titans : il suffit de les remettre ici).
+    public static bool IsShippable(GameMode mode) => mode == GameMode.Classic || mode == GameMode.Skirmish;
 
     public static string LockedHint(GameMode mode)
     {

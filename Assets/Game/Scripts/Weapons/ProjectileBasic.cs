@@ -223,6 +223,10 @@ public class ProjectileBasic : MonoBehaviour
         if (!boomerang) transform.position += _direction * _speed * Time.deltaTime;
         for (int i = _pendingBosses.Count - 1; i >= 0 && gameObject.activeSelf; i--)
         {
+            // CORRIGÉ (2026-11-16) : HandleHit(c) peut tuer le boss, ce qui désactive des colliders et appelle OnTriggerExit
+            // (_pendingBosses.Remove) : la liste peut avoir rétréci avant le tour suivant -> index hors limites (vu en partie
+            // au bot, ProjectileBasic.cs:226, pendant un combat de boss).
+            if (i >= _pendingBosses.Count) continue;
             Collider c = _pendingBosses[i];
             if (c == null || !c.enabled || !c.CompareTag("Enemy")) { _pendingBosses.RemoveAt(i); continue; }
             c.TryGetComponent(out BossBase boss);

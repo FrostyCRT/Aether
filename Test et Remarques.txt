@@ -1,4 +1,6 @@
 C:\Users\jules\My project\Aether Storm Survivor
+C:\Users\jules\My project\Aether
+
 npx @anthropic-ai/claude-code
 instagram-skill Plugin claude pour tout le côté marketing de Insta.
 https://github.com/Panniantong/Agent-Reach.git
@@ -6,13 +8,9 @@ https://github.com/Panniantong/Agent-Reach.git
 
 Mode coop ? deux joueurs dans la partie.
 
-dans le tuto, faire en sorte que au début, aucun personnage n'est sélectionner, et que donc le fond d'écran est sans Aether et son baton, une fois que dans le tuto on passe au personnage, et qu'on le sélectionne, et qu'on revient dans l'accueil, là on voit la petite fondue avec Aether et son baton. L'animation est déjà en place dans le code, il faut juste garder cette idée en tête.
-Il faut aussi lancer cette animation à chaque fois que on change de scene, et qu'on revient dans la scene menu, ça fait la fondue du personnage qui arrive
-
-Lyra est tournée quand elle marche, ça doit être à cause du moment où tu l'a redressée, ça à fait la même chose avec Aether quand tu l'avait redressé, après pendant sa marche il est tourné et ne marchait plus droit. Il faut que tu mette son LyraTripo rotation en y = 0 quand elle marche
-
-il faut revoir ce que font les autres up de la carte Couteaux, pour le +1 couteau c'est bon, mais pour les autres, ça ne va pas. Pour un des 2 on peut augmenter la range, que les couteaux partent plus loin.
-
-mettre la même bordure que le pause panel pour le Victory panel et le game over panel.
-
-Enlève le boost de dégâts qu'on avait mis à Lyra, maintenant qu'elle a plus de sources de dégâts, elle en met trop maintenant. Donc remet au même niveau que les autres personnages.
+quand on fait un alt tab, et qu'on est dans le didacticiel du jeu, ça met le pause panel alors qu'il y a un panel de didacticiel.
+dans la partie de test en jeu, enleve le HUD, et affiche le que quand c'est son étape dans le didacticiel.
+Enlève les phases inutiles du didacticiel, il y en a trop. Et surtout, tu parles au joueur comme si c'était un enfant, un joueur a les codes du jeu vidéo, et tu parles avec un ton trop familier. Tu peux t'inspirer des didacticiels de vrais jeu pour comparer.
+Il est possible pour le joueur de sortir de la page voulu dans le didacticiel du menu.
+n'écrit pas le nombre d'étapes parce que sinon ça semble long, le joueur ne lit pas un livre ou un guide de construction, ça doit être fluide.
+C'est la taille du panel que je voulais que tu augmentes, pas forcément les textes.

@@ -17,6 +17,8 @@ public class EnemyBase : MonoBehaviour
     [Header("Vol")]
     [SerializeField] private bool _isFlying = false;
     public bool IsFlying => _isFlying;
+    // didacticiel : XP qu'il rapportera à sa mort (même formule que Die)
+    public float XpReward => _xpValue * (_xpHealthMultiplier >= 0f ? _xpHealthMultiplier : _healthMultiplier) * _xpPacingMultiplier;
 
     // CORRIGÉ (2026-10-21, retour utilisateur : "comme tu as recentré le corbeau, il est maintenant à la même
     // hauteur que les autres ennemis, sauf que le corbeau est un oiseau volant donc il doit être en l'air") - le
