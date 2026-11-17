@@ -758,10 +758,10 @@
 716| Capito
 717| MOVIMENTO
 718| LIVELLO SUPERIORE
-719| Scegli una carta ({0}): un'arma nuova o il potenziamento di una esistente.
+719| Scegli una carta per ottenere una nuova arma o migliorarne una esistente.
 720| BOSS
 721| VITA
-722| Barra della vita. A zero, la partita è persa.
+722| Barra della vita. A 0, la partita è persa.
 723| ESPERIENZA
 724| Raccogli le gemme lasciate dai mostri per salire di livello.
 725| AZIONI
@@ -780,7 +780,7 @@
 738| Un nemico si avvicina. Il tuo eroe mira e spara automaticamente: concentrati sugli spostamenti per mantenere le distanze.
 739| I nemici sconfitti lasciano gemme di esperienza. Passaci sopra per raccoglierle.
 740| Sconfiggi i nemici e raccogli le loro gemme fino a riempire la barra dell'esperienza.
-741| Esegui uno scatto attraverso il proiettile ({0}). Lo scatto ti rende invincibile: il proiettile viene assorbito, scatena una Nova che ferisce i nemici vicini e carica il Cristallo della suprema.
+741| Rivolgiti verso il proiettile ed esegui uno scatto attraverso di esso ({0}). Lo scatto ti rende invincibile: il proiettile viene assorbito, scatena una Nova che ferisce i nemici vicini e carica il Cristallo della suprema.
 742| SCATTO OFFENSIVO
 743| Lo scatto non serve solo a muoversi: è un'arma. Assorbire un proiettile infligge danni con la Nova e carica la suprema, ma uno scatto mal calibrato ti lascia esposto.
 744| ASSORBIMENTO

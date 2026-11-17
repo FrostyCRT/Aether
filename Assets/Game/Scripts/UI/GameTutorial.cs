@@ -14,8 +14,8 @@ using UnityEngine.SceneManagement;
 //   8. gobelins en temps réel jusqu'à ce que le Cristal soit plein  9. ~15 ennemis autour du joueur : ralenti + voile + « Ultime »
 //   10. fin : fondu et retour au menu.
 // La partie ne compte pas : la sauvegarde est figée pendant l'entraînement (SaveSystem.SuppressWrites) et restaurée à la sortie, le
-// joueur ne peut pas mourir, l'Ultime est verrouillé jusqu'à son étape. Les ralentis ne sont pas des pauses : le temps coule (très
-// lentement) tant que le joueur agit, et se fige s'il ne fait rien pendant FreezeAfter secondes (temps réel).
+// joueur ne peut pas mourir, l'Ultime est verrouillé jusqu'à son étape. Aux étapes « Dash » et « Ultime », l'écran est figé (ennemis et projectiles
+// à l'arrêt, EnemyBase.TutorialFreeze) mais le joueur reste libre de ses mouvements ; armes retirées dès l'étape du dash.
 public class GameTutorial : MonoBehaviour
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -47,6 +47,7 @@ public class GameTutorial : MonoBehaviour
     private Func<List<Vector3>> _pointerSource;
     private readonly List<Vector3> _pointerBuf = new List<Vector3>();
 
+    private bool _suppressed;
     private bool _pausedByUs;
     private float _prevTimeScale = 1f;
     private bool _ended;
@@ -64,8 +65,15 @@ public class GameTutorial : MonoBehaviour
     private void Update()
     {
         HideHud();
+        // Menu pause ouvert par le joueur (pas par nous, ni par le choix de carte) : flèches et fenêtre du didacticiel s'effacent.
+        bool pauseMenu = _gm != null && _gm.IsPaused && !_pausedByUs && !LevelUpPending();
+        if (pauseMenu != _suppressed)
+        {
+            _suppressed = pauseMenu;
+            if (TutorialOverlay.IsShowing) TutorialOverlay.Get().SetSuppressed(pauseMenu);
+        }
         if (_pointer == null) return;
-        if (_pointerSource != null) _pointer.Show(_pointerSource());
+        if (_pointerSource != null && !pauseMenu) _pointer.Show(_pointerSource());
         else _pointer.Hide();
     }
 
@@ -76,6 +84,10 @@ public class GameTutorial : MonoBehaviour
         ReleasePause();
         if (TutorialOverlay.IsShowing) TutorialOverlay.Get().Dismiss();
         HealthSystem.DebugNeverDie = _prevNeverDie;
+        Tutorial.PracticeActive = false;
+        EnemyBase.TutorialFreeze = false;
+        WeaponBase.AutoFireDisabled = false;
+        if (_pc != null) { _pc.DashFilter = null; _pc.MovementLocked = false; _pc.DashLocked = false; }
         RestoreSave();
     }
 
@@ -145,12 +157,13 @@ public class GameTutorial : MonoBehaviour
         yield return new WaitForSeconds(0.4f);
 
         // 2. visite du HUD ----------------------------------------------------------------------------------------------------
-        yield return HudStep("Health", "VIE", "Barre de vie. À zéro, la partie est perdue.");
+        yield return HudStep("Health", "VIE", "Barre de vie. À 0, la partie est perdue.");
         yield return HudStep("XpGroup", "EXPÉRIENCE", "Ramassez les gemmes laissées par les monstres pour monter de niveau.");
         yield return HudStep("ActionCluster", "ACTIONS", null);
         yield return new WaitForSeconds(0.5f);
 
         // 3. le premier loup ------------------------------------------------------------------------------------------------
+        WeaponBase.AutoFireDisabled = false;   // le tir automatique est expliqué avec le premier loup
         EnemyBase wolf = SpawnWolf(Side(1f), 13f, 0.7f, 0.55f);
         if (wolf != null)
         {
@@ -194,7 +207,7 @@ public class GameTutorial : MonoBehaviour
             bool gemsOnGround = XPGemField.Count > 0;
             _pointerSource = gemsOnGround ? (Func<List<Vector3>>)GemArrows : null;
             // une génération seulement quand tout est ramassé (générations lentes)
-            if (!anyAlive && !gemsOnGround && spawned < planned + 12)   // plafond de sécurité seulement
+            if (!anyAlive && !gemsOnGround && spawned < planned + 2)   // planned = loups nécessaires (calculé) ; +2 seulement si un reste d'XP de gemme manque
             {
                 yield return new WaitForSeconds(1.3f);
                 if (_xp.CurrentLevel != level || LevelUpPending()) break;
@@ -213,6 +226,7 @@ public class GameTutorial : MonoBehaviour
         while (LevelUpManager.Instance != null && LevelUpManager.Instance.IsChoosing) yield return null;
         yield return new WaitForSeconds(1.2f);
 
+        DisableWeapons();   // plus de tir ni d'armes jusqu'à la fin : le but n'est plus de tirer
         // 7. le gobelin immobile : le dash ------------------------------------------------------------------------------------------
         EnemyBase goblin = SpawnGoblin(Side(1f), 7f, true);
         bool absorbed = false;
@@ -226,15 +240,23 @@ public class GameTutorial : MonoBehaviour
                 shot = IncomingProjectile(3.6f);
                 yield return null;
             }
-            if (_pc != null) _pc.ResetDashCooldown();
             EnemyProjectile tracked = shot;
+            if (_pc != null)
+            {
+                _pc.DashLocked = false;
+                _pc.ResetDashCooldown();
+                // le dash ne part que s'il vise le projectile (à ~30°), sinon rien : on ne peut pas le gâcher
+                _pc.DashFilter = dir => tracked != null && tracked.gameObject.activeInHierarchy
+                    && Vector3.Angle(new Vector3(dir.x, 0f, dir.z), Flatten(tracked.transform.position - _player.transform.position)) <= 30f;
+            }
             _pointerSource = () => Single(tracked != null && tracked.gameObject.activeInHierarchy ? tracked.transform.position : (Vector3?)null);
             yield return SlowPrompt(new TutorialStep
             {
                 Title = () => Loc.T("DASH"),
-                Body = () => Loc.F("Dashez à travers le projectile ({0}). Le dash vous rend invincible : le projectile est absorbé, déclenche une Nova qui blesse les ennemis proches et charge le Cristal d'ultime.", Tutorial.Keys(GameAction.Dash)),
+                Body = () => Loc.F("Orientez-vous vers le projectile, puis effectuez un dash à travers lui ({0}). Le dash vous rend invincible : le projectile est absorbé, déclenche une Nova qui blesse les ennemis proches et charge le Cristal d'ultime.", Tutorial.Keys(GameAction.Dash)),
             }, SlowScale, () => TotalCharges() > chargesBefore, () => tracked == null || !tracked.gameObject.activeInHierarchy);
             _pointerSource = null;
+            if (_pc != null) _pc.DashFilter = null;
             absorbed = TotalCharges() > chargesBefore;
         }
         yield return new WaitForSeconds(0.6f);
@@ -253,7 +275,7 @@ public class GameTutorial : MonoBehaviour
         {
             if (AliveCount(GoblinTag) < 3 && Time.time >= nextGoblin)
             {
-                SpawnGoblin(RandomDir(), 9f, false);
+                SpawnGoblin(NotAboveDir(), 8f, false);   // jamais par le haut : la fenêtre du didacticiel y masque l'écran
                 nextGoblin = Time.time + 1.2f;
             }
             yield return null;
@@ -266,21 +288,20 @@ public class GameTutorial : MonoBehaviour
         // 9. une quinzaine d'ennemis autour du joueur : l'Ultime ---------------------------------------------------------------------------
         float ringStart = Time.time;
         int ring = 0;
-        const int RingSize = 15;
+        const int RingSize = 26;   // beaucoup d'ennemis : le cercle doit être dense
         while (true)
         {
-            if (ring < RingSize && Time.time - ringStart >= ring * 0.16f)
+            if (ring < RingSize && Time.time - ringStart >= ring * 0.07f)
             {
                 float a = ring * (360f / RingSize) * Mathf.Deg2Rad;
-                SpawnWolf(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), 11f + (ring % 3), 0.8f, 0.2f, 0.2f);
+                SpawnWolf(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), 8f + (ring % 3), 0.8f, 1.1f, 0.2f);   // vitesse normale : ils arrivent vite
                 ring++;
             }
             int alive = AliveCount(WolfTag);
             float nearest = NearestEnemy(WolfTag);
-            if (ring >= RingSize && alive >= 12 && nearest <= 6.5f) break;
-            if (Time.time - ringStart > 12f && alive >= 8 && nearest <= 6.5f) break;
-            if (ring >= RingSize && alive < RingSize && Time.time - ringStart < 10f && Time.time - ringStart > ring * 0.16f + 0.5f)
-                SpawnWolf(RandomDir(), 11f, 0.8f, 0.2f, 0.2f);
+            if (ring >= RingSize && alive >= 18 && nearest <= 5.5f) break;
+            if (Time.time - ringStart > 7f && alive >= 14 && nearest <= 5.5f) break;
+            if (Time.time - ringStart > 12f) break;   // garde-fou : le joueur a tout abattu
             yield return null;
         }
         SpawnGemRing(6, 4.5f);
@@ -293,15 +314,31 @@ public class GameTutorial : MonoBehaviour
 
         // 10. fin ---------------------------------------------------------------------------------------------------------------------
         yield return new WaitForSeconds(3.2f);
-        RevealHud(null);
+        HideAllHud();   // dernière étape faite : le HUD disparaît
+        // fenêtre de fin : plus de déplacement, de dash ni d'ultime, seule la souris sert (bouton Terminer)
+        if (_pc != null) { _pc.MovementLocked = true; _pc.DashLocked = true; }
+        if (_crystal != null) _crystal.UltimateLocked = true;
         yield return Modal(new TutorialStep
         {
             Title = () => Loc.T("ENTRAÎNEMENT TERMINÉ"),
             Body = () => Loc.T("Vous connaissez l'essentiel. Les vraies parties vous attendent."),
             NextLabel = () => Loc.T("Terminer"),
             ShowSkip = false,
-        }, false);
+            Position = TutorialStep.Place.Center,
+        });
         EndPractice();
+    }
+
+    // Retire les armes du joueur (tir de base compris) : composants « Weapon* » coupés.
+    private void DisableWeapons()
+    {
+        WeaponBase.AutoFireDisabled = true;
+        foreach (MonoBehaviour m in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+        {
+            if (m == null || !m.GetType().Name.StartsWith("Weapon")) continue;
+            if (m.gameObject == _player) m.enabled = false;
+            else m.gameObject.SetActive(false);
+        }
     }
 
     // ---- mise en place ------------------------------------------------------------------------------------------------------
@@ -311,6 +348,8 @@ public class GameTutorial : MonoBehaviour
         _prevNeverDie = HealthSystem.DebugNeverDie;
         HealthSystem.DebugNeverDie = true;   // partie de test : on ne meurt pas
         if (_crystal != null) _crystal.UltimateLocked = true;
+        if (_pc != null) _pc.DashLocked = true;   // le dash n'est débloqué qu'à son étape
+        WeaponBase.AutoFireDisabled = true;       // pas de tir pendant les étapes de déplacement
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null) spawner.gameObject.SetActive(false);   // aucune vague : tout est placé par le scénario
         if (WaveManager.Instance != null) WaveManager.Instance.enabled = false;
@@ -329,7 +368,8 @@ public class GameTutorial : MonoBehaviour
         if (s.NextLabel == null) s.NextLabel = () => Loc.T("Compris");
         s.SkipLabel = () => Loc.T("Passer l'entraînement");
         s.SkipConfirm = false;
-        s.Width = 1000f;
+        s.Width = 780f;
+        if (s.Position == TutorialStep.Place.Auto) s.Position = TutorialStep.Place.TopRight;
         if (pause) SetPause(true);
         TutorialOverlay.Get().Present(s, 0, 1, () => _modalDone = true, SkipPractice);
         while (!_modalDone) yield return null;
@@ -366,9 +406,9 @@ public class GameTutorial : MonoBehaviour
             ShowSkip = true,
             SkipLabel = () => Loc.T("Passer l'entraînement"),
             SkipConfirm = false,
-            Position = place,
-            Width = 880f,
-            TextScale = 0.8f,
+            Position = TutorialStep.Place.TopRight,
+            Width = 720f,
+            Compact = true,
         };
         _hintShown = true;
         TutorialOverlay.Get().Present(s, 0, 1, HideHint, SkipPractice);
@@ -386,17 +426,15 @@ public class GameTutorial : MonoBehaviour
     {
         TutorialStep s = new TutorialStep
         {
-            Title = () => Loc.T("NIVEAU SUPÉRIEUR"),
-            Body = () => Loc.F("Choisissez une carte ({0}) : une nouvelle arme ou l'amélioration d'une arme existante.", Tutorial.CardKeys()),
+            Title = () => "",   // le titre de l'écran (« Niveau supérieur ! ») suffit : une seule ligne, tout en bas, les cartes restent entières
+            Body = () => Loc.T("Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante."),
             Dim = false,
             BlockInput = false,
             RequireAction = true,
-            ShowSkip = true,
-            SkipLabel = () => Loc.T("Passer l'entraînement"),
-            SkipConfirm = false,
+            ShowSkip = false,
             Position = TutorialStep.Place.Bottom,
-            Width = 1500f,
-            TextScale = 0.7f,
+            Width = 1100f,
+            Compact = true,
             DoneWhen = () => LevelUpManager.Instance == null || !LevelUpManager.Instance.IsWaitingForChoice,
         };
         bool done = false;
@@ -410,33 +448,22 @@ public class GameTutorial : MonoBehaviour
     {
         bool done = false;
         s.Dim = true;
-        s.DimAlpha = 0.5f;
+        s.DimAlpha = 0.7f;   // voile sombre : il faut lire ; l'action reste visible au travers
         s.BlockInput = false;
         s.RequireAction = true;
         s.ShowSkip = true;
         s.SkipLabel = () => Loc.T("Passer l'entraînement");
         s.SkipConfirm = false;
-        s.Position = TutorialStep.Place.Top;
-        s.Width = 1000f;
-        s.TextScale = 0.9f;
+        s.Position = TutorialStep.Place.TopRight;
+        s.Width = 820f;
+        s.Compact = true;
         s.DoneWhen = () => success() || (failed != null && failed());
         TutorialOverlay.Get().Present(s, 0, 1, () => done = true, SkipPractice);
-        Time.timeScale = scale;
-        bool frozen = false;
-        float last = Time.unscaledTime;
-        while (!done)
-        {
-            if (PlayerActed()) { last = Time.unscaledTime; if (frozen) { frozen = false; Time.timeScale = scale; } }
-            else if (!frozen && Time.unscaledTime - last > FreezeAfter) { frozen = true; Time.timeScale = 0f; }
-            yield return null;
-        }
+        // Écran figé : ennemis et projectiles s'arrêtent, mais le joueur reste libre de se déplacer (s'orienter) et d'agir.
+        EnemyBase.TutorialFreeze = true;
+        while (!done) yield return null;
+        EnemyBase.TutorialFreeze = false;
         TutorialOverlay.Get().Dismiss();
-        Time.timeScale = 1f;
-    }
-
-    private static bool PlayerActed()
-    {
-        return Input.anyKey || Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.2f || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.2f;
     }
 
     // ---- pause (visite, fenêtres) -----------------------------------------------------------------------------------------
@@ -471,6 +498,21 @@ public class GameTutorial : MonoBehaviour
 
     private Vector3 Side(float sign) => Right() * sign;
 
+    // Direction aléatoire sur les côtés ou vers le bas de l'écran (pas vers le haut, où se trouve la fenêtre du didacticiel).
+    private Vector3 NotAboveDir()
+    {
+        Camera cam = Camera.main;
+        Vector3 up = cam != null ? cam.transform.up : Vector3.forward;
+        up.y = 0f;
+        up = up.sqrMagnitude > 0.01f ? up.normalized : Vector3.forward;
+        for (int i = 0; i < 20; i++)
+        {
+            Vector3 d = RandomDir();
+            if (Vector3.Dot(d, up) < 0.2f) return d;
+        }
+        return -up;
+    }
+
     private static Vector3 RandomDir()
     {
         float a = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
@@ -483,6 +525,8 @@ public class GameTutorial : MonoBehaviour
         p.y = 0f;
         return MapBoundaryUtils.ClampToZone(p);
     }
+
+    private static Vector3 Flatten(Vector3 v) { v.y = 0f; return v; }
 
     private static float Flat(Vector3 a, Vector3 b) { float dx = a.x - b.x, dz = a.z - b.z; return Mathf.Sqrt(dx * dx + dz * dz); }
 
@@ -635,11 +679,29 @@ public class GameTutorial : MonoBehaviour
         }
     }
 
+    // Cache tout le HUD (fin de l'entraînement).
+    private void HideAllHud()
+    {
+        Transform canvas = GameUI.Instance != null ? GameUI.Instance.transform.parent : null;
+        Transform hud = canvas != null ? canvas.Find("HUD") : null;
+        if (hud != null) hud.localScale = Vector3.zero;
+    }
+
     /// <summary>Montre un groupe du HUD (null = tout).</summary>
     private void RevealHud(string group)
     {
-        if (_legendHidden != null && (group == null || group == "ActionCluster")) { _legendHidden.localScale = _hudScale[_legendHidden]; _legendHidden = null; }
+        if (_legendHidden != null && (group == null || group == "ActionCluster")) {
+            _legendHidden.localScale = _hudScale[_legendHidden];
+            foreach (TMPro.TMP_Text t in _legendHidden.GetComponentsInChildren<TMPro.TMP_Text>(true)) t.ForceMeshUpdate();
+            _legendHidden = null;
+        }
         foreach (var kv in _hudHidden)
-            if ((group == null || kv.Key == group) && kv.Value != null) kv.Value.localScale = _hudScale[kv.Value];
+            if ((group == null || kv.Key == group) && kv.Value != null)
+            {
+                kv.Value.localScale = _hudScale[kv.Value];
+                // TextMeshPro fige son maillage quand l'échelle est nulle (blocs gris au retour) : on le régénère
+                foreach (TMPro.TMP_Text t in kv.Value.GetComponentsInChildren<TMPro.TMP_Text>(true))
+                    t.ForceMeshUpdate();
+            }
     }
 }

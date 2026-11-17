@@ -68,6 +68,7 @@ public class WeaponMudPuddle : MonoBehaviour
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
 
         _waveTimer += Time.deltaTime;
         if (_waveTimer >= _spawnInterval)

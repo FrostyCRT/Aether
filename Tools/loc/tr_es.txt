@@ -758,10 +758,10 @@
 716| Entendido
 717| MOVIMIENTO
 718| SUBIDA DE NIVEL
-719| Elige una carta ({0}): un arma nueva o la mejora de una existente.
+719| Elige una carta para obtener un arma nueva o mejorar una existente.
 720| JEFE
 721| VIDA
-722| Barra de vida. A cero, la partida está perdida.
+722| Barra de vida. A 0, la partida está perdida.
 723| EXPERIENCIA
 724| Recoge las gemas que sueltan los monstruos para subir de nivel.
 725| ACCIONES
@@ -780,7 +780,7 @@
 738| Se acerca un enemigo. Tu héroe apunta y dispara automáticamente: concéntrate en moverte para mantener la distancia.
 739| Los enemigos derrotados sueltan gemas de experiencia. Pasa por encima para recogerlas.
 740| Derrota enemigos y recoge sus gemas hasta llenar la barra de experiencia.
-741| Haz un dash a través del proyectil ({0}). El dash te vuelve invencible: el proyectil es absorbido, desencadena una Nova que daña a los enemigos cercanos y carga el Cristal de la definitiva.
+741| Oriéntate hacia el proyectil y haz un dash a través de él ({0}). El dash te vuelve invencible: el proyectil es absorbido, desencadena una Nova que daña a los enemigos cercanos y carga el Cristal de la definitiva.
 742| DASH OFENSIVO
 743| El dash no es solo una forma de moverse: es un arma. Absorber un proyectil inflige daño con la Nova y carga la definitiva, pero un dash mal sincronizado te deja expuesto.
 744| ABSORCIÓN

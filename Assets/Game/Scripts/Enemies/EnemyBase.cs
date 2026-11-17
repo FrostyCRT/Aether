@@ -468,10 +468,13 @@ public class EnemyBase : MonoBehaviour
     private const float LeashDistance = 40f; // nettement au-delà du plus grand rayon de spawn (22, voir EnemySpawner._spawnRadius)
     private const float LeashDistanceSqr = LeashDistance * LeashDistance;
 
+    public static bool TutorialFreeze;   // didacticiel : ennemis et projectiles figés pendant que le joueur agit
+
     private void Update()
     {
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
+        if (TutorialFreeze) return;
 
         if (_playerTransform != null && (!MapBoundaryUtils.HasBoundX || !MapBoundaryUtils.HasBoundZ))
         {

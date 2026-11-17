@@ -185,6 +185,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public bool MovementLocked;   // didacticiel : fenêtre de fin, le joueur ne peut plus bouger
+    public System.Func<Vector3, bool> DashFilter;   // didacticiel : le dash ne part que dans une direction acceptée
+    public bool DashLocked;   // didacticiel : pas de dash avant l'étape qui l'explique
+
     public void ResetDashCooldown()
     {
         _dashCooldownTimer = 0f;
@@ -351,7 +355,7 @@ public class PlayerController : MonoBehaviour
     {
         // Touches lues via la configuration du joueur (page Paramètres > Commandes) + stick de manette.
         Vector2 move = GameInput.Move();
-        _moveDirection = new Vector3(move.x, 0f, move.y).normalized;
+        _moveDirection = MovementLocked ? Vector3.zero : new Vector3(move.x, 0f, move.y).normalized;
 
         if (_animatorController != null)
         {
@@ -363,10 +367,10 @@ public class PlayerController : MonoBehaviour
 
     private void HandleDash()
     {
-        if (GameInput.Down(GameAction.Dash) && !_isDashing && _dashCooldownTimer <= 0f)
+        if (GameInput.Down(GameAction.Dash) && !_isDashing && _dashCooldownTimer <= 0f && !DashLocked)
         {
             Vector3 direction = _moveDirection != Vector3.zero ? _moveDirection : transform.forward;
-            StartDash(direction);
+            if (DashFilter == null || DashFilter(direction)) StartDash(direction);
         }
 
         if (_isDashing)

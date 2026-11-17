@@ -45,6 +45,7 @@ public class WeaponLightningChain : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
         _cooldownTimer += Time.deltaTime;
         if (_cooldownTimer >= 1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) // Cadence (arbre)
         {

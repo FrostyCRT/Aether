@@ -129,8 +129,12 @@ public static class Tutorial
     {
         bool p = PracticeRequested;
         PracticeRequested = false;
+        if (p) PracticeActive = true;
         return p;
     }
+
+    /// <summary>Vrai pendant toute la partie d'entraînement (pas de défi, rien ne compte).</summary>
+    public static bool PracticeActive { get; set; }
 
     // ---- conseils de partie ----------------------------------------------------------------------------------------
     public static bool Seen(Hint h)
@@ -159,6 +163,7 @@ public static class Tutorial
     /// <summary>Fin (ou abandon) de la partie d'entraînement : elle ne se relance plus d'elle-même. Les visites de page restent.</summary>
     public static void FinishPractice()
     {
+        PracticeActive = false;
         SaveData d = Data;
         if (d == null) return;
         d.tutorialHints = -1;

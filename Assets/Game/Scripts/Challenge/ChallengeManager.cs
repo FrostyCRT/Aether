@@ -135,7 +135,8 @@ public class ChallengeManager : MonoBehaviour
         // MODES DE JEU (2026-09-26) - les défis n'existent qu'en partie Classique : ni tirage, ni suivi, ni récompense,
         // ni affichage dans les autres modes. CurrentChallenge reste null, ce que tout le reste (HUD, menu pause,
         // évaluation de fin de partie, notifications de boss / de dégâts) sait déjà gérer.
-        if (!GameModes.CountsForProgression)
+        // Partie d'entraînement : aucun défi (ni annonce, ni suivi, ni affichage).
+        if (!GameModes.CountsForProgression || Tutorial.PracticeActive)
         {
             CurrentChallenge = null;
             return;

@@ -13,7 +13,7 @@ public class TutorialStep
     public Func<string> Body;
     public Func<RectTransform> Target;            // null = pas de projecteur (carte au centre)
     public float Padding = 16f;
-    public enum Place { Auto, Center, Top, Bottom, BottomLeft, BottomRight }
+    public enum Place { Auto, Center, Top, Bottom, BottomLeft, BottomRight, TopRight }
     public Place Position = Place.Auto;
     public bool RequireAction;                     // pas de bouton « Suivant » : l'étape finit quand DoneWhen devient vrai
     public Func<bool> DoneWhen;
@@ -30,6 +30,8 @@ public class TutorialStep
     public bool Tight;                             // projecteur calé sur le contenu visible de la cible (et non sur son rectangle)
     public float Width;                            // largeur de la carte (0 = défaut 860)
     public float TextScale = 1f;                   // taille du texte (conseils de partie : plus petits)
+    public bool Arrow;                             // flèche animée qui désigne l'élément visé (petit cadre, grande carte)
+    public bool Compact;                           // carte réduite au minimum (conseils de partie : marges et boutons plus petits, pas de titre si vide)
     public Action OnEnter;
     public Action OnExit;
 }
@@ -63,8 +65,9 @@ public class TutorialOverlay : MonoBehaviour
     private static readonly Color BodyColor = new Color(0.94f, 0.91f, 0.83f, 1f);
     private static readonly Color BrassColor = new Color(0.86f, 0.58f, 0.16f, 1f);
     private static readonly Color BrassDark = new Color(0.30f, 0.18f, 0.07f, 1f);
-    private const float CardWidth = 1080f;
+    private const float CardWidth = 860f;
     private const float TopMargin = 125f;
+    private const float BarInset = 36f;
 
     private Canvas _canvas;
     private RectTransform _root;
@@ -75,6 +78,9 @@ public class TutorialOverlay : MonoBehaviour
     private CanvasGroup _cardGroup;
     private TextMeshProUGUI _title, _body, _counter, _nextLabel, _skipLabel;
     private RectTransform _footer;
+    private RectTransform _arrow, _bar;
+    private VerticalLayoutGroup _vlayout;
+    private LayoutElement _skipLe, _footerLe;
     private Button _next, _skip;
     private RectTransform _languageRow;
     private Button[] _languageButtons;
@@ -108,6 +114,12 @@ public class TutorialOverlay : MonoBehaviour
         _cardGroup.alpha = 0f;
         LateUpdate();
         EnsureEventSystemSelection();
+    }
+
+    /// <summary>Masque / réaffiche la fenêtre sans la fermer (menu pause ouvert par le joueur pendant l'entraînement).</summary>
+    public void SetSuppressed(bool suppressed)
+    {
+        if (_root != null) _root.gameObject.SetActive(!suppressed && _step != null);
     }
 
     public void Dismiss()
@@ -146,6 +158,18 @@ public class TutorialOverlay : MonoBehaviour
         _holeBlocker.color = new Color(0f, 0f, 0f, 0f);
         _holeBlocker.raycastTarget = true;
 
+        _arrow = NewRect("Arrow", _root);
+        _arrow.sizeDelta = new Vector2(64f, 64f);
+        _arrow.anchorMin = _arrow.anchorMax = Vector2.zero;
+        Image arrowShadow = NewRect("Shadow", _arrow).gameObject.AddComponent<Image>();
+        arrowShadow.sprite = TutorialPointer.ArrowSprite(); arrowShadow.color = new Color(0.05f, 0.03f, 0.02f, 0.9f); arrowShadow.raycastTarget = false;
+        Stretch(arrowShadow.rectTransform);
+        arrowShadow.rectTransform.offsetMin = new Vector2(-6f, -6f); arrowShadow.rectTransform.offsetMax = new Vector2(6f, 6f);
+        Image arrowFill = NewRect("Fill", _arrow).gameObject.AddComponent<Image>();
+        arrowFill.sprite = TutorialPointer.ArrowSprite(); arrowFill.color = new Color(1f, 0.80f, 0.36f, 1f); arrowFill.raycastTarget = false;
+        Stretch(arrowFill.rectTransform);
+        _arrow.gameObject.SetActive(false);
+
         _hole = NewRect("Hole", _root);
         _holeGroup = _hole.gameObject.AddComponent<CanvasGroup>();
         _holeGroup.blocksRaycasts = false;
@@ -160,10 +184,21 @@ public class TutorialOverlay : MonoBehaviour
         cardBg.type = Image.Type.Sliced;
         cardBg.color = CardColor;
         _card.gameObject.AddComponent<BrassFrameBorder>();
+        // la barre de laiton ne suit plus le flux de la mise en page : elle est posée à une distance réglée du haut de la carte (Refresh)
+        _bar = _card.Find("BrassBorder") as RectTransform;
+        if (_bar != null)
+        {
+            _bar.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+            _bar.anchorMin = new Vector2(0f, 1f);
+            _bar.anchorMax = new Vector2(1f, 1f);
+            _bar.pivot = new Vector2(0.5f, 1f);
+            _bar.sizeDelta = new Vector2(-2f * BarInset, 0f);   // la barre et ses losanges restent à l'intérieur de la carte
+        }
 
         VerticalLayoutGroup v = _card.gameObject.AddComponent<VerticalLayoutGroup>();
-        v.padding = new RectOffset(72, 72, 52, 44);
-        v.spacing = 14f;
+        _vlayout = v;
+        v.padding = new RectOffset(56, 56, 38, 26);
+        v.spacing = 12f;
         v.childAlignment = TextAnchor.UpperCenter;
         v.childControlWidth = true;
         v.childControlHeight = true;
@@ -225,23 +260,25 @@ public class TutorialOverlay : MonoBehaviour
         h.childForceExpandWidth = false;
         h.childForceExpandHeight = false;
         LayoutElement rowLe = row.gameObject.AddComponent<LayoutElement>();
-        rowLe.preferredHeight = 64f;
+        rowLe.preferredHeight = 52f;
 
         _counter = NewText("Counter", row, 24f, Color.clear, true);   // (plus affiché : pas de numéro d'étape)
         _counter.gameObject.SetActive(false);
 
-        _skip = NewButton("Skip", row, "", 24f, out _skipLabel);
+        _skip = NewButton("Skip", row, "", 22f, out _skipLabel);
         SetButtonStyle(_skip, new Color(0.20f, 0.14f, 0.10f, 1f), new Color(0.84f, 0.78f, 0.68f, 1f));
         LayoutElement sle = _skip.gameObject.AddComponent<LayoutElement>();
-        sle.preferredWidth = 330f;
-        sle.preferredHeight = 60f;
+        _skipLe = sle;
+        _footerLe = rowLe;
+        sle.preferredWidth = 280f;
+        sle.preferredHeight = 52f;
         _skip.onClick.AddListener(OnSkipClicked);
 
-        _next = NewButton("Next", row, "", 30f, out _nextLabel);
+        _next = NewButton("Next", row, "", 26f, out _nextLabel);
         SetButtonStyle(_next, BrassColor, new Color(0.14f, 0.08f, 0.03f, 1f));
         LayoutElement nle = _next.gameObject.AddComponent<LayoutElement>();
-        nle.preferredWidth = 300f;
-        nle.preferredHeight = 60f;
+        nle.preferredWidth = 260f;
+        nle.preferredHeight = 52f;
         _next.onClick.AddListener(OnNextClicked);
     }
 
@@ -366,12 +403,25 @@ public class TutorialOverlay : MonoBehaviour
         ApplyTitleFont(_title);
         ApplyTitleFont(_nextLabel);
         _title.text = s.Title != null ? s.Title() : "";
+        _title.gameObject.SetActive(!string.IsNullOrEmpty(_title.text));
         _body.text = s.Body != null ? s.Body() : "";
         _body.gameObject.SetActive(!string.IsNullOrEmpty(_body.text));
-        _card.sizeDelta = new Vector2(s.Width > 0f ? s.Width : CardWidth, _card.sizeDelta.y);
-        _title.fontSize = 50f * s.TextScale;
-        _body.fontSize = 30f * s.TextScale;
-        
+        _card.sizeDelta = new Vector2(Mathf.Max(s.Width > 0f ? s.Width : CardWidth, s.LanguagePicker ? 1100f : 0f), _card.sizeDelta.y);   // les 4 colonnes de langues doivent tenir
+        _title.fontSize = (s.Compact ? 32f : 40f) * s.TextScale;
+        _body.fontSize = (s.Compact ? 22f : 26f) * s.TextScale;
+        // carte compacte : marges, espacement et bouton « passer » réduits
+        // la barre est posée à BarY du haut ; le titre est à la même distance de la barre que du texte qui le suit
+        float barY = s.Compact ? 14f : 18f;
+        bool hasTitle = !string.IsNullOrEmpty(_title.text);
+        float gap = s.Compact ? 8f : 14f;
+        _vlayout.padding = s.Compact ? new RectOffset(40, 40, hasTitle ? (int)(barY + 12f) : 16, 16) : new RectOffset(64, 64, (int)(barY + 14f), 30);
+        _vlayout.spacing = gap;
+        if (_bar != null) { _bar.anchoredPosition = new Vector2(0f, -barY); _bar.gameObject.SetActive(hasTitle); }
+        _skipLe.preferredHeight = s.Compact ? 34f : 52f;
+        _skipLe.preferredWidth = s.Compact ? 240f : 280f;
+        _footerLe.preferredHeight = s.Compact ? 34f : 52f;
+        _skipLabel.fontSize = s.Compact ? 17f : 22f;
+
         _nextLabel.text = s.NextLabel != null ? s.NextLabel() : Loc.T("Suivant");
         _next.gameObject.SetActive(!s.RequireAction);
         _skip.gameObject.SetActive(s.ShowSkip && _onSkip != null);
@@ -475,7 +525,8 @@ public class TutorialOverlay : MonoBehaviour
         if (place == TutorialStep.Place.Auto) place = hasHole ? (hole.center.y > h * 0.5f ? TutorialStep.Place.Bottom : TutorialStep.Place.Top) : (s.LanguagePicker ? TutorialStep.Place.Center : TutorialStep.Place.Top);
         float gap = 28f;
         if (place == TutorialStep.Place.Top) pos.y = h - size.y * 0.5f - TopMargin;   // sous la barre d'onglets du menu / le haut du HUD
-        else if (place == TutorialStep.Place.Bottom) pos.y = size.y * 0.5f + 40f;
+        else if (place == TutorialStep.Place.Bottom) pos.y = size.y * 0.5f + (s.Compact ? 14f : 40f);
+        else if (place == TutorialStep.Place.TopRight) { pos.y = h - size.y * 0.5f - 20f; pos.x = w - size.x * 0.5f - 20f; }
         else if (place == TutorialStep.Place.BottomLeft) { pos.y = size.y * 0.5f + 40f; pos.x = size.x * 0.5f + 20f; }
         else if (place == TutorialStep.Place.BottomRight) { pos.y = size.y * 0.5f + 40f; pos.x = w - size.x * 0.5f - 20f; }
         if (hasHole && s.Position == TutorialStep.Place.Auto)
@@ -491,6 +542,26 @@ public class TutorialOverlay : MonoBehaviour
         _card.anchorMin = _card.anchorMax = Vector2.zero;
         _card.pivot = new Vector2(0.5f, 0.5f);
         _card.anchoredPosition = pos;
+        // flèche animée vers l'élément visé : du côté opposé à la carte, pointe vers l'élément
+        bool showArrow = s.Arrow && hasHole;
+        _arrow.gameObject.SetActive(showArrow);
+        if (showArrow)
+        {
+            float bob = 0f;   // fixe : une flèche qui rebondit inviterait à cliquer sur le bouton, alors qu'il faut valider avec « Suivant »
+            bool above = h - hole.yMax > 110f && (pos.y < hole.center.y || hole.yMin < 110f);   // place au-dessus si possible
+            if (above)
+            {
+                _arrow.anchoredPosition = new Vector2(hole.center.x, hole.yMax + 48f + bob);
+                _arrow.localRotation = Quaternion.identity;   // l'image pointe vers le bas
+            }
+            else
+            {
+                _arrow.anchoredPosition = new Vector2(hole.center.x, hole.yMin - 48f - bob);
+                _arrow.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            }
+            _arrow.localScale = Vector3.one;
+            _arrow.SetSiblingIndex(_hole.GetSiblingIndex() + 1);
+        }
         _card.SetAsLastSibling();
     }
 

@@ -61,10 +61,13 @@ public class WeaponBase : MonoBehaviour
         UpdateCalculatedStats();
     }
 
+    public static bool AutoFireDisabled;   // didacticiel (partie d'entraînement)
+
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
 
         _cooldownTimer += Time.deltaTime;
 

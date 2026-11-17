@@ -233,6 +233,7 @@ public class MenuTutorial : MonoBehaviour
                 Target = () => Find("MenuPanel/Grimoire/GrimoireButton"),
                 Tight = true,
                 Padding = 14f,
+                Arrow = true,   // le cadre est petit et la carte grande : une flèche animée désigne le bouton
                 Panel = () => _menu.MenuPanelObject,
             },
         };

@@ -567,6 +567,10 @@ public class PauseMenuUI : MonoBehaviour
     {
         PullChallengeStatus();
 
+        // Partie d'entraînement : pas de défi, donc pas d'icône de défi toute seule non plus.
+        foreach (RectTransform rt in GetComponentsInChildren<RectTransform>(true))
+            if (rt.name == "ChallengeHeaderIcon") { rt.gameObject.SetActive(!Tutorial.PracticeActive); break; }
+
         if (_challengeInfoText == null) return;
 
         if (ChallengeManager.Instance == null || ChallengeManager.Instance.CurrentChallenge == null)

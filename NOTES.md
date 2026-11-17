@@ -2483,3 +2483,16 @@ Gros lot de retours utilisateur (captures d'écran à l'appui), traités un par 
 - `GameModes.IsShippable` : seuls Classique et Escarmouche sont sélectionnables (Sans fin, Ruée de boss, Titans masqués, code intact).
 - Textes sans chiffres de gameplay (minutes, nombre de boss) ; étapes « ouvrez puis fermez » supprimées ; 8 nouvelles clés (ids 50-57 du bloc tuto), 11 langues, `langs.js check` = 0 problème, polices régénérées via `build_language_fonts.py` (reste : menu Unity Aether > Rebuild Language Fonts).
 - NON TESTÉ en Play (Unity MCP déconnecté pendant ce lot) : compilation csc seulement.
+
+## 2026-11-16 — Didacticiel (suite 5) : partie d'entraînement scénarisée
+- `GameTutorial` réécrit : pas de vagues (spawner coupé), tout est placé par le scénario : déplacement → HUD élément par élément → loup d'un côté (tir auto) → gemmes (flèches `TutorialPointer`) → loups un par un jusqu'au niveau (XP x2,5) → cartes → gobelin immobile + ralenti « Dash » → gobelins en temps réel jusqu'au Cristal plein → anneau de ~15 loups + ralenti « Ultime » (`CrystalSystem.UltimateLocked`) → fondu vers le menu.
+- Ne compte pas : sauvegarde figée (`SuppressWrites`, snapshot restauré à la sortie), `DebugNeverDie`. Ralentis : le temps coule à 0,06-0,08 tant que le joueur agit, figé après 4 s sans action.
+- Testé en Play avec un pilote (supprimé) : scénario complet jusqu'au retour au menu, sauvegarde intacte, 0 erreur. Absorption et Ultime simulés, pas faits à la touche.
+
+### Didacticiel — suite 6 (2026-11-17, retours après essai réel)
+- Cartes de conseil compactes (`TutorialStep.Compact` : marges/bouton réduits, titre masqué si vide) ; marges générales réduites. Pastille de level-up : une seule ligne en bas, sans titre ni bouton.
+- Dash verrouillé (`PlayerController.DashLocked`) jusqu'à son étape ; fenêtre de fin : `MovementLocked` + dash/ultime verrouillés + jeu en pause (souris seule).
+- Pas de défi en entraînement (`Tutorial.PracticeActive` lu par `ChallengeManager.Start`).
+- Bug HUD (blocs gris à droite) : TMP gelé quand l'échelle est 0 → `ForceMeshUpdate` à la réapparition (`RevealHud`).
+- Étape Ultime : 26 loups, vitesse x1,1, apparition 0,07 s, garde-fou 12 s. NON testé en Play après ces changements.
+- Suite 6b : panneaux redessinés (titre 40 / texte 26 ; compact 32 / 22 ; largeur 780 ; barre de laiton posée à 22 px du haut, hors flux, titre à égale distance de la barre et du texte) ; flèche animée `TutorialStep.Arrow` (Grimoire) ; « À 0 » ; gobelins jamais par le haut (`NotAboveDir`) ; dash filtré dans l'étape (`PlayerController.DashFilter`, ±30° vers le projectile) ; tir auto coupé pendant déplacement/HUD (`WeaponBase.AutoFireDisabled`). Captures 1920x1080 via caméra + RenderTexture (canvas en ScreenSpaceCamera). Scénario complet non rejoué.

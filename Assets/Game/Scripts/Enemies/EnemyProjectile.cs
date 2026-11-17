@@ -57,6 +57,7 @@ public class EnemyProjectile : MonoBehaviour
 
         // CORRECTION PAUSE
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
+        if (EnemyBase.TutorialFreeze) return;
 
         transform.position += _direction * _speed * Time.deltaTime;
 

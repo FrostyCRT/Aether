@@ -72,6 +72,7 @@ public class WeaponFireball : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
         _cooldownTimer += Time.deltaTime;
         float cooldownDuration = _fireRate > 0f ? (1f / (_fireRate * MetaProgressionManager.CadenceMultiplier)) : 9999f; // Cadence (arbre)
         if (_cooldownTimer >= cooldownDuration)

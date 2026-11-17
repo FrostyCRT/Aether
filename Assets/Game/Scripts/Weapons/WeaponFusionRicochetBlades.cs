@@ -113,6 +113,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         if (!_initialized) return;
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
 
         float dt = Time.deltaTime;
 

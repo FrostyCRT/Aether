@@ -757,10 +757,10 @@
 716| Verstanden
 717| BEWEGUNG
 718| LEVELAUFSTIEG
-719| Wähle eine Karte ({0}): eine neue Waffe oder die Verbesserung einer vorhandenen.
+719| Wähle eine Karte, um eine neue Waffe zu erhalten oder eine vorhandene zu verbessern.
 720| BOSS
 721| LEBEN
-722| Lebensleiste. Bei null ist die Partie verloren.
+722| Lebensleiste. Bei 0 ist die Partie verloren.
 723| ERFAHRUNG
 724| Sammle die Kristalle der Monster ein, um aufzusteigen.
 725| AKTIONEN
@@ -779,7 +779,7 @@
 738| Ein Gegner nähert sich. Dein Held zielt und schießt automatisch: Konzentriere dich auf deine Bewegung und halte Abstand.
 739| Besiegte Gegner hinterlassen Erfahrungskristalle. Laufe darüber, um sie aufzusammeln.
 740| Besiege Gegner und sammle ihre Kristalle ein, bis die Erfahrungsleiste voll ist.
-741| Dashe durch das Geschoss ({0}). Der Dash macht dich unverwundbar: Das Geschoss wird absorbiert, löst eine Nova aus, die nahe Gegner verletzt, und lädt den Ultimate-Kristall auf.
+741| Richte dich auf das Geschoss aus und dashe dann hindurch ({0}). Der Dash macht dich unverwundbar: Das Geschoss wird absorbiert, löst eine Nova aus, die nahe Gegner verletzt, und lädt den Ultimate-Kristall auf.
 742| OFFENSIVER DASH
 743| Der Dash ist nicht nur eine Fortbewegung, sondern eine Waffe. Ein absorbiertes Geschoss verursacht Schaden mit der Nova und lädt das Ultimate auf, doch ein schlecht getimter Dash lässt dich ungeschützt.
 744| ABSORPTION

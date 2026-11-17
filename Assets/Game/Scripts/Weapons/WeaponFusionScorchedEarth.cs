@@ -85,6 +85,7 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        if (WeaponBase.AutoFireDisabled) return;   // didacticiel : tir coupé pendant les étapes de déplacement
 
         _strikeTimer += Time.deltaTime;
         if (_strikeTimer >= _strikeInterval)

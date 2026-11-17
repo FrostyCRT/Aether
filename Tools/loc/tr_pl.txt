@@ -765,10 +765,10 @@
 716| Jasne
 717| RUCH
 718| NOWY POZIOM
-719| Wybierz kartę ({0}): nową broń albo ulepszenie istniejącej.
+719| Wybierz kartę, aby zdobyć nową broń lub ulepszyć istniejącą.
 720| BOSS
 721| ZDROWIE
-722| Pasek zdrowia. Przy zerze rozgrywka jest przegrana.
+722| Pasek zdrowia. Przy 0 rozgrywka jest przegrana.
 723| DOŚWIADCZENIE
 724| Zbieraj kryształy zostawiane przez potwory, aby awansować.
 725| AKCJE
@@ -787,7 +787,7 @@
 738| Zbliża się wróg. Twój bohater celuje i strzela automatycznie: skup się na ruchu, aby utrzymać dystans.
 739| Pokonani wrogowie zostawiają kryształy doświadczenia. Przejdź po nich, aby je zebrać.
 740| Pokonuj wrogów i zbieraj ich kryształy, aż pasek doświadczenia się zapełni.
-741| Wykonaj dash przez pocisk ({0}). Dash czyni cię niezwyciężonym: pocisk zostaje pochłonięty, wyzwala Novę raniącą pobliskich wrogów i ładuje Kryształ supermocy.
+741| Zwróć się w stronę pocisku i wykonaj dash przez niego ({0}). Dash czyni cię niezwyciężonym: pocisk zostaje pochłonięty, wyzwala Novę raniącą pobliskich wrogów i ładuje Kryształ supermocy.
 742| OFENSYWNY DASH
 743| Dash to nie tylko sposób na poruszanie się: to broń. Pochłonięty pocisk zadaje obrażenia Novą i ładuje supermoc, ale źle wymierzony dash zostawia cię bez ochrony.
 744| POCHŁANIANIE

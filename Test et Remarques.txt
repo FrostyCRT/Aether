@@ -8,9 +8,4 @@ https://github.com/Panniantong/Agent-Reach.git
 
 Mode coop ? deux joueurs dans la partie.
 
-quand on fait un alt tab, et qu'on est dans le didacticiel du jeu, ça met le pause panel alors qu'il y a un panel de didacticiel.
-dans la partie de test en jeu, enleve le HUD, et affiche le que quand c'est son étape dans le didacticiel.
-Enlève les phases inutiles du didacticiel, il y en a trop. Et surtout, tu parles au joueur comme si c'était un enfant, un joueur a les codes du jeu vidéo, et tu parles avec un ton trop familier. Tu peux t'inspirer des didacticiels de vrais jeu pour comparer.
-Il est possible pour le joueur de sortir de la page voulu dans le didacticiel du menu.
-n'écrit pas le nombre d'étapes parce que sinon ça semble long, le joueur ne lit pas un livre ou un guide de construction, ça doit être fluide.
-C'est la taille du panel que je voulais que tu augmentes, pas forcément les textes.
+l'encadrement gris/blanc qui vient sur le game over panel et Victory panel vient en retard, il faut qu'il soit là pile en même temps que le panel.

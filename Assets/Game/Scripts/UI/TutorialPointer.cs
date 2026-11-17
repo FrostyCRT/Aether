@@ -27,7 +27,7 @@ public class TutorialPointer : MonoBehaviour
         return p;
     }
 
-    private static Sprite ArrowSprite()
+    public static Sprite ArrowSprite()
     {
         if (_sprite != null) return _sprite;
         const int n = 64;
