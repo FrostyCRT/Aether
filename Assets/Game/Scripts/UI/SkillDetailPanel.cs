@@ -203,6 +203,8 @@ public class SkillDetailPanel : MonoBehaviour
                 detail = Loc.F("avec {0}", owner.Substring(0, 1) + owner.Substring(1).ToLowerInvariant());
             }
             row.text.text = $"{what}  <size=80%><color=#{SkillTreeStyle.Hex(SkillTreeStyle.Muted)}>{detail}</color></size>";
+            // AJOUTÉ (2026-11-18) - « Победа на сложности «Умеренный» персонаж: Aether » touchait le bord de la fiche : la ligne rétrécit au besoin
+            if (!row.text.enableAutoSizing) { row.text.fontSizeMax = row.text.fontSize; row.text.fontSizeMin = row.text.fontSize * 0.6f; row.text.enableAutoSizing = true; }
             row.text.color = met ? SkillTreeStyle.Body : SkillTreeStyle.Warn;
             row.pipRing.color = met ? accent : SkillTreeStyle.Warn;
             row.pipFill.gameObject.SetActive(met);
@@ -302,6 +304,14 @@ public class SkillDetailPanel : MonoBehaviour
             row.coin.gameObject.SetActive(true);
             row.coin.color = new Color(1, 1, 1, 0.45f);
         }
+
+        // AJOUTÉ (2026-11-18) - « ADQUIRIDO », « ERWORBEN »... : la mention de droite s'élargit vers la gauche à la largeur de son mot
+        // (le bord droit ne bouge pas), au lieu de déborder de son cadre de 68 px.
+        RectTransform rr = row.right.rectTransform;
+        float rightEdge = rr.anchoredPosition.x + (1f - rr.pivot.x) * rr.sizeDelta.x;
+        float want = Mathf.Max(68f, row.right.GetPreferredValues(row.right.text).x + 6f);
+        rr.sizeDelta = new Vector2(want, rr.sizeDelta.y);
+        rr.anchoredPosition = new Vector2(rightEdge - (1f - rr.pivot.x) * want, rr.anchoredPosition.y);
     }
 
     private void FillPurchase(SkillTreeData.NodeData data, int cost, int gold, bool maxed, bool unlockable,

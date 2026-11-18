@@ -465,9 +465,10 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             if (t != null && !t.enableAutoSizing)
             {
                 t.fontSizeMax = t.fontSize;
-                t.fontSizeMin = 14f;
+                t.fontSizeMin = 10f;
                 t.enableAutoSizing = true;   // « Maj gauche », « Flèche droite »... tiennent dans la colonne plus étroite
             }
+            else if (t != null && t.fontSizeMin > 10f) t.fontSizeMin = 10f;   // « Seta para a esquerda » (portugais) : un peu plus petit plutôt que de déborder
         }
         RectTransform root = (RectTransform)_keyButtons[0].transform.parent;
         root.sizeDelta = new Vector2(3f * ColWidth + 2f * ColGap, root.sizeDelta.y);
@@ -528,6 +529,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         t.color = SettingsStyle.Muted;
         t.alignment = TextAlignmentOptions.Center;
         t.textWrappingMode = TextWrappingModes.NoWrap;
+        t.fontSizeMax = 22f; t.fontSizeMin = 12f; t.enableAutoSizing = true;   // « ゲームパッド », « Teclado / mouse » : rétrécit plutôt que de déborder
         t.raycastTarget = false;
     }
 }

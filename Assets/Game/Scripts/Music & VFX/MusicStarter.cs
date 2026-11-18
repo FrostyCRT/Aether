@@ -126,6 +126,21 @@ public class MusicStarter : MonoBehaviour
         _pitchCoroutine = StartCoroutine(PitchRoutine(target, duration));
     }
 
+    // AJOUTÉ (2026-11-18, retour utilisateur) - fin de Frénésie suivie d'un boss : on NE ramène PAS la vitesse tout de suite (le
+    // morceau normal repassait à x1 pendant ~1 s avant que celui du boss ne démarre) ; la musique de Frénésie fond encore
+    // accélérée, et celui du boss s'ouvre à x1 (SwitchRoutine). Filet de sécurité : si aucun changement de morceau n'a eu lieu
+    // après `delay` s réelles (boss sans musique propre), retour progressif à x1.
+    public void ResetPitchLater(float delay)
+    {
+        StartCoroutine(ResetPitchLaterRoutine(delay));
+    }
+
+    private IEnumerator ResetPitchLaterRoutine(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        if (!GameModes.FrenzyActive && !Mathf.Approximately(_audioSource.pitch, 1f)) SetPitch(1f, 0.5f);
+    }
+
     private IEnumerator PitchRoutine(float target, float duration)
     {
         float start = _audioSource.pitch;
@@ -177,6 +192,10 @@ public class MusicStarter : MonoBehaviour
         }
 
         _audioSource.clip = newClip;
+        // AJOUTÉ (2026-11-18) - le nouveau morceau s'ouvre à sa vitesse propre (x1), jamais à celle de la Frénésie : voir
+        // ResetPitchLater (fin de Frénésie = le boss enchaîne, l'ancien morceau reste accéléré jusqu'au fondu).
+        if (_pitchCoroutine != null) { StopCoroutine(_pitchCoroutine); _pitchCoroutine = null; }
+        _audioSource.pitch = GameModes.FrenzyActive ? GameModes.FrenzyMusicPitch : 1f;
         // AJOUTE - force le loop explicitement au moment du switch, plutot que
         // de dependre de l'etat du composant dans l'Inspector au moment ou tu
         // lis ce commentaire - garanti quel que soit le prefab/la config.

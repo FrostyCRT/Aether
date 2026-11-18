@@ -760,7 +760,7 @@
 719| Escolha uma carta para obter uma nova arma ou melhorar uma existente.
 720| CHEFE
 721| VIDA
-722| Barra de vida. Em 0, a partida está perdida.
+722| Sua saúde. Se chegar a 0, a partida termina.
 723| EXPERIÊNCIA
 724| Pegue as gemas soltas pelos monstros para subir de nível.
 725| AÇÕES
@@ -789,3 +789,12 @@
 748| Você já conhece o essencial. As partidas de verdade esperam por você.
 749| Pular o treinamento
 750| Mova-se com {0}.
+751| UM FRAGMENTO APARECE!
+752| Vá buscá-lo para desencadear o Eclipse.
+753| ECLIPSE
+754| Seu dano aumenta, mas os inimigos chegam em massa.
+755| O DIA AMANHECE
+756| Fragmentos do eclipse: +{0}
+757| Eclipse
+758| +{0} fragmentos ganhos
+759| Compradas com ouro

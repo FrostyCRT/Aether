@@ -86,7 +86,9 @@ public static class Tutorial
 
     public static bool HeroChosen
     {
-        get { SaveData d = Data; return d == null || d.tutorialHeroChosen; }
+        // MODIFIÉ (2026-11-18) - un joueur qui a déjà de la progression (parties jouées, Kael ou Lyra débloqués) a forcément déjà
+        // choisi son héros : l'étape « choisissez un héros » ne lui est jamais proposée.
+        get { SaveData d = Data; return d == null || d.tutorialHeroChosen || d.totalRuns > 0 || d.kaelUnlocked || d.lyraUnlocked; }
     }
 
     public static void BeginMenuTour()

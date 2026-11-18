@@ -2362,6 +2362,24 @@ public class GameUI : MonoBehaviour
     private static readonly Dictionary<(TMP_FontAsset font, float width), Material> _outlineMaterialCache = new Dictionary<(TMP_FontAsset, float), Material>();
     private static readonly Color32 OutlineColor = new Color32(0xF5, 0xEC, 0xD6, 0xFF);
 
+    // AJOUTÉ (2026-11-18) - contour SOMBRE (le contour de ApplyReadableOutline est clair, fait pour du texte foncé sur parchemin) :
+    // pour les grands textes colorés posés sur le décor du jeu (bandeaux d'événement, compteur de la nuit).
+    private static readonly Dictionary<(TMP_FontAsset, float), Material> _darkOutlineCache = new Dictionary<(TMP_FontAsset, float), Material>();
+    public static void ApplyDarkOutline(TextMeshProUGUI text, float outlineWidth)
+    {
+        if (text == null || text.font == null) return;
+        var key = (text.font, outlineWidth);
+        if (!_darkOutlineCache.TryGetValue(key, out Material shared) || shared == null)
+        {
+            shared = new Material(text.fontSharedMaterial);
+            shared.EnableKeyword("OUTLINE_ON");
+            shared.SetFloat(ShaderUtilities.ID_OutlineWidth, outlineWidth);
+            shared.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0.02f, 0.04f, 0.14f, 1f));
+            _darkOutlineCache[key] = shared;
+        }
+        text.fontSharedMaterial = shared;
+    }
+
     public static void ApplyReadableOutline(TextMeshProUGUI text, float outlineWidth = 0.16f)
     {
         if (text == null || text.font == null) return;
@@ -2957,7 +2975,15 @@ public class GameUI : MonoBehaviour
     private Coroutine _frenzyBannerRoutine;
     private static readonly Color FrenzyBannerColor = new Color(1f, 0.42f, 0.18f, 1f);
 
-    public void ShowFrenzyBanner()
+    public void ShowFrenzyBanner() => ShowEventBanner(Loc.T("FRÉNÉSIE !"), FrenzyBannerColor, null);
+
+    // Bandeau d'événement générique (Frénésie, Nuit des Éclats) : titre + sous-titre facultatif, couleur au choix.
+    private TextMeshProUGUI _bannerSubText;
+    private Image _bannerBackdrop;
+    private Color _bannerColor = FrenzyBannerColor;
+    private float _bannerHold = 1.3f;
+
+    public void ShowEventBanner(string title, Color color, string subtitle, float hold = 1.3f)
     {
         if (_timerText == null || _timerText.canvas == null) return;
         if (_frenzyBannerText == null)
@@ -2974,17 +3000,100 @@ public class GameUI : MonoBehaviour
             _frenzyBannerText.enableWordWrapping = false;
             _frenzyBannerText.raycastTarget = false;
             _frenzyBannerText.color = FrenzyBannerColor;
-            ApplyReadableOutline(_frenzyBannerText);
+            ApplyDarkOutline(_frenzyBannerText, 0.14f);
+
+            GameObject sub = new GameObject("Subtitle", typeof(RectTransform));
+            sub.transform.SetParent(go.transform, false);
+            RectTransform srt = (RectTransform)sub.transform;
+            srt.anchorMin = srt.anchorMax = new Vector2(0.5f, 0f);
+            srt.pivot = new Vector2(0.5f, 1f);
+            srt.anchoredPosition = new Vector2(0f, 10f);
+            srt.sizeDelta = new Vector2(1500f, 80f);
+            _bannerSubText = sub.AddComponent<TextMeshProUGUI>();
+            _bannerSubText.font = _timerText.font;
+            _bannerSubText.fontSize = 46f;
+            _bannerSubText.alignment = TextAlignmentOptions.Top;
+            _bannerSubText.enableWordWrapping = false;
+            _bannerSubText.raycastTarget = false;
+            ApplyDarkOutline(_bannerSubText, 0.12f);
         }
-        _frenzyBannerText.text = Loc.T("FRÉNÉSIE !");
+        if (_bannerBackdrop == null)
+        {
+            // voile sombre et doux derrière le bandeau : le texte reste lisible quel que soit le décor (jour clair, nuit bleue)
+            GameObject bd = new GameObject("FrenzyBannerBackdrop", typeof(RectTransform));
+            bd.transform.SetParent(_timerText.canvas.transform, false);
+            RectTransform brt = (RectTransform)bd.transform;
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.68f);
+            brt.sizeDelta = new Vector2(2300f, 460f);
+            _bannerBackdrop = bd.AddComponent<Image>();
+            _bannerBackdrop.sprite = FXSprites.Glow();
+            _bannerBackdrop.color = new Color(0f, 0f, 0f, 0f);
+            _bannerBackdrop.raycastTarget = false;
+        }
+        _bannerBackdrop.transform.SetAsLastSibling();
+        _bannerColor = color;
+        _bannerHold = hold;
+        _frenzyBannerText.text = title;
+        _bannerSubText.text = subtitle ?? "";
+        _bannerSubText.gameObject.SetActive(!string.IsNullOrEmpty(subtitle));
         _frenzyBannerText.transform.SetAsLastSibling();
         if (_frenzyBannerRoutine != null) StopCoroutine(_frenzyBannerRoutine);
         _frenzyBannerRoutine = StartCoroutine(FrenzyBannerRoutine());
     }
 
+    // AJOUTÉ (2026-11-18) - compteur d'éclats de la Nuit des Éclats : « Éclats de la nuit : +N », sous le chrono, le temps de la
+    // nuit. Construit par le code au premier appel ; petit rebond à chaque éclat gagné.
+    private TextMeshProUGUI _nightCounterText;
+    private float _nightCounterPunch;
+
+    public void UpdateNightCounter(int eclats, bool punch)
+    {
+        if (_timerText == null || _timerText.canvas == null) return;
+        if (_nightCounterText == null)
+        {
+            GameObject go = new GameObject("NightCounter", typeof(RectTransform));
+            go.transform.SetParent(_timerText.canvas.transform, false);
+            RectTransform rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.86f);
+            rt.sizeDelta = new Vector2(1100f, 90f);
+            _nightCounterText = go.AddComponent<TextMeshProUGUI>();
+            _nightCounterText.font = _timerText.font;
+            _nightCounterText.fontSize = 64f;
+            _nightCounterText.alignment = TextAlignmentOptions.Center;
+            _nightCounterText.enableWordWrapping = false;
+            _nightCounterText.raycastTarget = false;
+            _nightCounterText.color = new Color(0.78f, 0.92f, 1f, 1f);
+            ApplyDarkOutline(_nightCounterText, 0.13f);
+        }
+        _nightCounterText.text = Loc.F("Éclats de l'éclipse : +{0}", Loc.Int(eclats));
+        _nightCounterText.gameObject.SetActive(true);
+        if (punch) _nightCounterPunch = 1f;
+        if (_nightCounterRoutine == null) _nightCounterRoutine = StartCoroutine(NightCounterRoutine());
+    }
+
+    public void HideNightCounter()
+    {
+        if (_nightCounterRoutine != null) { StopCoroutine(_nightCounterRoutine); _nightCounterRoutine = null; }
+        if (_nightCounterText != null) _nightCounterText.gameObject.SetActive(false);
+    }
+
+    private Coroutine _nightCounterRoutine;
+    private IEnumerator NightCounterRoutine()
+    {
+        while (_nightCounterText != null)
+        {
+            _nightCounterPunch = Mathf.MoveTowards(_nightCounterPunch, 0f, Time.unscaledDeltaTime * 4f);
+            float s = 1f + 0.3f * _nightCounterPunch;
+            _nightCounterText.transform.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+        _nightCounterRoutine = null;
+    }
+
     private IEnumerator FrenzyBannerRoutine()
     {
-        const float popIn = 0.25f, hold = 1.3f, fadeOut = 0.5f;
+        const float popIn = 0.25f, fadeOut = 0.5f;
+        float hold = _bannerHold;
         GameObject go = _frenzyBannerText.gameObject;
         go.SetActive(true);
         float t = 0f;
@@ -2995,11 +3104,16 @@ public class GameUI : MonoBehaviour
             float scale = t < popIn ? Mathf.LerpUnclamped(1.6f, 1f, EaseOutBack(t / popIn)) : 1f;
             float alpha = t < popIn ? t / popIn : t < popIn + hold ? 1f : 1f - (t - popIn - hold) / fadeOut;
             go.transform.localScale = new Vector3(scale, scale, 1f);
-            Color c = FrenzyBannerColor;
+            Color c = Color.Lerp(_bannerColor, Color.white, 0.4f);   // éclaircie : le bleu pur se perdait sur l'herbe comme sur la nuit
             c.a = frozen ? 0f : Mathf.Clamp01(alpha);
             _frenzyBannerText.color = c;
+            Color sc = Color.white;
+            sc.a = c.a;
+            _bannerSubText.color = sc;
+            if (_bannerBackdrop != null) _bannerBackdrop.color = new Color(0f, 0f, 0f, c.a * 0.92f);
             yield return null;
         }
+        if (_bannerBackdrop != null) _bannerBackdrop.color = new Color(0f, 0f, 0f, 0f);
         go.SetActive(false);
         _frenzyBannerRoutine = null;
     }
@@ -4308,6 +4422,12 @@ public class GameUI : MonoBehaviour
             if (show) _pausePanel.transform.SetAsLastSibling();
         }
         SettingsApplier.SetPauseDuck(show);          // le son du jeu baisse légèrement pendant la pause
+        // AJOUTÉ (2026-11-18) - « 일시정지 » (coréen) en police 85 sortait du cadre de la pause : le titre rétrécit pour tenir dans sa place.
+        if (show && _pausePanel != null)
+        {
+            Transform pauseTitle = _pausePanel.transform.Find("MainFrame/HeaderRow/TitleText");
+            if (pauseTitle != null) { TMP_Text pt = pauseTitle.GetComponent<TMP_Text>(); TextFit.ShrinkToWidth(pt, pt.rectTransform.rect.width * 0.82f); }
+        }
 
         if (show)
         {

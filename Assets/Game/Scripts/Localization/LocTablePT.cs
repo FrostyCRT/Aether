@@ -350,7 +350,7 @@ public static class LocTablePT
         { "L'Or accumulé suffit pour acheter un premier nœud dans Compétences.", "O ouro acumulado basta para comprar um primeiro nó em Habilidades." },
         { "Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.", "O primeiro nó custa {0} de ouro; você tem {1}. Continue jogando para conseguir." },
         { "Compris", "Entendi" }, { "DÉPLACEMENT", "MOVIMENTO" }, { "NIVEAU SUPÉRIEUR", "NOVO NÍVEL" }, { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Escolha uma carta para obter uma nova arma ou melhorar uma existente." },
-        { "BOSS", "CHEFE" }, { "VIE", "VIDA" }, { "Barre de vie. À 0, la partie est perdue.", "Barra de vida. Em 0, a partida está perdida." },
+        { "BOSS", "CHEFE" }, { "VIE", "VIDA" }, { "Votre santé. Si elle tombe à 0, la partie est terminée.", "Sua saúde. Se chegar a 0, a partida termina." },
         { "EXPÉRIENCE", "EXPERIÊNCIA" }, { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Pegue as gemas soltas pelos monstros para subir de nível." },
         { "ACTIONS", "AÇÕES" }, { "Dash ({0}) et Ultime ({1}).", "Dash ({0}) e Suprema ({1})." }, { "Terminer", "Concluir" },
         { "ACCUEIL", "INÍCIO" }, { "Sélectionnez d'abord un personnage", "Selecione primeiro um personagem" }, { "Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres, renforcez votre héros et survivez. Choisissez votre langue pour commencer.", "Aether Storm Survivor é um jogo de sobrevivência: enfrente hordas de monstros, fortaleça o seu herói e sobreviva. Escolha o seu idioma para começar." },
@@ -368,6 +368,10 @@ public static class LocTablePT
         { "ABSORPTION", "ABSORÇÃO" }, { "Absorbez les projectiles des gobelins avec le dash pour remplir le Cristal d'ultime.", "Absorva os projéteis dos goblins com o dash para encher o Cristal da suprema." },
         { "Le Cristal est chargé : {0} déclenche l'Ultime. Il blesse tous les ennemis, les ralentit et attire toutes les gemmes au sol.", "O Cristal está carregado: {0} aciona a Suprema. Ela fere todos os inimigos, os deixa mais lentos e atrai todas as gemas do chão." },
         { "ENTRAÎNEMENT TERMINÉ", "TREINAMENTO CONCLUÍDO" }, { "Vous connaissez l'essentiel. Les vraies parties vous attendent.", "Você já conhece o essencial. As partidas de verdade esperam por você." },
-        { "Passer l'entraînement", "Pular o treinamento" }, { "Déplacez-vous avec {0}.", "Mova-se com {0}." },
+        { "Passer l'entraînement", "Pular o treinamento" }, { "Déplacez-vous avec {0}.", "Mova-se com {0}." }, { "UN ÉCLAT APPARAÎT !", "UM FRAGMENTO APARECE!" },
+        { "Allez le ramasser pour déclencher l'Éclipse.", "Vá buscá-lo para desencadear o Eclipse." }, { "ÉCLIPSE", "ECLIPSE" },
+        { "Vos dégâts augmentent, mais les ennemis affluent.", "Seu dano aumenta, mas os inimigos chegam em massa." }, { "LE JOUR SE LÈVE", "O DIA AMANHECE" },
+        { "Éclats de l'éclipse : +{0}", "Fragmentos do eclipse: +{0}" }, { "Éclipse", "Eclipse" }, { "+{0} éclats gagnés", "+{0} fragmentos ganhos" },
+        { "Achetés avec de l'Or", "Compradas com ouro" },
     };
 }

@@ -768,7 +768,7 @@
 719| Wybierz kartę, aby zdobyć nową broń lub ulepszyć istniejącą.
 720| BOSS
 721| ZDROWIE
-722| Pasek zdrowia. Przy 0 rozgrywka jest przegrana.
+722| Twoje zdrowie. Jeśli spadnie do 0, rozgrywka się kończy.
 723| DOŚWIADCZENIE
 724| Zbieraj kryształy zostawiane przez potwory, aby awansować.
 725| AKCJE
@@ -797,3 +797,12 @@
 748| Znasz już podstawy. Prawdziwe rozgrywki czekają.
 749| Pomiń trening
 750| Poruszaj się za pomocą {0}.
+751| POJAWIA SIĘ ODŁAMEK!
+752| Zbierz go, aby wywołać Zaćmienie.
+753| ZAĆMIENIE
+754| Twoje obrażenia rosną, ale wrogów przybywa.
+755| ŚWIT
+756| Odłamki zaćmienia: +{0}
+757| Zaćmienie
+758| +{0} odłamków zdobyto
+759| Kupowane za złoto

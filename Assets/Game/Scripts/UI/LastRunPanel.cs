@@ -42,6 +42,7 @@ public class LastRunPanel : MonoBehaviour
         new Color(0.69f, 0.48f, 0.91f, 1f),   // boss
         new Color(0.95f, 0.76f, 0.31f, 1f),   // victoire
         new Color(0.50f, 0.82f, 0.50f, 1f),   // défi
+        new Color(0.40f, 0.55f, 1.00f, 1f),   // (6e ligne : réservée à l'éclipse côté éclats ; toujours 0 côté or)
     };
 
     private static long _lastAnimatedRun;   // partie dont les montants ont déjà « compté » (une seule fois par partie)
@@ -75,6 +76,7 @@ public class LastRunPanel : MonoBehaviour
         new Color(0.95f, 0.76f, 0.31f, 1f),   // victoire
         new Color(0.00f, 0.93f, 0.89f, 1f),   // prime de 1re victoire
         new Color(0.56f, 0.84f, 0.45f, 1f),   // découvertes du Grimoire (2026-11-15)
+        new Color(0.40f, 0.55f, 1.00f, 1f),   // éclipse (2026-11-18)
     };
 
     // Réduction / agrandissement
@@ -184,7 +186,7 @@ public class LastRunPanel : MonoBehaviour
         }
         y -= 22f;
 
-        // Légende sur 2 colonnes (jusqu'à 5 lignes : 3 + 2).
+        // Légende sur 2 colonnes (jusqu'à 6 lignes : 3 + 3).
         for (int i = 0; i < SourceColors.Length; i++)
         {
             int col = i < 3 ? 0 : 1, row = i < 3 ? i : i - 3;
@@ -356,7 +358,7 @@ public class LastRunPanel : MonoBehaviour
                          + TimeText.SpaceColons((secs / 60) + ":" + (secs % 60).ToString("00"));   // « 15 : 00 », comme partout (2026-11-11)
 
         // Détail des éclats disponible seulement pour les parties enregistrées depuis le 2026-11-12 (parts == total).
-        bool eclatDetail = run.eclats > 0 && run.eclatsTime + run.eclatsBosses + run.eclatsVictory + run.eclatsFirstWin + run.eclatsDiscoveries == run.eclats;
+        bool eclatDetail = run.eclats > 0 && run.eclatsTime + run.eclatsBosses + run.eclatsVictory + run.eclatsFirstWin + run.eclatsDiscoveries + run.eclatsNight == run.eclats;
         if (!eclatDetail) _showEclats = false;
         _eclatTab.gameObject.SetActive(eclatDetail);
         _goldTabLabel.text = Loc.T("Sources de l'or");
@@ -365,11 +367,11 @@ public class LastRunPanel : MonoBehaviour
         StyleTab(_eclatTab, _eclatTabLabel, _showEclats, EclatText);
 
         int[] parts = _showEclats
-            ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, run.eclatsDiscoveries }
-            : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge };
+            ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, run.eclatsDiscoveries, run.eclatsNight }
+            : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge, 0 };
         string[] labels = _showEclats
-            ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), Loc.T("Découvertes") }
-            : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi") };
+            ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), Loc.T("Découvertes"), Loc.T("Éclipse") }
+            : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi"), "" };
         Color[] colors = _showEclats ? EclatSourceColors : SourceColors;
         string unit = _showEclats ? Loc.T("Éclats") : Loc.T("Or");
         for (int i = 0; i < parts.Length; i++)
@@ -414,15 +416,32 @@ public class LastRunPanel : MonoBehaviour
             _barBack.rectTransform.anchoredPosition = new Vector2(pad, y);
             _bar.anchoredPosition = new Vector2(pad + 2f, y - 2f);
             y -= 22f;
+            // AJOUTÉ (2026-11-18, retour utilisateur : « Survie » en espagnol dépasse sur le montant) - si un libellé + son montant ne
+            // tiennent pas côte à côte dans une demi-largeur (à la taille normale de 16), la légende passe sur UNE colonne (la carte
+            // s'allonge d'autant) au lieu d'écraser les textes.
+            float rowW2 = half - 8f;
+            float maxLabel = 0f, maxValue = 0f;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i] <= 0) continue;
+                maxLabel = Mathf.Max(maxLabel, MeasureAt16(_legendLabels[i]));
+                maxValue = Mathf.Max(maxValue, MeasureAt16(_legendValues[i]));
+            }
+            bool single = shown > 1 && 18f + maxLabel + 10f + maxValue > rowW2;
+            float rowW = single ? half * 2f : rowW2;
+            float valueW = Mathf.Clamp(maxValue + 6f, 114f, rowW * 0.55f);
             int index = 0;
             for (int i = 0; i < parts.Length; i++)
             {
                 if (parts[i] <= 0) continue;
-                int col = index < 3 ? 0 : 1, row = index < 3 ? index : index - 3;
-                ((RectTransform)_legendRows[i].transform).anchoredPosition = new Vector2(pad + col * (half + 8f), y - row * 24f);
+                int col = single ? 0 : index < 3 ? 0 : 1, row = single ? index : index < 3 ? index : index - 3;
+                RectTransform rowRt = (RectTransform)_legendRows[i].transform;
+                Place(rowRt, pad + col * (half + 8f), y - row * 24f, rowW, 22f);
+                Place(_legendLabels[i].rectTransform, 18f, 0f, rowW - 18f - valueW - 6f, 22f);
+                Place(_legendValues[i].rectTransform, rowW - valueW - 2f, 0f, valueW, 22f);
                 index++;
             }
-            y -= Mathf.Min(shown, 3) * 24f + 4f;
+            y -= (single ? shown : Mathf.Min(shown, 3)) * 24f + 4f;
         }
 
         _divider2.rectTransform.anchoredPosition = new Vector2(pad, y);
@@ -430,6 +449,19 @@ public class LastRunPanel : MonoBehaviour
         _stats.rectTransform.anchoredPosition = new Vector2(pad, y);
         _size.y = -y + 24f + 15f;
         _root.sizeDelta = _size;
+    }
+
+    // Largeur d'un texte à sa taille normale (16), sans la réduction automatique.
+    private static float MeasureAt16(TextMeshProUGUI t)
+    {
+        bool auto = t.enableAutoSizing;
+        float size = t.fontSize;
+        t.enableAutoSizing = false;
+        t.fontSize = 16f;
+        float w = t.GetPreferredValues(t.text).x;
+        t.fontSize = size;
+        t.enableAutoSizing = auto;
+        return w;
     }
 
     private IEnumerator CountUp(LastRunSummary run, int[] parts)

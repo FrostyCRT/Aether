@@ -145,6 +145,7 @@ public class SkillNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private void Start()
     {
         if (_plate == null || _nameLabel == null) return;
+        if (_nameLabel.enableAutoSizing) _nameLabel.fontSizeMin = Mathf.Min(_nameLabel.fontSizeMin, 7f);   // noms longs (japonais...) : le nom rétrécit dans le cartouche
         float w = _nameLabel.GetPreferredValues(_nameLabel.text).x + 24f;
         _plate.sizeDelta = new Vector2(Mathf.Max(_isUnique ? 72f : 80f, w), _plate.sizeDelta.y);
     }

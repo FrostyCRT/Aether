@@ -354,7 +354,7 @@ public static class LocTableIT
         { "L'Or accumulé suffit pour acheter un premier nœud dans Compétences.", "Le monete d'oro accumulate bastano per acquistare un primo nodo in Abilità." },
         { "Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.", "Il primo nodo costa {0} monete d'oro; ne hai {1}. Continua a giocare per ottenerlo." },
         { "Compris", "Capito" }, { "DÉPLACEMENT", "MOVIMENTO" }, { "NIVEAU SUPÉRIEUR", "LIVELLO SUPERIORE" }, { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Scegli una carta per ottenere una nuova arma o migliorarne una esistente." },
-        { "BOSS", "BOSS" }, { "VIE", "VITA" }, { "Barre de vie. À 0, la partie est perdue.", "Barra della vita. A 0, la partita è persa." },
+        { "BOSS", "BOSS" }, { "VIE", "VITA" }, { "Votre santé. Si elle tombe à 0, la partie est terminée.", "La tua salute. Se scende a 0, la partita è finita." },
         { "EXPÉRIENCE", "ESPERIENZA" }, { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Raccogli le gemme lasciate dai mostri per salire di livello." },
         { "ACTIONS", "AZIONI" }, { "Dash ({0}) et Ultime ({1}).", "Scatto ({0}) e Suprema ({1})." }, { "Terminer", "Fine" },
         { "ACCUEIL", "HOME" }, { "Sélectionnez d'abord un personnage", "Seleziona prima un personaggio" }, { "Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres, renforcez votre héros et survivez. Choisissez votre langue pour commencer.", "Aether Storm Survivor è un gioco di sopravvivenza: affronta orde di mostri, potenzia il tuo eroe e sopravvivi. Scegli la lingua per iniziare." },
@@ -372,6 +372,10 @@ public static class LocTableIT
         { "ABSORPTION", "ASSORBIMENTO" }, { "Absorbez les projectiles des gobelins avec le dash pour remplir le Cristal d'ultime.", "Assorbi i proiettili dei goblin con lo scatto per riempire il Cristallo della suprema." },
         { "Le Cristal est chargé : {0} déclenche l'Ultime. Il blesse tous les ennemis, les ralentit et attire toutes les gemmes au sol.", "Il Cristallo è carico: {0} attiva la Suprema. Colpisce tutti i nemici, li rallenta e attira tutte le gemme a terra." },
         { "ENTRAÎNEMENT TERMINÉ", "ADDESTRAMENTO COMPLETATO" }, { "Vous connaissez l'essentiel. Les vraies parties vous attendent.", "Conosci l'essenziale. Le partite vere ti aspettano." },
-        { "Passer l'entraînement", "Salta l'addestramento" }, { "Déplacez-vous avec {0}.", "Muoviti con {0}." },
+        { "Passer l'entraînement", "Salta l'addestramento" }, { "Déplacez-vous avec {0}.", "Muoviti con {0}." }, { "UN ÉCLAT APPARAÎT !", "COMPARE UN FRAMMENTO!" },
+        { "Allez le ramasser pour déclencher l'Éclipse.", "Raccoglilo per scatenare l'Eclissi." }, { "ÉCLIPSE", "ECLISSI" },
+        { "Vos dégâts augmentent, mais les ennemis affluent.", "Il tuo danno aumenta, ma i nemici arrivano a ondate." },
+        { "LE JOUR SE LÈVE", "SORGE L'ALBA" }, { "Éclats de l'éclipse : +{0}", "Frammenti dell'eclissi: +{0}" }, { "Éclipse", "Eclissi" },
+        { "+{0} éclats gagnés", "+{0} frammenti ottenuti" }, { "Achetés avec de l'Or", "Si acquistano con l'oro" },
     };
 }

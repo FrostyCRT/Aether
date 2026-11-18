@@ -469,12 +469,28 @@ public class EnemyBase : MonoBehaviour
     private const float LeashDistanceSqr = LeashDistance * LeashDistance;
 
     public static bool TutorialFreeze;   // didacticiel : ennemis et projectiles figés pendant que le joueur agit
+    private bool _tutorialAnimPaused;
 
     private void Update()
     {
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused) return;
-        if (TutorialFreeze) return;
+        if (TutorialFreeze)
+        {
+            // didacticiel : l'animation s'arrête aussi (sinon les loups courent sur place)
+            if (!_tutorialAnimPaused)
+            {
+                if (_animatorController == null) _animatorController = GetComponentInChildren<EnemyAnimatorController>();
+                if (_animatorController != null) _animatorController.SetAnimatorPaused(true);
+                _tutorialAnimPaused = true;
+            }
+            return;
+        }
+        if (_tutorialAnimPaused)
+        {
+            if (_animatorController != null) _animatorController.SetAnimatorPaused(false);
+            _tutorialAnimPaused = false;
+        }
 
         if (_playerTransform != null && (!MapBoundaryUtils.HasBoundX || !MapBoundaryUtils.HasBoundZ))
         {

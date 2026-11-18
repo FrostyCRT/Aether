@@ -30,7 +30,7 @@ public class MenuTutorial : MonoBehaviour
         t._menu = menu;
         t._canvas = menu.CanvasRoot;
         t.BuildHelpButton();
-        if (Tutorial.ShouldRunMenuTour) t.StartCoroutine(t.BeginAfterFrame());
+        if (Tutorial.ShouldRunMenuTour) { t._running = true; Running = true; t.StartCoroutine(t.BeginAfterFrame()); }
         else t.StartCoroutine(t.AfterFirstRunTip());
     }
 
@@ -38,6 +38,11 @@ public class MenuTutorial : MonoBehaviour
     public void Replay()
     {
         if (_running) return;
+        // CORRIGÉ (2026-11-18) - pendant les ~0,6 s d'attente avant Begin(), Update() (hors visite) voyait « page d'accueil pas encore
+        // vue » (Replay vient de tout remettre à zéro) et lançait tout de suite la visite de la page : une fenêtre apparaissait 1 s,
+        // puis le choix de langue la remplaçait. La visite est marquée « en cours » dès le clic.
+        _running = true;
+        Running = true;
         Tutorial.Replay();
         StartCoroutine(BeginAfterFrame());
     }
@@ -46,7 +51,8 @@ public class MenuTutorial : MonoBehaviour
     {
         yield return null;   // laisse l'interface finir de s'installer (carrousel, polices)
         yield return new WaitForSecondsRealtime(0.6f);
-        if (_menu == null || _canvas == null) yield break;
+        if (_menu == null || _canvas == null) { _running = false; Running = false; yield break; }
+        if (TutorialOverlay.IsShowing) TutorialOverlay.Get().Dismiss();
         Begin();
     }
 

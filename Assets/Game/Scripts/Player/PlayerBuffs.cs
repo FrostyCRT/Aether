@@ -44,10 +44,12 @@ public class PlayerBuffs : MonoBehaviour
     // bien, x1,4 ») - 3e facteur, propre au personnage joué (CharacterDamageFactor). Revient sur la décision « pas de stats
     // différentes par personnage » (NOTES.md, tableau du 2026-11-11) pour Lyra seulement, à la demande de l'utilisateur.
     // Passe par ce multiplicateur commun : TOUTES ses sources de dégâts en profitent (armes, fusions, zones, Ultime, Nova).
-    public static float OutgoingDamageMultiplier => _concentrationFactor * _overpowerFactor * _characterFactor;
+    public static float OutgoingDamageMultiplier => _concentrationFactor * _overpowerFactor * _characterFactor * _nightFactor;
     private static float _concentrationFactor = 1f;
     private static float _overpowerFactor = 1f;
     private static float _characterFactor = 1f;
+    private static float _nightFactor = 1f;   // Nuit des Éclats (GameModes.NightDamageMultiplier pendant la nuit)
+    public static void SetNightActive(bool active) => _nightFactor = active ? GameModes.NightDamageMultiplier : 1f;
 
 
     // MODIFIÉ (2026-11-15, retour utilisateur : « maintenant qu'elle a plus de sources de dégâts, elle en met trop ») -
@@ -64,6 +66,7 @@ public class PlayerBuffs : MonoBehaviour
     {
         _concentrationFactor = 1f;
         _overpowerFactor = 1f;
+        _nightFactor = 1f;
         _characterFactor = TryGetComponent(out CharacterIdentity identity) ? CharacterDamageFactor(identity.Type) : 1f;
         _concentrationCap = MetaProgressionManager.Instance != null
             ? MetaProgressionManager.Instance.GetBonusConcentrationCap()
@@ -149,6 +152,7 @@ public class PlayerBuffs : MonoBehaviour
     {
         _concentrationFactor = 1f;
         _overpowerFactor = 1f;
+        _nightFactor = 1f;
         _characterFactor = 1f;
     }
 }

@@ -386,7 +386,10 @@ public class GrimoireUI : MonoBehaviour
         t.color = color;
         t.alignment = align;
         t.enableWordWrapping = false;
-        t.overflowMode = TextOverflowModes.Ellipsis;
+        // CORRIGÉ (2026-11-18) - « Ellipsis » supprimait TOUT le texte en japonais / chinois / coréen : la ligne de ces polices est
+        // plus haute que le cadre (titre 58 px dans 66, rubrique 28 dans 34), TMP jugeait qu'aucune ligne ne tenait et n'écrivait
+        // rien (titre, compteur et rubriques du Grimoire absents). Les cadres sont assez larges : le texte déborde seulement en hauteur.
+        t.overflowMode = TextOverflowModes.Overflow;
         t.raycastTarget = false;
         return t;
     }

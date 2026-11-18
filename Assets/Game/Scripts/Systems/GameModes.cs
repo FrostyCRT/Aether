@@ -323,10 +323,21 @@ public static class GameModes
     // XP gagnée : x1,5 en ruée de boss, x1 ailleurs.
     // Choc des titans : aucune XP (le build est déjà complet, aucune carte à proposer).
     // Escarmouche : x1,5, x2 de plus pendant la Frénésie.
-    public static float XpMultiplier => IsBossRush ? RushXpMultiplier
+    // Nuit des Éclats : les ennemis en plus (NightSpawnMultiplier) ne rapportent pas d'XP en plus -> XP / NightSpawnMultiplier.
+    public static float XpMultiplier => (IsBossRush ? RushXpMultiplier
         : IsTitans ? 0f
         : IsSkirmish ? SkirmishXpMultiplier * (FrenzyActive ? FrenzyXpMultiplier : 1f)
-        : 1f;
+        : 1f) * (NightActive ? 1f / NightSpawnMultiplier : 1f);
+
+    // ---- Nuit des Éclats (AJOUTÉ 2026-11-18) -------------------------------------------------------------------------------
+    // Événement de mi-partie : un éclat d'Aether apparaît loin du joueur ; le ramasser lance la nuit (éclairage sombre et bleuté).
+    // Pendant la nuit : dégâts du joueur x NightDamageMultiplier, mais NightSpawnMultiplier fois plus d'ennemis par vague.
+    // L'XP gagnée par minute ne change pas (voir XpMultiplier) et l'économie (or, éclats) n'est pas touchée.
+    // Pilotée par NightOfShards (créé par WaveManager) ; remis à false par lui en fin de nuit et à la destruction.
+    public static bool NightActive;
+    public const float NightSpawnMultiplier = 1.4f;
+    public const float NightMaxEnemiesMultiplier = 1.15f;
+    public const float NightDamageMultiplier = 1.25f;
 
     // ---- Choc des titans ------------------------------------------------------------------------------------------------
     // Le joueur démarre avec TOUTES les améliorations au maximum (comme le raccourci de debug F6) et affronte les 3 boss

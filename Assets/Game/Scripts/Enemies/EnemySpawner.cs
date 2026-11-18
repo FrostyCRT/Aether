@@ -178,6 +178,13 @@ public class EnemySpawner : MonoBehaviour
             enemiesPerWave = Mathf.RoundToInt(enemiesPerWave * GameModes.FrenzySpawnMultiplier);
         }
 
+        // Nuit des Éclats : plus d'ennemis par vague pendant la nuit (l'XP est compensée, voir GameModes.XpMultiplier).
+        if (GameModes.NightActive)
+        {
+            maxEnemies = Mathf.RoundToInt(maxEnemies * GameModes.NightMaxEnemiesMultiplier);
+            enemiesPerWave = Mathf.RoundToInt(enemiesPerWave * GameModes.NightSpawnMultiplier);
+        }
+
         if (currentEnemies >= maxEnemies) return;
 
         int spaceLeft = maxEnemies - currentEnemies;

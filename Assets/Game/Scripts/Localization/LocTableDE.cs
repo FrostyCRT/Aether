@@ -350,7 +350,7 @@ public static class LocTableDE
         { "L'Or accumulé suffit pour acheter un premier nœud dans Compétences.", "Das angesammelte Gold reicht für einen ersten Knoten bei den Fähigkeiten." },
         { "Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.", "Der erste Knoten kostet {0} Gold; du hast {1}. Spiele weiter, um ihn dir leisten zu können." },
         { "Compris", "Verstanden" }, { "DÉPLACEMENT", "BEWEGUNG" }, { "NIVEAU SUPÉRIEUR", "LEVELAUFSTIEG" }, { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Wähle eine Karte, um eine neue Waffe zu erhalten oder eine vorhandene zu verbessern." },
-        { "BOSS", "BOSS" }, { "VIE", "LEBEN" }, { "Barre de vie. À 0, la partie est perdue.", "Lebensleiste. Bei 0 ist die Partie verloren." },
+        { "BOSS", "BOSS" }, { "VIE", "LEBEN" }, { "Votre santé. Si elle tombe à 0, la partie est terminée.", "Deine Gesundheit. Fällt sie auf 0, ist die Partie vorbei." },
         { "EXPÉRIENCE", "ERFAHRUNG" }, { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Sammle die Kristalle der Monster ein, um aufzusteigen." },
         { "ACTIONS", "AKTIONEN" }, { "Dash ({0}) et Ultime ({1}).", "Dash ({0}) und Ultimate ({1})." }, { "Terminer", "Beenden" },
         { "ACCUEIL", "START" }, { "Sélectionnez d'abord un personnage", "Wähle zuerst einen Charakter" }, { "Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres, renforcez votre héros et survivez. Choisissez votre langue pour commencer.", "Aether Storm Survivor ist ein Überlebensspiel: Bekämpfe Monsterhorden, stärke deinen Helden und überlebe. Wähle deine Sprache, um zu beginnen." },
@@ -368,6 +368,10 @@ public static class LocTableDE
         { "ABSORPTION", "ABSORPTION" }, { "Absorbez les projectiles des gobelins avec le dash pour remplir le Cristal d'ultime.", "Absorbiere die Geschosse der Goblins mit dem Dash, um den Ultimate-Kristall zu füllen." },
         { "Le Cristal est chargé : {0} déclenche l'Ultime. Il blesse tous les ennemis, les ralentit et attire toutes les gemmes au sol.", "Der Kristall ist geladen: {0} löst das Ultimate aus. Es verletzt alle Gegner, verlangsamt sie und zieht alle Kristalle am Boden an." },
         { "ENTRAÎNEMENT TERMINÉ", "TRAINING ABGESCHLOSSEN" }, { "Vous connaissez l'essentiel. Les vraies parties vous attendent.", "Du kennst nun das Wichtigste. Die echten Runs warten." },
-        { "Passer l'entraînement", "Training überspringen" }, { "Déplacez-vous avec {0}.", "Bewege dich mit {0}." },
+        { "Passer l'entraînement", "Training überspringen" }, { "Déplacez-vous avec {0}.", "Bewege dich mit {0}." }, { "UN ÉCLAT APPARAÎT !", "EIN SPLITTER ERSCHEINT!" },
+        { "Allez le ramasser pour déclencher l'Éclipse.", "Hol ihn dir, um die Finsternis auszulösen." }, { "ÉCLIPSE", "FINSTERNIS" },
+        { "Vos dégâts augmentent, mais les ennemis affluent.", "Dein Schaden steigt, aber die Gegner strömen herbei." },
+        { "LE JOUR SE LÈVE", "DER TAG ERWACHT" }, { "Éclats de l'éclipse : +{0}", "Finsternis-Splitter: +{0}" }, { "Éclipse", "Finsternis" },
+        { "+{0} éclats gagnés", "+{0} Splitter erhalten" }, { "Achetés avec de l'Or", "Mit Gold gekauft" },
     };
 }

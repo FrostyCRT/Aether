@@ -359,14 +359,19 @@ public class LevelUpManager : MonoBehaviour
         }
     }
 
+    // Didacticiel (partie d'entraînement) : si non null, seules ces cartes peuvent être proposées. Remis à null en fin de tuto.
+    public static UpgradeType[] TutorialPool;
+
     private List<UpgradeData> GetRandomUpgrades(int count)
     {
         List<UpgradeData> pool = new List<UpgradeData>();
 
         foreach (UpgradeData upgrade in _allUpgrades)
         {
-            if (upgrade.IsAvailable())
-                pool.Add(upgrade);
+            if (!upgrade.IsAvailable()) continue;
+            // Didacticiel : tirage restreint à quelques cartes (ex. pas d'Orbitaux, qui tournent avec le joueur).
+            if (TutorialPool != null && System.Array.IndexOf(TutorialPool, upgrade.upgradeType) < 0) continue;
+            pool.Add(upgrade);
         }
 
         // AJOUTÉ (2026-11-14, retour utilisateur : « ne pas proposer Soin si la vie est à plus de 75 %, et si elle est en
@@ -374,7 +379,7 @@ public class LevelUpManager : MonoBehaviour
         // si c'est la seule carte restante : build complet), poids x HealLowHealthWeight sous 25 %.
         float healthRatio = PlayerHealthRatio();
         UpgradeData heal = pool.Find(u => u.upgradeType == UpgradeType.Heal);
-        if (heal != null && healthRatio > HealHideAboveRatio && pool.Count > 1)
+        if (heal != null && healthRatio > HealHideAboveRatio && pool.Count > 1 && TutorialPool == null)
         {
             pool.Remove(heal);
             heal = null;

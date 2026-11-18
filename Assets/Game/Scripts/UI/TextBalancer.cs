@@ -427,6 +427,18 @@ public static class TextBalancer
         return t.font != null && t.font.name.StartsWith("Bangers", System.StringComparison.Ordinal);
     }
 
+    // AJOUTÉ (2026-11-18) - texte tel que le code l'a écrit, avant les retouches de typographie de cette classe (espace élargi
+    // avant « ! ? : ; », balises <nobr>, espaces insécables). LocalizedText compare avec ceci : sans ça, un titre déjà retouché
+    // (« NIVEAU SUPÉRIEUR <space=0.14em>! ») ne se reconnaissait plus et restait dans l'ancienne langue après un changement de langue.
+    public static string Unprotect(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        if (text.IndexOf(PunctuationExtraSpace, System.StringComparison.Ordinal) >= 0) text = text.Replace(PunctuationExtraSpace, "");
+        if (text.IndexOf(NoBreakOpen, System.StringComparison.Ordinal) >= 0) text = text.Replace(NoBreakOpen, "").Replace(NoBreakClose, "");
+        if (text.IndexOf(Nbsp) >= 0) text = text.Replace(Nbsp, ' ');
+        return text;
+    }
+
     public static string WidenPunctuationSpaces(string text)
     {
         if (string.IsNullOrEmpty(text) || text.IndexOf(' ') < 0) return text;

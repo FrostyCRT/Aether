@@ -760,7 +760,7 @@
 719| Wähle eine Karte, um eine neue Waffe zu erhalten oder eine vorhandene zu verbessern.
 720| BOSS
 721| LEBEN
-722| Lebensleiste. Bei 0 ist die Partie verloren.
+722| Deine Gesundheit. Fällt sie auf 0, ist die Partie vorbei.
 723| ERFAHRUNG
 724| Sammle die Kristalle der Monster ein, um aufzusteigen.
 725| AKTIONEN
@@ -789,3 +789,12 @@
 748| Du kennst nun das Wichtigste. Die echten Runs warten.
 749| Training überspringen
 750| Bewege dich mit {0}.
+751| EIN SPLITTER ERSCHEINT!
+752| Hol ihn dir, um die Finsternis auszulösen.
+753| FINSTERNIS
+754| Dein Schaden steigt, aber die Gegner strömen herbei.
+755| DER TAG ERWACHT
+756| Finsternis-Splitter: +{0}
+757| Finsternis
+758| +{0} Splitter erhalten
+759| Mit Gold gekauft

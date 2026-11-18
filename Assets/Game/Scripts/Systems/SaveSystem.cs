@@ -264,6 +264,8 @@ public class LastRunSummary
     public int eclatsTime, eclatsBosses, eclatsVictory;
     // AJOUTÉ (2026-11-15) - prime des premières découvertes du Grimoire ; compte dans eclats.
     public int eclatsDiscoveries;
+    // AJOUTÉ (2026-11-18) - éclats gagnés pendant la Nuit des Éclats (Éclipse) ; comptent dans eclats.
+    public int eclatsNight;
     public float runTime;
     public int kills, level, bossKills;
     public bool victory, abandoned;

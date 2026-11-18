@@ -87,6 +87,7 @@ public class GameTutorial : MonoBehaviour
         Tutorial.PracticeActive = false;
         EnemyBase.TutorialFreeze = false;
         WeaponBase.AutoFireDisabled = false;
+        LevelUpManager.TutorialPool = null;
         if (_pc != null) { _pc.DashFilter = null; _pc.MovementLocked = false; _pc.DashLocked = false; }
         RestoreSave();
     }
@@ -157,7 +158,7 @@ public class GameTutorial : MonoBehaviour
         yield return new WaitForSeconds(0.4f);
 
         // 2. visite du HUD ----------------------------------------------------------------------------------------------------
-        yield return HudStep("Health", "VIE", "Barre de vie. À 0, la partie est perdue.");
+        yield return HudStep("Health", "VIE", "Votre santé. Si elle tombe à 0, la partie est terminée.");
         yield return HudStep("XpGroup", "EXPÉRIENCE", "Ramassez les gemmes laissées par les monstres pour monter de niveau.");
         yield return HudStep("ActionCluster", "ACTIONS", null);
         yield return new WaitForSeconds(0.5f);
@@ -287,21 +288,20 @@ public class GameTutorial : MonoBehaviour
 
         // 9. une quinzaine d'ennemis autour du joueur : l'Ultime ---------------------------------------------------------------------------
         float ringStart = Time.time;
-        int ring = 0;
-        const int RingSize = 26;   // beaucoup d'ennemis : le cercle doit être dense
+        const int RingSize = 70;   // énormément d'ennemis : la horde doit être dense
+        if (_pc != null) { _pc.MovementLocked = true; _pc.DashLocked = true; }   // le joueur reste sur place pendant l'ultime
+        // tous les loups apparaissent dans la MÊME frame, juste hors portée de l'ultime (10) : ils arrivent ensemble
+        for (int ring = 0; ring < RingSize; ring++)
+        {
+            float a = ring * 2.399963f;   // angle d'or : répartition homogène
+            SpawnWolf(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), 11f + (ring % 4) * 1.1f, 0.8f, 1.1f, 0.2f);
+        }
+        yield return null;
         while (true)
         {
-            if (ring < RingSize && Time.time - ringStart >= ring * 0.07f)
-            {
-                float a = ring * (360f / RingSize) * Mathf.Deg2Rad;
-                SpawnWolf(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)), 8f + (ring % 3), 0.8f, 1.1f, 0.2f);   // vitesse normale : ils arrivent vite
-                ring++;
-            }
-            int alive = AliveCount(WolfTag);
-            float nearest = NearestEnemy(WolfTag);
-            if (ring >= RingSize && alive >= 18 && nearest <= 5.5f) break;
-            if (Time.time - ringStart > 7f && alive >= 14 && nearest <= 5.5f) break;
-            if (Time.time - ringStart > 12f) break;   // garde-fou : le joueur a tout abattu
+            // le temps se fige quand TOUS les loups sont dans la portée de l'ultime (10)
+            if (FarthestEnemy(WolfTag) <= 9.5f && AliveCount(WolfTag) >= 40) break;
+            if (Time.time - ringStart > 12f) break;   // garde-fou
             yield return null;
         }
         SpawnGemRing(6, 4.5f);
@@ -350,6 +350,7 @@ public class GameTutorial : MonoBehaviour
         if (_crystal != null) _crystal.UltimateLocked = true;
         if (_pc != null) _pc.DashLocked = true;   // le dash n'est débloqué qu'à son étape
         WeaponBase.AutoFireDisabled = true;       // pas de tir pendant les étapes de déplacement
+        LevelUpManager.TutorialPool = new[] { UpgradeType.Fireball, UpgradeType.Damage, UpgradeType.Heal };
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null) spawner.gameObject.SetActive(false);   // aucune vague : tout est placé par le scénario
         if (WaveManager.Instance != null) WaveManager.Instance.enabled = false;
@@ -366,7 +367,7 @@ public class GameTutorial : MonoBehaviour
     {
         _modalDone = false;
         if (s.NextLabel == null) s.NextLabel = () => Loc.T("Compris");
-        s.SkipLabel = () => Loc.T("Passer l'entraînement");
+        s.ShowSkip = false;   // plus de « Passer l'entraînement » (2026-11-18) : la souris n'est pas disponible, et le joueur sait ce qu'il fait
         s.SkipConfirm = false;
         s.Width = 780f;
         if (s.Position == TutorialStep.Place.Auto) s.Position = TutorialStep.Place.TopRight;
@@ -403,8 +404,7 @@ public class GameTutorial : MonoBehaviour
             Dim = false,
             BlockInput = false,
             RequireAction = true,
-            ShowSkip = true,
-            SkipLabel = () => Loc.T("Passer l'entraînement"),
+            ShowSkip = false,   // (2026-11-18) pas de bouton « passer » en partie d'entraînement
             SkipConfirm = false,
             Position = TutorialStep.Place.TopRight,
             Width = 720f,
@@ -451,8 +451,7 @@ public class GameTutorial : MonoBehaviour
         s.DimAlpha = 0.7f;   // voile sombre : il faut lire ; l'action reste visible au travers
         s.BlockInput = false;
         s.RequireAction = true;
-        s.ShowSkip = true;
-        s.SkipLabel = () => Loc.T("Passer l'entraînement");
+        s.ShowSkip = false;   // (2026-11-18) pas de bouton « passer » en partie d'entraînement
         s.SkipConfirm = false;
         s.Position = TutorialStep.Place.TopRight;
         s.Width = 820f;
@@ -577,6 +576,15 @@ public class GameTutorial : MonoBehaviour
         foreach (EnemyBase e in FindObjectsByType<EnemyBase>(FindObjectsSortMode.None))
             if (e != null && e.gameObject.activeInHierarchy && e.PoolTag == tag)
                 best = Mathf.Min(best, Flat(e.transform.position, _player.transform.position));
+        return best;
+    }
+
+    private float FarthestEnemy(string tag)
+    {
+        float best = 0f;
+        foreach (EnemyBase e in FindObjectsByType<EnemyBase>(FindObjectsSortMode.None))
+            if (e != null && e.gameObject.activeInHierarchy && e.PoolTag == tag)
+                best = Mathf.Max(best, Flat(e.transform.position, _player.transform.position));
         return best;
     }
 

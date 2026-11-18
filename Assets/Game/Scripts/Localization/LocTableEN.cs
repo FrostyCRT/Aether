@@ -497,7 +497,7 @@ public static class LocTableEN
         { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Choose a card to get a new weapon or upgrade an existing one." },
         { "BOSS", "BOSS" },
         { "VIE", "HEALTH" },
-        { "Barre de vie. À 0, la partie est perdue.", "Health bar. At 0, the run is lost." },
+        { "Votre santé. Si elle tombe à 0, la partie est terminée.", "Your health. If it drops to 0, the run is over." },
         { "EXPÉRIENCE", "EXPERIENCE" },
         { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Pick up the gems dropped by monsters to level up." },
         { "ACTIONS", "ACTIONS" },
@@ -527,6 +527,15 @@ public static class LocTableEN
         { "Passer l'entraînement", "Skip training" },
         { "Déplacez-vous avec {0}.", "Move with {0}." },
 
+        { "UN ÉCLAT APPARAÎT !", "A SHARD APPEARS!" },
+        { "Allez le ramasser pour déclencher l'Éclipse.", "Go and grab it to trigger the Eclipse." },
+        { "ÉCLIPSE", "ECLIPSE" },
+        { "Vos dégâts augmentent, mais les ennemis affluent.", "Your damage increases, but enemies pour in." },
+        { "LE JOUR SE LÈVE", "DAWN BREAKS" },
+        { "Éclats de l'éclipse : +{0}", "Eclipse shards: +{0}" },
+        { "Éclipse", "Eclipse" },
+        { "+{0} éclats gagnés", "+{0} shards earned" },
+        { "Achetés avec de l'Or", "Bought with gold" },   // le texte de la scène (page Réputation) s'écrit avec un O majuscule
         // ==== SECTIONS SUIVANTES ====
     };
 }

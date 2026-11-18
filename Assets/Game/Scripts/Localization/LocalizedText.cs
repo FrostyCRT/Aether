@@ -94,7 +94,13 @@ public class LocalizedText : MonoBehaviour
         string current = _tmp.text;
         // Le code a écrit autre chose depuis : on ne touche à rien. Un clone (Instantiate) d'un modèle traduit porte
         // une traduction de _french : c'est toujours "notre" texte.
-        if (current != _french && current != _lastApplied && !Loc.IsTranslationOf(_french, current)) return;
+        // CORRIGÉ (2026-11-18) - on compare au texte SANS les retouches de TextBalancer (espace élargie avant « ! », <nobr>,
+        // insécables) : un titre déjà affiché ne se reconnaissait plus et restait dans l'ancienne langue.
+        if (current != _french && current != _lastApplied)
+        {
+            string plain = TextBalancer.Unprotect(current);
+            if (plain != _french && plain != TextBalancer.Unprotect(_lastApplied) && !Loc.IsTranslationOf(_french, plain)) return;
+        }
         string target = Loc.T(_french);
         _lastApplied = target;
         if (current != target) _tmp.text = target;

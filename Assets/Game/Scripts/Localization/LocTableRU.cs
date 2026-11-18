@@ -347,7 +347,7 @@ public static class LocTableRU
         { "L'Or accumulé suffit pour acheter un premier nœud dans Compétences.", "Накопленного золота хватает на первый узел в «Навыках»." },
         { "Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.", "Первый узел стоит {0} золота, у вас {1}. Продолжайте играть, чтобы накопить нужную сумму." },
         { "Compris", "Понятно" }, { "DÉPLACEMENT", "ДВИЖЕНИЕ" }, { "NIVEAU SUPÉRIEUR", "НОВЫЙ УРОВЕНЬ" }, { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Выберите карту, чтобы получить новое оружие или улучшить имеющееся." },
-        { "BOSS", "БОСС" }, { "VIE", "ЗДОРОВЬЕ" }, { "Barre de vie. À 0, la partie est perdue.", "Шкала здоровья. При 0 забег проигран." },
+        { "BOSS", "БОСС" }, { "VIE", "ЗДОРОВЬЕ" }, { "Votre santé. Si elle tombe à 0, la partie est terminée.", "Ваше здоровье. Если оно упадёт до 0, забег закончен." },
         { "EXPÉRIENCE", "ОПЫТ" }, { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Подбирайте кристаллы, выпадающие из монстров, чтобы повышать уровень." },
         { "ACTIONS", "ДЕЙСТВИЯ" }, { "Dash ({0}) et Ultime ({1}).", "Рывок ({0}) и ульта ({1})." }, { "Terminer", "Завершить" },
         { "ACCUEIL", "ГЛАВНАЯ" }, { "Sélectionnez d'abord un personnage", "Сначала выберите персонажа" }, { "Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres, renforcez votre héros et survivez. Choisissez votre langue pour commencer.", "Aether Storm Survivor — игра на выживание: сражайтесь с ордами монстров, усиливайте героя и выживайте. Выберите язык, чтобы начать." },
@@ -366,6 +366,10 @@ public static class LocTableRU
         { "Le Cristal est chargé : {0} déclenche l'Ultime. Il blesse tous les ennemis, les ralentit et attire toutes les gemmes au sol.", "Кристалл заряжен: {0} запускает ульту. Она ранит всех врагов, замедляет их и притягивает все кристаллы с земли." },
         { "ENTRAÎNEMENT TERMINÉ", "ТРЕНИРОВКА ЗАВЕРШЕНА" }, { "Vous connaissez l'essentiel. Les vraies parties vous attendent.", "Вы знаете главное. Настоящие забеги ждут вас." },
         { "Passer l'entraînement", "Пропустить тренировку" }, { "Déplacez-vous avec {0}.", "Двигайтесь с помощью {0}." },
+        { "UN ÉCLAT APPARAÎT !", "ПОЯВИЛСЯ ОСКОЛОК!" }, { "Allez le ramasser pour déclencher l'Éclipse.", "Подберите его, чтобы начать Затмение." },
+        { "ÉCLIPSE", "ЗАТМЕНИЕ" }, { "Vos dégâts augmentent, mais les ennemis affluent.", "Ваш урон растёт, но врагов становится больше." },
+        { "LE JOUR SE LÈVE", "НАСТУПАЕТ РАССВЕТ" }, { "Éclats de l'éclipse : +{0}", "Осколки затмения: +{0}" }, { "Éclipse", "Затмение" },
+        { "+{0} éclats gagnés", "Получено осколков: +{0}" }, { "Achetés avec de l'Or", "Покупаются за золото" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "победы" },

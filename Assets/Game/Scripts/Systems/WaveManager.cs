@@ -18,6 +18,12 @@ public class WaveManager : MonoBehaviour
     private int  _bossCount = 0;
     private bool _bossAlive = false;
     public bool BossAlive => _bossAlive;
+
+    // Heure de chrono du prochain boss (Classique/Sans fin : tous les BossSpawnInterval ; Escarmouche : SkirmishBossTime ;
+    // Ruée : RushBossInterval). Lu par NightOfShards pour retirer l'éclat avant l'arrivée du boss.
+    public float NextBossTime => GameModes.IsSkirmish ? GameModes.SkirmishBossTime(_bossCount)
+        : GameModes.IsBossRush ? GameModes.RushBossInterval * (_bossCount + 1)
+        : BossSpawnInterval * (_bossCount + 1);
     public int CurrentWave => _bossCount + 1;
     // Escarmouche : nombre de boss déjà apparus (0 à 3), lu par GameModes.FrenzyActive.
     public int SkirmishBossesSpawned => GameModes.IsSkirmish ? _bossCount : 0;
@@ -48,6 +54,10 @@ public class WaveManager : MonoBehaviour
 
         ApplyDifficulty();
         UpdateModeHud(0f);
+
+        // Nuit des Éclats (2026-11-18) : événement de mi-partie, hors Ruée de boss, Choc des titans et partie d'entraînement.
+        if (!GameModes.IsTitans && !GameModes.IsBossRush && !Tutorial.PracticeActive && GetComponent<NightOfShards>() == null)
+            gameObject.AddComponent<NightOfShards>();
 
         if (GameModes.IsTitans)
         {
@@ -207,7 +217,13 @@ public class WaveManager : MonoBehaviour
         if (active && GameUI.Instance != null) GameUI.Instance.ShowFrenzyBanner();
         // Fin de Frénésie = vitesse normale tout de suite : sinon la musique du boss final démarrait (~0,5 s) avant la fin du
         // retour progressif (1,5 s) et sa 1re seconde était jouée trop vite.
-        if (MusicStarter.Instance != null) MusicStarter.Instance.SetPitch(active ? GameModes.FrenzyMusicPitch : 1f, active ? 1.5f : 0f);
+        // MODIFIÉ (2026-11-18, retour utilisateur) - le boss final enchaîne directement : la musique de Frénésie reste accélérée
+        // et fond vers celle du boss, qui s'ouvre à x1 (MusicStarter.SwitchRoutine) ; plus de 1 s de morceau normal entre les deux.
+        if (MusicStarter.Instance != null)
+        {
+            if (!active && _bossAlive) MusicStarter.Instance.ResetPitchLater(3f);
+            else MusicStarter.Instance.SetPitch(active ? GameModes.FrenzyMusicPitch : 1f, active ? 1.5f : 0f);
+        }
     }
 
     private void OnDestroy()

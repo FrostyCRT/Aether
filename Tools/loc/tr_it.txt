@@ -761,7 +761,7 @@
 719| Scegli una carta per ottenere una nuova arma o migliorarne una esistente.
 720| BOSS
 721| VITA
-722| Barra della vita. A 0, la partita è persa.
+722| La tua salute. Se scende a 0, la partita è finita.
 723| ESPERIENZA
 724| Raccogli le gemme lasciate dai mostri per salire di livello.
 725| AZIONI
@@ -790,3 +790,12 @@
 748| Conosci l'essenziale. Le partite vere ti aspettano.
 749| Salta l'addestramento
 750| Muoviti con {0}.
+751| COMPARE UN FRAMMENTO!
+752| Raccoglilo per scatenare l'Eclissi.
+753| ECLISSI
+754| Il tuo danno aumenta, ma i nemici arrivano a ondate.
+755| SORGE L'ALBA
+756| Frammenti dell'eclissi: +{0}
+757| Eclissi
+758| +{0} frammenti ottenuti
+759| Si acquistano con l'oro

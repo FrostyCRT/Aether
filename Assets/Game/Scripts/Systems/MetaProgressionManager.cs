@@ -133,6 +133,7 @@ public class MetaProgressionManager : MonoBehaviour
     public void ResetRunGold()
     {
         RunEclatsFromDiscoveries = 0;
+        RunEclatsFromNight = 0;
         RunGold = 0;
         RunGoldFromKills = RunGoldFromTime = RunGoldFromBosses = RunGoldFromVictory = RunGoldFromChallenge = 0;
         RunKillGoldValueRaw = 0;
@@ -145,6 +146,11 @@ public class MetaProgressionManager : MonoBehaviour
     // le disque en fin de partie, avec le reste), et sa prime s'ajoute aux éclats de la partie (SaveRunResults, abandon compris).
     // Faux si déjà découverte.
     public int RunEclatsFromDiscoveries { get; private set; }
+
+    // AJOUTÉ (2026-11-18) - Nuit des Éclats : éclats gagnés pendant la nuit (NightOfShards.RegisterKill), montant fixe (ni palier ni
+    // mode), ajoutés aux éclats de la partie à l'enregistrement (SaveRunResults, abandon compris). Remis à zéro avec RunGold.
+    public int RunEclatsFromNight { get; private set; }
+    public void AddNightEclats(int eclats) { RunEclatsFromNight += eclats; }
 
     public bool RegisterDiscovery(string id, int eclats)
     {
@@ -186,6 +192,7 @@ public class MetaProgressionManager : MonoBehaviour
 
     public void AddKillGold(int enemyGoldValue)
     {
+        if (GameModes.NightActive && NightOfShards.Instance != null) NightOfShards.Instance.RegisterKill();
         float now = Time.time;
         if (_killRateTime > 0f && now > _killRateTime) _killRate *= Mathf.Exp(-(now - _killRateTime) / KillRateWindow);
         _killRateTime = now;
@@ -372,6 +379,8 @@ public class MetaProgressionManager : MonoBehaviour
         }
         int eclatsDiscoveries = RunEclatsFromDiscoveries;   // prime du Grimoire : ni palier ni mode, montant fixe
         eclatsEarned += eclatsDiscoveries;
+        int eclatsNight = RunEclatsFromNight;               // prime de l'Éclipse (voir AddNightEclats) : montant fixe
+        eclatsEarned += eclatsNight;
         Data.totalEclats += eclatsEarned;
         LastRunEclatsEarned = eclatsEarned;
 
@@ -391,6 +400,7 @@ public class MetaProgressionManager : MonoBehaviour
             eclatsBosses = eclatsBosses,
             eclatsVictory = eclatsVictory,
             eclatsDiscoveries = eclatsDiscoveries,
+            eclatsNight = eclatsNight,
             runTime = runTime,
             kills = kills,
             level = levelReached,

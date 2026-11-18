@@ -346,7 +346,7 @@ public static class LocTablePL
         { "L'Or accumulé suffit pour acheter un premier nœud dans Compétences.", "Zgromadzone złoto wystarczy na pierwszy węzeł w Umiejętnościach." },
         { "Le premier nœud coûte {0} Or ; vous en avez {1}. Continuez à jouer pour l'obtenir.", "Pierwszy węzeł kosztuje {0} złota; masz {1}. Graj dalej, aby go zdobyć." },
         { "Compris", "Jasne" }, { "DÉPLACEMENT", "RUCH" }, { "NIVEAU SUPÉRIEUR", "NOWY POZIOM" }, { "Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante.", "Wybierz kartę, aby zdobyć nową broń lub ulepszyć istniejącą." },
-        { "BOSS", "BOSS" }, { "VIE", "ZDROWIE" }, { "Barre de vie. À 0, la partie est perdue.", "Pasek zdrowia. Przy 0 rozgrywka jest przegrana." },
+        { "BOSS", "BOSS" }, { "VIE", "ZDROWIE" }, { "Votre santé. Si elle tombe à 0, la partie est terminée.", "Twoje zdrowie. Jeśli spadnie do 0, rozgrywka się kończy." },
         { "EXPÉRIENCE", "DOŚWIADCZENIE" }, { "Ramassez les gemmes laissées par les monstres pour monter de niveau.", "Zbieraj kryształy zostawiane przez potwory, aby awansować." },
         { "ACTIONS", "AKCJE" }, { "Dash ({0}) et Ultime ({1}).", "Dash ({0}) i Supermoc ({1})." }, { "Terminer", "Zakończ" },
         { "ACCUEIL", "START" }, { "Sélectionnez d'abord un personnage", "Najpierw wybierz postać" }, { "Aether Storm Survivor est un jeu de survie : affrontez des hordes de monstres, renforcez votre héros et survivez. Choisissez votre langue pour commencer.", "Aether Storm Survivor to gra o przetrwaniu: walcz z hordami potworów, wzmacniaj bohatera i przeżyj. Wybierz język, aby zacząć." },
@@ -364,7 +364,11 @@ public static class LocTablePL
         { "ABSORPTION", "POCHŁANIANIE" }, { "Absorbez les projectiles des gobelins avec le dash pour remplir le Cristal d'ultime.", "Pochłaniaj pociski goblinów dashem, aby napełnić Kryształ supermocy." },
         { "Le Cristal est chargé : {0} déclenche l'Ultime. Il blesse tous les ennemis, les ralentit et attire toutes les gemmes au sol.", "Kryształ jest naładowany: {0} uruchamia Supermoc. Rani wszystkich wrogów, spowalnia ich i przyciąga wszystkie kryształy z ziemi." },
         { "ENTRAÎNEMENT TERMINÉ", "TRENING UKOŃCZONY" }, { "Vous connaissez l'essentiel. Les vraies parties vous attendent.", "Znasz już podstawy. Prawdziwe rozgrywki czekają." },
-        { "Passer l'entraînement", "Pomiń trening" }, { "Déplacez-vous avec {0}.", "Poruszaj się za pomocą {0}." },
+        { "Passer l'entraînement", "Pomiń trening" }, { "Déplacez-vous avec {0}.", "Poruszaj się za pomocą {0}." }, { "UN ÉCLAT APPARAÎT !", "POJAWIA SIĘ ODŁAMEK!" },
+        { "Allez le ramasser pour déclencher l'Éclipse.", "Zbierz go, aby wywołać Zaćmienie." }, { "ÉCLIPSE", "ZAĆMIENIE" },
+        { "Vos dégâts augmentent, mais les ennemis affluent.", "Twoje obrażenia rosną, ale wrogów przybywa." }, { "LE JOUR SE LÈVE", "ŚWIT" },
+        { "Éclats de l'éclipse : +{0}", "Odłamki zaćmienia: +{0}" }, { "Éclipse", "Zaćmienie" }, { "+{0} éclats gagnés", "+{0} odłamków zdobyto" },
+        { "Achetés avec de l'Or", "Kupowane za złoto" },
 
         // ======================================================== Formes propres à cette langue
         { "victoires#few", "wygrane" },
