@@ -1,0 +1,11 @@
+DEBUT esc_modere_lyra_ru perso=Player_Lyra(Clone) palier=Moderate mode=Skirmish langue=Russian pvmax=2000 soleil=1.00 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=125.1 pos=(-18.9,-51.0) joueur=(-28.3,-12.8) distance=39.4m margeMur=999.0 dansLaCarte=True niv=12 vivants=65
+BUILD_A_L_ECLAT • Ножи x4 | • Грязь x4 | • Лечение x2 | • Цепная молния
+ECLAT ramasse chrono=133.8 trajet=8.7s de jeu, PV perdus en route=740 (28 % des PV max) ; NUIT commence
+NUIT finie chrono=153.8 duree=20.0s de jeu, boss present=False, eclatsNuit=18
+LUMIERE apres nuit : soleil=1.00 (debut 1.00) ambiance=1.00 (1.00) reflets=1.00 (1.00) => OK ; voile=False lueurJoueur=False fleche=False compteur=False
+AVANT  : duree=20s kills=160 (480/min) degatsSubis=1305 (3915/min) xp=5223 (15670/min) niveaux=1 vivantsMoy=60 proches6mMoy=3.9 morts=0 or=241 fpsMoy=201 fpsMin=126
+NUIT   : duree=14s kills=120 (514/min) degatsSubis=845 (3621/min) xp=2609 (11181/min) niveaux=1 vivantsMoy=112 proches6mMoy=4.3 morts=0 or=35 fpsMoy=166 fpsMin=111  (hors fondus de 3 s)
+APRES  : duree=20s kills=198 (594/min) degatsSubis=585 (1755/min) xp=8927 (26782/min) niveaux=1 vivantsMoy=88 proches6mMoy=6.1 morts=0 or=53 fpsMoy=173 fpsMin=99
+FIN VICTOIRE chrono=300 niv=25 kills=1721 boss=3 morts=10 eclatsNuit=0 reel=252s NOTES MORT@51 carte@139(nuit) MORT@180 MORT@180 MORT@247 MORT@275 MORT@289 MORT@298 MORT@300 MORT@300 MORT@300 
+BUILD • Ножи x4 | • Грязь x4 | • Лечение x5 | • Цепная молния x4 | • Спутники x4 | • Грозовое созвездие | • Урон + x2

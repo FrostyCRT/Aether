@@ -58,6 +58,11 @@ public class WaveManager : MonoBehaviour
         // Nuit des Éclats (2026-11-18) : événement de mi-partie, hors Ruée de boss, Choc des titans et partie d'entraînement.
         if (!GameModes.IsTitans && !GameModes.IsBossRush && !Tutorial.PracticeActive && GetComponent<NightOfShards>() == null)
             gameObject.AddComponent<NightOfShards>();
+        // Gobelin doré (2:30) et Tempête de cristaux (13:30), 2026-11-22 : Classique et Sans fin seulement (l'Escarmouche a déjà
+        // l'Éclipse et la Frénésie en 5 min).
+        bool longRun = (GameModes.IsClassic || GameModes.IsEndless) && !Tutorial.PracticeActive;
+        if (longRun && GetComponent<GoldenGoblinEvent>() == null) gameObject.AddComponent<GoldenGoblinEvent>();
+        if (longRun && GetComponent<CrystalStormEvent>() == null) gameObject.AddComponent<CrystalStormEvent>();
 
         if (GameModes.IsTitans)
         {
@@ -133,6 +138,21 @@ public class WaveManager : MonoBehaviour
             GameUI.Instance.ShowBossHP("Les 3 Titans");
             GameUI.Instance.UpdateBossHP(_titansMaxTotal, _titansMaxTotal);
         }
+
+        // AJOUTÉ (2026-11-21, arrivée des boss - BossIntro) - une seule mise en scène pour les 3 titans, une fois l'annonce de
+        // début de partie terminée : gel, bandes de cinéma, liseré rouge, un seul cri (le premier titan qui en a un).
+        // La musique ne change pas : celle du combat joue déjà depuis le début de la partie.
+        GameManager gm = GameManager.Instance;
+        yield return new WaitForSecondsRealtime(0.3f);   // l'annonce de début de partie (GameUI) pose son verrou dans les 1res images
+        while (gm != null && !gm.IsGameOver && (gm.IntroLockActive || gm.IsPaused)) yield return null;
+        if (gm == null || gm.IsGameOver) yield break;
+        AudioClip roar = null;
+        foreach (BossBase t in _titans) if (t != null && t.RoarClip != null) { roar = t.RoarClip; break; }
+        gm.SetIntroLock(true);
+        _arrivalLocked = true;
+        BossIntro.Begin(roar);
+        yield return new WaitForSecondsRealtime(BossIntro.FreezeDuration);
+        EndArrivalFreeze();
     }
 
     // Toutes les améliorations au palier max (même logique que le raccourci de debug F4 de DebugCheats).
@@ -323,9 +343,66 @@ public class WaveManager : MonoBehaviour
         if (bossNumber == 2 && GameModes.CountsForProgression && MetaProgressionManager.Instance != null)
             MetaProgressionManager.Instance.UnlockCharacter(1);
 
-        ClearAllEnemies();
-        _enemySpawner.gameObject.SetActive(false);
+        // MODIFIÉ (2026-11-21, arrivée des boss - BossIntro) - plus d'apparition d'ennemis dès l'heure du boss ; le boss lui-même
+        // n'arrive qu'après le fondu de la musique (BossArrivalRoutine -> SpawnBossNow).
+        if (_enemySpawner == null) _enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        if (_enemySpawner != null) _enemySpawner.gameObject.SetActive(false);
+        if (_arrivalRoutine != null) { StopCoroutine(_arrivalRoutine); EndArrivalFreeze(); }   // debug : boss forcé en pleine arrivée
+        _arrivalRoutine = StartCoroutine(BossArrivalRoutine(bossNumber));
+    }
 
+    // ---- Arrivée mise en scène (AJOUTÉ 2026-11-21, retour utilisateur : « rendre l'arrivée des boss plus impressionnante ») ----
+    // 1. la musique s'éteint en fondu (BossIntro.MusicFadeOut), les ennemis restent encore là ;
+    // 2. silence : le boss tombe, les ennemis sont soufflés, le jeu entier se fige BossIntro.FreezeDuration s (SetIntroLock),
+    //    bandes de cinéma, liseré rouge, cri, nom en fondu long et barre de vie ;
+    // 3. le jeu reprend et la musique du boss démarre d'un coup.
+    // Le boss n'apparaît jamais pendant une pause, un choix de carte ou un ralenti (hitstop de l'Ultime) : il attend.
+    private Coroutine _arrivalRoutine;
+    private bool _arrivalLocked;
+
+    private IEnumerator BossArrivalRoutine(int bossNumber)
+    {
+        GameManager gm = GameManager.Instance;
+        if (MusicStarter.Instance != null) MusicStarter.Instance.FadeOutAndStop(BossIntro.MusicFadeOut);
+
+        float waited = 0f;
+        while (waited < BossIntro.MusicFadeOut)
+        {
+            if (gm == null || gm.IsGameOver) { _arrivalRoutine = null; yield break; }
+            if (!gm.IsPaused) waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        while (gm != null && !gm.IsGameOver && (gm.IsPaused || !Mathf.Approximately(Time.timeScale, 1f))) yield return null;
+        if (gm == null || gm.IsGameOver) { _arrivalRoutine = null; yield break; }
+
+        GameObject prefab = BossPrefab(bossNumber);
+        BossBase prefabBoss = prefab != null ? prefab.GetComponent<BossBase>() : null;
+
+        gm.SetIntroLock(true);
+        _arrivalLocked = true;
+        BossIntro.Begin(prefabBoss != null ? prefabBoss.RoarClip : null);
+        ClearAllEnemies(puffs: true);
+        SpawnBossNow(bossNumber);
+
+        yield return new WaitForSecondsRealtime(BossIntro.FreezeDuration);
+
+        EndArrivalFreeze();
+        if (MusicStarter.Instance != null) MusicStarter.Instance.PlayNow(prefabBoss != null ? prefabBoss.BossMusicClip : null);
+        _arrivalRoutine = null;
+    }
+
+    private void EndArrivalFreeze()
+    {
+        BossIntro.End();
+        if (_arrivalLocked && GameManager.Instance != null && !GameManager.Instance.IsGameOver) GameManager.Instance.SetIntroLock(false);
+        _arrivalLocked = false;
+    }
+
+    private GameObject BossPrefab(int bossNumber) =>
+        bossNumber == 1 ? _bossPrefab1 : bossNumber == 2 ? _bossPrefab2 : _bossPrefab3;
+
+    private void SpawnBossNow(int bossNumber)
+    {
         GameObject player    = GameObject.FindWithTag("Player");
         // CORRIGÉ (2026-10-18, diagnostic complet - audit §2.5) - l'ancien décalage fixe (+10 en X) plaçait le boss
         // PILE sur le joueur si celui-ci se trouvait près du bord est de la carte (le clamp qui suit ramenait le
@@ -456,11 +533,19 @@ public class WaveManager : MonoBehaviour
         ClearAllEnemies();
     }
 
-    private void ClearAllEnemies()
+    // puffs (2026-11-21, arrivée des boss) : petite gerbe sur chaque ennemi proche, comme soufflé par l'onde de choc du boss.
+    private void ClearAllEnemies(bool puffs = false)
     {
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject player = puffs ? GameObject.FindWithTag("Player") : null;
+        int puffCount = 0;
         foreach (GameObject enemy in enemies)
         {
+            if (player != null && puffCount < 60 && (enemy.transform.position - player.transform.position).sqrMagnitude < 30f * 30f)
+            {
+                ImpactSparkVFX.Spawn(enemy.transform.position + Vector3.up * 0.5f, new Color(0.55f, 0.45f, 0.6f), 0.8f);
+                puffCount++;
+            }
             enemy.TryGetComponent(out EnemyBase eb);
             if (eb != null)
                 ObjectPool.Instance.ReturnToPool(GetPoolTag(enemy), enemy);

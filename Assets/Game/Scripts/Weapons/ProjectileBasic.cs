@@ -10,6 +10,61 @@ public class ProjectileBasic : MonoBehaviour
     // cible en mouvement (voir EnemyBase.CurrentVelocity).
     public float Speed => _speed;
 
+    // AJOUTÉ (2026-11-22, lot 1 des modèles Blender) - visuel modélisé (enfant), orienté dans le sens du vol. Vide = ancien
+    // visuel (la sphère de la racine). Le maillage pointe vers -Z (export Blender) : d'où le demi-tour.
+    // Tir de base = goutte d'eau (retour utilisateur : « c'est un projectile d'eau [...] mets une rotation, comme s'il
+    // tournait sur lui-même », « pas de lueur magique ») : pas de teinte (l'eau garde ses couleurs, shader
+    // Aether/StylizedWater), rotation autour de l'axe de vol, gerbe de gouttelettes derrière (_trailDroplets) et
+    // éclaboussure d'eau à l'impact (WaterSplashVFX) au lieu de l'éclat d'étincelles.
+    [Header("Visuel modélisé (facultatif)")]
+    [SerializeField] private Transform _visual;
+    [SerializeField] private bool _tintVisual = true;
+    [SerializeField] private float _visualEmission = 2.6f;
+    [Tooltip("Rotation du visuel sur lui-même, autour de l'axe de vol (degrés par seconde ; 0 = aucune).")]
+    [SerializeField] private float _visualSpin = 0f;
+    [SerializeField] private ParticleSystem _trailDroplets;
+    [SerializeField] private bool _waterImpact;
+    [Tooltip("Couleur de la traînée imposée (alpha 0 = couleur de l'arme). Goutte d'eau : fin sillage blanc-bleu, pas un trait lumineux.")]
+    [SerializeField] private Color _trailOverride = new Color(0f, 0f, 0f, 0f);
+    [SerializeField] private float _trailWidthFactor = 1f;
+    [Tooltip("Ordre d'affichage de la traînée (3 = par-dessus tout, comme avant). Goutte d'eau : 0, pour que la goutte se dessine PAR-DESSUS son sillage (sinon un triangle blanc la recouvre).")]
+    [SerializeField] private int _trailSortingOrder = 3;
+    private float _spinAngle;
+    private Renderer _visualRenderer;
+    private MaterialPropertyBlock _visualBlock;
+    private static readonly Quaternion VisualFlip = Quaternion.Euler(0f, 180f, 0f);
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor"), EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
+    private void OrientVisual()
+    {
+        if (_visual == null || _direction.sqrMagnitude < 0.0001f) return;
+        _visual.rotation = Quaternion.LookRotation(_direction, Vector3.up) * VisualFlip * Quaternion.Euler(0f, 0f, _spinAngle);
+    }
+
+    private void SpinVisual()
+    {
+        if (_visual == null || _visualSpin == 0f) return;
+        _spinAngle = Mathf.Repeat(_spinAngle + _visualSpin * Time.deltaTime, 360f);
+        OrientVisual();
+    }
+
+    private void ImpactFX(float scale = 1f)
+    {
+        if (_waterImpact) WaterSplashVFX.Spawn(transform.position, scale);
+        else ImpactSparkVFX.Spawn(transform.position, _damageColor, scale);
+    }
+
+    private void TintVisual()
+    {
+        if (_visual == null || !_tintVisual) return;
+        if (_visualRenderer == null) { _visualRenderer = _visual.GetComponentInChildren<Renderer>(); _visualBlock = new MaterialPropertyBlock(); }
+        if (_visualRenderer == null) return;
+        _visualRenderer.GetPropertyBlock(_visualBlock);
+        _visualBlock.SetColor(BaseColorId, Color.Lerp(_damageColor, Color.white, 0.55f));
+        _visualBlock.SetColor(EmissionColorId, _damageColor * _visualEmission);
+        _visualRenderer.SetPropertyBlock(_visualBlock);
+    }
+
     private float _damage;
     private Vector3 _startPosition;
     private Vector3 _direction;
@@ -66,13 +121,14 @@ public class ProjectileBasic : MonoBehaviour
     {
         _sizeScale = Mathf.Max(0.1f, scale);
         transform.localScale = _baseScale * _sizeScale;
-        _trail.widthMultiplier = TrailWidth * _sizeScale;
+        _trail.widthMultiplier = TrailWidth * _trailWidthFactor * _sizeScale;
     }
 
     private void Awake()
     {
         _baseScale = transform.localScale;
         _maxRangeSqr = _maxRange * _maxRange;
+        if (_visual != null && TryGetComponent(out MeshRenderer rootSphere)) rootSphere.enabled = false;   // l'ancienne sphère
         _poolKey = name.Replace("(Clone)", "").Trim();
 
         // Largeur relevée (2026-10-05) - voir note équivalente dans BouncingOrbProjectile.cs : un trait trop fin
@@ -86,7 +142,7 @@ public class ProjectileBasic : MonoBehaviour
         _trail.material = new Material(Shader.Find("Sprites/Default"));
         _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         _trail.receiveShadows = false;
-        _trail.sortingOrder = 3;
+        _trail.sortingOrder = _trailSortingOrder;
     }
     // color : optionnel - défaut ColorProjectile (tir de base/Double Tir). Fireball/Knives/fusions passent la leur.
     public void Init(Vector3 direction, float damage, Color? color = null)
@@ -115,10 +171,23 @@ public class ProjectileBasic : MonoBehaviour
         _sizeScale = 1f;
         transform.localScale = _baseScale;
         _trail.Clear(); // sans ça, un projectile recyclé depuis le pool dessinerait une traînée depuis sa position précédente
-        _trail.startColor = FXSprites.A(_damageColor, 0.7f);
-        _trail.widthMultiplier = TrailWidth;
+        bool trailOverride = _trailOverride.a > 0f;
+        _trail.startColor = trailOverride ? _trailOverride : FXSprites.A(_damageColor, 0.7f);
+        _trail.widthMultiplier = TrailWidth * _trailWidthFactor;
         _trail.time = TrailTime;
-        _trail.endColor = FXSprites.A(_damageColor, 0f);
+        _trail.endColor = trailOverride ? FXSprites.A(_trailOverride, 0f) : FXSprites.A(_damageColor, 0f);
+        // chaque goutte part avec un angle différent : la rotation ne se synchronise pas. Seulement pour un visuel qui tourne
+        // (_visualSpin) : sinon (couteaux de Lyra, boule de feu) l'angle doit rester 0, sans quoi la dague était vue tantôt à
+        // plat, tantôt par la tranche selon le tir (corrigé 2026-11-22).
+        _spinAngle = _visualSpin != 0f ? Random.Range(0f, 360f) : 0f;
+        OrientVisual();
+        TintVisual();
+        if (_trailDroplets != null)
+        {
+            // gouttelettes en coordonnées du monde : on vide celles du tir précédent (pool) avant de relancer l'émission
+            _trailDroplets.Clear(true);
+            _trailDroplets.Play(true);
+        }
     }
 
     // AJOUTE - Ricochet (voir plus haut). bounceCount = nombre de rebonds APRÈS la perforation initiale.
@@ -200,6 +269,7 @@ public class ProjectileBasic : MonoBehaviour
         float dist = to.magnitude;
         if (dist <= BoomerangCatchDistance) { ReturnToPool(); return true; }
         _direction = to / dist;
+        OrientVisual();   // au retour, le visuel suit le nouveau cap
         transform.position += _direction * Mathf.Min(dist, _speed * BoomerangReturnSpeedFactor * Time.deltaTime);
         return true;
     }
@@ -221,6 +291,7 @@ public class ProjectileBasic : MonoBehaviour
         bool boomerang = UpdateBoomerang();
         if (!gameObject.activeSelf) return;
         if (!boomerang) transform.position += _direction * _speed * Time.deltaTime;
+        SpinVisual();
         for (int i = _pendingBosses.Count - 1; i >= 0 && gameObject.activeSelf; i--)
         {
             // CORRIGÉ (2026-11-16) : HandleHit(c) peut tuer le boss, ce qui désactive des colliders et appelle OnTriggerExit
@@ -263,7 +334,7 @@ public class ProjectileBasic : MonoBehaviour
     {
         ApplyDamage(other, _damage, _damageColor, false);
         ApplyBurnIfNeeded(other);
-        ImpactSparkVFX.Spawn(transform.position, _damageColor);
+        ImpactFX();
         _hitInstanceIds.Add(other.GetInstanceID());
 
         if (_fragmentChance > 0f && Random.value < _fragmentChance)
@@ -353,13 +424,14 @@ public class ProjectileBasic : MonoBehaviour
         if (dir.sqrMagnitude < 0.0001f) return false;
 
         _direction = dir.normalized;
+        OrientVisual();
         _ricochetsLeft--;
         _currentPierceHits = 0;              // budget de perforation renouvelé après chaque rebond
         _startPosition = transform.position;  // la portée max repart de ce point, pas de repartir à vide
         // AJOUTÉ (2026-10-05) - retour utilisateur : "il faut toujours qu'on voit ce qu'il se passe" - sans ça, un
         // ricochet (changement de cible en cours de vol) était invisible, seule la trajectoire qui tourne le
         // trahissait. Éclat un peu plus grand que l'impact normal pour marquer le changement de cap.
-        ImpactSparkVFX.Spawn(transform.position, _damageColor, 1.4f);
+        ImpactFX(1.4f);
         return true;
     }
 

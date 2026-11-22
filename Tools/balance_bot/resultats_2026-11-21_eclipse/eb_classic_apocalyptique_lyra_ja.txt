@@ -1,0 +1,7 @@
+DEBUT classic_apocalyptique_lyra_ja perso=Player_Lyra(Clone) palier=Apocalyptic mode=Classic langue=Japanese pvmax=2000 soleil=1.20 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=450.2 pos=(11.3,-0.3) joueur=(-16.6,-19.8) distance=34.0m margeMur=10.7 dansLaCarte=True niv=15 vivants=57
+BUILD_A_L_ECLAT • ナイフ x4 | • 連鎖雷撃 x4 | • 回復 x2 | • バウンドオーブ x3 | • オービタル
+ECLAT perdu (non ramasse) chrono=530.0 apres=79.9s de jeu
+PAS DE NUIT (eclatApparu=True)
+FIN ARRET_APRES_BOSS2 chrono=600 niv=17 kills=4399 boss=1 morts=92 eclatsNuit=0 reel=455s NOTES MORT@57 MORT@106 MORT@109 MORT@161 MORT@193 MORT@209 MORT@211 MORT@234 MORT@253 MORT@261 MORT@266 MORT@270 MORT@274 MORT@278 MORT@283 MORT@300 MORT@300 MORT@300 MORT@300 MORT@315 MORT@319 MORT@323 MORT@327 MORT@331 MORT@335 MORT@343 MORT@347 MORT@369 MORT@373 MORT@377 MORT@397 MORT@414 MORT@431 MORT@436 MORT@446 MORT@457 MORT@461 MORT@465 MORT@470 MORT@474 MORT@479 MORT@488 MORT@491 MORT@493 MORT@495 carte@496(eclat) MORT@502 MORT@504 MORT@510 MORT@512 MORT@514 MORT@517 MORT@519 MORT@521 MORT@523 MORT@525 MORT@527 MORT@529 MORT@531 MORT@533 MORT@535 carte@536(eclat) MORT@539 MORT@542 MORT@560 MORT@562 MORT@564 MORT@566 MORT@598 MORT@600 MORT@600 MORT@600 MORT@600 
+BUILD • ナイフ x4 | • 連鎖雷撃 x4 | • 回復 x4 | • バウンドオーブ x3 | • オービタル

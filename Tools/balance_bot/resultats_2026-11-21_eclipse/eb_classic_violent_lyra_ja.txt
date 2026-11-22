@@ -1,0 +1,11 @@
+DEBUT classic_violent_lyra_ja perso=Player_Lyra(Clone) palier=Violent mode=Classic langue=Japanese pvmax=2000
+ECLAT apparu chrono=450.2 pos=(1.1,-12.0) joueur=(-24.5,-12.0) distance=25.6m margeMur=0.0 niv=13 vivants=117 pv=75 %
+BUILD_A_L_ECLAT • ナイフ x4 | • 回復 | • 連鎖雷撃 x2 | • オービタル x4 | • 泥沼
+ECLAT ramasse chrono=463.9 trajet=13.7s de jeu, PV perdus en route=2834 (123 % des PV max) ; NUIT commence
+NUIT finie chrono=509.0 duree=45.2s de jeu, boss present=False, eclatsNuit=62
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.00
+AVANT  : duree=45s kills=407 (543/min) degatsSubis=5317 (7089/min) xp=8809 (11745/min) niveaux=1 vivantsMoy=95 proches6mMoy=12.7 morts=2 or=738 fpsMoy=27 fpsMin=23
+NUIT   : duree=39s kills=430 (660/min) degatsSubis=8043 (12350/min) xp=8536 (13107/min) niveaux=1 vivantsMoy=105 proches6mMoy=15.3 morts=2 or=724 fpsMoy=26 fpsMin=7  (hors fondus de 3 s)
+APRES  : duree=45s kills=233 (311/min) degatsSubis=3020 (4026/min) xp=7429 (9905/min) niveaux=1 vivantsMoy=121 proches6mMoy=9.7 morts=1 or=666 fpsMoy=26 fpsMin=24
+FIN ARRET_APRES_ECLIPSE chrono=559 niv=15 kills=2745 boss=1 morts=32 reel=304s NOTES MORT@31 MORT@37 MORT@69 MORT@83 MORT@95 MORT@112 MORT@156 MORT@158 MORT@172 MORT@193 MORT@206 MORT@214 MORT@218 MORT@229 MORT@251 MORT@266 MORT@284 MORT@300 MORT@300 MORT@312 MORT@334 MORT@351 MORT@365 MORT@375 MORT@387 MORT@400 MORT@423 MORT@435 MORT@461 MORT@484(nuit) MORT@500(nuit) MORT@523 
+BUILD • ナイフ x4 | • 回復 x2 | • 連鎖雷撃 x2 | • オービタル x4 | • 泥沼 x2

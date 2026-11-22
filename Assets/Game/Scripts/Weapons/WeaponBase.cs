@@ -145,6 +145,10 @@ public class WeaponBase : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
+        // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _baseDetectionRange);
+        if (golden != null) return golden;
+
         int numColliders = Physics.OverlapSphereNonAlloc(transform.position, _baseDetectionRange, _detectionBuffer, _enemyLayer);
 
         Transform nearest = null;

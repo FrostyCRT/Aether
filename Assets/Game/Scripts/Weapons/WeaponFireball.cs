@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 public class WeaponFireball : MonoBehaviour
 {
@@ -110,6 +110,14 @@ public class WeaponFireball : MonoBehaviour
     private bool FindDensestClusterPoint(out Vector3 aimPoint)
     {
         aimPoint = Vector3.zero;
+        // Gobelin doré à portée : visé directement (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _detectionRange);
+        if (golden != null)
+        {
+            aimPoint = golden.position;
+            aimPoint.y = 0f;
+            return true;
+        }
         int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         int n = 0;
         for (int i = 0; i < count; i++)

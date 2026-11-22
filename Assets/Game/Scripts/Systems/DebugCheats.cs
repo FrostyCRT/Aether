@@ -41,6 +41,10 @@ public class DebugCheats : MonoBehaviour
     [SerializeField] private KeyCode _spawnLargeGemKey = KeyCode.Insert;
     [Tooltip("Retire tous les ennemis normaux actuellement sur la carte (boss non compris).")]
     [SerializeField] private KeyCode _clearEnemiesKey = KeyCode.F12;
+    [Tooltip("Bascule le mode « tireurs seulement » : retire les ennemis présents puis ne fait plus apparaître que des Gobelins et des Bulbes (test des projectiles ennemis).")]
+    [SerializeField] private KeyCode _shootersOnlyKey = KeyCode.PageUp;
+    [Tooltip("Lance tout de suite la nuit de l'Éclipse (test de lisibilité de nuit).")]
+    [SerializeField] private KeyCode _startEclipseKey = KeyCode.PageDown;
 
     // Securite max par ameliorations pour eviter une boucle infinie si
     // IsAvailable() ne redevient jamais false pour une raison inattendue.
@@ -97,7 +101,22 @@ public class DebugCheats : MonoBehaviour
 
         if (Input.GetKeyDown(_clearEnemiesKey))
             ClearEnemies();
+
+        if (Input.GetKeyDown(_shootersOnlyKey))
+        {
+            EnemySpawner.DebugShootersOnly = !EnemySpawner.DebugShootersOnly;
+            if (EnemySpawner.DebugShootersOnly) ClearEnemies();
+            Debug.Log("[DebugCheats] Tireurs seulement : " + (EnemySpawner.DebugShootersOnly ? "OUI" : "non"));
+        }
+
+        if (Input.GetKeyDown(_startEclipseKey))
+        {
+            if (NightOfShards.Instance != null) NightOfShards.Instance.DebugStartNightNow();
+            else Debug.LogWarning("[DebugCheats] Pas d'Éclipse dans cette partie (NightOfShards absent).");
+        }
     }
+
+    private void OnDestroy() => EnemySpawner.DebugShootersOnly = false;   // jamais reporté sur la partie suivante
 
     // CORRIGE (2026-09-27) - ne fait plus QUE avancer le chrono : ne spawne plus le boss directement (c'était le bug
     // signalé, "le boss spawne mais le temps n'avance pas" - WaveManager.Update() s'arrête avant de rafraîchir le

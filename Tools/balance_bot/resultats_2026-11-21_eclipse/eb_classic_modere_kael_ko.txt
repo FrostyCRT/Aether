@@ -1,0 +1,11 @@
+DEBUT classic_modere_kael_ko perso=Player_Kael(Clone) palier=Moderate mode=Classic langue=Korean pvmax=2600
+ECLAT apparu chrono=450.3 pos=(-27.6,-10.0) joueur=(5.2,-3.2) distance=33.5m margeMur=999.0 niv=13 vivants=63 pv=41 %
+BUILD_A_L_ECLAT • 오라 x4 | • 연쇄 번개 | • 튕기는 구체 x3 | • 회복 x2 | • 피해＋ | • 진흙
+ECLAT ramasse chrono=464.7 trajet=14.4s de jeu, PV perdus en route=2174 (64 % des PV max) ; NUIT commence
+NUIT finie chrono=509.8 duree=45.1s de jeu, boss present=False, eclatsNuit=56
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.00
+AVANT  : duree=45s kills=396 (528/min) degatsSubis=2624 (3499/min) xp=7119 (9492/min) niveaux=1 vivantsMoy=74 proches6mMoy=7.0 morts=1 or=440 fpsMoy=27 fpsMin=24
+NUIT   : duree=39s kills=401 (616/min) degatsSubis=3149 (4841/min) xp=2795 (4297/min) niveaux=0 vivantsMoy=113 proches6mMoy=10.2 morts=2 or=446 fpsMoy=25 fpsMin=23  (hors fondus de 3 s)
+APRES  : duree=45s kills=364 (485/min) degatsSubis=4659 (6212/min) xp=11505 (15341/min) niveaux=1 vivantsMoy=84 proches6mMoy=6.2 morts=1 or=457 fpsMoy=25 fpsMin=7
+FIN ARRET_APRES_ECLIPSE chrono=560 niv=14 kills=3028 boss=1 morts=20 reel=321s NOTES MORT@31 MORT@59 MORT@78 MORT@106 MORT@141 MORT@172 MORT@199 MORT@236 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@422 MORT@463 MORT@490(nuit) MORT@533 
+BUILD • 오라 x4 | • 연쇄 번개 | • 튕기는 구체 x3 | • 회복 x2 | • 피해＋ | • 진흙 x2

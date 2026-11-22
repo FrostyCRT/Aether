@@ -100,7 +100,7 @@ public static class SkillTreeData
             displayName = "Cadence",
             // MODIFIÉ (2026-11-11, équilibrage choisi par l'utilisateur) - le bonus s'applique à toutes les armes de tir
             // (tir de base, Boule de feu, Chaîne d'éclairs, Shurikens, Lames ricochets), valeurs baissées en conséquence.
-            description = "Augmente la cadence de toutes tes armes de tir.",
+            description = "Augmente la cadence de tous tes sorts de tir.",
             isUnique = false,
             level1Desc = "+8%",
             level2Desc = "+16%",

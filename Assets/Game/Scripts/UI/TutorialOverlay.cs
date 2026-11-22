@@ -664,7 +664,11 @@ public class TutorialOverlay : MonoBehaviour
         float pad = s.Padding;
         pad = Mathf.Min(pad, min.x - edge, min.y - edge, w - max.x - edge, h - max.y - edge);
         pad = Mathf.Max(pad, 3f);
-        rect = new Rect(min.x - pad, min.y - pad, max.x - min.x + 2f * pad, max.y - min.y + 2f * pad);
+        // AJOUTÉ (2026-11-22, retour utilisateur : le cadre du bouton Grimoire, collé au bord, sortait de la fenêtre du jeu) -
+        // le cadre reste toujours à l'intérieur de l'écran, même pour une cible qui touche le bord.
+        float x0 = Mathf.Max(min.x - pad, edge), y0 = Mathf.Max(min.y - pad, edge);
+        float x1 = Mathf.Min(max.x + pad, w - edge), y1 = Mathf.Min(max.y + pad, h - edge);
+        rect = new Rect(x0, y0, x1 - x0, y1 - y0);
         return true;
     }
 }

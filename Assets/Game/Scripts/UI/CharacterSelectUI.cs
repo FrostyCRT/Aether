@@ -151,6 +151,7 @@ public class CharacterSelectUI : MonoBehaviour
             : 1920f;
 
         BuildCharacterData();
+        MoveAuraBehindPortrait();
 
         _lockStyle = _lockedOverlay != null ? _lockedOverlay.GetComponent<CharacterLockOverlay>() : null;
 
@@ -177,6 +178,40 @@ public class CharacterSelectUI : MonoBehaviour
             _debugResetUnlocksButton.onClick.RemoveAllListeners();
             _debugResetUnlocksButton.onClick.AddListener(OnDebugResetUnlocksClicked);
         }
+    }
+
+    // AJOUTÉ (2026-11-22, retour utilisateur : « le halo de couleur sur l'image du personnage doit être derrière l'image et
+    // non devant ») - AuraGlow était un enfant de CharacterImage, donc dessiné PAR-DESSUS le portrait. Il passe dans un
+    // conteneur frère placé juste avant le portrait (= derrière), qui copie son cadre et suit son glissement (LateUpdate) :
+    // les décalages d'aura (auraGlowOffset) restent les mêmes. Le halo du cristal et les étincelles restent devant.
+    private RectTransform _auraBack;
+
+    private void MoveAuraBehindPortrait()
+    {
+        if (_auraGlow == null || _characterRect == null || _characterRect.parent == null) return;
+        if (_auraGlow.transform.parent != _characterRect) return;
+        var go = new GameObject("AuraGlow_Back", typeof(RectTransform));
+        _auraBack = (RectTransform)go.transform;
+        _auraBack.SetParent(_characterRect.parent, false);
+        _auraBack.SetSiblingIndex(_characterRect.GetSiblingIndex());   // juste avant (= derrière) le portrait
+        SyncAuraBack();
+        _auraGlow.transform.SetParent(_auraBack, false);
+    }
+
+    private void SyncAuraBack()
+    {
+        _auraBack.anchorMin = _characterRect.anchorMin;
+        _auraBack.anchorMax = _characterRect.anchorMax;
+        _auraBack.pivot = _characterRect.pivot;
+        _auraBack.sizeDelta = _characterRect.sizeDelta;
+        _auraBack.localScale = _characterRect.localScale;
+        _auraBack.localRotation = _characterRect.localRotation;
+        _auraBack.anchoredPosition = _characterRect.anchoredPosition;
+    }
+
+    private void LateUpdate()
+    {
+        if (_auraBack != null && _characterRect != null) SyncAuraBack();
     }
 
     private void OnEnable()

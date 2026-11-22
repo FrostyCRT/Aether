@@ -1,6 +1,6 @@
 # AETHER STORM SURVIVOR — Documentation projet (V16)
 
-> **Mise à jour : 2026-11-13** (du 2026-11-10 au 13 : équilibrage des 3 branches mesuré au bot puis corrigé, dégâts de contact espacés, Cadence sur toutes les armes de tir, plafond d'un coup à 50 % des PV, annonce de déblocage sur l'écran de victoire, sources des éclats dans « Dernière partie », badge « défi réussi » en jeu, éclats peints sur l'écran de chargement, logo Unity retiré, Qualité graphique refaite ; prochains chantiers décidés : mode **Escarmouche** (`CONCEPTION_ESCARMOUCHE.md`), **Grimoire**, événement **Nuit des Éclats**, tutoriel - voir « ▶ REPRENDRE ICI » en tête de `NOTES.md`. Le 2026-11-06 : paliers de difficulté et Sans fin à débloquer, boss 1 à charges aléatoires, choix de l'écran, caméra fluide, économie +25 % ; depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
+> **Mise à jour : 2026-11-20** (du 2026-11-14 au 18 : mode **Escarmouche** codé et réglé, **Grimoire**, **didacticiel** complet (visite du menu + partie d'entraînement scénarisée, validé par l'utilisateur), événement **Éclipse** (ex-Nuit des Éclats), kit de Lyra refait, Violent durci, écran de chargement avec profondeur, cadre laiton des écrans, audit des textes dans les 11 langues ; seuls Classique et Escarmouche restent proposés au joueur - état et reste à faire : « ▶ REPRENDRE ICI » en tête de `NOTES.md`). (du 2026-11-10 au 13 : équilibrage des 3 branches mesuré au bot puis corrigé, dégâts de contact espacés, Cadence sur toutes les armes de tir, plafond d'un coup à 50 % des PV, annonce de déblocage sur l'écran de victoire, sources des éclats dans « Dernière partie », badge « défi réussi » en jeu, éclats peints sur l'écran de chargement, logo Unity retiré, Qualité graphique refaite ; prochains chantiers décidés : mode **Escarmouche** (`CONCEPTION_ESCARMOUCHE.md`), **Grimoire**, événement **Nuit des Éclats**, tutoriel - voir « ▶ REPRENDRE ICI » en tête de `NOTES.md`. Le 2026-11-06 : paliers de difficulté et Sans fin à débloquer, boss 1 à charges aléatoires, choix de l'écran, caméra fluide, économie +25 % ; depuis le 2026-10-23 : refonte des 6 fusions avec une vraie mécanique et leurs propres visuels en cristal, refonte de l'économie, typographie Bangers + Fira Sans, performances (gemmes d'XP en données), **manette complète**, animation au survol de tous les boutons, fonds de l'Accueil selon la difficulté, apparition des pages du menu, nouvel effet de level-up - détail dans `NOTES.md`). Cette synthèse décrit le jeu tel qu'il est aujourd'hui et ce qui reste à faire.
 > - Détail session par session (décisions, bugs corrigés, valeurs réglées) : **`NOTES.md`** (source de vérité).
 > - Rôle de chaque script : **`SCRIPTS_INDEX.md`**.
 > - Bugs et chantiers avant la sortie, avec leur avancement : **`AUDIT_VERSION_FINALE.md`**.
@@ -18,13 +18,13 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 |---|---|
 | Boucle de jeu (run de 15 min, 3 boss, level-up, fusions) | ✅ Complète |
 | 3 personnages jouables + déblocages | ✅ Complet |
-| 3 modes de jeu commercialisés + 1 retiré | ✅ Classique, Sans fin, Ruée de boss (ces 2 derniers pas encore validés par l'utilisateur) ; Choc des titans retiré de la sélection le 2026-10-19 (code conservé, non supprimé) |
+| Modes de jeu proposés | ✅ **Classique** et **Escarmouche** (5 min, 2026-11-14) ; Sans fin, Ruée de boss et Choc des titans **masqués** de la sélection le 2026-11-16 (`GameModes.IsShippable`, code conservé) |
 | Niveaux de difficulté (Classique) | ✅ 3 paliers Modéré/Violent/Apocalyptique (2026-10-19), multiplicateurs non playtestés |
 | Méta-progression (arbres de compétences, Réputation, défis horaires) | ✅ Complète |
 | Boutique de skins | 🟡 Système et interface prêts, **aucun skin produit** (21 à modéliser) |
 | Menus, HUD, paramètres complets (affichage, graphismes, audio, jeu, interface, commandes, langue) | ✅ Complets |
 | Localisation : 11 langues (FR, EN, DE, ES, PT-BR, IT, PL, RU, ZH, JA, KO) | ✅ Terminée |
-| Écran de chargement, transitions, écrans Victoire/Défaite | ✅ Terminés |
+| Écran de chargement, transitions, écrans Victoire/Défaite | ✅ Terminés (cadre laiton `BrassFrameBorder` ; reste : il apparaît en retard sur Victoire/Défaite) |
 | Modèles 3D | 🟡 Personnages, ennemis et boss faits ; projectiles, zones au sol, Bulbe, décor de l'arène encore en primitives (voir `A_MODELISER_3D.md`) |
 | **Sons (SFX)** | 🔴 **Aucun bruitage en jeu** (seules les musiques existent) |
 | Trailer Steam + version verticale | ✅ Validés (2026-10-14, projet Remotion `../Aether Storm Trailer`) |
@@ -32,7 +32,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Intégration Steam (SDK, succès, Cloud) | ⏳ Pas commencée |
 | Manette | ✅ Complète (2026-10-28/29) : nouvel Input System, boutons modifiables, icônes Xbox/PlayStation/Switch, curseur rond dans les menus, visée au stick droit, vibrations |
 | Accessibilité | 🟡 Pause automatique à la perte de focus ; pas encore d'option secousses d'écran / flashs |
-| Nouveaux contenus décidés (2026-11-13) | 🟡 Mode Escarmouche codé le 2026-11-14, à tester en jeu · ✅ Grimoire codé le 2026-11-15 (bouton livre de l'Accueil, 20 entrées, prime 205 éclats) · événement Nuit des Éclats (session dédiée) · tutoriel |
+| Contenus du 2026-11-14 au 18 | ✅ Escarmouche (testée et réglée par l'utilisateur) · ✅ Grimoire (bouton livre de l'Accueil, 20 entrées, 205 éclats) · ✅ Didacticiel (validé par l'utilisateur) · ✅ Éclipse (codée et testée en Play, rythme d'une partie complète à confirmer) |
 
 ---
 
@@ -47,7 +47,8 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 - Attaque de base commune (`WeaponBase`, projectile d'eau) équipée au départ.
 - Les armes exclusives ne sont **pas** équipées au départ : elles se débloquent par une carte de level-up garantie tôt dans la partie, filtrée par personnage.
 - Clone spectral (Lyra uniquement, nœud « Clone Spectral », renommé le 2026-10-19 - ne correspondait plus à l'effet depuis que ce n'est plus un dash) : touche dédiée, attire **tous** les ennemis de la carte pendant 3 s, invincibilité, boost de fuite, recharge 8 s (la recharge démarre dès la pose ; 6 s essayé le 2026-11-11 puis annulé, trop fort).
-- Équilibrage des branches (2026-11-11, bot de 18 parties) : Lyra sans arbre tuait ~2× moins que les autres → Salve de couteaux 120 → **180** dégâts de base ; Gardien trop fort en survie → Récupération +20/50/80 → **+15/35/55** PV par absorption. Remesure au bot pas encore refaite.
+- Équilibrage des branches (2026-11-11, bot de 18 parties) : Lyra sans arbre tuait ~2× moins que les autres → Salve de couteaux 120 → **180** dégâts de base ; Gardien trop fort en survie → Récupération +20/50/80 → **+15/35/55** PV par absorption. Remesure au bot pas encore refaite. **Remplacé le 2026-11-15** par le nouveau kit ci-dessous.
+- **Kit de Lyra refait (2026-11-15, choix A + B + C + D de l'utilisateur)** : Salve de couteaux 150 dégâts, 0,8 salve/s, perforation 3, **3 couteaux** en éventail (4 avec la carte, paire centrale parallèle), couteaux **boomerang** (demi-tour à 9 m ou perforation épuisée, retour avec une perforation neuve). Paliers de la carte : +1 couteau / Portée (13 m) / Lames larges (×1,6). Branche Fantôme : **Lame fantôme** (le dash blesse les ennemis traversés, 150 / 250 / 400 selon « Dash Amélioré ») et **explosion du Clone** à sa disparition (1 200, rayon 4,5). Un ×1,4 sur tous les dégâts de Lyra a été essayé le 14/11 puis **retiré** le 15/11. Bot corrigé du 16/11 : Lyra n'est pas plus fragile qu'Aether en Violent (victoire, boss 3 tué).
 - Bases identiques pour les 3 héros : 2 000 PV, dash 3 s, Nova 100 dégâts. **Aucun coup ne retire plus de 50 % des PV max** (2026-11-12 ; des coups de boss allaient jusqu'à 1 565). Dégâts de contact : un coup par ennemi toutes les 0,8 s (Golem 1,6 s, boss 1 s), 3 coups maximum par fenêtre de 0,8 s.
 
 ### Arbre de compétences (payé en Or, une branche par personnage)
@@ -89,6 +90,7 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 - **Récompense de mort de boss** (changé le 2026-10-19) : un vrai boss ne donne plus de burst d'XP, il fait apparaître un **coffre** (`BossChest`) à ramasser qui accorde directement **2 tirages de carte complets** (3 choix à chaque fois), sans jamais donner d'XP - récompense fixe et lisible plutôt qu'une XP qui pouvait être gâchée ou déclencher une cascade illisible. Un mini-boss invoqué (Source Corrompue) garde le burst de gemmes classique.
 - **XP** (hors mort de boss) : gemmes 10/20/50, reste reporté sur la mort suivante (aucune XP perdue), courbe `70 × niveau²` (relevée le 2026-10-21, pèse surtout sur les hauts niveaux). La récompense d'XP par kill suit la pleine croissance des PV des ennemis au fil de la partie (jusqu'à ×5 en fin de partie) - un amortissement à ×3 introduit le 2026-10-11 pour ralentir la montée en XP a été retiré le 2026-10-23 (il empilait mal avec la courbe ci-dessus, plus assez de grosses gemmes dorées en fin de partie). Rayon d'attraction débloqué au niveau 3.
 - **Difficulté du Classique** (nouveau, 2026-10-19) : 3 paliers **Modéré / Violent / Apocalyptique**, sélectionnables dans l'onglet Jouer. **Depuis le 2026-10-29, un palier se débloque en gagnant une partie du Classique dans le palier précédent**, avec n'importe quel personnage (cadenas sur le carrousel, bouton Jouer estompé, raison affichée). En Modéré, les ennemis ont -25 % de PV jusqu'à 6 min, puis reviennent à la normale à 8 min (XP inchangée). Violent/Apocalyptique agrandissent la carte jouable (110×110 → 140×140 → 180×180), augmentent les PV/dégâts des ennemis et boss, le nombre d'ennemis simultanés et l'Or/les Éclats de fin de partie, et régénèrent le décor de bordure à la nouvelle taille. Multiplicateurs posés comme premiers jets, non encore playtestés.
+- **Réglages du 2026-11-14 / 15** : en **Violent**, plus de rampe de PV au début de partie (×1,25 dès 0:00) et apparitions acceptées à 60 % du rayon contre un mur (Apocalyptique : 80 %) ; un ennemi tiré hors des murs n'est plus recollé au mur près du joueur (`EnemySpawner.KeepSpawnDistance`). Tirs des boss : portée ×1,75. Échos du Boss 3 : un écho tué lâche un petit coffre (1 tirage), puis 15 s sans invocation. Soin retiré du tirage au-dessus de 75 % de PV (poids ×3 sous 25 %). Mort des ennemis en fondu transparent.
 
 ---
 
@@ -99,11 +101,13 @@ Objectif : rivaliser avec les références du genre (Vampire Survivors, Brotato,
 | Classique | 3 boss en 15 min, victoire au Boss 3 | Dès le départ |
 | Sans fin | Les boss reviennent en boucle, de plus en plus forts | Avoir gagné une partie du Classique dans le palier choisi (ou un plus dur) |
 | Ruée de boss | Les boss s'enchaînent | Avoir battu 1 boss en Classique |
-| Escarmouche | 15 min compressées en 5 : Boss 1 à 1:30, Boss 2 à 3:00, Frénésie à 4:00, Boss 3 à 5:00 = victoire | Dès le départ |
+| Escarmouche | 15 min compressées en 5 : Boss 1 à 1:30 (25 000 PV), Boss 2 à 3:00 (60 000), Frénésie à 4:00, Boss 3 à 5:00 (165 000) = victoire | Dès le départ |
 
-**Escarmouche** (codée le 2026-11-14, **pas encore testée en jeu**) : XP ×1,5, coffre du Boss 1 à 4 tirages, Frénésie (ennemis ×2, XP ×2, musique accélérée), les 3 paliers, récompenses ≤ Classique par minute, records à part, ne compte pas pour la progression. Document `CONCEPTION_ESCARMOUCHE.md` ; réglages dans `GameModes.cs`.
+**Escarmouche** (codée le 2026-11-14, testée et réglée après les retours de l'utilisateur) : chrono compressé ×3 (phases, types d'ennemis, fusions dès 3:00), XP ×1,5, coffres des Boss 1 et 2 à 4 tirages, Frénésie (ennemis par vague ×2, plafond ×1,25, XP ×2, musique ×1,12), les 3 paliers, **récompenses ÷ 1,75** (`SkirmishRewardDivisor`), records à part, ne compte ni pour les défis ni pour les déblocages. Réglages : `GameModes.cs` (section Escarmouche), document `CONCEPTION_ESCARMOUCHE.md`.
 
-Seul le Classique compte pour la progression (défis, déblocages). Sans fin et Ruée de boss ne sont pas encore validés par l'utilisateur et sont volontairement absents du trailer.
+**Depuis le 2026-11-16, seuls Classique et Escarmouche sont sélectionnables** : Sans fin et Ruée de boss sont masqués comme le Choc des titans (code intact, réactivables dans `GameModes.IsShippable`). Seul le Classique compte pour la progression (défis, déblocages).
+
+**Éclipse** (événement de mi-partie, 2026-11-18 ; « Nuit des Éclats » dans le code : `NightOfShards`) : un éclat d'Aether apparaît à 30-40 m du joueur (pilier de lumière, flèche au bord de l'écran) à 6:30 en Classique (puis 11:30, 16:30... en Sans fin), 2:05 en Escarmouche, une fois par partie. Le ramasser plonge l'arène dans la nuit pendant 45 s (20 s en Escarmouche) : dégâts du joueur ×1,25, ennemis par vague ×1,4 (plafond ×1,15), XP ÷ 1,4 (l'XP par minute ne change pas), **1 éclat par 8 ennemis tués** (compteur à l'écran, ligne « Éclipse » dans Dernière partie). S'arrête à l'arrivée d'un boss ; l'éclat non ramassé disparaît. Jamais en entraînement. Rythme sur une partie complète encore à confirmer.
 
 **Choc des titans retiré de la sélection le 2026-10-19** (les 3 boss en même temps, build entièrement maxée dès le départ) : zéro décision de build pendant la partie, à l'opposé du cœur stratégique du genre, et ses constantes d'équilibrage n'étaient que des premiers jets jamais playtestés. Retrait non destructif (`GameModes.IsShippable`) - le code, l'enum et les statistiques de sauvegarde existent toujours, récupérable pour un futur mode post-lancement.
 
@@ -139,14 +143,16 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
   - Tous les boutons du jeu grossissent légèrement au survol (`ButtonHoverFX`) ; Alt+F4 ou la croix de la fenêtre demandent confirmation (`QuitConfirm`).
 - **HUD** construit en code (`HudStyler`) : barres vie/XP/boss, chrono, or, kills, défi, Dash, Clone, Ultime, Concentration, légende des touches adaptative.
 - **Level-up** : temps fort de 0,3 s en jeu avant l'ouverture des cartes, une ascension de cristal doré autour du héros (fragments qui montent en spirale, étoile au-dessus de lui ; remplace l'anneau doré au sol le 2026-10-29). Puis 3 cartes parchemin animées (couleur par personnage, violet pour les fusions, léger grossissement au survol), pastilles de palier (jusqu'à 5), bandeau « FUSION DISPONIBLE ! », choix au clavier 1/2/3 ou au curseur de la manette.
-- **Pause** : grille d'armes avec infos, défi en cours, paramètres en jeu, abandon avec confirmation ; liseré sombre autour du cadre (2026-11-12).
-- **Défi réussi en cours de partie** (2026-11-12) : texte vert et badge rond coché qui « tamponne » l'icône du défi.
-- **Dernière partie** (Accueil) : résultat, or et éclats gagnés, barre de répartition par source (bouton pour basculer entre l'or et les éclats).
+- **Pause** : grille d'armes avec infos, défi en cours (avec badge), paramètres en jeu, abandon avec confirmation ; cadre laiton `BrassFrameBorder` (filets gris clair, losanges aux coins), aussi sur Victoire / Défaite.
+- **Défi réussi en cours de partie** (2026-11-12) : texte vert et badge rond coché qui « tamponne » l'icône du défi ; croix blanche sur rond rouge si le défi échoue (2026-11-15).
+- **Dernière partie** (Accueil) : résultat, or et éclats gagnés, onglets « Sources de l'or » / « Sources des éclats » (survie, boss, victoire, 1re victoire, Découvertes, Éclipse).
+- **Grimoire** (2026-11-15) : bouton livre en bas à gauche de l'Accueil (en face du bouton « œil »). 3 rangées : Cartes (11), Fusions (6), Boss (3) ; une entrée se découvre en choisissant la carte, en obtenant la fusion ou en battant le boss (+5 / +15 / +20 éclats, 205 au total), silhouettes « ??? » sinon. Passif : aucun bandeau en jeu.
+- **Didacticiel** (2026-11-16 → 18, validé par l'utilisateur) : au 1er lancement, Accueil vide (aucun héros), visite guidée (langue, page Personnages et choix du héros, qui arrive en fondu, Accueil, Grimoire), puis **partie d'entraînement scénarisée** (pas de vagues ; déplacement, HUD, tir, gemmes, niveau et cartes, Dash, Ultime ; ne compte pas, sauvegarde figée). Visites des pages Compétences et Réputation à leur 1re ouverture. Bouton « ? » pour la rejouer. Jouer reste grisé tant qu'aucun héros n'est choisi. Code : `Tutorial`, `TutorialOverlay`, `MenuTutorial`, `GameTutorial`, `TutorialPointer`.
 - **Victoire / Défaite** : même univers (parchemin doré / rouille), comptage animé de l'Or et des Éclats, défi réussi, records, annonce « Nouveau personnage débloqué » (aussi sur la Victoire depuis le 2026-11-12 : Lyra n'était jamais annoncée), arsenal de la partie, message contextuel et numéro de tentative pour la défaite, aperçu du prochain déblocage.
 - **Paramètres** : affichage (dont le choix de l'écran, 2026-10-29), graphismes, audio, jeu (visée automatique ou manuelle, pause automatique), interface, commandes (2 touches clavier/souris + 1 bouton de manette par action, préréglages AZERTY/QWERTY, vibrations), langue.
 - **Manette** (2026-10-28/29) : curseur rond au stick dans tous les menus (souris virtuelle : survol, clic, glisser), mode défilement dans les zones déroulantes (A pour entrer, B pour sortir), LB/RB = onglets, LT/RT = catégories des Paramètres, B = retour. Légende du HUD et icônes au style de la manette branchée. Le jeu bascule tout seul entre souris et manette selon le dernier appareil touché.
 - Durées affichées partout au format « 03 : 24 » (espace fine autour des deux-points, chrono, records, écrans de fin).
-- **Écran de chargement** : illustration animée (Ken Burns), barre stylée, « Appuyer sur une touche », fondu vers le menu ; éclats de cristal peints (images de l'utilisateur, 12 par bande, 2026-11-13). Plus d'écran « Made with Unity » (retiré le 2026-11-12, visible en build).
+- **Écran de chargement** : illustration animée (Ken Burns) avec **profondeur** (2026-11-14) : brume, rayons, poussières, feuilles et traits de vent passent derrière les héros et les loups détourés (`ForestAmbienceUI`, `Chargement_PremierPlan.png`), nappe de brume devant ; les éclats de cristal peints du 13/11 sont désactivés. Barre stylée, « Appuyer sur une touche », fondu vers le menu. Plus d'écran « Made with Unity » (retiré le 2026-11-12, visible en build).
 
 ---
 
@@ -178,11 +184,11 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 - Profilage des performances (cible 60 FPS stables, Steam Deck).
 - Nettoyage du projet (prefabs en double dans `Resources/`, scripts et assets inutilisés).
 
-**Décidés le 2026-11-13 (conception avant code)**
-- Mode **Escarmouche** (5 min) : décidé et codé le 2026-11-14 ; reste une partie de test par palier puis le réglage au bot.
-- **Grimoire** : collection des premières découvertes (cartes, fusions, boss) avec petite prime d'éclats ; un bouton discret, pas de nouvelle page, pas sur la Réputation.
-- **Nuit des Éclats** : événement de mi-partie déclenché par un objet à ramasser, éclairage de nuit ; session dédiée, conséquences à étudier une par une.
-- **Tutoriel** (reporté).
+**Nouveaux contenus (2026-11-14 → 18)**
+- ✅ Escarmouche, Grimoire, didacticiel et Éclipse sont faits (voir §4, §7). À vérifier : rythme de l'Éclipse sur une partie complète, Éclipse en Violent / Apocalyptique et en qualité Performante, manette dans le Grimoire et le didacticiel.
+- Relecture par des natifs des textes du Grimoire, du didacticiel et de l'Éclipse (traduits par Claude).
+- **Avant une vraie sortie** : remettre `SaveSystem.FreshSaveOnNewBuild` à `false` (efface la sauvegarde à la 1re ouverture de chaque nouvelle build, pour tester le didacticiel).
+- Idée notée par l'utilisateur : mode coop à deux joueurs (non étudiée).
 
 **Idées de contenu (non commencées)**
 - Plusieurs cartes / biomes (idée « 3 maps »).
@@ -193,6 +199,8 @@ Seul le Classique compte pour la progression (défis, déblocages). Sans fin et 
 ---
 
 ## 10. Principaux bugs corrigés récemment
+
+**2026-11-14 → 2026-11-18** : ennemis recollés au mur, donc à quelques mètres du joueur, quand il longe un mur (`EnemySpawner.KeepSpawnDistance`) · erreur d'index dans `ProjectileBasic` quand un tir tue un boss · « Invalid AABB » à chaque image sur l'écran de chargement (NaN dans le dessin du vent) · fenêtre du didacticiel qui apparaissait puis disparaissait au clic sur « ? » · textes qui ne se retraduisaient plus après un changement de langue (`LocalizedText` contre `TextBalancer`) · textes qui dépassaient dans plusieurs langues (audit `TextFitAudit`) · musique de boss accélérée après la Frénésie.
 
 **2026-11-10 → 2026-11-13** : Lyra débloquée sans annonce (seul l'écran de défaite lisait l'annonce) · page Personnages bloquée si l'on changeait de page pendant le glissement · écarts irréguliers texte du défi / barre / statut dans la Pause (mesure de largeur faussée) · retouches de traduction écrasées par la régénération des tables (corrigé à la source, `tr_xx.txt`) · morts en un coup de boss (plafond à 50 % des PV).
 

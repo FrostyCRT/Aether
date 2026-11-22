@@ -1,0 +1,7 @@
+DEBUT esc_apocalyptique_kael_ko perso=Player_Kael(Clone) palier=Apocalyptic mode=Skirmish langue=Korean pvmax=3000 soleil=1.20 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=125.4 pos=(22.0,9.9) joueur=(19.0,-20.0) distance=30.1m margeMur=0.0 dansLaCarte=True niv=11 vivants=94
+BUILD_A_L_ECLAT • 오라 x4 | • 튕기는 구체 | • 진흙 x3 | • 오비탈 | • 연사 속도＋
+ECLAT perdu (non ramasse) chrono=170.1 apres=44.9s de jeu
+PAS DE NUIT (eclatApparu=True)
+FIN VICTOIRE chrono=300 niv=29 kills=3391 boss=3 morts=43 eclatsNuit=0 reel=370s NOTES MORT@56 MORT@67 MORT@82 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 carte@129(eclat) MORT@140 carte@144(eclat) carte@160(eclat) carte@180(eclat) MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 carte@182(eclat) carte@182(eclat) carte@182(eclat) carte@182(eclat) carte@221(eclat) MORT@224 carte@245(eclat) MORT@248 carte@254(eclat) MORT@262 carte@273(eclat) MORT@288 carte@288(eclat) carte@295(eclat) carte@300(eclat) carte@300(eclat) carte@300(eclat) MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 carte@300(eclat) 
+BUILD • 오라 x4 | • 튕기는 구체 x4 | • 진흙 x4 | • 오비탈 x4 | • 연사 속도＋ x2 | • 회복 x2 | • 피해＋ x5 | • 진흙 자국 | • 프리즘 왕관 | • 더블 샷

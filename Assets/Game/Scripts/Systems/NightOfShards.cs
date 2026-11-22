@@ -28,13 +28,15 @@ public class NightOfShards : MonoBehaviour
     private static readonly Color DawnGold = new Color(1f, 0.85f, 0.45f);
 
     // Escarmouche (5 min, boss à 1:30 / 3:00 / 5:00) : éclat à 2:05, 45 s pour le ramasser, nuit de 20 s => finie avant 3:00.
-    // Classique (15 min, boss à 5 / 10 / 15 min) : éclat à 7:30 (milieu), 80 s pour le ramasser, nuit de 45 s.
-    // Sans fin : même chose à 7:30, puis 12:30, 17:30...
+    // Classique (15 min, boss à 5 / 10 / 15 min) : éclat à 6:30, 80 s pour le ramasser, nuit de 45 s.
+    // Sans fin : même chose à 6:30, puis 11:30, 16:30...
+    // MODIFIÉ (2026-11-21, vérification de l'Éclipse, choix de l'utilisateur) - 7:30 -> 6:30 : la nuit (~7:40-8:25) tombait
+    // sur l'arrivée des Tisseuses à 8:00, deux pics de difficulté cumulés. Elle se joue maintenant vers 6:40-7:25.
     private float TriggerTime(int index)
     {
         if (GameModes.IsSkirmish) return 125f;
         float interval = WaveManager.Instance != null ? WaveManager.Instance.BossSpawnInterval : 300f;
-        return interval * (index + 1) + interval * 0.5f;
+        return interval * (index + 1) + interval * 0.3f;
     }
     private float ShardLifetime => GameModes.IsSkirmish ? 45f : 80f;
     private float NightDuration => GameModes.IsSkirmish ? 20f : 45f;
@@ -43,6 +45,8 @@ public class NightOfShards : MonoBehaviour
     // ---- État ---------------------------------------------------------------------------------------------------------------
     private float _timer;               // temps passé dans la phase courante
     private float _k;                   // intensité de la nuit, 0..1
+    // Lue par les visuels qui doivent rester lisibles sous le voile de la nuit (EnemyProjectile : spores du Bulbe).
+    public static float NightFactor => Instance != null ? Instance._k : 0f;
     private Transform _player;
 
     // éclat
@@ -172,13 +176,26 @@ public class NightOfShards : MonoBehaviour
             Vector2 d = Random.insideUnitCircle.normalized;
             if (d.sqrMagnitude < 0.01f) d = Vector2.right;
             Vector3 cand = origin + new Vector3(d.x, 0f, d.y) * Random.Range(SpawnDistMin, SpawnDistMax);
-            cand = MapBoundaryUtils.ClampToZone(cand);
+            cand = ClampInsideWalls(cand);
             cand.y = 0f;
             float dist = Vector3.Distance(cand, origin);
             if (dist > bestDist) { bestDist = dist; best = cand; }
             if (dist >= SpawnDistFloor) return cand;
         }
         return best;
+    }
+
+    // AJOUTÉ (2026-11-21, vérification de l'Éclipse) - ClampToZone posait l'éclat PILE sur le mur (marge 0 m mesurée dans 5 parties sur 12
+    // en Violent / Apocalyptique) : moitié du halo hors de la carte, éclat collé au mur que la horde longe. Il reste maintenant à
+    // WallInset du mur (Violent : couloir de ±12 m, Apocalyptique : boîte de ±22 m).
+    private const float WallInset = 4f;
+    private static Vector3 ClampInsideWalls(Vector3 p)
+    {
+        if (!float.IsInfinity(MapBoundaryUtils.MinX)) p.x = Mathf.Max(p.x, MapBoundaryUtils.MinX + WallInset);
+        if (!float.IsInfinity(MapBoundaryUtils.MaxX)) p.x = Mathf.Min(p.x, MapBoundaryUtils.MaxX - WallInset);
+        if (!float.IsInfinity(MapBoundaryUtils.MinZ)) p.z = Mathf.Max(p.z, MapBoundaryUtils.MinZ + WallInset);
+        if (!float.IsInfinity(MapBoundaryUtils.MaxZ)) p.z = Mathf.Min(p.z, MapBoundaryUtils.MaxZ - WallInset);
+        return p;
     }
 
     private void BuildShard(Vector3 pos)

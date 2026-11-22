@@ -102,7 +102,7 @@ public class ExpandingRingRunner : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += BossIntro.DeltaTime;   // BossIntro.DeltaTime (2026-11-21) : temps réel pendant le gel de l'arrivée d'un boss, sinon Time.deltaTime.
             float t = Mathf.Clamp01(elapsed / duration);
 
             float radius = Mathf.Lerp(0.05f, targetRadius, t);

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -42,7 +42,7 @@ public class LastRunPanel : MonoBehaviour
         new Color(0.69f, 0.48f, 0.91f, 1f),   // boss
         new Color(0.95f, 0.76f, 0.31f, 1f),   // victoire
         new Color(0.50f, 0.82f, 0.50f, 1f),   // défi
-        new Color(0.40f, 0.55f, 1.00f, 1f),   // (6e ligne : réservée à l'éclipse côté éclats ; toujours 0 côté or)
+        new Color(1.00f, 0.93f, 0.45f, 1f),   // Gobelin doré (2026-11-22)
     };
 
     private static long _lastAnimatedRun;   // partie dont les montants ont déjà « compté » (une seule fois par partie)
@@ -368,10 +368,10 @@ public class LastRunPanel : MonoBehaviour
 
         int[] parts = _showEclats
             ? new[] { run.eclatsTime, run.eclatsBosses, run.eclatsVictory, run.eclatsFirstWin, run.eclatsDiscoveries, run.eclatsNight }
-            : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge, 0 };
+            : new[] { run.goldKills, run.goldTime, run.goldBosses, run.goldVictory, run.goldChallenge, run.goldGoblin };
         string[] labels = _showEclats
             ? new[] { Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("1re victoire"), Loc.T("Découvertes"), Loc.T("Éclipse") }
-            : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi"), "" };
+            : new[] { Loc.T("Ennemis"), Loc.T("Survie"), Loc.T("Boss"), Loc.T("Victoire"), Loc.T("Défi"), Loc.T("Gobelin doré") };
         Color[] colors = _showEclats ? EclatSourceColors : SourceColors;
         string unit = _showEclats ? Loc.T("Éclats") : Loc.T("Or");
         for (int i = 0; i < parts.Length; i++)
@@ -427,7 +427,9 @@ public class LastRunPanel : MonoBehaviour
                 maxLabel = Mathf.Max(maxLabel, MeasureAt16(_legendLabels[i]));
                 maxValue = Mathf.Max(maxValue, MeasureAt16(_legendValues[i]));
             }
-            bool single = shown > 1 && 18f + maxLabel + 10f + maxValue > rowW2;
+            // (2026-11-22, retour utilisateur : « Gobelin d... » coupé) - jusqu'à 3 sources, une seule colonne est occupée :
+            // elle prend toute la largeur de la carte, les montants passent au bord droit et les longs libellés tiennent.
+            bool single = shown <= 3 || 18f + maxLabel + 10f + maxValue > rowW2;
             float rowW = single ? half * 2f : rowW2;
             float valueW = Mathf.Clamp(maxValue + 6f, 114f, rowW * 0.55f);
             int index = 0;

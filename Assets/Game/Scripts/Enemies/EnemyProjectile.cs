@@ -16,6 +16,115 @@ public class EnemyProjectile : MonoBehaviour
     private float _rangeThisShot;
     [SerializeField] private float _damage = 10f; // Ajout de la stat de dégâts manquante
 
+    // AJOUTÉ (2026-11-22, lot 1 des modèles Blender, retour utilisateur : « on doit voir ce que c'est facilement même dans une
+    // horde [...] je veux quelque chose de rond ») - la règle « rond + orange = projectile ennemi absorbable » est gardée, seule
+    // la matière change selon le tireur : boule de braise fissurée (sarbacane du gobelin), spore duveteuse (Bulbe). Les boss
+    // gardent la sphère orange d'origine (Plain) en attendant leurs propres modèles. Prefab partagé : Init remet Plain, le
+    // tireur appelle SetLook juste après.
+    // MODIFIÉ (2026-11-22, retour utilisateur : « un gobelin qui souffle une braise [...] on pourrait mettre du venin violet ?
+    // [...] avec sa rotation actuelle on a l'impression que c'est une boule au sol qui avance ») - la braise devient un globe de
+    // venin violet à cœur lumineux (visible de jour comme pendant l'Éclipse), et il ne roule plus : il est étiré dans le sens
+    // du vol, ondule comme un liquide lancé et tourne sur l'axe de vol (comme une balle), ce qui se lit « en l'air ».
+    public enum Look { Plain, Venom, Spore }
+    [Header("Visuels par tireur")]
+    [SerializeField] private Transform _venomVisual;
+    [SerializeField] private Transform _sporeVisual;
+    [SerializeField] private float _venomSpinSpeed = 300f;     // degrés/s autour de l'axe de vol
+    [SerializeField] private float _venomStretch = 1.22f;      // allongement dans le sens du vol
+    [SerializeField] private float _venomWobble = 0.07f;       // amplitude de l'ondulation du liquide
+    [SerializeField] private float _sporeTumbleSpeed = 160f;   // la spore tourne lentement sur elle-même
+    private Look _look = Look.Plain;
+    private MeshRenderer _plainRenderer;
+    private Vector3 _tumbleAxis = Vector3.up;
+    // Spores : la luminescence suit la nuit de l'Éclipse (voile bleu très sombre) - réglée sur une COPIE du matériau, partagée
+    // par toutes les spores (une seule modification par changement de nuit, l'asset n'est jamais touché).
+    [SerializeField] private Color _sporeEmissionDay = new Color(0.9f, 0.78f, 0.65f);
+    [SerializeField] private Color _sporeEmissionNight = new Color(1.75f, 1.15f, 0.7f);
+    private static Material _sporeRuntimeMat;
+    private static Material _venomCoreRuntimeMat;
+    private static float _sporeNightApplied = -1f;
+    private Vector3 _venomBaseScale;
+    private Transform _venomMesh;
+    private float _venomSpin;
+    private float _venomPhase;
+
+    public void SetLook(Look look)
+    {
+        _look = look;
+        if (_plainRenderer == null) _plainRenderer = GetComponent<MeshRenderer>();
+        if (_plainRenderer != null) _plainRenderer.enabled = look == Look.Plain;
+        ShowVisual(_venomVisual, look == Look.Venom);
+        ShowVisual(_sporeVisual, look == Look.Spore);
+        _tumbleAxis = Random.onUnitSphere;
+        if (look == Look.Venom && _venomVisual != null)
+        {
+            // le globe (enfant "Mesh") porte l'étirement ; le parent garde les particules et s'oriente dans le sens du vol
+            if (_venomMesh == null)
+            {
+                _venomMesh = _venomVisual.Find("Mesh");
+                if (_venomMesh != null)
+                {
+                    _venomBaseScale = _venomMesh.localScale;
+                    // cœur lumineux (2e matériau) : copie partagée avec l'émission réellement active
+                    Renderer vr = _venomMesh.GetComponent<Renderer>();
+                    Material[] mats = vr != null ? vr.sharedMaterials : null;
+                    if (mats != null && mats.Length > 1 && mats[1] != null)
+                    {
+                        if (_venomCoreRuntimeMat == null) _venomCoreRuntimeMat = EmissiveCopy(mats[1], " (jeu)");
+                        mats[1] = _venomCoreRuntimeMat;
+                        vr.sharedMaterials = mats;
+                    }
+                }
+            }
+            _venomVisual.rotation = Quaternion.LookRotation(_direction.sqrMagnitude > 1e-4f ? _direction : Vector3.forward, Vector3.up);
+            _venomSpin = Random.value * 360f;
+            _venomPhase = Random.value * 10f;
+        }
+    }
+
+    private void UpdateSporeGlow()
+    {
+        if (_sporeRuntimeMat == null)
+        {
+            Renderer r = _sporeVisual.GetComponent<Renderer>();
+            if (r == null || r.sharedMaterial == null) return;
+            _sporeRuntimeMat = EmissiveCopy(r.sharedMaterial, " (nuit)");
+            _sporeNightApplied = -1f;
+        }
+        Renderer mine = _sporeVisual.GetComponent<Renderer>();
+        if (mine != null && mine.sharedMaterial != _sporeRuntimeMat) mine.sharedMaterial = _sporeRuntimeMat;
+        float k = NightOfShards.NightFactor;
+        if (Mathf.Abs(k - _sporeNightApplied) < 0.02f) return;
+        _sporeNightApplied = k;
+        _sporeRuntimeMat.SetColor("_EmissionColor", Color.Lerp(_sporeEmissionDay, _sporeEmissionNight, k));
+    }
+
+    // Le mot-clé _EMISSION des matériaux URP Lit créés par script n'est pas conservé au chargement (vérifié en Play : fichier
+    // correct, matériau chargé sans le mot-clé, donc aucune lueur) - même méthode que GoldenGoblinEvent/CrystalStormEvent :
+    // une copie, mot-clé activé en jeu.
+    private static Material EmissiveCopy(Material src, string suffix)
+    {
+        var m = new Material(src) { name = src.name + suffix };
+        m.EnableKeyword("_EMISSION");
+        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        return m;
+    }
+
+    private static void ShowVisual(Transform visual, bool on)
+    {
+        if (visual == null) return;
+        if (visual.gameObject.activeSelf != on) visual.gameObject.SetActive(on);
+        if (!on) return;
+        visual.rotation = Random.rotation;   // chaque tir montre une autre face des fissures / du duvet
+        // traînée de particules en espace monde : vidée à chaque réemploi du pool (sinon un trait relierait l'ancienne
+        // position du projectile à la nouvelle)
+        foreach (ParticleSystem ps in visual.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Clear(true);
+            ps.Play(true);
+        }
+    }
+
     private Vector3 _direction;
     public Vector3 Direction => _direction;   // didacticiel : sens de déplacement
     private Vector3 _startPosition;
@@ -48,6 +157,7 @@ public class EnemyProjectile : MonoBehaviour
 
         _startPosition = transform.position;
         _hasHit = false;
+        SetLook(Look.Plain);
         _rangeThisShot = damageSource == "boss" ? _maxRange * BossRangeMultiplier : _maxRange;
     }
 
@@ -60,6 +170,22 @@ public class EnemyProjectile : MonoBehaviour
         if (EnemyBase.TutorialFreeze) return;
 
         transform.position += _direction * _speed * Time.deltaTime;
+
+        if (_look == Look.Venom && _venomMesh != null)
+        {
+            _venomSpin += _venomSpinSpeed * Time.deltaTime;
+            _venomPhase += Time.deltaTime;
+            // l'enfant est tourné sur l'axe de vol (Z local du parent) puis étiré le long de cet axe ; l'ondulation alterne
+            // allongé / aplati comme une goutte de liquide qui file dans l'air
+            float w = Mathf.Sin(_venomPhase * 17f) * _venomWobble;
+            _venomMesh.localRotation = Quaternion.AngleAxis(_venomSpin, Vector3.forward);
+            _venomMesh.localScale = Vector3.Scale(_venomBaseScale, new Vector3(1f / Mathf.Sqrt(_venomStretch) - w * 0.5f, 1f / Mathf.Sqrt(_venomStretch) - w * 0.5f, _venomStretch + w));
+        }
+        else if (_look == Look.Spore && _sporeVisual != null)
+        {
+            _sporeVisual.rotation = Quaternion.AngleAxis(_sporeTumbleSpeed * Time.deltaTime, _tumbleAxis) * _sporeVisual.rotation;
+            UpdateSporeGlow();
+        }
 
         // OPTIMISATION : SqrMagnitude est plus performant que Vector3.Distance pour les vérifications de portée
         if (Vector3.SqrMagnitude(transform.position - _startPosition) >= _rangeThisShot * _rangeThisShot)

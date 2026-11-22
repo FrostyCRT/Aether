@@ -74,8 +74,8 @@
 68| Wählt beim Levelaufstieg die 1. Karte
 69| Wählt beim Levelaufstieg die 2. Karte
 70| Wählt beim Levelaufstieg die 3. Karte
-71| Zieht deine Trabanten enger um dich zusammen
-72| Lässt deine Trabanten weiter außen kreisen
+71| Zieht deine Runensteine enger um dich zusammen
+72| Lässt deine Runensteine weiter außen kreisen
 73| Öffnet / schließt das Pausenmenü
 
 ## Paramètres : page
@@ -160,7 +160,7 @@
 152| Bewegung
 153| Kampf
 154| Levelaufstieg
-155| Waffen
+155| Zauber
 156| System
 157| Stick-Totzone
 158| Ignoriert kleine Stickbewegungen. Erhöhe den Wert, wenn sich deine Figur von selbst bewegt.
@@ -301,7 +301,7 @@
 285| +3 % / s, max. +30 %
 286| +5 % / s, max. +50 %
 287| Feuerrate
-288| Erhöht die Feuerrate all deiner Schusswaffen.
+288| Erhöht die Feuerrate all deiner Schusszauber.
 289| Splitterwirkung
 290| Jedes 4. Projektil deines Standardangriffs explodiert beim Aufprall und fügt Gegnern in der Nähe vollen Schaden zu.
 291| Kristallschaden
@@ -389,7 +389,7 @@
 369| Feuerball
 370| Schleudert einen Feuerball, der in der dichtesten Gegnergruppe explodiert
 371| Feuerrate +
-372| +20 % Feuerrate für alle deine Schusswaffen
+372| +20 % Feuerrate für alle deine Schusszauber
 373| Heilung
 374| Stellt 50 % deiner maximalen LP wieder her
 375| Messer
@@ -399,25 +399,25 @@
 379| Schlamm
 380| Erzeugt Schlammpfützen, die Gegner darin verlangsamen und verletzen
 381| Trabanten
-382| Splitter kreisen um dich und treffen Gegner bei Berührung
-383| Schaltet 2 kreisende Trabanten frei, die bei Berührung zuschlagen
-384| +1 zusätzlicher Trabant
+382| Runensteine kreisen um dich und treffen Gegner bei Berührung
+383| Schaltet 2 kreisende Runensteine frei, die bei Berührung zuschlagen
+384| +1 zusätzlicher Runenstein
 385| Schaltet den Kettenblitz frei: Er trifft 3 Gegner
 386| +1 zusätzlicher Blitzsprung
 387| Schaltet 3 Schlammpfützen frei, die verlangsamen und verletzen
 388| +1 zusätzliche Schlammpfütze
 389| +{0} % Schaden für alle deine Angriffe
-390| +{0} % Feuerrate für alle deine Schusswaffen
+390| +{0} % Feuerrate für alle deine Schusszauber
 391| Erhöht deine maximalen LP um {0} % und stellt {1} % davon wieder her
 392| Schaltet Doppelschuss frei: Dein Standardangriff feuert zweimal
-393| Schaltet den Feuerball frei: Aethers exklusive Waffe
+393| Schaltet den Feuerball frei: Aethers exklusiver Zauber
 394| Der Explosionsradius ist doppelt so groß
 395| +{0} % Schaden
 396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach
-397| Schaltet die Aura frei: Kaels exklusive Waffe
+397| Schaltet die Aura frei: Kaels exklusiver Zauber
 398| +{0} % Radius
 399| Verlangsamung auf {0} % erhöht
-400| Schaltet die Messersalve frei: Lyras exklusive Waffe
+400| Schaltet die Messersalve frei: Lyras exklusiver Zauber
 401| Ein zusätzliches Messer in der Salve
 402| Durchbohrt {0} weitere Gegner
 403| Durchbohrt {0} weiteren Gegner
@@ -562,7 +562,7 @@
 528| BESTZEIT
 529| RUNS
 530| SIEGE
-531| EXKLUSIVE WAFFE
+531| EXKLUSIVER ZAUBER
 532| BILANZ
 533| STUFEN   A / B / C
 534| DAUERHAFTE BONI
@@ -636,7 +636,7 @@
 600| Drücke eine beliebige Taste, um zu überspringen
 601| Schießt eine Kugel, die unablässig durch die Arena prallt und jeden getroffenen Gegner verletzt
 602| Schießt {0} Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
-603| {0} Splitter kreisen um dich und treffen Gegner bei Berührung
+603| {0} Runensteine kreisen um dich und treffen Gegner bei Berührung
 604| Erzeugt {0} Schlammpfützen, die Gegner darin verlangsamen und verletzen
 605| Wirft Salven aus {0} Messern, die Gegner durchbohren und dann zurückkehren
 606| Elektrische Entladung, die auf {0} nahe Gegner überspringt
@@ -757,7 +757,7 @@
 716| Verstanden
 717| BEWEGUNG
 718| LEVELAUFSTIEG
-719| Wähle eine Karte, um eine neue Waffe zu erhalten oder eine vorhandene zu verbessern.
+719| Wähle eine Karte: einen neuen Zauber, die Verbesserung eines Zaubers oder einen Bonus wie Schaden, Feuerrate oder Heilung.
 720| BOSS
 721| LEBEN
 722| Deine Gesundheit. Fällt sie auf 0, ist die Partie vorbei.
@@ -773,15 +773,15 @@
 732| Jeder Held hat seinen eigenen Kampfstil und Fähigkeitenbaum. Wähle Aether, um zu beginnen.
 733| Jeder Held hat seinen eigenen Kampfstil und Fähigkeitenbaum. Weitere Helden werden mit dem Fortschritt freigeschaltet.
 734| Wähle einen Spielmodus und eine Schwierigkeit und starte dann mit Spielen. Höhere Schwierigkeiten werden mit dem Fortschritt freigeschaltet.
-735| Das Grimoire listet deine Entdeckungen auf und belohnt die erste jeder Art.
-736| Splitter kaufen hier dauerhafte Boni.
+735| Das Grimoire hält deine Entdeckungen fest. Jede neue Entdeckung bringt dir eine Belohnung.
+736| Hier kannst du mit deinen Splittern dauerhafte Boni kaufen.
 737| AUTOFEUER
 738| Ein Gegner nähert sich. Dein Held zielt und schießt automatisch: Konzentriere dich auf deine Bewegung und halte Abstand.
 739| Besiegte Gegner hinterlassen Erfahrungskristalle. Laufe darüber, um sie aufzusammeln.
 740| Besiege Gegner und sammle ihre Kristalle ein, bis die Erfahrungsleiste voll ist.
 741| Richte dich auf das Geschoss aus und dashe dann hindurch ({0}). Der Dash macht dich unverwundbar: Das Geschoss wird absorbiert, löst eine Nova aus, die nahe Gegner verletzt, und lädt den Ultimate-Kristall auf.
 742| OFFENSIVER DASH
-743| Der Dash ist nicht nur eine Fortbewegung, sondern eine Waffe. Ein absorbiertes Geschoss verursacht Schaden mit der Nova und lädt das Ultimate auf, doch ein schlecht getimter Dash lässt dich ungeschützt.
+743| Der Dash ist nicht nur eine Fortbewegung, sondern auch ein Angriff. Ein absorbiertes Geschoss verursacht Schaden mit der Nova und lädt das Ultimate auf, doch ein schlecht getimter Dash lässt dich ungeschützt.
 744| ABSORPTION
 745| Absorbiere die Geschosse der Goblins mit dem Dash, um den Ultimate-Kristall zu füllen.
 746| Der Kristall ist geladen: {0} löst das Ultimate aus. Es verletzt alle Gegner, verlangsamt sie und zieht alle Kristalle am Boden an.
@@ -798,3 +798,25 @@
 757| Finsternis
 758| +{0} Splitter erhalten
 759| Mit Gold gekauft
+
+## Gobelin doré, Tempête de cristaux (2026-11-22)
+760| GOLDGOBLIN!
+761| Schnapp ihn dir, bevor er entkommt!
+762| ZU SPÄT!
+763| Der Goldgoblin ist entkommen.
+764| GOLDGOBLIN GESCHNAPPT!
+765| Goldgoblin geschnappt! {0}
+766| Goldgoblin
+767| KRISTALLSTURM
+768| Weich den Siegeln am Boden aus und lock die Gegner hinein!
+769| DER STURM LEGT SICH
+770| Zerschmetterte Gegner: {0}
+771| Abholen
+772| Belohnung
+773| Bereit zum Abholen
+774| Abgeholt
+775| Noch nicht entdeckt
+776| Wähle diese Karte einmal, um sie zu entdecken
+777| Erhalte diese Fusion einmal, um sie zu entdecken
+778| Besiege diesen Boss einmal, um ihn zu entdecken
+779| Erscheint bei {0} im Modus Klassisch

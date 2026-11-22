@@ -110,6 +110,25 @@ public class MusicStarter : MonoBehaviour
         _fadeCoroutine = StartCoroutine(SwitchRoutine(newClip));
     }
 
+    // AJOUTÉ (2026-11-21, arrivée des boss - BossIntro) - lance un morceau d'un coup, à vitesse normale, après le silence de
+    // l'arrivée (la musique d'avant a déjà été éteinte par FadeOutAndStop). Fondu de 0,08 s seulement : évite le clic audio
+    // sans adoucir l'attaque. Clip nul : la musique normale de la partie reprend (jamais de combat sans musique).
+    public void PlayNow(AudioClip clip)
+    {
+        if (_audioSource == null) return;
+        if (clip == null) clip = _defaultClip;
+        if (clip == null) return;
+        if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+        if (_pitchCoroutine != null) { StopCoroutine(_pitchCoroutine); _pitchCoroutine = null; }
+        _started = true;
+        _audioSource.pitch = 1f;
+        _audioSource.clip = clip;
+        _audioSource.loop = true;
+        _audioSource.volume = 0f;
+        _audioSource.Play();
+        _fadeCoroutine = StartCoroutine(FadeInRoutine(_targetVolume, 0.08f));
+    }
+
     public void RevertToDefault()
     {
         SwitchTo(_defaultClip);

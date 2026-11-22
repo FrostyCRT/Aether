@@ -8,6 +8,9 @@
 >
 > Tous les réglages sont au même endroit : `GameModes.cs`, section « Escarmouche » (compression ×3, XP, temps et PV des boss, coffre, Frénésie : ennemis par vague ×2, plafond ×1,25, XP ×2, musique ×1,12) ; récompenses dans `MetaProgressionManager` (`Skirmish…`). Records à part dans la sauvegarde (`skirmishRuns/Wins/BestKills/BestBossKills`) : pas de « meilleur temps », le chrono se fige pendant les boss donc une victoire dure toujours 5:00 au chrono. Dans le sélecteur, l'Escarmouche vient juste après le Classique.
 
+>
+> **Après le 2026-11-14 (état au 2026-11-20)** : toutes les récompenses de l'Escarmouche (or : kills, minutes, boss, victoire ; éclats) sont **divisées par 1,75** (`MetaProgressionManager.SkirmishRewardDivisor`), une Escarmouche Violent gagnée rapportait 12 017 or et 116 éclats avant. Les échos du Boss 3 lâchent un petit coffre (1 tirage) aussi en Escarmouche. L'**Éclipse** (événement de mi-partie) y apparaît à 2:05 et dure 20 s (finie avant le Boss 2). Depuis le 2026-11-16, Classique et Escarmouche sont les deux seuls modes proposés au joueur. Les §2 à §9 ci-dessous gardent le raisonnement d'origine ; les valeurs en vigueur sont celles des encadrés et de `GameModes.cs`.
+
 ---
 
 ## 1. Intention

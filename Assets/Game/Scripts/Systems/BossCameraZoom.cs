@@ -28,7 +28,7 @@ public class BossCameraZoom : MonoBehaviour
         if (Mathf.Abs(_virtualCamera.m_Lens.OrthographicSize - _targetOrthoSize) < 0.01f) return;
 
         LensSettings lens = _virtualCamera.m_Lens;
-        lens.OrthographicSize = Mathf.MoveTowards(lens.OrthographicSize, _targetOrthoSize, _transitionSpeed * Time.deltaTime);
+        lens.OrthographicSize = Mathf.MoveTowards(lens.OrthographicSize, _targetOrthoSize, _transitionSpeed * BossIntro.DeltaTime);   // temps réel pendant le gel de l'arrivée (2026-11-21)
         _virtualCamera.m_Lens = lens;
     }
 

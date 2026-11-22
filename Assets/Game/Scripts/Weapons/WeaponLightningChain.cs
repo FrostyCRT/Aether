@@ -60,6 +60,10 @@ public class WeaponLightningChain : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
+        // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _detectionRange);
+        if (golden != null) return golden;
+
         int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;

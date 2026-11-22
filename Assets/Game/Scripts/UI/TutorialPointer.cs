@@ -94,12 +94,30 @@ public class TutorialPointer : MonoBehaviour
             else
             {
                 Vector2 c = new Vector2(w * 0.5f, h * 0.5f);
-                Vector2 dir = behind ? -(p - c) : (p - c);
+                // CORRIGÉ (2026-11-20, retour utilisateur : « j'ai suivi la flèche de l'éclat de l'Éclipse pendant 1 min, je ne
+                // l'ai jamais atteint ») - caméra inclinée à 65° : un point au sol loin en bas de l'écran passe DERRIÈRE la
+                // caméra (z < 0). L'ancien code inversait alors la projection, et la flèche pointait à l'opposé de la cible.
+                // Derrière la caméra, la direction est maintenant prise au sol, dans les axes de la caméra (droite / avant
+                // à plat) : toujours juste, quelle que soit la distance.
+                Vector2 dir;
+                if (behind)
+                {
+                    Vector3 delta = worldPositions[i] - cam.transform.position;
+                    Vector3 fwd = cam.transform.forward;
+                    if (Mathf.Abs(fwd.y) > 0.999f) fwd = cam.transform.up;   // caméra parfaitement verticale
+                    fwd.y = 0f;
+                    Vector3 right = cam.transform.right; right.y = 0f;
+                    dir = new Vector2(Vector3.Dot(delta, right.normalized), Vector3.Dot(delta, fwd.normalized));
+                }
+                else dir = p - c;
                 if (dir.sqrMagnitude < 1f) dir = Vector2.up;
                 dir.Normalize();
-                // intersection de la demi-droite avec le rectangle réduit
+                // intersection de la demi-droite avec le rectangle réduit. MODIFIÉ (2026-11-21) : marges du haut et du bas
+                // élargies pour ne plus poser la flèche sur le HUD (jauges Dash / Ultime / Concentration et barre de niveau en bas,
+                // chrono et compteurs en haut) - vu pendant la vérification de l'Éclipse.
+                const float edgeBottom = 250f, edgeTop = 140f;
                 float kx = dir.x != 0f ? (w * 0.5f - margin) / Mathf.Abs(dir.x) : float.MaxValue;
-                float ky = dir.y != 0f ? (h * 0.5f - margin - 60f) / Mathf.Abs(dir.y) : float.MaxValue;
+                float ky = dir.y != 0f ? (h * 0.5f - (dir.y < 0f ? edgeBottom : edgeTop)) / Mathf.Abs(dir.y) : float.MaxValue;
                 Vector2 edge = dir * Mathf.Min(kx, ky);
                 a.anchoredPosition = edge - dir * bob;
                 a.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 90f);   // la pointe vers la cible

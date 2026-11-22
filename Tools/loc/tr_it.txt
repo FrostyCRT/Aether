@@ -75,8 +75,8 @@
 68| Sceglie la 1ª carta quando sali di livello
 69| Sceglie la 2ª carta quando sali di livello
 70| Sceglie la 3ª carta quando sali di livello
-71| Riduce il raggio di rotazione dei tuoi orbitali
-72| Aumenta il raggio di rotazione dei tuoi orbitali
+71| Riduce il raggio di rotazione delle tue pietre runiche
+72| Aumenta il raggio di rotazione delle tue pietre runiche
 73| Apre / chiude il menu di pausa
 
 ## Paramètres : page
@@ -161,7 +161,7 @@
 152| Movimento
 153| Combattimento
 154| Aumento di livello
-155| Armi
+155| Incantesimi
 156| Sistema
 157| Zona morta dello stick
 158| Ignora i piccoli movimenti dello stick. Aumentala se il personaggio si muove da solo.
@@ -302,7 +302,7 @@
 285| +3% / s, max +30%
 286| +5% / s, max +50%
 287| Cadenza
-288| Aumenta la cadenza di tutte le tue armi da tiro.
+288| Aumenta la cadenza di tutti i tuoi incantesimi da tiro.
 289| Frammentazione
 290| Un proiettile su 4 del tuo attacco base esplode all'impatto e infligge tutti i suoi danni ai nemici vicini.
 291| Danni del cristallo
@@ -390,7 +390,7 @@
 369| Palla di fuoco
 370| Lancia una palla di fuoco che esplode sul gruppo di nemici più fitto
 371| Cadenza +
-372| +20% alla cadenza di tutte le tue armi da tiro
+372| +20% alla cadenza di tutti i tuoi incantesimi da tiro
 373| Cura
 374| Ripristina il 50% dei tuoi PS massimi
 375| Coltelli
@@ -400,25 +400,25 @@
 379| Fango
 380| Fa comparire pozze di fango che rallentano e feriscono i nemici al loro interno
 381| Orbitali
-382| Dei frammenti ti orbitano intorno e colpiscono i nemici al contatto
-383| Sblocca 2 orbitali rotanti che colpiscono al contatto
-384| +1 orbitale aggiuntivo
+382| Delle pietre runiche ti orbitano intorno e colpiscono i nemici al contatto
+383| Sblocca 2 pietre runiche rotanti che colpiscono al contatto
+384| +1 pietra runica aggiuntiva
 385| Sblocca il fulmine a catena: colpisce 3 nemici
 386| +1 rimbalzo del fulmine
 387| Sblocca 3 pozze di fango che rallentano e feriscono
 388| +1 pozza di fango aggiuntiva
 389| +{0}% ai danni di tutti i tuoi attacchi
-390| +{0}% alla cadenza di tutte le tue armi da tiro
+390| +{0}% alla cadenza di tutti i tuoi incantesimi da tiro
 391| Aumenta i tuoi PS massimi del {0}% e ne ripristina il {1}%
 392| Sblocca Colpo doppio: il tuo attacco base spara due volte
-393| Sblocca Palla di fuoco: equipaggia l'arma esclusiva di Aether
+393| Sblocca Palla di fuoco: equipaggia l'incantesimo esclusivo di Aether
 394| Il raggio dell'esplosione è due volte più grande
 395| +{0}% ai danni
 396| Sblocca Ustione: i nemici colpiti continuano a bruciare per un po'
-397| Sblocca l'Aura: equipaggia l'arma esclusiva di Kael
+397| Sblocca l'Aura: equipaggia l'incantesimo esclusivo di Kael
 398| +{0}% al raggio
 399| Rallentamento aumentato al {0}%
-400| Sblocca la Raffica di coltelli: equipaggia l'arma esclusiva di Lyra
+400| Sblocca la Raffica di coltelli: equipaggia l'incantesimo esclusivo di Lyra
 401| Aggiunge un coltello alla raffica
 402| Perfora {0} nemici in più
 403| Perfora {0} nemico in più
@@ -563,7 +563,7 @@
 528| MIGLIOR TEMPO
 529| PARTITE
 530| VITTORIE
-531| ARMA ESCLUSIVA
+531| INCANTESIMO ESCLUSIVO
 532| STORICO
 533| LIVELLI   A / B / C
 534| BONUS PERMANENTI
@@ -637,7 +637,7 @@
 600| Premi un tasto qualsiasi per saltare
 601| Lancia una sfera che rimbalza senza sosta nell'arena e ferisce tutti i nemici che colpisce
 602| Lancia {0} sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono
-603| {0} frammenti ti orbitano intorno e colpiscono i nemici al contatto
+603| {0} pietre runiche ti orbitano intorno e colpiscono i nemici al contatto
 604| Fa comparire {0} pozze di fango che rallentano e feriscono i nemici al loro interno
 605| Lancia raffiche di {0} coltelli che trafiggono i nemici e poi tornano indietro
 606| Scarica elettrica che rimbalza su {0} nemici vicini
@@ -758,7 +758,7 @@
 716| Capito
 717| MOVIMENTO
 718| LIVELLO SUPERIORE
-719| Scegli una carta per ottenere una nuova arma o migliorarne una esistente.
+719| Scegli una carta: un nuovo incantesimo, il potenziamento di un incantesimo o un bonus come danni, cadenza o cura.
 720| BOSS
 721| VITA
 722| La tua salute. Se scende a 0, la partita è finita.
@@ -774,15 +774,15 @@
 732| Ogni eroe ha il proprio stile di combattimento e il proprio albero delle abilità. Seleziona Aether per iniziare.
 733| Ogni eroe ha il proprio stile di combattimento e il proprio albero delle abilità. Gli altri eroi si sbloccano progredendo.
 734| Scegli una modalità di gioco e una difficoltà, poi avvia con Gioca. Le difficoltà superiori si sbloccano progredendo.
-735| Il Grimorio elenca le tue scoperte e premia la prima di ciascuna.
-736| I frammenti comprano qui bonus permanenti.
+735| Il Grimorio tiene traccia delle tue scoperte. Ogni nuova scoperta ti fa ottenere una ricompensa.
+736| Qui puoi acquistare bonus permanenti con i tuoi frammenti.
 737| FUOCO AUTOMATICO
 738| Un nemico si avvicina. Il tuo eroe mira e spara automaticamente: concentrati sugli spostamenti per mantenere le distanze.
 739| I nemici sconfitti lasciano gemme di esperienza. Passaci sopra per raccoglierle.
 740| Sconfiggi i nemici e raccogli le loro gemme fino a riempire la barra dell'esperienza.
 741| Rivolgiti verso il proiettile ed esegui uno scatto attraverso di esso ({0}). Lo scatto ti rende invincibile: il proiettile viene assorbito, scatena una Nova che ferisce i nemici vicini e carica il Cristallo della suprema.
 742| SCATTO OFFENSIVO
-743| Lo scatto non serve solo a muoversi: è un'arma. Assorbire un proiettile infligge danni con la Nova e carica la suprema, ma uno scatto mal calibrato ti lascia esposto.
+743| Lo scatto non serve solo a muoversi: è anche un attacco. Assorbire un proiettile infligge danni con la Nova e carica la suprema, ma uno scatto mal calibrato ti lascia esposto.
 744| ASSORBIMENTO
 745| Assorbi i proiettili dei goblin con lo scatto per riempire il Cristallo della suprema.
 746| Il Cristallo è carico: {0} attiva la Suprema. Colpisce tutti i nemici, li rallenta e attira tutte le gemme a terra.
@@ -799,3 +799,25 @@
 757| Eclissi
 758| +{0} frammenti ottenuti
 759| Si acquistano con l'oro
+
+## Gobelin doré, Tempête de cristaux (2026-11-22)
+760| GOBLIN D'ORO!
+761| Acchiappalo prima che scappi!
+762| TROPPO TARDI!
+763| Il goblin d'oro è scappato.
+764| GOBLIN D'ORO CATTURATO!
+765| Goblin d'oro catturato! {0}
+766| Goblin d'oro
+767| TEMPESTA DI CRISTALLI
+768| Schiva i sigilli a terra e attira i nemici sopra di essi!
+769| LA TEMPESTA SI PLACA
+770| Nemici schiacciati: {0}
+771| Riscuoti
+772| Ricompensa
+773| Da riscuotere
+774| Riscossa
+775| Da scoprire
+776| Scegli questa carta una volta per scoprirla
+777| Ottieni questa fusione una volta per scoprirla
+778| Sconfiggi questo boss una volta per scoprirlo
+779| Appare a {0} in modalità Classica

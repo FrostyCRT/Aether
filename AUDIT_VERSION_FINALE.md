@@ -39,6 +39,14 @@ Ce document ne change rien au code : c'est une liste de travail. Chaque point do
 >
 > Reste à faire : fin de l'étape 3 (nom de société, IL2CPP, Steam Cloud : reportés par l'utilisateur), secousses/flashs (§5), textures 4K des boss et prefabs en double de `Resources/` (§8, §10), sons.
 
+> ### ✅ Avancement du 2026-11-14 au 2026-11-18 (détail : « ▶ REPRENDRE ICI » en tête de `NOTES.md`)
+> - **Contenu** : mode Escarmouche (5 min) codé et réglé, Grimoire, **didacticiel complet** (validé par l'utilisateur), événement Éclipse. Seuls Classique et Escarmouche sont proposés au joueur (Sans fin et Ruée de boss masqués, code intact).
+> - **§7 Équilibrage** : kit de Lyra refait (couteaux boomerang, Lame fantôme, explosion du Clone ; le ×1,4 essayé puis retiré), Violent durci, tirs de boss à plus longue portée, Soin moins proposé en bonne santé. Nouveau bot `Tools/balance_bot/RealBot.cs`.
+> - **§9 Textes** : audit automatique des textes dans les 11 langues (`Assets/Editor/TextFitAudit.cs`), textes qui dépassaient corrigés, bug de retraduction après un changement de langue corrigé. Traductions nouvelles (Grimoire, didacticiel, Éclipse) à faire relire par des natifs.
+> - Bugs : ennemis recollés au mur près du joueur, index hors limites dans `ProjectileBasic`, « Invalid AABB » sur l'écran de chargement.
+> - ⚠️ **§3 À retirer avant la sortie** : `SaveSystem.FreshSaveOnNewBuild = true` (efface la sauvegarde à la 1re ouverture de chaque nouvelle build, pour tester le didacticiel) → remettre à `false`.
+> - Ouvert : le cadre des écrans Victoire / Défaite apparaît en retard. Toujours en attente : nom de société, IL2CPP, Steam Cloud, secousses/flashs (§5), sons.
+
 > ### ✅ Avancement du 2026-11-10 au 2026-11-13 (détail : « ▶ REPRENDRE ICI » en tête de `NOTES.md`)
 > - **§4** : écran « Made with Unity » retiré. Qualité graphique refaite (3 profils URP réellement différents, mesurés), GPU Resident Drawer réparé.
 > - **§7 Équilibrage** : comparaison des 3 branches au bot (18 parties) puis corrections (Couteaux de Lyra +50 %, Récupération réduite, Clone gardé à 8 s), dégâts de contact espacés, Cadence sur toutes les armes de tir, plafond d'un coup à 50 % des PV max, éclats de survie 2 toutes les 45 s.

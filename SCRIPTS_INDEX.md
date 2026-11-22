@@ -45,6 +45,10 @@ Ce fichier est un **index de repérage rapide** : pour chaque script C# du proje
 | `XPGemField.cs` | Singleton (2026-10-28) : TOUTES les gemmes d'XP de la partie, gérées comme des données (un tableau, un seul maillage trié, seules les gemmes à l'écran dessinées, traînées réutilisées). Aucun plafond ni fusion de gemmes (choix de l'utilisateur), aimant passif conservé. 2 500 gemmes au sol : 114 → 233 images/s. `DebugClear()` / `Count` pour les sondes de test. |
 | `XPGemSpawner.cs` | Singleton : calcule combien/quelles gemmes (10/20/50) spawner à la mort d'un ennemi, reporte le reste < 10 sur la mort suivante (aucune XP perdue), gère le rayon d'attraction global (débloqué niveau 3). Atterrissage toujours aplati au sol (`GemLandY=0`, 2026-10-23) plutôt que sur la position racine de l'ennemi mort - certains ennemis ont une racine haute (pose VAT), leurs gemmes flottaient sinon. La gerbe de gemmes (`SpawnBossGemBurst`) ne sert plus qu'aux mini-boss invoqués depuis le 2026-10-19 (un vrai boss fait apparaître un `BossChest`, voir Weapons). |
 | `XPSystem.cs` | Singleton : XP courante, formule de niveau (`baseXP × niveau²`, baseXP=70 depuis le 2026-10-21 - était `55 × niveau^1,5`), déclenche les montées de niveau. |
+| `BossIntro.cs` | (2026-11-21) **Arrivée des boss** : gel de 1,5 s, bandes de cinéma, liseré rouge, cri du boss (`BossBase._roarClip`). Piloté par `WaveManager.BossArrivalRoutine` (fondu de la musique, gel, `MusicStarter.PlayNow`). `BossIntro.DeltaTime` : temps réel pendant le gel pour les effets d'arrivée, la secousse et le zoom. |
+| `GoldenGoblinEvent.cs` | (2026-11-22) Événement **Gobelin doré** (2:30) : gobelin doré qui fuit 30 s (`EnemyShooter.UpdateGoldenFlee`), sème des pièces, +750 or s'il est tué (ligne sur l'écran de fin), redevient normal sinon. Cible prioritaire des armes à visée à moins de 10 m (`PriorityTarget`). Créé par `WaveManager.Start` (Classique, Sans fin) ; `DebugSpawnNow`. |
+| `CrystalStormEvent.cs` | (2026-11-22) Événement **Tempête de cristaux** (13:30 → 14:45) : sceaux de cristal au sol puis météorites (15 % PV max au joueur, écrase les ennemis de la zone). Modèle : `Resources/CrystalStorm/Meteor` (sinon cristal construit par le code). Créé par `WaveManager.Start` ; `DebugStartNow`. |
+| `NightOfShards.cs` | (2026-11-18) Événement **Éclipse** (nom joueur ; ex-« Nuit des Éclats ») : crée l'éclat à ramasser à 30-40 m (pilier, halo, flèche de bord d'écran), puis la nuit (éclairage, voile, dégâts ×1,25, ennemis ×1,4, XP ÷ 1,4, 1 éclat par 8 kills, bandeaux). Créé par `WaveManager.Start` ; moments et durées par mode ; `DebugSpawnNow` / `DebugStartNightNow` pour tester. Constantes en tête + `GameModes` (`Night…`). |
 
 ## Player (`Assets/Game/Scripts/Player`)
 
@@ -210,6 +214,12 @@ Polices des langues hors alphabet latin (voir NOTES.md, session 2026-10-15) : `T
 | `UpgradeUI.cs` | Contrôleur des 3 cartes de choix de level-up : remplit nom/description/icône/pastilles, anime le pick, et gère la disposition spéciale + le bandeau "FUSION DISPONIBLE !" quand une fusion fait partie du choix. `CardsBusy` pendant l'apparition et le choix. |
 | `LevelUpCardHoverFX.cs` | (2026-10-28, simplifié le 2026-10-29) Survol d'une carte de level-up : léger grossissement (×1,04), en douceur et en temps réel. |
 | `WheelToHorizontal.cs` | Convertit le défilement molette (vertical) en défilement horizontal, posé sur les rangées de skins de l'onglet Réputation. |
+| `Tutorial.cs` | (2026-11-16) État du didacticiel enregistré dans la sauvegarde (`tutorialInit/MenuDone/HeroChosen/Hints/Pages`), migration (un joueur qui a déjà de la progression ne voit rien), `NoHeroYet`, `PracticeActive`, `Replay`, `DisableHints`, libellés de touches. |
+| `TutorialOverlay.cs` | (2026-11-16) Fenêtre du didacticiel construite en code (carte brun sombre + `BrassFrameBorder`, titre Bangers), projecteur (4 bandes sombres + cadre qui pulse, marge égale sur les 4 côtés), sélecteur de langue, positions (`Place.TopRight`…), étapes compactes, flèche animée. DontDestroyOnLoad. |
+| `MenuTutorial.cs` | (2026-11-16) Visite guidée du menu : visite principale au 1er lancement / bouton « ? » (langue, Personnages + choix du héros, Accueil, Grimoire, Entraînement), visites des pages Compétences / Réputation à leur 1re ouverture, réaffiche la page voulue si le joueur en sort. |
+| `GameTutorial.cs` | (2026-11-16 → 18) **Partie d'entraînement scénarisée** (spawner coupé, tout placé par le scénario : déplacement, HUD élément par élément, loups, gemmes, niveau et cartes limitées, Dash au ralenti puis figé, Ultime face à 70 loups) ; ne compte pas (`SuppressWrites` + snapshot), HUD masqué puis révélé, fondu vers le menu. |
+| `TutorialPointer.cs` | (2026-11-16) Flèches dorées animées qui désignent un point du monde (gemmes, projectile, ennemi, éclat de l'Éclipse) ; au bord de l'écran si la cible est hors champ. |
+| `TextFit.cs` | (2026-11-18) Outils pour qu'un texte tienne dans sa place quelle que soit la langue (`ShrinkToWidth`, taille de base mémorisée). |
 
 ## Environment (`Assets/Game/Scripts/Environment`)
 
@@ -288,6 +298,8 @@ Scripts `[MenuItem]` sous le menu **Aether >**, jamais exécutés en jeu — ils
 | `SkeletonSwapTool.cs` | Fenêtre d'éditeur (`EditorWindow`) : remplace le squelette d'un modèle Tripo3D par un squelette Mixamo en conservant mesh/texture/poids. |
 | `VATBaker.cs` | Outil de cuisson VAT : précuit les animations d'un ennemi en textures (position + normale) + mesh statique + matériau `VATLit`. |
 | `SkillTreePageBuilder.cs` | **Aether > Rebuild Skill Tree Page** (+ variante Nodes) : construit l'onglet Compétences complet (nœuds, liaisons, fiche, ambiance). |
+| `TextFitAudit.cs` | (2026-11-18) Audit des textes en Play : `TextFitAudit.Begin("menu" ou "game", langues)` parcourt pages, nœuds, réglages, Grimoire, didacticiel, bandeaux, cartes, pause, victoire / défaite dans chaque langue et écrit `textfit_*.txt` + captures des textes qui dépassent. |
+| `NightOfShardsDebugMenu.cs` | (2026-11-18) **Aether > Debug > Lancer la Nuit des Éclats** (raccourci **=**) : lance l'Éclipse tout de suite en Play. |
 
 ## Outil trailer (`Assets/TrailerCapture`)
 

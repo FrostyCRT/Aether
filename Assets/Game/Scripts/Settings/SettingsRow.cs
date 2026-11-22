@@ -210,7 +210,7 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             }
             case RowKind.Toggle:
             {
-                bool on = GameSettings.GetBool(Def.key);
+                bool on = !enabled && Def.disabledToggleValue != null ? Def.disabledToggleValue() : GameSettings.GetBool(Def.key);
                 _toggleText.text = on ? Loc.T("OUI") : Loc.T("NON");
                 _toggleText.color = on ? Color.white : SettingsStyle.Muted;
                 _toggleText.alignment = on ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;   // à l'opposé du bouton
@@ -227,7 +227,8 @@ public class SettingsRow : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 if (Def.dynamicOptions != null) _options = Def.dynamicOptions();
                 int i = Def.getIndex != null ? Def.getIndex() : GameSettings.GetInt(Def.key);
                 i = Mathf.Clamp(i, 0, Mathf.Max(0, _options.Length - 1));
-                _choiceText.text = _options.Length > 0 ? _options[i] : "";
+                _choiceText.text = !enabled && Def.disabledChoiceText != null ? Def.disabledChoiceText()
+                                 : _options.Length > 0 ? _options[i] : "";
                 break;
             }
             case RowKind.Keybind:

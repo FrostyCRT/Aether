@@ -113,6 +113,9 @@ public class EndScreenIntro : MonoBehaviour
                 {
                     Transform child = card.GetChild(i);
                     if (!child.gameObject.activeSelf) continue;
+                    // Le cadre laiton (BrassFrameBorder) fait partie de la carte : il apparaît AVEC elle, pas en fin de
+                    // cascade (retour 2026-11-20 : « il faut qu'il soit là pile en même temps que le panel »).
+                    if (child.name == "BrassBorder") continue;
                     RectTransform rt = child as RectTransform;
                     if (rt == null) continue;
 

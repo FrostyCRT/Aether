@@ -1,0 +1,11 @@
+DEBUT esc_apocalyptique_aether_it perso=Player_Aether(Clone) palier=Apocalyptic mode=Skirmish langue=Italian pvmax=2000
+ECLAT apparu chrono=125.4 pos=(7.8,10.8) joueur=(15.5,-16.7) distance=28.5m margeMur=11.2 niv=12 vivants=58 pv=28 %
+BUILD_A_L_ECLAT • Palla di fuoco x4 | • Cura x2 | • Orbitali | • Fango x3 | • Sfera rimbalzante
+ECLAT ramasse chrono=134.3 trajet=8.9s de jeu, PV perdus en route=2575 (99 % des PV max) ; NUIT commence
+NUIT finie chrono=154.3 duree=20.1s de jeu, boss present=False, eclatsNuit=40
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.50
+AVANT  : duree=20s kills=256 (768/min) degatsSubis=2026 (6078/min) xp=8000 (23999/min) niveaux=2 vivantsMoy=53 proches6mMoy=2.7 morts=0 or=567 fpsMoy=27 fpsMin=21
+NUIT   : duree=14s kills=246 (1053/min) degatsSubis=0 (0/min) xp=2067 (8849/min) niveaux=0 vivantsMoy=74 proches6mMoy=2.5 morts=0 or=108 fpsMoy=26 fpsMin=8  (hors fondus de 3 s)
+APRES  : duree=20s kills=233 (699/min) degatsSubis=363 (1088/min) xp=4612 (13835/min) niveaux=1 vivantsMoy=67 proches6mMoy=2.8 morts=0 or=96 fpsMoy=27 fpsMin=25
+FIN VICTOIRE chrono=300 niv=27 kills=3809 boss=3 morts=25 reel=261s NOTES MORT@83 MORT@90 MORT@90 MORT@90 MORT@128 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@242 MORT@250 MORT@252 MORT@262 MORT@281 MORT@296 MORT@300 
+BUILD • Palla di fuoco x4 | • Cura x3 | • Orbitali x4 | • Fango x4 | • Sfera rimbalzante x4 | • Danni + x5 | • Pioggia di meteore | • Cadenza +

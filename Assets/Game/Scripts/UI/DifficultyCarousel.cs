@@ -57,7 +57,10 @@ public class DifficultyCarousel : MonoBehaviour
         }
     }
 
-    private void OnEnable() => Refresh();
+    // CORRIGÉ (2026-11-21, vérification de l'Éclipse en 11 langues) - le nom du palier n'était réécrit qu'à l'activation : une langue
+    // changée pendant que l'Accueil est affiché (choix de langue de la visite « ? ») laissait l'ancien nom (« HEFTIG » en chinois).
+    private void OnEnable() { Refresh(); Loc.Changed += Refresh; }
+    private void OnDisable() => Loc.Changed -= Refresh;
 
     // Polling léger (même style que DifficultySelector.Update(), aucune référence directe entre les 2 scripts) -
     // ce carrousel n'a de sens que pour les 3 modes dont le palier a un vrai effet de jeu.

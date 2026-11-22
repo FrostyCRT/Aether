@@ -104,6 +104,13 @@ public class FireExplosionRunner : MonoBehaviour
     private const float SmokeDuration = 0.55f;
     private float TotalDuration => SmokeDelay + SmokeDuration;
 
+    // AJOUTÉ (2026-11-20, retour utilisateur : « adapter la taille de l'effet de déflagration en fonction de sa taille [...]
+    // dans les améliorations de la carte boule de feu ») - la forme FlameBurst ne remplit pas son carré : ses flammes visibles
+    // s'arrêtaient vers 50-70 % du rayon de dégâts (mesuré à l'écran : 60-80 px pour une zone de 106 px), donc des ennemis
+    // mouraient hors du feu et le rayon doublé de l'amélioration se voyait mal. ×1,4 : le bout des flammes atteint le bord
+    // de la zone de dégâts, quel que soit le rayon (2,25 m de base, 4,5 m avec l'amélioration).
+    private const float BurstReach = 1.4f;
+
     public void Play(Vector3 position, float radius, System.Action<FireExplosionRunner> onComplete)
     {
         transform.position = position;
@@ -164,8 +171,8 @@ public class FireExplosionRunner : MonoBehaviour
             t += Time.deltaTime;
 
             UpdateFlash(t);
-            UpdateBurst(_burstInner, t, 1f, burstInnerSpin, HotColor, MidColor);
-            UpdateBurst(_burstOuter, t, 1.25f, burstOuterSpin, MidColor, EmberDarkColor);
+            UpdateBurst(_burstInner, t, BurstReach, burstInnerSpin, HotColor, MidColor);
+            UpdateBurst(_burstOuter, t, BurstReach * 1.25f, burstOuterSpin, MidColor, EmberDarkColor);
             UpdateEmbers(t);
             UpdateSmoke(t);
 

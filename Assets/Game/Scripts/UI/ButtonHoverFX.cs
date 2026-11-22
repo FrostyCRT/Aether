@@ -25,9 +25,13 @@ public class ButtonHoverFX : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private float _k = 1f;
     private bool _hover, _pressed, _animating;
 
+    // AJOUTÉ (2026-11-22, retour utilisateur sur le bouton Grimoire : « quand on maintient le clic, ça creuse l'image, ça fait
+    // un rebond déstabilisant ») - faux : pas d'enfoncement à l'appui, le bouton garde son grossissement de survol.
+    public bool PressDip = true;
+
     public void OnPointerEnter(PointerEventData e) { _hover = true; Wake(); }
     public void OnPointerExit(PointerEventData e) { _hover = false; _pressed = false; Wake(); }
-    public void OnPointerDown(PointerEventData e) { if (e.button == PointerEventData.InputButton.Left) { _pressed = true; Wake(); } }
+    public void OnPointerDown(PointerEventData e) { if (PressDip && e.button == PointerEventData.InputButton.Left) { _pressed = true; Wake(); } }
     public void OnPointerUp(PointerEventData e) { _pressed = false; Wake(); }
 
     private void Awake() => _selectable = GetComponent<Selectable>();

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // AJOUTÉ (2026-10-05) - pilote d'exécution de "LA solution" perf (texture d'animation GPU), voir NOTES.md.
 // Remplace Animator + SkinnedMeshRenderer : ce composant tourne sur un MeshRenderer/MeshFilter classiques (mesh
@@ -51,8 +51,13 @@ public class VATAnimatedRenderer : MonoBehaviour
         _instanceTimeOffset = Random.Range(0f, 1f);
     }
 
+    // AJOUTÉ (2026-11-22, Gobelin doré) - vitesse de lecture de l'animation (1,8 : il court sans arrêt). Remise à 1 à chaque
+    // sortie du pool.
+    public float PlaybackSpeed { get; set; } = 1f;
+
     private void OnEnable()
     {
+        PlaybackSpeed = 1f;
         _paused = false;
         _hasClip = false; // un ennemi qui revient du pool ne doit pas garder la frame de sa vie precedente
         if (_clipSet != null && _clipSet.clips != null && _clipSet.clips.Length > 0)
@@ -104,7 +109,7 @@ public class VATAnimatedRenderer : MonoBehaviour
         if (!_hasClip || _currentClip.frameCount <= 0) return;
 
         if (!_paused)
-            _time += Time.deltaTime;
+            _time += Time.deltaTime * PlaybackSpeed;
 
         float length = Mathf.Max(0.0001f, _currentClip.length);
         float loopedTime = _time % length;

@@ -4,8 +4,9 @@ using UnityEngine;
 // prime d'éclats pour chacune. Décisions de l'utilisateur :
 //  - une découverte = une ACTION du joueur : carte CHOISIE au level-up (coffre compris), fusion OBTENUE, boss BATTU (les échos
 //    invoqués par la Source ne comptent pas, ni les cartes données d'office comme le build complet du Choc des titans) ;
-//  - prime : 5 éclats par carte, 15 par fusion, 20 par boss (205 pour tout compléter, environ une victoire en Modéré),
-//    versée avec les éclats de la partie (ligne « Découvertes » de Dernière partie), sans multiplicateur de palier ni de mode ;
+//  - prime : 5 éclats par carte, 50 par fusion, 80 par boss (595 pour tout compléter ; 15/20 avant le 2026-11-22), sans
+//    multiplicateur de palier ni de mode. Depuis le 2026-11-22 elle n'est plus versée d'office : le joueur la récupère dans le
+//    Grimoire (bouton « Récupérer », MetaProgressionManager.ClaimDiscovery) ;
 //  - pas d'annonce en jeu (retiré le 2026-11-15 à la demande de l'utilisateur : Grimoire passif, comme un bestiaire qu'on
 //    découvre en le rouvrant) ;
 //  - les ennemis normaux pourront s'ajouter plus tard (modèles pas encore définitifs).
@@ -14,8 +15,10 @@ using UnityEngine;
 public static class Grimoire
 {
     public const int CardEclats = 5;
-    public const int FusionEclats = 15;
-    public const int BossEclats = 20;
+    // CHANGÉ (2026-11-22, demande utilisateur : « bien plus d'éclats pour les fusions et les boss, c'est rare ») - 15/20 -> 50/80
+    // (595 pour tout compléter, environ 3,5 victoires en Modéré). La prime se récupère dans le Grimoire (bouton « Récupérer »).
+    public const int FusionEclats = 50;
+    public const int BossEclats = 80;
 
     public static string UpgradeId(UpgradeData upgrade) =>
         upgrade.upgradeType == UpgradeType.Fusion ? "fusion:" + upgrade.name : "card:" + upgrade.upgradeType;

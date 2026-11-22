@@ -1,0 +1,11 @@
+DEBUT esc_violent_lyra_pl perso=Player_Lyra(Clone) palier=Violent mode=Skirmish langue=Polish pvmax=2000
+ECLAT apparu chrono=125.2 pos=(3.3,-12.0) joueur=(-26.7,-10.8) distance=30.1m margeMur=0.0 niv=10 vivants=89 pv=94 %
+BUILD_A_L_ECLAT • Noże x4 | • Satelity | • Błoto x2 | • Leczenie | • Obrażenia +
+ECLAT ramasse chrono=134.8 trajet=9.6s de jeu, PV perdus en route=3319 (144 % des PV max) ; NUIT commence
+NUIT finie chrono=154.6 duree=20.0s de jeu, boss present=False, eclatsNuit=22
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.00
+AVANT  : duree=20s kills=153 (459/min) degatsSubis=3457 (10370/min) xp=4392 (13177/min) niveaux=2 vivantsMoy=85 proches6mMoy=14.1 morts=0 or=452 fpsMoy=27 fpsMin=25
+NUIT   : duree=14s kills=140 (606/min) degatsSubis=3149 (13635/min) xp=1990 (8616/min) niveaux=0 vivantsMoy=143 proches6mMoy=18.6 morts=1 or=98 fpsMoy=25 fpsMin=23  (hors fondus de 3 s)
+APRES  : duree=20s kills=208 (624/min) degatsSubis=5886 (17658/min) xp=6697 (20091/min) niveaux=2 vivantsMoy=85 proches6mMoy=21.1 morts=3 or=94 fpsMoy=27 fpsMin=21
+FIN VICTOIRE chrono=300 niv=27 kills=2070 boss=3 morts=31 reel=248s NOTES MORT@45 MORT@62 MORT@88 MORT@90 MORT@90 MORT@125 MORT@132 MORT@144(nuit) MORT@158 MORT@163 MORT@170 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@208 MORT@242 MORT@248 MORT@256 MORT@271 MORT@300 MORT@300 MORT@300 MORT@300 
+BUILD • Noże x4 | • Satelity x4 | • Błoto x4 | • Leczenie x2 | • Obrażenia + x5 | • Łańcuch błyskawic x4 | • Szybkostrzelność + | • Magnetyczne torfowisko | • Podwójny strzał

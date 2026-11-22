@@ -13431,7 +13431,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9cccb18519283f4d8689d72a35ee130, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseMoteCount: 45
+  _baseMoteCount: 22
   _countFactorByQuality:
   - 0.3
   - 0.65
@@ -13447,7 +13447,7 @@ MonoBehaviour:
   _maxDiameter: 0.3
   _driftRiseSpeed: 0.33
   _swayAmplitude: 0.6
-  _maxAlpha: 0.8
+  _maxAlpha: 0.55
 --- !u!4 &1151209729
 Transform:
   m_ObjectHideFlags: 0

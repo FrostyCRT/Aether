@@ -52,12 +52,13 @@ public class CameraShakeFX : MonoBehaviour
     private void LateUpdate()
     {
         if (_trauma <= 0f) return;
-        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        // MODIFIÉ (2026-11-21) - la secousse continue pendant le gel de l'arrivée d'un boss (BossIntro), en temps réel.
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused && !BossIntro.Active) return;
         if (_cam == null) _cam = Camera.main;
         if (_cam == null) return;
 
         float shake = _trauma * _trauma;
-        float t = Time.time * _frequency;
+        float t = BossIntro.TimeNow * _frequency;
         float offsetX = (Mathf.PerlinNoise(_seed, t) * 2f - 1f) * _maxOffset * shake;
         float offsetY = (Mathf.PerlinNoise(_seed + 50f, t) * 2f - 1f) * _maxOffset * shake;
         float tilt = (Mathf.PerlinNoise(_seed + 100f, t) * 2f - 1f) * _maxTiltDegrees * shake;
@@ -66,6 +67,6 @@ public class CameraShakeFX : MonoBehaviour
         camT.position += camT.right * offsetX + camT.up * offsetY;
         camT.rotation *= Quaternion.Euler(0f, 0f, tilt);
 
-        _trauma = Mathf.Max(0f, _trauma - _traumaDecayPerSecond * Time.deltaTime);
+        _trauma = Mathf.Max(0f, _trauma - _traumaDecayPerSecond * BossIntro.DeltaTime);
     }
 }

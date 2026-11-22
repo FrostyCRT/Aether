@@ -1,0 +1,7 @@
+DEBUT esc_violent_aether_zh perso=Player_Aether(Clone) palier=Violent mode=Skirmish langue=ChineseSimplified pvmax=2000 soleil=1.10 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=125.0 pos=(19.3,12.0) joueur=(-9.4,-2.6) distance=32.2m margeMur=0.0 dansLaCarte=True niv=12 vivants=32
+BUILD_A_L_ECLAT • 火球 x4 | • 连锁闪电 x3 | • 泥沼 x3 | • 治疗
+ECLAT perdu (non ramasse) chrono=170.0 apres=45.1s de jeu
+PAS DE NUIT (eclatApparu=True)
+FIN VICTOIRE chrono=300 niv=28 kills=3189 boss=3 morts=26 eclatsNuit=0 reel=323s NOTES MORT@51 MORT@80 MORT@87 MORT@90 MORT@90 MORT@90 carte@134(eclat) MORT@162 carte@174(eclat) MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 carte@182(eclat) carte@182(eclat) carte@182(eclat) carte@182(eclat) carte@182(eclat) MORT@210 carte@222(eclat) MORT@235 carte@248(eclat) MORT@252 carte@257(eclat) MORT@263 carte@269(eclat) carte@280(eclat) carte@300(eclat) carte@300(eclat) carte@300(eclat) MORT@300 MORT@300 carte@300(eclat) MORT@300 MORT@300 MORT@300 
+BUILD • 火球 x4 | • 连锁闪电 x4 | • 泥沼 x4 | • 治疗 x5 | • 弹跳法球 x4 | • 伤害＋ x2 | • 泥泞尾迹 | • 射速＋ x3

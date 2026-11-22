@@ -1,0 +1,11 @@
+DEBUT classic_violent_kael_de perso=Player_Kael(Clone) palier=Violent mode=Classic langue=German pvmax=3000 soleil=1.10 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=450.4 pos=(7.0,-12.0) joueur=(-18.1,-4.6) distance=26.1m margeMur=0.0 dansLaCarte=True niv=14 vivants=72
+BUILD_A_L_ECLAT • Aura x4 | • Kettenblitz x2 | • Prallkugel x3 | • Heilung x2 | • Trabanten x2
+ECLAT ramasse chrono=461.5 trajet=11.1s de jeu, PV perdus en route=361 (9 % des PV max) ; NUIT commence
+NUIT finie chrono=506.6 duree=45.1s de jeu, boss present=False, eclatsNuit=69
+LUMIERE apres nuit : soleil=1.10 (debut 1.10) ambiance=1.00 (1.00) reflets=1.00 (1.00) => OK ; voile=False lueurJoueur=False fleche=False compteur=False
+AVANT  : duree=45s kills=460 (613/min) degatsSubis=2393 (3191/min) xp=8683 (11578/min) niveaux=1 vivantsMoy=77 proches6mMoy=10.4 morts=1 or=750 fpsMoy=26 fpsMin=23
+NUIT   : duree=39s kills=491 (754/min) degatsSubis=5263 (8084/min) xp=6530 (10030/min) niveaux=1 vivantsMoy=107 proches6mMoy=11.5 morts=1 or=762 fpsMoy=24 fpsMin=7  (hors fondus de 3 s)
+APRES  : duree=45s kills=439 (585/min) degatsSubis=9417 (12556/min) xp=13236 (17649/min) niveaux=1 vivantsMoy=88 proches6mMoy=8.7 morts=2 or=780 fpsMoy=25 fpsMin=22
+FIN ARRET_APRES_BOSS2 chrono=600 niv=17 kills=3584 boss=1 morts=20 eclatsNuit=69 reel=354s NOTES MORT@29 MORT@84 MORT@110 MORT@128 MORT@225 MORT@289 MORT@300 MORT@300 MORT@300 MORT@328 MORT@367 MORT@406 carte@487(nuit) MORT@493 MORT@518 MORT@541 MORT@555 MORT@575 MORT@600 MORT@600 MORT@600 
+BUILD • Aura x4 | • Kettenblitz x4 | • Prallkugel x3 | • Heilung x2 | • Trabanten x3

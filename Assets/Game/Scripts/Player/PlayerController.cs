@@ -188,6 +188,9 @@ public class PlayerController : MonoBehaviour
     public bool MovementLocked;   // didacticiel : fenêtre de fin, le joueur ne peut plus bouger
     public System.Func<Vector3, bool> DashFilter;   // didacticiel : le dash ne part que dans une direction acceptée
     public bool DashLocked;   // didacticiel : pas de dash avant l'étape qui l'explique
+    // didacticiel (2026-11-22) : mur invisible, la marche reste dans un cercle autour de ce point (le dash n'est pas limité)
+    public Vector3? WalkAnchor;
+    public float WalkRadius = 1f;
 
     public void ResetDashCooldown()
     {
@@ -877,6 +880,20 @@ public class PlayerController : MonoBehaviour
             nextPosition = _rb.position + _dashDirection * _dashSpeed * Time.fixedDeltaTime;
         else
             nextPosition = _rb.position + _moveDirection * _moveSpeed * _speedMultiplier * _escapeSpeedMultiplier * Time.fixedDeltaTime;
+
+        if (WalkAnchor.HasValue && !_isDashing)
+        {
+            // hors du cercle (après un dash) : on peut revenir, pas s'éloigner davantage
+            Vector3 a = WalkAnchor.Value;
+            Vector3 off = new Vector3(nextPosition.x - a.x, 0f, nextPosition.z - a.z);
+            Vector3 cur = new Vector3(_rb.position.x - a.x, 0f, _rb.position.z - a.z);
+            float limit = Mathf.Max(WalkRadius, cur.magnitude);
+            if (off.magnitude > limit)
+            {
+                off = off.normalized * limit;
+                nextPosition = new Vector3(a.x + off.x, nextPosition.y, a.z + off.z);
+            }
+        }
 
         nextPosition = MapBoundaryUtils.ClampToZone(nextPosition);
         _rb.MovePosition(nextPosition);

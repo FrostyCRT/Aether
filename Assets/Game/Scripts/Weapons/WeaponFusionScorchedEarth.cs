@@ -226,6 +226,9 @@ public class WeaponFusionScorchedEarth : MonoBehaviour
 
     private void ApplyImpactDamage(Vector3 position, float burstDamage)
     {
+        // CORRIGÉ (2026-11-21, vérification de l'Éclipse) - l'impact ne lisait pas PlayerBuffs.OutgoingDamageMultiplier
+        // (Concentration, Surpuissance, bonus du héros, nuit de l'Éclipse), seule arme dans ce cas ; le cratère (MudPuddleZone) le lisait déjà.
+        burstDamage *= PlayerBuffs.OutgoingDamageMultiplier;
         int count = Physics.OverlapSphereNonAlloc(position, _impactRadius, _overlapBuffer, EnemyLayers.Mask);
         var hitBosses = new HashSet<int>();
 

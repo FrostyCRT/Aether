@@ -169,6 +169,8 @@ public class BossFX : MonoBehaviour
         // la mort du boss continue en temps réel jusqu'à son final ; elle reste figée dans le menu Pause.
         if (_mode == Mode.Death && Time.timeScale == 0f && LevelUpManager.Instance != null && LevelUpManager.Instance.IsChoosing)
             dt = Time.unscaledDeltaTime;
+        // AJOUTÉ (2026-11-21) - l'arrivée se joue en temps réel pendant le gel de l'arrivée du boss (BossIntro).
+        if (_mode == Mode.Arrival && BossIntro.Active) dt = Time.unscaledDeltaTime;
         if (_cam == null && Camera.main != null) _cam = Camera.main.transform;
 
         UpdateSlowMo();

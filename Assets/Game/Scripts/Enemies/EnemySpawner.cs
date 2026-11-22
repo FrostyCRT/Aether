@@ -8,6 +8,11 @@ public class EnemySpawner : MonoBehaviour
     // en début de partie est retirée (1 = PV normaux dès le début), Lyra ayant été renforcée depuis.
     private const float ViolentEarlyHealthScale = 1f;
     private const float ModerateEaseEndMinutes = 8f;        // retour aux PV normaux (rampe de 6 à 8 min)
+    // AJOUTÉ (2026-11-20, retour utilisateur : « les ennemis ont trop de vie dans la difficulté 1, il faut pouvoir les 2 shot
+    // quand on a Concentration au niveau 1 », option B choisie) - en Modéré, seuls 25 % des PV fixes du palier (bonusHealth)
+    // s'ajoutent jusqu'à 6 min, puis retour progressif à 100 % à 8 min (même rampe que ModerateEarlyHealthScale). Loup / gobelin :
+    // 315 -> 203 PV (0-2 min), 219 (2-4 min) : 2 tirs de base avec Concentration 1 (115), 3 sans. XP donnée inchangée.
+    private const float ModerateEarlyBonusScale = 0.25f;
 
     [System.Serializable]
     public struct SpawnPhase
@@ -198,10 +203,21 @@ public class EnemySpawner : MonoBehaviour
 
     private static bool IsRangedTag(string tag) => tag == "EnemyShooter" || tag == "EnemyBulb";
 
+    // AJOUTÉ (2026-11-22, retour utilisateur : « j'aimerais pouvoir tester rapidement les 2 [projectiles], sauf qu'en vraie
+    // partie les Bulbes ne sont pas là tout de suite, et il peut y avoir d'autres ennemis que des tireurs ») - test uniquement
+    // (DebugCheats, Page préc.) : le spawner ne fait plus apparaître que des Gobelins et des Bulbes, à parts égales, dans la
+    // limite habituelle de tireurs simultanés.
+    public static bool DebugShootersOnly;
+
     private void SpawnEnemy()
     {
         PalierEnnemis palier = GetCurrentPalier();
         string tag = PickWeightedTag(palier.composition);
+        if (DebugShootersOnly)
+        {
+            if (EnemyBase.ActiveRangedCount >= _maxSimultaneousRanged) return;
+            tag = Random.value < 0.5f ? "EnemyShooter" : "EnemyBulb";
+        }
 
         if (IsRangedTag(tag) && EnemyBase.ActiveRangedCount >= _maxSimultaneousRanged)
         {
@@ -223,7 +239,20 @@ public class EnemySpawner : MonoBehaviour
             ? FindFreeSpawnPosition(_bulbSpawnRadius, _bulbMinSeparation)
             : FindFreeSpawnPosition(_spawnRadius, 1.5f);
         if (spawnPos == Vector3.zero) return;
-        if (ObjectPool.Instance == null) return;
+        SpawnAt(tag, spawnPos, palier);
+    }
+
+    // AJOUTÉ (2026-11-22, Gobelin doré) - fait apparaître un ennemi précis à un endroit précis, avec exactement les PV, l'XP et
+    // l'altitude qu'il aurait eus via une vague normale à ce moment de la partie (GoldenGoblinEvent). Null si impossible.
+    public GameObject SpawnSpecific(string tag, Vector3 spawnPos)
+    {
+        if (_playerTransform == null) return null;
+        return SpawnAt(tag, spawnPos, GetCurrentPalier());
+    }
+
+    private GameObject SpawnAt(string tag, Vector3 spawnPos, PalierEnnemis palier)
+    {
+        if (ObjectPool.Instance == null) return null;
 
         // Mode sans fin : les PV continuent de croître au-delà de 15 min (x1 en classique, voir GameModes).
         // Escarmouche : temps compressé x3, donc la rampe « Modéré » de 6-8 min tombe à 2:00-2:40 (ScaledRunSeconds).
@@ -247,15 +276,17 @@ public class EnemySpawner : MonoBehaviour
         float earlyScale = DifficultyTiers.Current == DifficultyTier.Moderate ? ModerateEarlyHealthScale
                          : DifficultyTiers.Current == DifficultyTier.Violent && GameModes.UsesDifficultyTier ? ViolentEarlyHealthScale
                          : 1f;
-        float earlyEase = Mathf.Lerp(earlyScale, 1f, Mathf.InverseLerp(ModerateEaseEndMinutes - 2f, ModerateEaseEndMinutes, runMinutes));
+        float easeT = Mathf.InverseLerp(ModerateEaseEndMinutes - 2f, ModerateEaseEndMinutes, runMinutes);
+        float earlyEase = Mathf.Lerp(earlyScale, 1f, easeT);
         healthMultiplier *= earlyEase;
+        float bonusEase = DifficultyTiers.Current == DifficultyTier.Moderate ? Mathf.Lerp(ModerateEarlyBonusScale, 1f, easeT) : 1f;
 
-        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth * earlyEase);
+        GameObject spawned = ObjectPool.Instance.Get(tag, spawnPos, Quaternion.identity, healthMultiplier, palier.bonusHealth * bonusEase * earlyEase);
 
         if (spawned == null)
         {
             Debug.LogWarning($"[SPAWNER] Tag de pool '{tag}' introuvable — vérifie l'orthographe dans ObjectPool._pools ET dans _paliersEnnemis.");
-            return;
+            return null;
         }
 
         // AJOUTÉ (2026-10-20, retour utilisateur : "trop d'xp en difficulté 3") - l'XP à la mort (EnemyBase.Die)
@@ -289,6 +320,7 @@ public class EnemySpawner : MonoBehaviour
         // d'XP au total en Apocalyptique, à surveiller en playtest.
         if (spawnedEnemy != null && _tierScalingActive)
             spawnedEnemy.SetXpPacingMultiplier(1f / Mathf.Max(1f, DifficultyTiers.SpawnScaleMultiplier(DifficultyTiers.Current)));
+        return spawned;
     }
 
 

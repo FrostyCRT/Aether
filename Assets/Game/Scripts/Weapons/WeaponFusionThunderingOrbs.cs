@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 // FUSION (2026-09-27) : Orbitaux + Foudre, toutes les deux au palier max → cette arme les remplace [universelle].
@@ -336,6 +336,9 @@ public class WeaponFusionThunderingOrbs : MonoBehaviour
             float d = (col.transform.position - transform.position).sqrMagnitude;
             if (d < best) { best = d; nearest = col; }
         }
+        // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _strikeDetectionRange);
+        if (golden != null && golden.TryGetComponent(out Collider goldenCol)) nearest = goldenCol;
         if (nearest == null) return false;
 
         // L'éclair part de l'orbe le plus proche de sa cible : la foudre "sort" visiblement des orbes.

@@ -101,7 +101,11 @@ public class EnemyBulb : EnemyBase
             if (projectileGO == null) continue;
 
             projectileGO.TryGetComponent(out EnemyProjectile projectile);
-            if (projectile != null) projectile.Init(direction, "horde", _projectileSpeed);
+            if (projectile != null)
+            {
+                projectile.Init(direction, "horde", _projectileSpeed);
+                projectile.SetLook(EnemyProjectile.Look.Spore);   // Bulbe : spore duveteuse
+            }
         }
     }
 }

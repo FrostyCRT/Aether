@@ -117,6 +117,16 @@ public class MetaProgressionManager : MonoBehaviour
         if (Data == null) Data = new SaveData();
         MigrateClassicBossProgress();
         MigrateGoldScale();
+        MigrateGrimoireClaims();
+    }
+
+    // AJOUTÉ (2026-11-22) - avant les boutons « Récupérer », la prime était versée d'office : ces découvertes sont déjà payées.
+    private void MigrateGrimoireClaims()
+    {
+        if (Data.grimoireClaimInit) return;
+        if (Data.grimoire == null) Data.grimoire = new System.Collections.Generic.List<string>();
+        Data.grimoireClaimed = new System.Collections.Generic.List<string>(Data.grimoire);
+        Data.grimoireClaimInit = true;
     }
 
     // AJOUTÉ (2026-11-07) - l'or est passé à l'échelle x10 (gains ET coûts) : l'or d'une sauvegarde plus ancienne est
@@ -136,6 +146,8 @@ public class MetaProgressionManager : MonoBehaviour
         RunEclatsFromNight = 0;
         RunGold = 0;
         RunGoldFromKills = RunGoldFromTime = RunGoldFromBosses = RunGoldFromVictory = RunGoldFromChallenge = 0;
+        LastRunGoblinBonus = RunGoldGoblinBonus;
+        RunGoldFromGoblin = RunGoldGoblinBonus = 0;
         RunKillGoldValueRaw = 0;
         _killGoldCarry = 0f;
         _killRate = 0f;
@@ -143,8 +155,10 @@ public class MetaProgressionManager : MonoBehaviour
     }
 
     // AJOUTÉ (2026-11-15) - Grimoire : une découverte est enregistrée tout de suite dans la sauvegarde en mémoire (écrite sur
-    // le disque en fin de partie, avec le reste), et sa prime s'ajoute aux éclats de la partie (SaveRunResults, abandon compris).
-    // Faux si déjà découverte.
+    // le disque en fin de partie, avec le reste). Faux si déjà découverte.
+    // CHANGÉ (2026-11-22, demande utilisateur : « c'est plus satisfaisant que le joueur clique lui-même sur la récompense ») - la
+    // prime n'entre plus dans les éclats de la partie : elle attend dans le Grimoire (bouton « Récupérer », ClaimDiscovery).
+    // RunEclatsFromDiscoveries reste donc à 0 (la ligne « Découvertes » de Dernière partie ne s'affiche plus).
     public int RunEclatsFromDiscoveries { get; private set; }
 
     // AJOUTÉ (2026-11-18) - Nuit des Éclats : éclats gagnés pendant la nuit (NightOfShards.RegisterKill), montant fixe (ni palier ni
@@ -158,8 +172,32 @@ public class MetaProgressionManager : MonoBehaviour
         if (Data.grimoire == null) Data.grimoire = new System.Collections.Generic.List<string>();
         if (Data.grimoire.Contains(id)) return false;
         Data.grimoire.Add(id);
-        RunEclatsFromDiscoveries += eclats;
         return true;
+    }
+
+    public bool IsDiscoveryClaimed(string id) => Data != null && Data.grimoireClaimed != null && Data.grimoireClaimed.Contains(id);
+
+    // Bouton « Récupérer » du Grimoire : verse la prime d'une découverte faite et pas encore récupérée, puis sauvegarde.
+    public bool ClaimDiscovery(string id, int eclats)
+    {
+        if (Data == null) LoadData();
+        if (Data.grimoire == null || !Data.grimoire.Contains(id)) return false;
+        if (Data.grimoireClaimed == null) Data.grimoireClaimed = new System.Collections.Generic.List<string>();
+        if (Data.grimoireClaimed.Contains(id)) return false;
+        Data.grimoireClaimed.Add(id);
+        Data.totalEclats += eclats;
+        SaveSystem.Save(Data);
+        return true;
+    }
+
+    // Nombre de découvertes dont la prime attend d'être récupérée (pastille du bouton Grimoire).
+    public int UnclaimedDiscoveries()
+    {
+        if (Data == null || Data.grimoire == null) return 0;
+        int n = 0;
+        foreach (string id in Data.grimoire)
+            if (Data.grimoireClaimed == null || !Data.grimoireClaimed.Contains(id)) n++;
+        return n;
     }
 
     // Saves d'avant les modes de jeu : on retrouve la progression boss d'après les déblocages existants
@@ -185,8 +223,15 @@ public class MetaProgressionManager : MonoBehaviour
     public int RunGoldFromBosses { get; private set; }
     public int RunGoldFromVictory { get; private set; }
     public int RunGoldFromChallenge { get; private set; }
+    // AJOUTÉ (2026-11-22, Gobelin doré) - tout l'or du Gobelin doré (pièces semées + prime), et la prime seule (ligne à part sur
+    // l'écran de fin, comme le défi).
+    public int RunGoldFromGoblin { get; private set; }
+    public int RunGoldGoblinBonus { get; private set; }
+    // Prime de la partie qui vient de se terminer : SaveRunResults remet l'or de la partie à zéro AVANT l'affichage de l'écran de
+    // fin, qui lit donc cette valeur-ci (copiée dans ResetRunGold).
+    public int LastRunGoblinBonus { get; private set; }
     public int RunKillGoldValueRaw { get; private set; }   // somme des _goldValue des ennemis tués (mesures)
-    private enum GoldSource { Kills, Time, Bosses, Victory, Challenge }
+    private enum GoldSource { Kills, Time, Bosses, Victory, Challenge, Goblin }
     // Posé par GameManager.AbandonRun juste avant SaveRunResults (le panneau « Dernière partie » distingue l'abandon).
     public bool PendingRunAbandoned { get; set; }
 
@@ -234,7 +279,16 @@ public class MetaProgressionManager : MonoBehaviour
     // Prime du défi de l'heure : calculée sur un or déjà majoré, elle ne repasse pas dans le multiplicateur.
     public void AddChallengeGold(int amount) => AddRunGold(amount, false, GoldSource.Challenge);
 
-    private void AddRunGold(int amount, bool applyDifficulty, GoldSource source)
+    // Gobelin doré : pièce semée (bonus = false) ou prime de capture (bonus = true), majorées au palier de difficulté comme l'or
+    // des boss. Renvoie l'or réellement versé.
+    public int AddGoldenGoblinGold(int amount, bool bonus)
+    {
+        int added = AddRunGold(amount, true, GoldSource.Goblin);
+        if (bonus) RunGoldGoblinBonus += added;
+        return added;
+    }
+
+    private int AddRunGold(int amount, bool applyDifficulty, GoldSource source)
     {
         // AJOUTÉ (2026-10-18, diagnostic complet - système de difficulté ; ÉTENDU 2026-10-20, carrousel de
         // difficulté - "les boss [...] dans les autres difficultés bénéficient du scale donc [...] un niveau de
@@ -257,6 +311,7 @@ public class MetaProgressionManager : MonoBehaviour
             case GoldSource.Bosses: RunGoldFromBosses += amount; break;
             case GoldSource.Victory: RunGoldFromVictory += amount; break;
             case GoldSource.Challenge: RunGoldFromChallenge += amount; break;
+            case GoldSource.Goblin: RunGoldFromGoblin += amount; break;
         }
         if (GameUI.Instance != null && GameUI.Instance.gameObject.activeInHierarchy)
             GameUI.Instance.UpdateGold(RunGold);
@@ -265,6 +320,7 @@ public class MetaProgressionManager : MonoBehaviour
         // temps reel, pas seulement en fin de run.
         if (ChallengeManager.Instance != null)
             ChallengeManager.Instance.RefreshDisplay();
+        return amount;
     }
 
     // AJOUTÉ (2026-10-26, bug signalé par l'utilisateur : "quand on meurt au boss 3, c'est écrit Nouveau record de survie
@@ -394,6 +450,7 @@ public class MetaProgressionManager : MonoBehaviour
             goldBosses = RunGoldFromBosses,
             goldVictory = RunGoldFromVictory,
             goldChallenge = RunGoldFromChallenge,
+            goldGoblin = RunGoldFromGoblin,
             eclats = eclatsEarned,
             eclatsFirstWin = firstWinBonus,
             eclatsTime = eclatsTime,

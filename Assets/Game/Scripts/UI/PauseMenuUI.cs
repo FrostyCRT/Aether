@@ -559,7 +559,7 @@ public class PauseMenuUI : MonoBehaviour
             foreach (TMP_Text t in GetComponentsInChildren<TMP_Text>(true))
                 if (t.font != null && t.font.name.StartsWith("Bangers")) { _titleFont = t.font; break; }
         return _titleFont != null
-            ? DifficultyStyle.WrapInFont(_titleFont, difficulty, label, TitleWordSizePercent)
+            ? DifficultyStyle.WrapInFont(_titleFont, difficulty, label, TitleWordSizePercent, sober: true)
             : DifficultyStyle.Wrap(_challengeInfoText.font, difficulty, label);
     }
 

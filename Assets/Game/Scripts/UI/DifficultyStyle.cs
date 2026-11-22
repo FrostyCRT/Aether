@@ -36,6 +36,24 @@ public static class DifficultyStyle
         }
     }
 
+    // AJOUTÉ (2026-11-22, retour utilisateur : « la couleur du niveau de difficulté dans le pause panel est trop flashy, donc on
+    // ne la voit pas assez bien ») - variante SOBRE pour le menu Pause : teintes plus profondes, sans lueur colorée (elle bavait
+    // sur le fond du menu), contour sombre gardé. L'annonce de début de partie garde la variante vive.
+    private static readonly Color EasySober = new Color32(0x3F, 0xA8, 0x35, 0xFF);
+    private static readonly Color MediumSober = new Color32(0xE0, 0x8E, 0x10, 0xFF);
+    private static readonly Color HardSober = new Color32(0xD9, 0x3B, 0x2B, 0xFF);
+
+    private static Color Tint(ChallengeDifficulty difficulty, bool sober)
+    {
+        if (!sober) return Tint(difficulty);
+        switch (difficulty)
+        {
+            case ChallengeDifficulty.Easy: return EasySober;
+            case ChallengeDifficulty.Hard: return HardSober;
+            default: return MediumSober;
+        }
+    }
+
     // Même teinte, très assombrie : le contour fait ressortir le mot sur un fond clair comme sur un fond chargé.
     private static Color Dark(Color c)
     {
@@ -56,28 +74,28 @@ public static class DifficultyStyle
     // AJOUTÉ (2026-11-11, retour utilisateur : dans le menu Pause « c'est trop flash, mets-le comme celui de l'animation de
     // défi du début ») - le mot est écrit dans la police titre (wordFont, Bangers) au lieu de celle du texte courant, avec le
     // même habillage que dans l'annonce : à petite taille dans la police de lecture, la couleur vive dominait le contour.
-    public static string WrapInFont(TMP_FontAsset wordFont, ChallengeDifficulty difficulty, string label, int sizePercent)
+    public static string WrapInFont(TMP_FontAsset wordFont, ChallengeDifficulty difficulty, string label, int sizePercent, bool sober = false)
     {
-        string name = MaterialName(wordFont, difficulty);
-        string hex = ColorUtility.ToHtmlStringRGB(Tint(difficulty));
+        string name = MaterialName(wordFont, difficulty, sober);
+        string hex = ColorUtility.ToHtmlStringRGB(Tint(difficulty, sober));
         if (name == null) return $"<color=#{hex}>{label}</color>";
         MaterialReferenceManager.AddFontAsset(wordFont);   // retrouvée par son nom dans la balise <font>
         return $"<font=\"{wordFont.name}\" material=\"{name}\"><size={sizePercent}%><color=#{hex}>{label}</color></size></font>";
     }
 
-    private static string MaterialName(TMP_FontAsset font, ChallengeDifficulty difficulty)
+    private static string MaterialName(TMP_FontAsset font, ChallengeDifficulty difficulty, bool sober = false)
     {
         if (font == null || font.material == null) return null;
-        string name = "Difficulty_" + difficulty + "_" + font.GetInstanceID();
+        string name = "Difficulty_" + difficulty + (sober ? "_Sober_" : "_") + font.GetInstanceID();
         if (Materials.TryGetValue(name, out Material existing) && existing != null) return name;
 
         Material m = new Material(font.material) { name = name, hideFlags = HideFlags.HideAndDontSave };
-        Color c = Tint(difficulty);
+        Color c = Tint(difficulty, sober);
         m.EnableKeyword("OUTLINE_ON");
         m.SetFloat(ShaderUtilities.ID_FaceDilate, OutlineWidth * 0.5f);
         m.SetFloat(ShaderUtilities.ID_OutlineWidth, OutlineWidth);
         m.SetColor(ShaderUtilities.ID_OutlineColor, Dark(c));
-        if (m.HasProperty(ShaderUtilities.ID_UnderlayColor))
+        if (!sober && m.HasProperty(ShaderUtilities.ID_UnderlayColor))
         {
             m.EnableKeyword("UNDERLAY_ON");
             m.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(c.r, c.g, c.b, GlowAlpha));

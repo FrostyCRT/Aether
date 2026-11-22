@@ -235,10 +235,10 @@ public class MenuTutorial : MonoBehaviour
             new TutorialStep
             {
                 Title = () => Loc.T("GRIMOIRE"),
-                Body = () => Loc.T("Le Grimoire répertorie vos découvertes et récompense la première de chacune."),
+                Body = () => Loc.T("Le Grimoire garde la trace de vos découvertes. Chaque nouvelle découverte vous rapporte une récompense."),
                 Target = () => Find("MenuPanel/Grimoire/GrimoireButton"),
-                Tight = true,
-                Padding = 14f,
+                Tight = false,   // (2026-11-22) le rectangle du bouton (livre + mot) : « ajusté » englobait le grand halo et sortait de l'écran
+                Padding = 10f,
                 Arrow = true,   // le cadre est petit et la carte grande : une flèche animée désigne le bouton
                 Panel = () => _menu.MenuPanelObject,
             },
@@ -288,7 +288,7 @@ public class MenuTutorial : MonoBehaviour
             new TutorialStep
             {
                 Title = () => Loc.T("RÉPUTATION"),
-                Body = () => Loc.T("Les Éclats achètent ici des bonus permanents."),
+                Body = () => Loc.T("Ici, vous pouvez acheter des bonus permanents avec vos Éclats."),
                 NextLabel = () => Loc.T("Compris"),
                 ShowSkip = false,
                 Panel = () => _menu.ReputationPanelObject,
@@ -334,17 +334,16 @@ public class MenuTutorial : MonoBehaviour
     // ---- bouton « ? » (revoir le didacticiel) ---------------------------------------------------------------------------
     private void BuildHelpButton()
     {
-        RectTransform grimoire = Find("MenuPanel/Grimoire/GrimoireButton");   // l'icône du livre, en bas à gauche
+        // CHANGÉ (2026-11-22) - le bouton Grimoire est parti en haut à droite (grand bouton illustré) : le « ? » reste en bas à
+        // gauche, seul, à sa taille d'avant (56 px, marge 14), en face du bouton œil.
+        RectTransform grimoire = Find("MenuPanel/Grimoire");
         if (grimoire == null) return;
         RectTransform rt = new GameObject("TutorialHelpButton", typeof(RectTransform)).GetComponent<RectTransform>();
-        rt.SetParent(grimoire.parent, false);
-        rt.anchorMin = grimoire.anchorMin;
-        rt.anchorMax = grimoire.anchorMax;
-        rt.pivot = grimoire.pivot;
-        float size = grimoire.rect.width;
+        rt.SetParent(grimoire, false);
+        rt.anchorMin = rt.anchorMax = rt.pivot = Vector2.zero;
+        const float size = 56f;
         rt.sizeDelta = new Vector2(size, size);
-        rt.localScale = grimoire.localScale;
-        rt.anchoredPosition = grimoire.anchoredPosition + new Vector2(size + 16f, 0f);
+        rt.anchoredPosition = new Vector2(14f, 14f);
 
         Image ring = rt.gameObject.AddComponent<Image>();
         ring.sprite = HudSprites.Disc;

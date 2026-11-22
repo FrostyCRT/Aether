@@ -115,8 +115,8 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Orbital:
                 return nextLevel == 1
-                    ? Loc.T("Débloque 2 orbitaux tournants qui frappent au contact")
-                    : Loc.T("+1 orbital supplémentaire");
+                    ? Loc.T("Débloque 2 pierres runiques qui tournent et frappent au contact")
+                    : Loc.T("+1 pierre runique supplémentaire");
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
@@ -137,7 +137,7 @@ public class UpgradeData : ScriptableObject
             case UpgradeType.FireRate:
                 // CORRIGÉ (2026-10-25) - "toutes tes armes" était faux : seules les armes qui TIRENT ont une cadence (tir de
                 // base, Boule de feu, Couteaux, Foudre, Lames Ricochet - voir Apply plus bas), pas l'Aura, les Orbitaux, etc.
-                return Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(value));
+                return Loc.F("+{0}% de cadence sur tous tes sorts de tir", PercentOf(value));
 
             // MODIFIÉ (2026-10-27, retour utilisateur : "la compétence de soin devrait augmenter la santé maximum [...]
             // on pourrait soigner, et augmenter la vie max de quelques pourcentage, genre 25%") - voir Apply.
@@ -193,7 +193,7 @@ public class UpgradeData : ScriptableObject
     private string FormatFireballDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque Boule de feu : équipe l'arme exclusive d'Aether");
+            return Loc.T("Débloque Boule de feu : équipe le sort exclusif d'Aether");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
@@ -210,7 +210,7 @@ public class UpgradeData : ScriptableObject
     private string FormatAuraDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque l'Aura : équipe l'arme exclusive de Kael");
+            return Loc.T("Débloque l'Aura : équipe le sort exclusif de Kael");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
@@ -253,7 +253,7 @@ public class UpgradeData : ScriptableObject
     private string FormatKnivesDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque la Salve de Couteaux : équipe l'arme exclusive de Lyra");
+            return Loc.T("Débloque la Salve de Couteaux : équipe le sort exclusif de Lyra");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
@@ -310,7 +310,7 @@ public class UpgradeData : ScriptableObject
             case UpgradeType.Damage:
                 return levels != null ? Loc.F("+{0}% de dégâts sur toutes tes attaques", PercentOf(levels.DamageBonusTotal)) : Description;
             case UpgradeType.FireRate:
-                return levels != null ? Loc.F("+{0}% de cadence sur toutes tes armes de tir", PercentOf(levels.FireRateBonusTotal)) : Description;
+                return levels != null ? Loc.F("+{0}% de cadence sur tous tes sorts de tir", PercentOf(levels.FireRateBonusTotal)) : Description;
             case UpgradeType.BouncingOrb:
                 {
                     WeaponBouncingOrb orb = player != null ? player.GetComponent<WeaponBouncingOrb>() : null;
@@ -324,7 +324,7 @@ public class UpgradeData : ScriptableObject
                 {
                     WeaponOrbital orbital = player != null ? player.GetComponent<WeaponOrbital>() : null;
                     if (orbital == null) return Description;
-                    const string key = "{0} éclats tournent autour de toi et frappent les ennemis au contact";
+                    const string key = "{0} pierres runiques tournent autour de toi et frappent les ennemis au contact";
                     return Loc.Plural(orbital.OrbitalCount, key, key);
                 }
             case UpgradeType.MudPuddle:

@@ -74,8 +74,8 @@
 68| Escolhe a 1ª carta ao subir de nível
 69| Escolhe a 2ª carta ao subir de nível
 70| Escolhe a 3ª carta ao subir de nível
-71| Diminui o raio de giro dos seus orbitais
-72| Aumenta o raio de giro dos seus orbitais
+71| Diminui o raio de giro das suas pedras rúnicas
+72| Aumenta o raio de giro das suas pedras rúnicas
 73| Abre / fecha o menu de pausa
 
 ## Paramètres : page
@@ -160,7 +160,7 @@
 152| Movimento
 153| Combate
 154| Subida de nível
-155| Armas
+155| Feitiços
 156| Sistema
 157| Zona morta do analógico
 158| Ignora pequenos movimentos do analógico. Aumente se o personagem se mexer sozinho.
@@ -301,7 +301,7 @@
 285| +3% / s, máx. +30%
 286| +5% / s, máx. +50%
 287| Cadência
-288| Aumenta a cadência de todas as suas armas de disparo.
+288| Aumenta a cadência de todos os seus feitiços de disparo.
 289| Fragmentação
 290| Um a cada 4 projéteis do seu ataque básico explode no impacto e causa todo o seu dano aos inimigos próximos.
 291| Dano de Cristal
@@ -389,7 +389,7 @@
 369| Bola de Fogo
 370| Lança uma bola de fogo que explode no grupo de inimigos mais denso
 371| Cadência +
-372| +20% de cadência em todas as suas armas de disparo
+372| +20% de cadência em todos os seus feitiços de disparo
 373| Cura
 374| Restaura 50% dos seus PV máximos
 375| Facas
@@ -399,25 +399,25 @@
 379| Lama
 380| Cria poças de lama que deixam os inimigos lentos e os ferem
 381| Orbitais
-382| Fragmentos giram ao seu redor e atingem os inimigos ao contato
-383| Desbloqueia 2 orbitais giratórios que atingem ao contato
-384| +1 orbital extra
+382| Pedras rúnicas giram ao seu redor e atingem os inimigos ao contato
+383| Desbloqueia 2 pedras rúnicas giratórias que atingem ao contato
+384| +1 pedra rúnica extra
 385| Desbloqueia o raio em cadeia: atinge 3 inimigos
 386| +1 salto de raio extra
 387| Desbloqueia 3 poças de lama que desaceleram e ferem
 388| +1 poça de lama extra
 389| +{0}% de dano em todos os seus ataques
-390| +{0}% de cadência em todas as suas armas de disparo
+390| +{0}% de cadência em todos os seus feitiços de disparo
 391| Aumenta sua vida máxima em {0}% e restaura {1}%
 392| Desbloqueia o Tiro Duplo: seu ataque básico dispara duas vezes
-393| Desbloqueia a Bola de Fogo: equipa a arma exclusiva de Aether
+393| Desbloqueia a Bola de Fogo: equipa o feitiço exclusivo de Aether
 394| O raio de explosão fica duas vezes maior
 395| +{0}% de dano
 396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo
-397| Desbloqueia a Aura: equipa a arma exclusiva de Kael
+397| Desbloqueia a Aura: equipa o feitiço exclusivo de Kael
 398| +{0}% de raio
 399| Lentidão aumentada para {0}%
-400| Desbloqueia a Rajada de Facas: equipa a arma exclusiva de Lyra
+400| Desbloqueia a Rajada de Facas: equipa o feitiço exclusivo de Lyra
 401| Adiciona mais uma faca à rajada
 402| Perfura mais {0} inimigos
 403| Perfura mais {0} inimigo
@@ -562,7 +562,7 @@
 528| MELHOR TEMPO
 529| PARTIDAS
 530| VITÓRIAS
-531| ARMA EXCLUSIVA
+531| FEITIÇO EXCLUSIVO
 532| HISTÓRICO
 533| NÍVEIS   A / B / C
 534| BÔNUS PERMANENTES
@@ -636,7 +636,7 @@
 600| Pressione qualquer tecla para pular
 601| Lança um orbe que quica sem parar pela arena e fere todos os inimigos atingidos
 602| Lança {0} orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
-603| {0} fragmentos giram ao seu redor e atingem os inimigos ao contato
+603| {0} pedras rúnicas giram ao seu redor e atingem os inimigos ao contato
 604| Cria {0} poças de lama que deixam os inimigos lentos e os ferem
 605| Lança rajadas de {0} facas que atravessam os inimigos e depois voltam
 606| Descarga elétrica que salta para {0} inimigos próximos
@@ -757,7 +757,7 @@
 716| Entendi
 717| MOVIMENTO
 718| NOVO NÍVEL
-719| Escolha uma carta para obter uma nova arma ou melhorar uma existente.
+719| Escolha uma carta: um novo feitiço, a melhoria de um feitiço ou um bônus como dano, cadência ou cura.
 720| CHEFE
 721| VIDA
 722| Sua saúde. Se chegar a 0, a partida termina.
@@ -773,15 +773,15 @@
 732| Cada herói tem o seu próprio estilo de combate e árvore de habilidades. Selecione Aether para começar.
 733| Cada herói tem o seu próprio estilo de combate e árvore de habilidades. Os outros heróis são desbloqueados com o progresso.
 734| Escolha um modo de jogo e uma dificuldade e comece com Jogar. Dificuldades maiores são desbloqueadas com o progresso.
-735| O Grimório lista as suas descobertas e recompensa a primeira de cada uma.
-736| Os fragmentos compram aqui bônus permanentes.
+735| O Grimório registra as suas descobertas. Cada nova descoberta rende uma recompensa.
+736| Aqui você pode comprar bônus permanentes com seus fragmentos.
 737| TIRO AUTOMÁTICO
 738| Um inimigo se aproxima. Seu herói mira e atira automaticamente: concentre-se em se mover para manter a distância.
 739| Inimigos derrotados soltam gemas de experiência. Passe por cima delas para pegá-las.
 740| Derrote inimigos e pegue as gemas deles até encher a barra de experiência.
 741| Vire-se para o projétil e faça um dash através dele ({0}). O dash deixa você invencível: o projétil é absorvido, aciona uma Nova que fere os inimigos próximos e carrega o Cristal da suprema.
 742| DASH OFENSIVO
-743| O dash não é apenas uma forma de se mover: é uma arma. Absorver um projétil causa dano com a Nova e carrega a suprema, mas um dash mal cronometrado deixa você exposto.
+743| O dash não é apenas uma forma de se mover: também é um ataque. Absorver um projétil causa dano com a Nova e carrega a suprema, mas um dash mal cronometrado deixa você exposto.
 744| ABSORÇÃO
 745| Absorva os projéteis dos goblins com o dash para encher o Cristal da suprema.
 746| O Cristal está carregado: {0} aciona a Suprema. Ela fere todos os inimigos, os deixa mais lentos e atrai todas as gemas do chão.
@@ -798,3 +798,25 @@
 757| Eclipse
 758| +{0} fragmentos ganhos
 759| Compradas com ouro
+
+## Gobelin doré, Tempête de cristaux (2026-11-22)
+760| GOBLIN DOURADO!
+761| Pegue-o antes que ele fuja!
+762| TARDE DEMAIS!
+763| O goblin dourado fugiu.
+764| GOBLIN DOURADO CAPTURADO!
+765| Goblin dourado capturado! {0}
+766| Goblin dourado
+767| TEMPESTADE DE CRISTAIS
+768| Desvie dos selos no chão e atraia os inimigos para eles!
+769| A TEMPESTADE SE ACALMA
+770| Inimigos esmagados: {0}
+771| Coletar
+772| Recompensa
+773| Pronta para coletar
+774| Coletada
+775| A descobrir
+776| Escolha esta carta uma vez para descobri-la
+777| Obtenha esta fusão uma vez para descobri-la
+778| Derrote este chefe uma vez para descobri-lo
+779| Aparece aos {0} no modo Clássico

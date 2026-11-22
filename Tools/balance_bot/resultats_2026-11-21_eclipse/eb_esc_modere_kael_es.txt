@@ -1,0 +1,11 @@
+DEBUT esc_modere_kael_es perso=Player_Kael(Clone) palier=Moderate mode=Skirmish langue=Spanish pvmax=2600
+ECLAT apparu chrono=125.2 pos=(-24.5,-37.6) joueur=(3.8,-59.3) distance=35.6m margeMur=999.0 niv=9 vivants=109 pv=53 %
+BUILD_A_L_ECLAT • Aura x3 | • Orbe rebotador x3 | • Rayo en cadena x2
+ECLAT ramasse chrono=131.8 trajet=6.5s de jeu, PV perdus en route=250 (10 % des PV max) ; NUIT commence
+NUIT finie chrono=151.8 duree=20.2s de jeu, boss present=False, eclatsNuit=30
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.00
+AVANT  : duree=20s kills=114 (342/min) degatsSubis=375 (1125/min) xp=464 (1393/min) niveaux=0 vivantsMoy=81 proches6mMoy=3.1 morts=0 or=255 fpsMoy=28 fpsMin=27
+NUIT   : duree=14s kills=181 (773/min) degatsSubis=1215 (5188/min) xp=1139 (4864/min) niveaux=1 vivantsMoy=124 proches6mMoy=9.6 morts=0 or=58 fpsMoy=25 fpsMin=8  (hors fondus de 3 s)
+APRES  : duree=20s kills=149 (447/min) degatsSubis=2475 (7425/min) xp=1966 (5898/min) niveaux=1 vivantsMoy=99 proches6mMoy=15.8 morts=0 or=38 fpsMoy=24 fpsMin=8
+FIN VICTOIRE chrono=300 niv=25 kills=1781 boss=3 morts=49 reel=497s NOTES MORT@41 MORT@57 MORT@81 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@90 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@180 MORT@204 MORT@229 MORT@263 MORT@282 MORT@291 MORT@297 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 MORT@300 
+BUILD • Aura x4 | • Orbe rebotador x4 | • Rayo en cadena x4 | • Curación x3 | • Daño + x4 | • Orbitales x4 | • Cadencia +

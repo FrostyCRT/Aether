@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
     // UpdateCursor ci-dessous - pas de panneau à cliquer pendant cette cinématique).
     private bool _introLockActive = false;
 
+    public bool IntroLockActive => _introLockActive;   // AJOUTÉ (2026-11-21) : lu par WaveManager (arrivée des titans)
+
     public void SetIntroLock(bool active)
     {
         _introLockActive = active;

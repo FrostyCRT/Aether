@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 // FUSION (2026-09-27) : Boue + Foudre, toutes les deux au palier max → cette arme les remplace [universelle].
@@ -312,6 +312,10 @@ public class WeaponFusionCursedSwamp : MonoBehaviour
     // Même logique que WeaponLightningChain.FindNearestEnemy.
     private Transform FindNearestEnemy()
     {
+        // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _activeDetectionRange);
+        if (golden != null) return golden;
+
         int count = Physics.OverlapSphereNonAlloc(transform.position, _activeDetectionRange, _buffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _activeDetectionRange * _activeDetectionRange;

@@ -106,7 +106,7 @@ public class ImpactSparkRunner : MonoBehaviour
         float t = 0f;
         while (t < Duration)
         {
-            t += Time.deltaTime;
+            t += BossIntro.DeltaTime;   // BossIntro.DeltaTime (2026-11-21) : temps réel pendant le gel de l'arrivée d'un boss, sinon Time.deltaTime.
             float p = Mathf.Clamp01(t / Duration);
             float eased = FXSprites.EaseOutCubic(p);
             for (int i = 0; i < _sparks.Length; i++)

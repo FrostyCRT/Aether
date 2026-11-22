@@ -1,0 +1,11 @@
+DEBUT classic_modere_aether_fr perso=Player_Aether(Clone) palier=Moderate mode=Classic langue=French pvmax=2000 soleil=1.00 ambiance=1.00 reflets=1.00
+ECLAT apparu chrono=450.1 pos=(6.4,-34.7) joueur=(8.4,5.6) distance=40.3m margeMur=999.0 dansLaCarte=True niv=14 vivants=50
+BUILD_A_L_ECLAT • Boule de Feu x4 | • Boue x2 | • Dégâts + x2 | • Chaîne de Foudre x4 | • Orbitaux
+ECLAT ramasse chrono=458.7 trajet=8.7s de jeu, PV perdus en route=444 (22 % des PV max) ; NUIT commence
+NUIT finie chrono=503.7 duree=45.0s de jeu, boss present=False, eclatsNuit=69
+LUMIERE apres nuit : soleil=1.00 (debut 1.00) ambiance=1.00 (1.00) reflets=1.00 (1.00) => OK ; voile=False lueurJoueur=False fleche=False compteur=False
+AVANT  : duree=45s kills=398 (531/min) degatsSubis=825 (1100/min) xp=6217 (8290/min) niveaux=1 vivantsMoy=51 proches6mMoy=2.9 morts=0 or=436 fpsMoy=199 fpsMin=138
+NUIT   : duree=39s kills=495 (762/min) degatsSubis=3739 (5752/min) xp=13056 (20086/min) niveaux=1 vivantsMoy=70 proches6mMoy=3.8 morts=2 or=466 fpsMoy=177 fpsMin=113  (hors fondus de 3 s)
+APRES  : duree=45s kills=400 (533/min) degatsSubis=7157 (9543/min) xp=11137 (14849/min) niveaux=1 vivantsMoy=60 proches6mMoy=4.1 morts=3 or=451 fpsMoy=180 fpsMin=107
+FIN ARRET_APRES_BOSS2 chrono=600 niv=17 kills=3475 boss=1 morts=20 eclatsNuit=69 reel=342s NOTES MORT@71 MORT@125 MORT@142 MORT@164 MORT@252 MORT@300 MORT@300 MORT@340 MORT@451 carte@471(nuit) MORT@493 MORT@504 MORT@512 MORT@528 MORT@535 MORT@576 MORT@599 MORT@600 MORT@600 MORT@600 
+BUILD • Boule de Feu x4 | • Boue x3 | • Dégâts + x2 | • Chaîne de Foudre x4 | • Orbitaux x3

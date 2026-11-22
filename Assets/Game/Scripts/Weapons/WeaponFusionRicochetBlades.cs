@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 // FUSION (2026-09-27) : Couteaux + Orbe rebondissant, toutes les deux au palier max → cette arme les remplace [Lyra].
@@ -355,6 +355,10 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
 
     private Transform FindNearestEnemy()
     {
+        // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _detectionRange);
+        if (golden != null) return golden;
+
         int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
         float minDistSqr = _detectionRange * _detectionRange;

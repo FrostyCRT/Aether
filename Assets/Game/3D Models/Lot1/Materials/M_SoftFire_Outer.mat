@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_SoftFire_Outer
+  m_Shader: {fileID: 4800000, guid: ec046466bd261994dad9e8de0ab915c5, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3002
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _CenterSeeThrough: 1
+    - _Cut: 0.22
+    - _FlowSpeed: 1.8
+    - _Glow: 1
+    - _HeatBase: 0.72
+    - _NoiseAmp: 2.3
+    - _NoiseScale: 3.4
+    - _Opacity: 0.8
+    - _RimFade: 1.2
+    - _Soft: 0.13
+    - _TailFade: 0.95
+    - _TailLength: 2.15
+    - _Warp: 0.9
+    - _Wobble: 0.06
+    m_Colors:
+    - _OrangeColor: {r: 1, g: 0.45999992, b: 0.079999976, a: 1}
+    - _RedColor: {r: 0.72, g: 0.09999997, b: 0.03, a: 1}
+    - _WhiteColor: {r: 1, g: 0.96, b: 0.8399999, a: 1}
+    - _YellowColor: {r: 1, g: 0.8, b: 0.31999996, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

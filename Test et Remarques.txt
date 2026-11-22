@@ -8,4 +8,4 @@ https://github.com/Panniantong/Agent-Reach.git
 
 Mode coop ? deux joueurs dans la partie.
 
-l'encadrement gris/blanc qui vient sur le game over panel et Victory panel vient en retard, il faut qu'il soit là pile en même temps que le panel.
+revoir le nom 'orbitaux'

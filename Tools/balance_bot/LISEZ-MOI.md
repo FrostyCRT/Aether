@@ -1,4 +1,12 @@
-# Bot d'équilibrage des branches (BranchBot)
+# Bots d'équilibrage
+
+> **`EclipseBot.cs`** (2026-11-21) : vérification de l'Éclipse en vraie partie (va chercher l'éclat, mesure avant / nuit / après, une langue par partie, captures). Mode d'emploi en tête du fichier ; résultats dans `resultats_2026-11-21_eclipse/`.
+
+> **À utiliser en priorité : `RealBot.cs`** (2026-11-15/16, « vrai joueur ») : parties Classique de 15 min, arbre et Réputation achetés selon le palier, cartes choisies par score, pilotage sur 16 directions (danger de la horde et du boss, murs), fuite sous 40 % de PV, plan de parties configurable (`bot.plan = {"violent_lyra", "violent_aether@7", …}`, `@n` = distance de fuite du boss). Même lancement que ci-dessous (envoyer tout le fichier à `Unity_RunCommand` en Play depuis MainMenu, régler `dir`). Journaux `rb_<config>.txt`, `rb_FIN.txt` à la fin. Détail et résultats : `NOTES.md`, journal des 2026-11-15 (suite 4) et 2026-11-16.
+>
+> `BranchBot.cs` ci-dessous est l'ANCIEN bot (2026-11-11) : il joue mal (collé aux murs, ne fuit pas) et a faussé la comparaison Lyra / Aether.
+
+## Ancien bot : comparaison des branches (BranchBot)
 
 Bot utilisé le 2026-11-11 pour comparer les 3 personnages, sans arbre puis avec leur branche au maximum (résultats dans `resultats_2026-11-11/`, synthèse dans `NOTES.md`, section « Étape 5 »).
 

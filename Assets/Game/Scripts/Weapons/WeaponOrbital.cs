@@ -121,6 +121,7 @@ public class WeaponOrbital : MonoBehaviour
                 {
                     _orbitalScriptsCache.Add(projScript);
                     projScript.SetDamage(_currentDamage);
+                    projScript.SetVariant(i);   // (2026-11-22) une rune différente par place : jamais deux pierres identiques
                 }
             }
         }

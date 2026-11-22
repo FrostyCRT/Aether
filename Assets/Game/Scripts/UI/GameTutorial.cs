@@ -153,8 +153,18 @@ public class GameTutorial : MonoBehaviour
             Title = () => Loc.T("DÉPLACEMENT"),
             Body = () => Loc.F("Déplacez-vous avec {0}.", Tutorial.MoveKeys()),
         });
-        Vector3 start = _player.transform.position;
-        while ((_player.transform.position - start).sqrMagnitude < 36f) yield return null;
+        // CORRIGÉ (2026-11-22, retour utilisateur : « des fois ça paraît très long alors même que je fais des mouvements ») -
+        // on comptait la distance À VOL D'OISEAU depuis le départ (6 m) : un aller-retour ou un petit cercle ne la faisait
+        // presque pas avancer. On compte maintenant le chemin parcouru, quel que soit le sens : ~1,4 s de marche, toujours.
+        Vector3 last = _player.transform.position;
+        float walked = 0f;
+        while (walked < 7f)
+        {
+            Vector3 p = _player.transform.position;
+            walked += Flat(p, last);
+            last = p;
+            yield return null;
+        }
         yield return new WaitForSeconds(0.4f);
 
         // 2. visite du HUD ----------------------------------------------------------------------------------------------------
@@ -164,12 +174,21 @@ public class GameTutorial : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         // 3. le premier loup ------------------------------------------------------------------------------------------------
-        WeaponBase.AutoFireDisabled = false;   // le tir automatique est expliqué avec le premier loup
+        // le tir automatique est expliqué avec le premier loup ; (2026-11-22, retour utilisateur) il ne démarre qu'une seconde
+        // après l'apparition du loup : le joueur le voit arriver avant que le héros ne tire
         EnemyBase wolf = SpawnWolf(Side(1f), 13f, 0.7f, 0.55f);
+        float fireAt = Time.time + 1f;
+        if (wolf == null) WeaponBase.AutoFireDisabled = false;
         if (wolf != null)
         {
             _pointerSource = () => Single(wolf != null && wolf.gameObject.activeInHierarchy ? wolf.transform.position + Vector3.up * 1.2f : (Vector3?)null);
-            while (wolf != null && wolf.gameObject.activeInHierarchy && Flat(wolf.transform.position, _player.transform.position) > 10.5f) yield return null;
+            while (wolf != null && wolf.gameObject.activeInHierarchy && Flat(wolf.transform.position, _player.transform.position) > 10.5f)
+            {
+                if (Time.time >= fireAt) WeaponBase.AutoFireDisabled = false;
+                yield return null;
+            }
+            while (Time.time < fireAt && wolf != null && wolf.gameObject.activeInHierarchy) yield return null;
+            WeaponBase.AutoFireDisabled = false;
             _pointerSource = null;
             if (wolf != null && wolf.gameObject.activeInHierarchy)
                 yield return Modal(new TutorialStep
@@ -230,6 +249,10 @@ public class GameTutorial : MonoBehaviour
         DisableWeapons();   // plus de tir ni d'armes jusqu'à la fin : le but n'est plus de tirer
         // 7. le gobelin immobile : le dash ------------------------------------------------------------------------------------------
         EnemyBase goblin = SpawnGoblin(Side(1f), 7f, true);
+        // AJOUTÉ (2026-11-22, retour utilisateur) - mur invisible : pendant toute cette étape le joueur ne peut marcher que
+        // dans un petit cercle autour de sa place (il peut toujours s'orienter et dasher). Il ne peut donc ni aller se
+        // prendre le projectile figé, ni sortir de l'écran.
+        if (_pc != null) { _pc.WalkAnchor = _player.transform.position; _pc.WalkRadius = 1.2f; }
         bool absorbed = false;
         int chargesBefore = TotalCharges();
         while (!absorbed)
@@ -260,11 +283,12 @@ public class GameTutorial : MonoBehaviour
             if (_pc != null) _pc.DashFilter = null;
             absorbed = TotalCharges() > chargesBefore;
         }
+        if (_pc != null) _pc.WalkAnchor = null;
         yield return new WaitForSeconds(0.6f);
         yield return Modal(new TutorialStep
         {
             Title = () => Loc.T("DASH OFFENSIF"),
-            Body = () => Loc.T("Le dash n'est pas qu'un déplacement : c'est une arme. Absorber un projectile inflige des dégâts avec la Nova et charge l'ultime, mais un dash mal chronométré vous laisse exposé."),
+            Body = () => Loc.T("Le dash n'est pas qu'un déplacement : c'est aussi une attaque. Absorber un projectile inflige des dégâts avec la Nova et charge l'ultime, mais un dash mal chronométré vous laisse exposé."),
         });
         ClearEnemies(GoblinTag);
         ClearProjectiles();
@@ -427,7 +451,7 @@ public class GameTutorial : MonoBehaviour
         TutorialStep s = new TutorialStep
         {
             Title = () => "",   // le titre de l'écran (« Niveau supérieur ! ») suffit : une seule ligne, tout en bas, les cartes restent entières
-            Body = () => Loc.T("Choisissez une carte pour obtenir une nouvelle arme ou améliorer une arme existante."),
+            Body = () => Loc.T("Choisissez une carte : un nouveau sort, l'amélioration d'un sort, ou un bonus comme des dégâts, de la cadence ou du soin."),
             Dim = false,
             BlockInput = false,
             RequireAction = true,

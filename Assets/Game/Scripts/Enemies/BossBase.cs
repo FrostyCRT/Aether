@@ -50,6 +50,13 @@ public class BossBase : MonoBehaviour
     // si tu veux garder la musique normale de la scene pour ce boss.
     [Header("Musique")]
     [SerializeField] protected AudioClip _bossMusicClip;
+    public AudioClip BossMusicClip => _bossMusicClip;
+
+    // AJOUTÉ (2026-11-21, arrivée des boss - BossIntro) - cri joué au moment où le boss tombe, pendant le gel de l'arrivée.
+    // Vide = pas de cri (en attente des fichiers audio de l'utilisateur).
+    [Tooltip("Cri du boss à son arrivée (joué pendant le gel de 1,5 s). Vide = pas de cri.")]
+    [SerializeField] protected AudioClip _roarClip;
+    public AudioClip RoarClip => _roarClip;
 
     [Header("Visuel Charge")]
     [SerializeField] protected Renderer _bodyRenderer;
@@ -274,7 +281,9 @@ public class BossBase : MonoBehaviour
 
             // AJOUTE - bascule sur la musique de ce boss, seulement pour un vrai
             // boss (pas une invocation) et seulement si un clip est assigne.
-            if (MusicStarter.Instance != null && _bossMusicClip != null)
+            // MODIFIÉ (2026-11-21) - pendant l'arrivée mise en scène (BossIntro), c'est WaveManager qui lance la musique du boss
+            // d'un coup à la fin du gel.
+            if (MusicStarter.Instance != null && _bossMusicClip != null && !BossIntro.Active)
                 MusicStarter.Instance.SwitchTo(_bossMusicClip);
 
             // AJOUTE - demarre le chrono du defi "Eclair" (vaincre un boss en

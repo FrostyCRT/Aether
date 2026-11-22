@@ -189,6 +189,14 @@ public class EnemyBase : MonoBehaviour
 
     public float CurrentHealth => _currentHealth;
 
+    // AJOUTÉ (2026-11-22, événement du Gobelin doré - voir GoldenGoblinEvent) - un gobelin devient doré pendant 30 s : il fuit au
+    // lieu de tirer (EnemyShooter), n'est jamais recyclé par la laisse des cartes ouvertes, et sa mort verse la prime. Remis à
+    // faux à chaque retour au pool (OnDisable), donc jamais hérité par la vie suivante.
+    public bool IsGoldenRunner { get; private set; }
+    public void SetGoldenRunner(bool on) => IsGoldenRunner = on;
+    // PV courants multipliés (x15 en devenant doré, /15 en redevenant normal : la part de vie restante est gardée).
+    public void ScaleCurrentHealth(float factor) { if (factor > 0f) _currentHealth *= factor; }
+
     // AJOUTE (2026-10-11, retour utilisateur : "les araignées sautent sur le Lyra même si elle est invisible en
     // lâchant son clone") - _currentTarget est déjà redirigé automatiquement vers PlayerController.ActivePhantomClone
     // tant qu'il existe (voir Update() plus bas) ; exposé en lecture pour qu'un ennemi avec sa PROPRE logique de
@@ -374,6 +382,13 @@ public class EnemyBase : MonoBehaviour
 
         UnregisterActive();
 
+        // Gobelin doré retiré sans être tué (nettoyage avant un boss, fin de partie) : l'événement le perd de vue.
+        if (IsGoldenRunner)
+        {
+            IsGoldenRunner = false;
+            GoldenGoblinEvent.NotifyLost(this);
+        }
+
         // AJOUTE - coupe la coroutine de brulure si l'ennemi est desactive/retourne
         // au pool en pleine brulure (ex: tue par une autre source de degats pendant
         // qu'il brule), pour eviter une coroutine qui tourne dans le vide.
@@ -492,7 +507,7 @@ public class EnemyBase : MonoBehaviour
             _tutorialAnimPaused = false;
         }
 
-        if (_playerTransform != null && (!MapBoundaryUtils.HasBoundX || !MapBoundaryUtils.HasBoundZ))
+        if (_playerTransform != null && !IsGoldenRunner && (!MapBoundaryUtils.HasBoundX || !MapBoundaryUtils.HasBoundZ))
         {
             Vector3 toPlayerFlat = transform.position - _playerTransform.position;
             toPlayerFlat.y = 0f;
@@ -918,6 +933,12 @@ public class EnemyBase : MonoBehaviour
                 _playerTransform.TryGetComponent(out PlayerController pc);
                 if (pc != null) pc.ResetDashCooldown();
             }
+        }
+
+        if (IsGoldenRunner)
+        {
+            IsGoldenRunner = false;
+            GoldenGoblinEvent.NotifyKilled(this);
         }
 
         ObjectPool.Instance.ReturnToPool(_poolTag, gameObject);

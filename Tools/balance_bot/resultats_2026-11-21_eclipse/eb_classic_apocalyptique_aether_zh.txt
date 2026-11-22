@@ -1,0 +1,11 @@
+DEBUT classic_apocalyptique_aether_zh perso=Player_Aether(Clone) palier=Apocalyptic mode=Classic langue=ChineseSimplified pvmax=2000
+ECLAT apparu chrono=450.1 pos=(16.0,0.7) joueur=(-12.7,-18.1) distance=34.3m margeMur=6.0 niv=15 vivants=61 pv=59 %
+BUILD_A_L_ECLAT • 火球 x4 | • 连锁闪电 x3 | • 泥沼 x3 | • 伤害＋ | • 弹跳法球 | • 治疗 x2
+ECLAT ramasse chrono=466.4 trajet=16.4s de jeu, PV perdus en route=2074 (72 % des PV max) ; NUIT commence
+NUIT finie chrono=511.4 duree=45.1s de jeu, boss present=False, eclatsNuit=93
+LUMIERE apres nuit => OK ; voile=False lueurJoueur=False fleche=False compteur=False nuitActive=False multDegats=1.00
+AVANT  : duree=45s kills=516 (688/min) degatsSubis=5075 (6767/min) xp=7066 (9422/min) niveaux=0 vivantsMoy=62 proches6mMoy=4.8 morts=1 or=880 fpsMoy=27 fpsMin=25
+NUIT   : duree=39s kills=669 (1028/min) degatsSubis=1262 (1940/min) xp=8096 (12442/min) niveaux=0 vivantsMoy=84 proches6mMoy=4.1 morts=0 or=970 fpsMoy=26 fpsMin=8  (hors fondus de 3 s)
+APRES  : duree=45s kills=473 (631/min) degatsSubis=888 (1183/min) xp=13327 (17769/min) niveaux=1 vivantsMoy=57 proches6mMoy=2.5 morts=0 or=874 fpsMoy=27 fpsMin=24
+FIN ARRET_APRES_ECLIPSE chrono=561 niv=17 kills=4617 boss=1 morts=22 reel=314s NOTES MORT@23 MORT@28 MORT@59 MORT@96 MORT@117 MORT@193 MORT@206 MORT@219 MORT@235 MORT@258 MORT@274 MORT@294 MORT@300 MORT@300 MORT@300 MORT@300 MORT@326 MORT@352 MORT@375 MORT@392 MORT@441 
+BUILD • 火球 x4 | • 连锁闪电 x3 | • 泥沼 x3 | • 伤害＋ | • 弹跳法球 x2 | • 治疗 x3

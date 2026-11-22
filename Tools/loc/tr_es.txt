@@ -75,8 +75,8 @@
 68| Elige la 1.ª carta al subir de nivel
 69| Elige la 2.ª carta al subir de nivel
 70| Elige la 3.ª carta al subir de nivel
-71| Reduce el radio de giro de tus orbitales
-72| Aumenta el radio de giro de tus orbitales
+71| Reduce el radio de giro de tus piedras rúnicas
+72| Aumenta el radio de giro de tus piedras rúnicas
 73| Abre / cierra el menú de pausa
 
 ## Paramètres : page
@@ -161,7 +161,7 @@
 152| Movimiento
 153| Combate
 154| Subida de nivel
-155| Armas
+155| Hechizos
 156| Sistema
 157| Zona muerta del stick
 158| Ignora los movimientos pequeños del stick. Súbela si tu personaje se mueve solo.
@@ -302,7 +302,7 @@
 285| +3% / s, máx. +30%
 286| +5% / s, máx. +50%
 287| Cadencia
-288| Aumenta la cadencia de todas tus armas de disparo.
+288| Aumenta la cadencia de todos tus hechizos de disparo.
 289| Fragmentación
 290| Uno de cada 4 proyectiles de tu ataque básico explota al impactar e inflige todo su daño a los enemigos cercanos.
 291| Daño de cristal
@@ -390,7 +390,7 @@
 369| Bola de fuego
 370| Lanza una bola de fuego que explota sobre el grupo de enemigos más denso
 371| Cadencia +
-372| +20% de cadencia en todas tus armas de disparo
+372| +20% de cadencia en todos tus hechizos de disparo
 373| Curación
 374| Restaura el 50% de tus PV máximos
 375| Cuchillos
@@ -400,25 +400,25 @@
 379| Barro
 380| Crea charcos de barro que ralentizan y hieren a los enemigos que los pisan
 381| Orbitales
-382| Unos fragmentos giran a tu alrededor y golpean a los enemigos al contacto
-383| Desbloquea 2 orbitales giratorios que golpean al contacto
-384| +1 orbital adicional
+382| Unas piedras rúnicas giran a tu alrededor y golpean a los enemigos al contacto
+383| Desbloquea 2 piedras rúnicas giratorias que golpean al contacto
+384| +1 piedra rúnica adicional
 385| Desbloquea el rayo en cadena: golpea a 3 enemigos
 386| +1 salto de rayo adicional
 387| Desbloquea 3 charcos de barro que ralentizan y hieren
 388| +1 charco de barro adicional
 389| +{0}% de daño en todos tus ataques
-390| +{0}% de cadencia en todas tus armas de disparo
+390| +{0}% de cadencia en todos tus hechizos de disparo
 391| Aumenta tu vida máxima un {0}% y restaura un {1}%
 392| Desbloquea Disparo doble: tu ataque básico dispara dos veces
-393| Desbloquea Bola de fuego: equipa el arma exclusiva de Aether
+393| Desbloquea Bola de fuego: equipa el hechizo exclusivo de Aether
 394| El radio de explosión es el doble de grande
 395| +{0}% de daño
 396| Desbloquea Quemadura: los enemigos alcanzados siguen ardiendo un tiempo
-397| Desbloquea el Aura: equipa el arma exclusiva de Kael
+397| Desbloquea el Aura: equipa el hechizo exclusivo de Kael
 398| +{0}% de radio
 399| Ralentización aumentada al {0}%
-400| Desbloquea la Ráfaga de cuchillos: equipa el arma exclusiva de Lyra
+400| Desbloquea la Ráfaga de cuchillos: equipa el hechizo exclusivo de Lyra
 401| Añade un cuchillo más a la ráfaga
 402| Perfora a {0} enemigos más
 403| Perfora a {0} enemigo más
@@ -563,7 +563,7 @@
 528| MEJOR TIEMPO
 529| PARTIDAS
 530| VICTORIAS
-531| ARMA EXCLUSIVA
+531| HECHIZO EXCLUSIVO
 532| HISTORIAL
 533| NIVELES   A / B / C
 534| MEJORAS PERMANENTES
@@ -637,7 +637,7 @@
 600| Pulsa cualquier tecla para saltar
 601| Lanza un orbe que rebota sin parar por la arena y hiere a todos los enemigos que toca
 602| Lanza {0} orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan
-603| {0} fragmentos giran a tu alrededor y golpean a los enemigos al contacto
+603| {0} piedras rúnicas giran a tu alrededor y golpean a los enemigos al contacto
 604| Crea {0} charcos de barro que ralentizan y hieren a los enemigos que los pisan
 605| Lanza ráfagas de {0} cuchillos que atraviesan a los enemigos y luego regresan
 606| Descarga eléctrica que salta a {0} enemigos cercanos
@@ -758,7 +758,7 @@
 716| Entendido
 717| MOVIMIENTO
 718| SUBIDA DE NIVEL
-719| Elige una carta para obtener un arma nueva o mejorar una existente.
+719| Elige una carta: un hechizo nuevo, la mejora de un hechizo o un bonus como daño, cadencia o curación.
 720| JEFE
 721| VIDA
 722| Tu salud. Si baja a 0, la partida termina.
@@ -774,15 +774,15 @@
 732| Cada héroe tiene su propio estilo de combate y su árbol de habilidades. Selecciona a Aether para empezar.
 733| Cada héroe tiene su propio estilo de combate y su árbol de habilidades. Los demás héroes se desbloquean al progresar.
 734| Elige un modo de juego y una dificultad, y empieza con Jugar. Las dificultades superiores se desbloquean al progresar.
-735| El Grimorio enumera tus descubrimientos y recompensa el primero de cada uno.
-736| Los fragmentos compran aquí bonificaciones permanentes.
+735| El Grimorio registra tus descubrimientos. Cada nuevo descubrimiento te da una recompensa.
+736| Aquí puedes comprar bonificaciones permanentes con tus fragmentos.
 737| DISPARO AUTOMÁTICO
 738| Se acerca un enemigo. Tu héroe apunta y dispara automáticamente: concéntrate en moverte para mantener la distancia.
 739| Los enemigos derrotados sueltan gemas de experiencia. Pasa por encima para recogerlas.
 740| Derrota enemigos y recoge sus gemas hasta llenar la barra de experiencia.
 741| Oriéntate hacia el proyectil y haz un dash a través de él ({0}). El dash te vuelve invencible: el proyectil es absorbido, desencadena una Nova que daña a los enemigos cercanos y carga el Cristal de la definitiva.
 742| DASH OFENSIVO
-743| El dash no es solo una forma de moverse: es un arma. Absorber un proyectil inflige daño con la Nova y carga la definitiva, pero un dash mal sincronizado te deja expuesto.
+743| El dash no es solo una forma de moverse: también es un ataque. Absorber un proyectil inflige daño con la Nova y carga la definitiva, pero un dash mal sincronizado te deja expuesto.
 744| ABSORCIÓN
 745| Absorbe los proyectiles de los goblins con el dash para llenar el Cristal de la definitiva.
 746| El Cristal está cargado: {0} activa la Definitiva. Daña a todos los enemigos, los ralentiza y atrae todas las gemas del suelo.
@@ -799,3 +799,25 @@
 757| Eclipse
 758| +{0} fragmentos ganados
 759| Se compran con oro
+
+## Gobelin doré, Tempête de cristaux (2026-11-22)
+760| ¡GOBLIN DORADO!
+761| ¡Atrápalo antes de que escape!
+762| ¡DEMASIADO TARDE!
+763| El goblin dorado se ha escapado.
+764| ¡GOBLIN DORADO ATRAPADO!
+765| ¡Goblin dorado atrapado! {0}
+766| Goblin dorado
+767| TORMENTA DE CRISTALES
+768| ¡Esquiva los sellos del suelo y atrae a los enemigos hacia ellos!
+769| LA TORMENTA AMAINA
+770| Enemigos aplastados: {0}
+771| Recoger
+772| Recompensa
+773| Lista para recoger
+774| Recogida
+775| Por descubrir
+776| Elige esta carta una vez para descubrirla
+777| Obtén esta fusión una vez para descubrirla
+778| Derrota a este jefe una vez para descubrirlo
+779| Aparece a los {0} en el modo Clásico

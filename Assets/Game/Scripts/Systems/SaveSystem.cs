@@ -241,6 +241,10 @@ public class SaveData
 
     // AJOUTÉ (2026-11-15) - Grimoire : identifiants des premières découvertes ("card:...", "fusion:...", "boss:N"), voir Grimoire.cs.
     public List<string> grimoire = new List<string>();
+    // AJOUTÉ (2026-11-22) - primes du Grimoire déjà récupérées (le joueur clique « Récupérer » sous chaque découverte).
+    // grimoireClaimInit : migration faite (les découvertes d'avant ce système avaient déjà été payées : elles comptent comme récupérées).
+    public List<string> grimoireClaimed = new List<string>();
+    public bool grimoireClaimInit = false;
 
     // AJOUTÉ (2026-11-16) - didacticiel (voir Tutorial.cs). tutorialInit : la migration des anciennes sauvegardes a eu lieu
     // (un joueur qui a déjà joué ne revoit pas le didacticiel) ; tutorialMenuDone : visite du menu faite ou passée ;
@@ -258,6 +262,7 @@ public class LastRunSummary
 {
     public bool valid;
     public int gold, goldKills, goldTime, goldBosses, goldVictory, goldChallenge;
+    public int goldGoblin;   // AJOUTÉ (2026-11-22) - Gobelin doré (pièces + prime) ; 0 sur une sauvegarde plus ancienne
     public int eclats, eclatsFirstWin;
     // AJOUTÉ (2026-11-12, « voir la source des gains d'éclats dans Dernière Partie ») - après multiplicateur de difficulté ;
     // eclatsTime + eclatsBosses + eclatsVictory + eclatsFirstWin = eclats. 0 partout sur une sauvegarde plus ancienne.

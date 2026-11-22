@@ -60,6 +60,12 @@ public class EnemyShooter : EnemyBase
         if (_shooterAnimatorController == null)
             _shooterAnimatorController = GetComponentInChildren<EnemyAnimatorController>();
 
+        if (IsGoldenRunner)
+        {
+            UpdateGoldenFlee(target);
+            return;
+        }
+
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
         Vector3 separationForce = GetSeparationForce();
         _fireTimer += Time.deltaTime;
@@ -180,6 +186,49 @@ public class EnemyShooter : EnemyBase
         return Vector3.ClampMagnitude(force, 1f) * SeparationWeight;
     }
 
+    // AJOUTÉ (2026-11-22, Gobelin doré - voir GoldenGoblinEvent) - fuit le joueur sans jamais tirer : direction opposée au joueur,
+    // petit zigzag (bruit de Perlin) pour qu'il ne file pas en ligne droite, écartement des voisins, et détour le long des murs
+    // (Violent / Apocalyptique) au lieu de s'y coller. Plus lent quand le joueur est loin : il reste à portée de poursuite
+    // (le joueur, à 5 de vitesse, le rattrape toujours ; la foule autour fait la difficulté).
+    private float _wanderSeed = -1f;
+
+    private void UpdateGoldenFlee(Transform target)
+    {
+        if (_wanderSeed < 0f) _wanderSeed = Random.Range(0f, 100f);
+        float dt = Time.deltaTime;
+
+        Vector3 away = transform.position - target.position;
+        away.y = 0f;
+        float distance = away.magnitude;
+        away = distance > 0.01f ? away / distance : transform.forward;
+
+        float t = Time.time * 0.45f + _wanderSeed;
+        Vector3 wander = new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, 0f, Mathf.PerlinNoise(0.7f, t) - 0.5f) * 2f;
+        // Joueur loin (au-delà de FarDistance) : il ne fuit plus, il flâne ; encore plus loin, il revient un peu vers lui (sinon,
+        // même lentement, il finissait hors de portée : 54 m mesurés au bout de 30 s sans poursuite).
+        float far = Mathf.InverseLerp(GoldenGoblinEvent.NearDistance, GoldenGoblinEvent.FarDistance, distance);
+        float tooFar = Mathf.InverseLerp(GoldenGoblinEvent.FarDistance + 2f, GoldenGoblinEvent.FarDistance + 8f, distance);
+        Vector3 desired = away * (1f - far) - away * tooFar + wander * (0.6f + far) + GetSeparationForce() * 0.5f
+                          + GoldenGoblinEvent.WallAvoidance(transform.position, away);
+        desired.y = 0f;
+        if (desired.sqrMagnitude < 0.01f) desired = away;
+        desired.Normalize();
+
+        _smoothedMoveDirection = Vector3.Slerp(_smoothedMoveDirection, desired, 6f * dt);
+        _smoothedMoveDirection.y = 0f;
+
+        float slow = Mathf.Lerp(1f, GoldenGoblinEvent.FarSpeedFactor, far);
+        Vector3 next = transform.position + _smoothedMoveDirection * (GoldenGoblinEvent.RunSpeed * slow * _speedMultiplier * dt);
+        transform.position = GoldenGoblinEvent.KeepInside(next);
+
+        if (_shooterAnimatorController != null) _shooterAnimatorController.SetAttacking(false);
+        if (_blowgunObject != null && _blowgunObject.activeSelf) _blowgunObject.SetActive(false);
+
+        if (_smoothedMoveDirection.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(_smoothedMoveDirection.normalized), _rotationSpeed * dt);
+        _fireTimer = 0f;   // redevenu normal, il ne tire pas dans la même frame
+    }
+
     private void Shoot(Transform target)
     {
         if (ObjectPool.Instance == null) return;
@@ -194,6 +243,7 @@ public class EnemyShooter : EnemyBase
         if (projectile != null)
         {
             projectile.Init(direction);
+            projectile.SetLook(EnemyProjectile.Look.Venom);   // sarbacane : globe de venin violet
         }
     }
 }

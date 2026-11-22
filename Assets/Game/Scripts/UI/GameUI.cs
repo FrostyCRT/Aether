@@ -1154,7 +1154,7 @@ public class GameUI : MonoBehaviour
     // montant de base, puis si le defi est reussi, attend _challengeRevealDelay,
     // affiche le message de reussite (couleur vive), et reprend le comptage
     // jusqu'au montant final (base + bonus).
-    private IEnumerator PlayGoldSequence(TextMeshProUGUI goldText, TextMeshProUGUI challengeText, int baseGold, int totalGold, bool challengeCompleted, int rewardGold)
+    private IEnumerator PlayGoldSequence(TextMeshProUGUI goldText, TextMeshProUGUI challengeText, int baseGold, int totalGold, bool challengeCompleted, int rewardGold, GameObject goldenChip = null, int goldenBonus = 0)
     {
         // MODIFIE - le chip Victoire a un fond dedie (ChallengeChipBg, une Image
         // ajoutee en parent du texte lors de la refonte 3-temps) separe du texte
@@ -1167,7 +1167,17 @@ public class GameUI : MonoBehaviour
         // l'ouverture de l'écran, dans le cadre d'infos : il n'est plus que révélé ici, sans faire bouger la mise en page.
         GameObject chipRoot = ChallengeChipRoot(challengeText);
 
-        yield return StartCoroutine(CountUpNumber(goldText, 0, baseGold, _goldCountUpDuration));
+        // AJOUTÉ (2026-11-22, Gobelin doré) - même temps fort que le défi : on compte l'or sans la prime, la ligne « Gobelin doré
+        // attrapé » apparaît, puis la prime s'ajoute au compteur.
+        if (goldenChip != null && goldenBonus > 0 && goldenBonus <= baseGold)
+        {
+            yield return StartCoroutine(CountUpNumber(goldText, 0, baseGold - goldenBonus, _goldCountUpDuration));
+            yield return new WaitForSecondsRealtime(_challengeRevealDelay);
+            if (goldenChip != null && goldenChip.TryGetComponent(out CanvasGroup goldenGroup)) goldenGroup.alpha = 1f;
+            yield return StartCoroutine(CountUpNumber(goldText, baseGold - goldenBonus, baseGold, _bonusCountUpDuration));
+        }
+        else
+            yield return StartCoroutine(CountUpNumber(goldText, 0, baseGold, _goldCountUpDuration));
 
         if (challengeCompleted && totalGold > baseGold)
         {
@@ -2426,9 +2436,9 @@ public class GameUI : MonoBehaviour
     // AJOUTE - enchaine la sequence normale de l'Or (voir PlayGoldSequence) puis,
     // une fois terminee, revele l'apercu du prochain palier de progression -
     // le tout dans une seule coroutine pour garder ShowGameOver() simple.
-    private IEnumerator PlayGoldSequenceThenPreview(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold)
+    private IEnumerator PlayGoldSequenceThenPreview(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold, GameObject goldenChip = null, int goldenBonus = 0)
     {
-        yield return StartCoroutine(PlayGoldSequence(_gameOverGoldText, _gameOverChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold));
+        yield return StartCoroutine(PlayGoldSequence(_gameOverGoldText, _gameOverChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold, goldenChip, goldenBonus));
         yield return StartCoroutine(PlayNextUnlockPreview());
 
         // AJOUTE - deverrouille le bouton Rejouer et signale a GameManager que
@@ -2836,10 +2846,12 @@ public class GameUI : MonoBehaviour
         // MODIFIÉ (2026-10-26) - le chip ne s'affiche qu'avec un vrai bonus d'Or (même condition que PlayGoldSequence) :
         // défi réussi sans bonus = phrase de repli, sinon le cadre d'infos n'aurait aucun message.
         bool chipShown = challengeCompleted && totalGold > baseGold;
-        PopulateVictoryQuietLine(recordShown, chipShown);
+        int goldenBonus = GoldenGoblinBonus();
+        PopulateVictoryQuietLine(recordShown, chipShown || goldenBonus > 0);
         EndInfoBox victoryInfo = EnsureEndInfoBox(_victoryPanel, _victoryStatsText, _victoryChallengeText, _victoryRecordHighlightText, _victoryQuietLineText);
         FillEndInfoStats(victoryInfo, mins, secs, killCount, level, victoryBossKills);
         PrepareChallengeChip(_victoryChallengeText, chipShown, challengeRewardGold);
+        GameObject goldenChip = PrepareGoldenChip(_victoryChallengeText, goldenBonus);
         ShowFirstWinChip();
         ShowUnlockChip();
         LayoutEndInfoBox(_victoryPanel, victoryInfo);
@@ -2860,7 +2872,7 @@ public class GameUI : MonoBehaviour
         // logique anti-skip que le Game Over.
         if (_victoryRetryButton != null) _victoryRetryButton.interactable = false;
 
-        StartCoroutine(PlayVictoryGoldSequenceThenReveal(baseGold, totalGold, challengeCompleted, challengeRewardGold));
+        StartCoroutine(PlayVictoryGoldSequenceThenReveal(baseGold, totalGold, challengeCompleted, challengeRewardGold, goldenChip, goldenBonus));
         StartCoroutine(CountUpNumber(_victoryEclatsText, 0, eclatsEarned, _eclatsCountUpDuration));
     }
 
@@ -2868,9 +2880,9 @@ public class GameUI : MonoBehaviour
     // (pas d'apercu de palier ici, volontairement) : deverrouille le bouton
     // Rejouer et signale a GameManager que le raccourci clavier peut s'activer,
     // uniquement une fois la sequence de comptage/reveal terminee.
-    private IEnumerator PlayVictoryGoldSequenceThenReveal(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold)
+    private IEnumerator PlayVictoryGoldSequenceThenReveal(int baseGold, int totalGold, bool challengeCompleted, int challengeRewardGold, GameObject goldenChip = null, int goldenBonus = 0)
     {
-        yield return StartCoroutine(PlayGoldSequence(_victoryGoldText, _victoryChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold));
+        yield return StartCoroutine(PlayGoldSequence(_victoryGoldText, _victoryChallengeText, baseGold, totalGold, challengeCompleted, challengeRewardGold, goldenChip, goldenBonus));
 
         if (_victoryRetryButton != null) _victoryRetryButton.interactable = true;
         OnEndScreenRevealComplete?.Invoke();
@@ -3082,6 +3094,9 @@ public class GameUI : MonoBehaviour
     {
         while (_nightCounterText != null)
         {
+            // CORRIGÉ (2026-11-21) - le compteur n'est pas un enfant du HUD : il restait affiché par-dessus le choix de carte
+            // (« Level up ! » recouvert). Il suit maintenant la visibilité du HUD (masqué pendant les cartes, la pause, les fins).
+            _nightCounterText.enabled = _hudPanel == null || (_hudPanel.activeSelf && !_hudHealthOnlyMode);
             _nightCounterPunch = Mathf.MoveTowards(_nightCounterPunch, 0f, Time.unscaledDeltaTime * 4f);
             float s = 1f + 0.3f * _nightCounterPunch;
             _nightCounterText.transform.localScale = new Vector3(s, s, 1f);
@@ -3874,6 +3889,37 @@ public class GameUI : MonoBehaviour
         cg.alpha = 0f;
     }
 
+    // AJOUTÉ (2026-11-22, Gobelin doré) - prime de capture de la partie (0 si le gobelin doré n'a pas été attrapé).
+    private static int GoldenGoblinBonus() => MetaProgressionManager.Instance != null ? MetaProgressionManager.Instance.LastRunGoblinBonus : 0;
+
+    // Ligne « Gobelin doré attrapé ! +N or » : copie du chip de défi (même bandeau sombre), placée juste au-dessus de lui dans le
+    // cadre d'infos, transparente jusqu'à son tour dans PlayGoldSequence. Null si pas de prime.
+    private GameObject PrepareGoldenChip(TextMeshProUGUI challengeText, int bonus)
+    {
+        GameObject chipRoot = ChallengeChipRoot(challengeText);
+        if (chipRoot == null || chipRoot.transform.parent == null) return null;
+        Transform parent = chipRoot.transform.parent;
+        Transform old = parent.Find("GoldenGoblinChip");
+        if (old != null) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
+        if (bonus <= 0) return null;
+
+        GameObject copy = Instantiate(chipRoot, parent);
+        copy.name = "GoldenGoblinChip";
+        copy.transform.SetSiblingIndex(chipRoot.transform.GetSiblingIndex());
+        copy.SetActive(true);
+        if (copy.TryGetComponent(out Image bg)) bg.color = ChipDarkBg;
+        TextMeshProUGUI text = copy.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (text != null)
+        {
+            text.color = ChipLightText;
+            text.text = Loc.F("Gobelin doré attrapé ! {0}", "<color=" + RewardGoldHex + ">" + ChallengeManager.FormatRewardGold(bonus) + "</color>");
+        }
+        CanvasGroup cg = copy.GetComponent<CanvasGroup>();
+        if (cg == null) cg = copy.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+        return copy;
+    }
+
     private static GameObject ChallengeChipRoot(TextMeshProUGUI challengeText)
     {
         if (challengeText == null) return null;
@@ -4196,6 +4242,13 @@ public class GameUI : MonoBehaviour
             _bossNameText.gameObject.SetActive(true);
             _bossNameFr = bossName;
             _bossNameText.text = Loc.T(bossName);
+            // AJOUTÉ (2026-11-21, arrivée des boss, retour utilisateur : « le nom du boss en fondu long, pas rapide ») - le nom
+            // apparaît en fondu sur toute la durée du gel de l'arrivée (BossIntro), en temps réel.
+            CanvasGroup g = _bossNameText.GetComponent<CanvasGroup>();
+            if (g == null) g = _bossNameText.gameObject.AddComponent<CanvasGroup>();
+            g.interactable = false; g.blocksRaycasts = false;
+            if (_bossNameFadeRoutine != null) StopCoroutine(_bossNameFadeRoutine);
+            _bossNameFadeRoutine = StartCoroutine(BossNameFadeRoutine(g));
         }
         if (_bossHPSlider != null) _bossHPSlider.value = 1f;
         if (_bossIcon != null) _bossIcon.SetActive(true);
@@ -4270,6 +4323,23 @@ public class GameUI : MonoBehaviour
 
         _bossRevealMask = maskRt;
         _bossRevealFullHeight = height;
+    }
+
+    private Coroutine _bossNameFadeRoutine;
+    private const float BossNameFadeDuration = 1.4f;
+
+    private System.Collections.IEnumerator BossNameFadeRoutine(CanvasGroup g)
+    {
+        g.alpha = 0f;
+        float t = 0f;
+        while (t < BossNameFadeDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            g.alpha = Mathf.SmoothStep(0f, 1f, t / BossNameFadeDuration);
+            yield return null;
+        }
+        g.alpha = 1f;
+        _bossNameFadeRoutine = null;
     }
 
     private void PlayBossRevealMask()
@@ -4391,6 +4461,8 @@ public class GameUI : MonoBehaviour
         EndInfoBox gameOverInfo = EnsureEndInfoBox(_gameOverPanel, _statsText, _gameOverChallengeText, _gameOverNextUnlockText);
         FillEndInfoStats(gameOverInfo, mins, secs, killCount, level, bossKillCount);
         PrepareChallengeChip(_gameOverChallengeText, challengeCompleted && totalGold > baseGold, challengeRewardGold);
+        int goldenBonus = GoldenGoblinBonus();
+        GameObject goldenChip = PrepareGoldenChip(_gameOverChallengeText, goldenBonus);
         PrepareNextUnlockText();
         LayoutEndInfoBox(_gameOverPanel, gameOverInfo);
 
@@ -4405,7 +4477,7 @@ public class GameUI : MonoBehaviour
         // de la sequence de reveal (voir PlayGoldSequenceThenPreview).
         if (_gameOverRetryButton != null) _gameOverRetryButton.interactable = false;
 
-        StartCoroutine(PlayGoldSequenceThenPreview(baseGold, totalGold, challengeCompleted, challengeRewardGold));
+        StartCoroutine(PlayGoldSequenceThenPreview(baseGold, totalGold, challengeCompleted, challengeRewardGold, goldenChip, goldenBonus));
         StartCoroutine(CountUpNumber(_gameOverEclatsText, 0, eclatsEarned, _eclatsCountUpDuration));
     }
 

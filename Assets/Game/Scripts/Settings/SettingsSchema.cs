@@ -25,6 +25,10 @@ public class RowDef
 
     public Func<bool> isEnabled;                // ligne grisée quand faux
     public string disabledHint;                 // explication affichée à la place de la description
+    // AJOUTÉ (2026-11-21, retour utilisateur : en Performance, « Ombres » restait sur OUI grisé, on pouvait croire les ombres
+    // activées) - ligne grisée : valeur que le jeu applique VRAIMENT, affichée à la place du réglage enregistré (qui est conservé).
+    public Func<bool> disabledToggleValue;      // Toggle
+    public Func<string> disabledChoiceText;     // Choice
 
     public GameAction action;                   // Keybind
     public bool keyColumns;                     // Header : titres des colonnes de touches (Clavier / souris, Manette)
@@ -174,7 +178,9 @@ public static class SettingsSchema
             kind = RowKind.Choice, label = "Limite d'images par seconde", key = GameSettings.FpsCap, options = FpsCapNames(),
             description = "Plafonne le nombre d'images affichées par seconde",
             isEnabled = () => !GameSettings.GetBool(GameSettings.VSync),
-            disabledHint = "Sans effet tant que la synchronisation verticale est activée."
+            disabledHint = "Sans effet tant que la synchronisation verticale est activée.",
+            // synchro verticale : la limite réelle est la fréquence de l'écran
+            disabledChoiceText = () => Mathf.RoundToInt((float)Screen.currentResolution.refreshRateRatio.value) + " " + Loc.T("IPS")
         });
         display.rows.Add(Slider("Luminosité", "Éclaircit ou assombrit toute l'image, menus compris.", GameSettings.Brightness, 0.50f, 1.20f));
         display.rows.Add(Toggle("Afficher les images par seconde", "Affiche le nombre d'images par seconde en haut à gauche.", GameSettings.ShowFps));
@@ -194,6 +200,7 @@ public static class SettingsSchema
         RowDef shadows = Toggle("Ombres", "Ombres projetées par les personnages et les ennemis.", GameSettings.Shadows);
         shadows.isEnabled = () => GameSettings.GetInt(GameSettings.Quality) != 0;
         shadows.disabledHint = "Le niveau Performance n'affiche pas d'ombres.";
+        shadows.disabledToggleValue = () => false;
         gfx.rows.Add(shadows);
         gfx.rows.Add(new RowDef
         {
@@ -259,7 +266,7 @@ public static class SettingsSchema
         controls.rows.Add(Key(GameAction.Card1));
         controls.rows.Add(Key(GameAction.Card2));
         controls.rows.Add(Key(GameAction.Card3));
-        controls.rows.Add(Header("Armes"));
+        controls.rows.Add(Header("Sorts"));
         controls.rows.Add(Key(GameAction.OrbitShrink));
         controls.rows.Add(Key(GameAction.OrbitGrow));
         controls.rows.Add(Header("Système"));

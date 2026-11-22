@@ -76,8 +76,8 @@
 68| Wybiera 1. kartę po zdobyciu poziomu
 69| Wybiera 2. kartę po zdobyciu poziomu
 70| Wybiera 3. kartę po zdobyciu poziomu
-71| Zmniejsza promień orbity satelitów
-72| Zwiększa promień orbity satelitów
+71| Zmniejsza promień orbity kamieni runicznych
+72| Zwiększa promień orbity kamieni runicznych
 73| Otwiera / zamyka menu pauzy
 
 ## Paramètres : page
@@ -162,7 +162,7 @@
 152| Ruch
 153| Walka
 154| Nowy poziom
-155| Bronie
+155| Zaklęcia
 156| System
 157| Martwa strefa gałki
 158| Ignoruje drobne ruchy gałki. Zwiększ, jeśli postać porusza się sama.
@@ -303,7 +303,7 @@
 285| +3% / s, maks. +30%
 286| +5% / s, maks. +50%
 287| Szybkostrzelność
-288| Zwiększa szybkostrzelność wszystkich twoich broni strzeleckich.
+288| Zwiększa szybkostrzelność wszystkich twoich zaklęć strzelających.
 289| Fragmentacja
 290| Co 4. pocisk twojego podstawowego ataku wybucha przy trafieniu i zadaje pełne obrażenia pobliskim wrogom.
 291| Obrażenia kryształu
@@ -391,7 +391,7 @@
 369| Kula ognia
 370| Ciska kulą ognia, która wybucha w największym skupisku wrogów
 371| Szybkostrzelność +
-372| +20% szybkostrzelności wszystkich broni strzelających
+372| +20% szybkostrzelności wszystkich zaklęć strzelających
 373| Leczenie
 374| Przywraca 50% maksymalnych PŻ
 375| Noże
@@ -401,25 +401,25 @@
 379| Błoto
 380| Tworzy kałuże błota, które spowalniają i ranią stojących w nich wrogów
 381| Satelity
-382| Odłamki krążą wokół ciebie i ranią wrogów przy kontakcie
-383| Odblokowuje 2 krążące satelity, które ranią przy kontakcie
-384| +1 dodatkowy satelita
+382| Kamienie runiczne krążą wokół ciebie i ranią wrogów przy kontakcie
+383| Odblokowuje 2 krążące kamienie runiczne, które ranią przy kontakcie
+384| +1 dodatkowy kamień runiczny
 385| Odblokowuje łańcuch błyskawic: trafia 3 wrogów
 386| +1 dodatkowy przeskok błyskawicy
 387| Odblokowuje 3 kałuże błota, które spowalniają i ranią
 388| +1 dodatkowa kałuża błota
 389| +{0}% obrażeń wszystkich ataków
-390| +{0}% szybkostrzelności wszystkich broni strzelających
+390| +{0}% szybkostrzelności wszystkich zaklęć strzelających
 391| Zwiększa twoje maksymalne PŻ o {0}% i przywraca {1}%
 392| Odblokowuje Podwójny strzał: twój podstawowy atak strzela dwa razy
-393| Odblokowuje Kulę ognia: wyposaża w unikalną broń Aethera
+393| Odblokowuje Kulę ognia: wyposaża w unikalne zaklęcie Aethera
 394| Promień wybuchu jest dwa razy większy
 395| +{0}% obrażeń
 396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę
-397| Odblokowuje Aurę: wyposaża w unikalną broń Kaela
+397| Odblokowuje Aurę: wyposaża w unikalne zaklęcie Kaela
 398| +{0}% promienia
 399| Spowolnienie zwiększone do {0}%
-400| Odblokowuje Salwę noży: wyposaża w unikalną broń Lyry
+400| Odblokowuje Salwę noży: wyposaża w unikalne zaklęcie Lyry
 401| Dodaje jeden nóż do salwy
 402| Przebija o {0} wrogów więcej
 403| Przebija o {0} wroga więcej
@@ -564,7 +564,7 @@
 528| NAJLEPSZY CZAS
 529| ROZGRYWKI
 530| WYGRANE
-531| UNIKALNA BROŃ
+531| UNIKALNE ZAKLĘCIE
 532| HISTORIA
 533| POZIOMY   A / B / C
 534| STAŁE PREMIE
@@ -641,12 +641,12 @@
 600| Naciśnij dowolny klawisz, aby pominąć
 601| Wystrzeliwuje kulę, która bez przerwy odbija się po arenie i rani każdego trafionego wroga
 602| Wystrzeliwuje {0} kul, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
-603| {0} odłamków krąży wokół ciebie i rani wrogów przy kontakcie
+603| {0} kamieni runicznych krąży wokół ciebie i rani wrogów przy kontakcie
 604| Tworzy {0} kałuż błota, które spowalniają i ranią stojących w nich wrogów
 605| Rzuca salwy {0} noży przebijających wrogów, które potem wracają
 606| Wyładowanie elektryczne przeskakujące na {0} pobliskich wrogów
 + Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés#few| Wystrzeliwuje {0} kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
-+ {0} éclats tournent autour de toi et frappent les ennemis au contact#few| {0} odłamki krążą wokół ciebie i ranią wrogów przy kontakcie
++ {0} pierres runiques tournent autour de toi et frappent les ennemis au contact#few| {0} kamienie runiczne krążą wokół ciebie i ranią wrogów przy kontakcie
 + Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent#few| Tworzy {0} kałuże błota, które spowalniają i ranią stojących w nich wrogów
 
 ## Écrans de fin : intitulés des cases de stats
@@ -765,7 +765,7 @@
 716| Jasne
 717| RUCH
 718| NOWY POZIOM
-719| Wybierz kartę, aby zdobyć nową broń lub ulepszyć istniejącą.
+719| Wybierz kartę: nowe zaklęcie, ulepszenie zaklęcia lub premię, np. obrażenia, szybkostrzelność albo leczenie.
 720| BOSS
 721| ZDROWIE
 722| Twoje zdrowie. Jeśli spadnie do 0, rozgrywka się kończy.
@@ -781,15 +781,15 @@
 732| Każdy bohater ma własny styl walki i własne drzewko umiejętności. Wybierz Aethera, aby zacząć.
 733| Każdy bohater ma własny styl walki i własne drzewko umiejętności. Pozostali bohaterowie odblokowują się z postępem.
 734| Wybierz tryb gry i poziom trudności, a potem zacznij przyciskiem Graj. Wyższe poziomy trudności odblokowują się z postępem.
-735| Grimuar zawiera listę twoich odkryć i nagradza pierwsze z każdego rodzaju.
-736| Odłamki kupują tu stałe bonusy.
+735| Grimuar zapisuje twoje odkrycia. Każde nowe odkrycie przynosi nagrodę.
+736| Tutaj możesz kupować stałe bonusy za swoje odłamki.
 737| AUTOMATYCZNY OGIEŃ
 738| Zbliża się wróg. Twój bohater celuje i strzela automatycznie: skup się na ruchu, aby utrzymać dystans.
 739| Pokonani wrogowie zostawiają kryształy doświadczenia. Przejdź po nich, aby je zebrać.
 740| Pokonuj wrogów i zbieraj ich kryształy, aż pasek doświadczenia się zapełni.
 741| Zwróć się w stronę pocisku i wykonaj dash przez niego ({0}). Dash czyni cię niezwyciężonym: pocisk zostaje pochłonięty, wyzwala Novę raniącą pobliskich wrogów i ładuje Kryształ supermocy.
 742| OFENSYWNY DASH
-743| Dash to nie tylko sposób na poruszanie się: to broń. Pochłonięty pocisk zadaje obrażenia Novą i ładuje supermoc, ale źle wymierzony dash zostawia cię bez ochrony.
+743| Dash to nie tylko sposób na poruszanie się: to także atak. Pochłonięty pocisk zadaje obrażenia Novą i ładuje supermoc, ale źle wymierzony dash zostawia cię bez ochrony.
 744| POCHŁANIANIE
 745| Pochłaniaj pociski goblinów dashem, aby napełnić Kryształ supermocy.
 746| Kryształ jest naładowany: {0} uruchamia Supermoc. Rani wszystkich wrogów, spowalnia ich i przyciąga wszystkie kryształy z ziemi.
@@ -806,3 +806,25 @@
 757| Zaćmienie
 758| +{0} odłamków zdobyto
 759| Kupowane za złoto
+
+## Gobelin doré, Tempête de cristaux (2026-11-22)
+760| ZŁOTY GOBLIN!
+761| Złap go, zanim ucieknie!
+762| ZA PÓŹNO!
+763| Złoty goblin uciekł.
+764| ZŁOTY GOBLIN ZŁAPANY!
+765| Złoty goblin złapany! {0}
+766| Złoty goblin
+767| KRYSZTAŁOWA BURZA
+768| Unikaj pieczęci na ziemi i zwabiaj na nie wrogów!
+769| BURZA CICHNIE
+770| Zmiażdżeni wrogowie: {0}
+771| Odbierz
+772| Nagroda
+773| Do odebrania
+774| Odebrano
+775| Do odkrycia
+776| Wybierz tę kartę raz, aby ją odkryć
+777| Zdobądź tę fuzję raz, aby ją odkryć
+778| Pokonaj tego bossa raz, aby go odkryć
+779| Pojawia się w {0} w trybie klasycznym
