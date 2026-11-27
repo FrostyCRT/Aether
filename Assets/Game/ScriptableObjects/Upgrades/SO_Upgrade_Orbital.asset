@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1428e6999d2a31348a9800bb7957652e, type: 3}
   m_Name: SO_Upgrade_Orbital
   m_EditorClassIdentifier: 
-  upgradeName: Orbitaux
-  description: "Des pierres runiques tournent autour de toi et frappent les ennemis au contact"
+  upgradeName: Pierres runiques
+  description: Elles gravitent autour de toi et frappent les ennemis au contact
   icon: {fileID: 21300000, guid: e4b4cf60165c0604e80e5b39a8f83527, type: 3}
   upgradeType: 7
   value: 0

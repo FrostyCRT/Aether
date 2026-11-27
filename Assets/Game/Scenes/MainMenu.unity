@@ -41396,7 +41396,7 @@ MonoBehaviour:
   _weaponUpgrades: {fileID: 70460718}
   _weaponIcons:
   - {fileID: 21300000, guid: 65bc1a5858b97b2438c34d7ddcd70d3c, type: 3}
-  - {fileID: 21300000, guid: 6aadc56ad08c97c4f9efa22bd470c7d6, type: 3}
+  - {fileID: 21300000, guid: b7b140930e2134e4db598c5469b91a29, type: 3}
   - {fileID: 21300000, guid: 4e15047d2b94bea48ae521e0661e57b0, type: 3}
   _treeBranchName: {fileID: 754750383}
   _nodes:

@@ -145,6 +145,9 @@ MonoBehaviour:
   _cloneScale: {x: 1, y: 1, z: 1}
   _cloneStaffScale: {x: 1, y: 1, z: 1}
   _blinkInterval: 0.1
+  MovementLocked: 0
+  DashLocked: 0
+  WalkRadius: 1
 --- !u!114 &7671530704944036374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,8 +162,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxHealth: 2000
   _invincibilityDuration: 1
-  _deathFallTargetY: 0.4
-  _deathFallDuration: 1.2
+  _deathGroundFollowDuration: 5
+  _deathGroundFollowSpeed: 4
   _baseRegenPerSecond: 5
   _projectileDamageMergeWindow: 0.1
 --- !u!114 &4124718519987224261
@@ -194,6 +197,7 @@ MonoBehaviour:
   _hitstopDuration: 0.08
   _ultGroundY: 0.2
   _gemAttractRange: 14
+  UltimateLocked: 0
 --- !u!54 &8890941518146790966
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -258,6 +262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 0
 --- !u!114 &7636261514543520060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,8 +278,9 @@ MonoBehaviour:
   _baseFireRate: 1
   _baseDetectionRange: 15
   _baseDamage: 100
-  _doubleShot: 0
-  _doubleShotDelay: 0.1
+  _burstDelay: 0.1
+  _delugeInterval: 0.1
+  _delugeDamageFactor: 0.85
   _projectilePrefab: {fileID: 4948786220174907987, guid: 84b001f72cd72f649b7b6035a814cf24,
     type: 3}
   _enemyLayer:
@@ -393,6 +399,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5666380812670723235, guid: 7315d441a67a9df40b98ec3c8671984d,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7315d441a67a9df40b98ec3c8671984d,
         type: 3}
       propertyPath: m_Name
@@ -456,6 +467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 0
 --- !u!1001 &8277251009758208135
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -538,6 +550,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: BatonKael
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 50924e618f7eaf84a966494909db9f1a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

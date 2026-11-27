@@ -149,25 +149,26 @@ public static class LocTableZH
         { "Constellation Orageuse", "雷暴星座" }, { "Tes orbes ionisent les ennemis, puis la foudre les relie tous en une constellation", "法球使敌人带电，随后闪电将它们连成一片星座" },
         { "Sillage Boueux", "泥泞尾迹" }, { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "你的法球会留下一道泥潭轨迹，使敌人减速并造成伤害" },
         { "Aura", "光环" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "光环区域" },
-        { "Orbe Rebondissant", "弹跳法球" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "发射在竞技场中不停弹跳的法球，伤害每个被击中的敌人" },
+        { "Orbe de cristal", "水晶宝珠" }, { "Des sphères taillées rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "多面晶球在竞技场中不停弹跳，伤害碰到的敌人" },
         { "Dégâts +", "伤害＋" }, { "+20% de dégâts sur toutes tes attaques", "所有攻击伤害 +20%" }, { "Double Tir", "双重射击" }, { "Ton tir de base tire un second projectile juste après le premier", "普通攻击会在第一发之后紧接着发射第二枚投射物" },
         { "Boule de Feu", "火球" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "发射一枚火球，在敌人最密集处爆炸" },
         { "Cadence +", "射速＋" }, { "+20% de cadence sur tous tes sorts de tir", "所有射击类法术射速 +20%" }, { "Soin", "治疗" }, { "Restaure 50% de tes PV max", "恢复最大生命值的 50%" },
-        { "Couteaux", "飞刀" }, { "Lance des salves de couteaux qui transpercent les ennemis puis reviennent", "连续齐射可穿透敌人并飞回的飞刀" },
+        { "Dagues", "匕首" }, { "Lance des salves de lames qui transpercent les ennemis puis reviennent", "掷出成排的利刃，穿透敌人后飞回" },
         { "Chaîne de Foudre", "连锁闪电" }, { "Décharge électrique qui rebondit sur les ennemis proches", "在附近敌人之间跳跃的电流" },
-        { "Boue", "泥沼" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成泥潭，减速并伤害其中的敌人" },
-        { "Orbitaux", "环绕弹" }, { "Des pierres runiques tournent autour de toi et frappent les ennemis au contact", "符文石环绕在你身边，碰到敌人即造成伤害" },
-        { "Débloque 2 pierres runiques qui tournent et frappent au contact", "解锁 2 块环绕的符文石，接触即造成伤害" }, { "+1 pierre runique supplémentaire", "+1 块符文石" },
+        { "Marécage", "沼泽" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成泥潭，减速并伤害其中的敌人" },
+        { "Pierres runiques", "符文石" }, { "Elles gravitent autour de toi et frappent les ennemis au contact", "它们环绕着你，碰到敌人便造成伤害" },
+        { "Débloque 2 pierres qui gravitent et frappent au contact", "解锁 2 颗环绕的石头，碰到敌人便造成伤害" }, { "+1 pierre supplémentaire", "+1 颗石头" },
         { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "解锁连锁闪电：连续击中 3 名敌人" }, { "+1 rebond de foudre supplémentaire", "闪电弹跳次数 +1" },
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "解锁 3 个泥潭，使敌人减速并受到伤害" }, { "+1 flaque de boue supplémentaire", "+1 个泥潭" },
         { "+{0}% de dégâts sur toutes tes attaques", "所有攻击伤害 +{0}%" }, { "+{0}% de cadence sur tous tes sorts de tir", "所有射击类法术射速 +{0}%" },
         { "Augmente tes PV max de {0}% et en restaure {1}%", "最大生命值提高 {0}%，并恢复 {1}%" }, { "Débloque le Double Tir : ton tir de base tire deux fois", "解锁双重射击：普通攻击会连续发射两次" },
         { "Débloque Boule de feu : équipe le sort exclusif d'Aether", "解锁火球：Aether 的专属法术" }, { "Le rayon d'explosion est 2 fois plus grand", "爆炸范围扩大至 2 倍" },
         { "+{0}% dégâts", "伤害 +{0}%" }, { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "解锁灼烧：被击中的敌人会持续燃烧" },
-        { "Débloque l'Aura : équipe le sort exclusif de Kael", "解锁光环：Kael 的专属法术" }, { "+{0}% rayon", "范围 +{0}%" }, { "Ralentissement porté à {0}%", "减速提升至 {0}%" },
-        { "Débloque la Salve de Couteaux : équipe le sort exclusif de Lyra", "解锁飞刀齐射：Lyra 的专属法术" }, { "Débloque un couteau supplémentaire dans la salve", "齐射增加一把飞刀" },
-        { "+{0} ennemis perforés en plus", "额外穿透 {0} 名敌人" }, { "+{0} ennemi perforé en plus", "额外穿透 {0} 名敌人" }, { "Débloque un orbe rebondissant qui traverse les ennemis", "解锁一颗可穿透敌人的弹跳法球" },
-        { "+{0}% vitesse de l'orbe", "法球速度 +{0}%" }, { "+1 orbe rebondissant supplémentaire", "+1 颗弹跳法球" },
+        { "Débloque l'Aura de mana : équipe le sort exclusif de Kael", "解锁法力光环：Kael 的专属法术" }, { "+{0}% rayon", "范围 +{0}%" },
+        { "Ralentissement porté à {0}%", "减速提升至 {0}%" }, { "Débloque les Dagues : équipe le sort exclusif de Lyra", "解锁匕首：Lyra 的专属法术" },
+        { "Une lame de plus dans chaque salve", "每轮齐射多一把利刃" }, { "+{0} ennemis perforés en plus", "额外穿透 {0} 名敌人" }, { "+{0} ennemi perforé en plus", "额外穿透 {0} 名敌人" },
+        { "Débloque une sphère taillée qui rebondit et traverse les ennemis", "解锁一颗会弹跳并穿透敌人的多面晶球" }, { "+{0}% de vitesse", "速度 +{0}%" },
+        { "+1 sphère supplémentaire", "+1 颗晶球" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel)
         { "DISTANCE", "远程" }, { "ZONE", "范围" }, { "BRÛLURE", "灼烧" }, { "MÊLÉE", "近战" }, { "AURA", "光环" }, { "RALENTISSEMENT", "减速" },
@@ -175,8 +176,8 @@ public static class LocTableZH
         { "Rayon / Cadence / Brûlure", "范围 / 射速 / 灼烧" }, { "GUERRIER", "战士" }, { "Montée en puissance offensive", "攻势节节攀升" },
         { "Aura de mana", "法力光环" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "环绕在你身边的常驻力场，伤害并减速范围内的敌人" },
         { "Ralentissement / Rayon / Onde de choc", "减速 / 范围 / 冲击波" }, { "GARDIEN", "守护者" }, { "Survie et résilience", "生存与韧性" },
-        { "Salve de couteaux", "飞刀齐射" }, { "Lance une salve de couteaux qui transpercent les ennemis puis reviennent", "齐射出可穿透敌人并飞回的飞刀" },
-        { "Couteau en plus / Cadence / Perforation", "飞刀数量 / 射速 / 穿透" }, { "FANTÔME", "幻影" }, { "Mobilité et dash", "机动与冲刺" },
+        { "Salve de couteaux", "飞刀齐射" }, { "Lance une salve de lames qui transpercent les ennemis puis reviennent", "掷出一轮利刃，穿透敌人后飞回" },
+        { "Lame en plus / Portée / Lames larges", "额外利刃 / 射程 / 宽刃" }, { "FANTÔME", "幻影" }, { "Mobilité et dash", "机动与冲刺" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "在一局中抵达第 2 名首领即可解锁 Kael" }, { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "通关一局（击败第 3 名首领）即可解锁 Lyra" },
         { "Débloquer — {0} Éclats", "花费 {0} 碎片解锁" }, { "Sélectionné", "已选择" }, { "Sélectionner", "选择" }, { "PALIERS", "强化" },
         { "ARBRE COMPLET", "技能树已满" }, { "VOIR L'ARBRE", "查看技能树" },
@@ -246,9 +247,8 @@ public static class LocTableZH
         { "IPS", "FPS" }, { "ms", "ms" }, { "Choisis le héros qui partira au combat", "选择出战的英雄" }, { "Appuie sur une touche pour passer", "按任意键跳过" },
         { "Lance un orbe qui rebondit sans arrêt dans l'arène et blesse les ennemis touchés", "发射 1 颗在竞技场中不停弹跳的法球，伤害每个被击中的敌人" },
         { "Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "发射 {0} 颗在竞技场中不停弹跳的法球，伤害每个被击中的敌人" },
-        { "{0} pierres runiques tournent autour de toi et frappent les ennemis au contact", "{0} 块符文石环绕在你身边，碰到敌人即造成伤害" },
-        { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成 {0} 个泥潭，减速并伤害其中的敌人" },
-        { "Lance des salves de {0} couteaux qui transpercent les ennemis puis reviennent", "连续齐射 {0} 把可穿透敌人并飞回的飞刀" }, { "Décharge électrique qui rebondit sur {0} ennemis proches", "在附近 {0} 名敌人之间跳跃的电流" },
+        { "{0} pierres gravitent autour de toi et frappent les ennemis au contact", "{0} 颗石头环绕着你，碰到敌人便造成伤害" }, { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "生成 {0} 个泥潭，减速并伤害其中的敌人" },
+        { "Lance des salves de {0} lames qui transpercent les ennemis puis reviennent", "一次掷出 {0} 把利刃，穿透敌人后飞回" }, { "Décharge électrique qui rebondit sur {0} ennemis proches", "在附近 {0} 名敌人之间跳跃的电流" },
         { "Survie", "生存" }, { "Éliminations", "击杀" }, { "Niveau", "等级" }, { "Boss", "首领" }, { "Titans", "泰坦" },
 
         // ======================================================== REFONTE DE L'ÉCONOMIE (2026-10-27) ====
@@ -282,7 +282,7 @@ public static class LocTableZH
         { "Choisis cette carte une première fois : +{0} éclats", "首次选择这张卡牌：碎片 +{0}" }, { "Obtiens cette fusion une première fois : +{0} éclats", "首次获得这个融合：碎片 +{0}" },
         { "Bats ce boss une première fois : +{0} éclats", "首次击败这个首领：碎片 +{0}" }, { "Boss n°{0}", "首领 {0}" }, { "Survole une illustration pour en lire la page", "将光标悬停在插图上以阅读其页面" },
         { "{0} / {1} découvertes", "发现：{0} / {1}" }, { "{0} éclats gagnés", "获得碎片：{0}" }, { "Espace de travail ({0})", "工作区（{0}）" },
-        { "Portée : les couteaux vont {0} m plus loin avant de revenir", "射程：飞刀飞回前多飞 {0} 米" }, { "Lames larges : couteaux plus gros qui touchent sur une bande plus large", "宽刃：飞刀变大，命中范围更宽" },
+        { "Portée : les lames vont plus loin avant de revenir", "射程：刀刃飞得更远再返回" }, { "Lames larges : lames plus grandes, zone de frappe élargie", "宽刃：刀刃更大，打击范围更广" },
 
         // ======================================================== didacticiel (2026-11-16, refonte 2) ----
         { "le stick gauche", "左摇杆" }, { "le curseur de la manette", "手柄光标" }, { "Suivant", "下一步" }, { "Confirmer ?", "确认？" },
@@ -322,5 +322,9 @@ public static class LocTableZH
         { "Récupérer", "领取" }, { "Récompense", "奖励" }, { "À récupérer", "可领取" }, { "Récupérée", "已领取" }, { "À découvrir", "尚未发现" },
         { "Choisis cette carte une première fois pour la découvrir", "首次选择这张卡牌即可发现" }, { "Obtiens cette fusion une première fois pour la découvrir", "首次获得这个融合即可发现" },
         { "Bats ce boss une première fois pour le découvrir", "首次击败这个首领即可发现" }, { "Apparaît à {0} en mode Classique", "经典模式中于 {0} 出现" },
+
+        // ======================================================== Tir de base en 3 paliers : Double Tir, Triple Tir, Déluge (2026-11-25) ----
+        { "Triple Tir", "三重射击" }, { "Déluge", "洪流" }, { "Ton tir de base tire deux fois de suite", "普通攻击会连续发射两次" }, { "Ton tir de base tire trois fois de suite", "普通攻击会连续发射三次" },
+        { "Ton tir de base devient un jet continu", "普通攻击化作源源不断的激流" },
     };
 }

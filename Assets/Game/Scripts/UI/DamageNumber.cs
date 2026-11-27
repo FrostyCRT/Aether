@@ -49,6 +49,8 @@ public class DamageNumber : MonoBehaviour
     public void Init(float damage, Color color, Transform target, bool isCritical = false)
     {
         _timer = 0f;
+        _age = 0f;
+        _bumpTimer = -1f;
         _color = color;
         _totalDamage = damage;
         _isCritical = isCritical;
@@ -78,8 +80,21 @@ public class DamageNumber : MonoBehaviour
 
         _timer = 0f; // relance la durée de vie pour laisser le temps de lire le total
         UpdateText();
-        Pop();
+        // MODIFIÉ (2026-11-26, retour utilisateur : "l'affichage se remet à chaque fois, c'est mieux s'il ne s'enlève
+        // pas et que ça se cumule sur le même affichage") - Pop() repartait d'une échelle 0 : avec le Déluge (un coup
+        // toutes les 0,1 s) le nombre disparaissait et réapparaissait sans cesse. Un ajout ne fait plus qu'une petite
+        // pulsation autour de la taille normale, le nombre reste affiché.
+        if (_popTimer < 0f) _bumpTimer = 0f;
     }
+
+    // Petite pulsation d'un ajout de dégâts (1 -> 1,15 -> 1), sans jamais repasser par 0.
+    private const float BumpDuration = 0.12f;
+    private float _bumpTimer = -1f;
+
+    // Temps depuis l'apparition, jamais remis à zéro par un ajout : borne la montée du nombre (sinon, fusionné en
+    // continu, il montait sans fin) et la durée maximale d'une fusion (DamageNumberSpawner).
+    private float _age;
+    public float Age => _age;
 
     private void UpdateText()
     {
@@ -104,7 +119,17 @@ public class DamageNumber : MonoBehaviour
     private void Update()
     {
         _timer += Time.deltaTime;
-        transform.position += Vector3.up * _moveSpeed * Time.deltaTime;
+        _age += Time.deltaTime;
+        // Montée limitée à la durée de vie d'un nombre simple (même hauteur qu'avant), puis le nombre fusionné reste en place.
+        if (_age <= _lifetime) transform.position += Vector3.up * _moveSpeed * Time.deltaTime;
+
+        if (_bumpTimer >= 0f)
+        {
+            _bumpTimer += Time.deltaTime;
+            float b = Mathf.Clamp01(_bumpTimer / BumpDuration);
+            transform.localScale = Vector3.one * (1f + 0.15f * Mathf.Sin(b * Mathf.PI));
+            if (_bumpTimer >= BumpDuration) _bumpTimer = -1f;
+        }
 
         if (_cachedMainCamera == null) _cachedMainCamera = Camera.main;
         if (_cachedMainCamera != null)

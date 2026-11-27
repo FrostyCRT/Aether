@@ -61,7 +61,7 @@ public class UpgradeData : ScriptableObject
     }
 
     [Header("Niveaux")]
-    [Tooltip("Nombre de PALIERS D'AMÉLIORATION affichés dans l'UI (3 par défaut). N'est PAS utilisé par DoubleShot, qui gère son propre déblocage unique via IsDoubleShotUnlocked().")]
+    [Tooltip("Nombre de PALIERS D'AMÉLIORATION affichés dans l'UI (3 par défaut). DoubleShot : 3 paliers (Double, Triple, Déluge) depuis le 2026-11-25.")]
     [SerializeField] private int _maxLevel = 3;
     public int MaxLevel => _maxLevel;
 
@@ -115,8 +115,8 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.Orbital:
                 return nextLevel == 1
-                    ? Loc.T("Débloque 2 pierres runiques qui tournent et frappent au contact")
-                    : Loc.T("+1 pierre runique supplémentaire");
+                    ? Loc.T("Débloque 2 pierres qui gravitent et frappent au contact")
+                    : Loc.T("+1 pierre supplémentaire");
 
             case UpgradeType.Lightning:
                 return nextLevel == 1
@@ -150,7 +150,11 @@ public class UpgradeData : ScriptableObject
 
             case UpgradeType.DoubleShot:
                 // CORRIGÉ (2026-10-25) - le second tir n'est pas simultané : il part _doubleShotDelay (0,1 s) après le premier.
-                return Loc.T("Débloque le Double Tir : ton tir de base tire deux fois");
+                // MODIFIÉ (2026-11-25) - 3 paliers : texte du palier PROPOSÉ.
+                {
+                    int next = CurrentShotLevel() + 1;
+                    return next <= 1 ? Loc.T("Débloque le Double Tir : ton tir de base tire deux fois") : ShotLevelText(next);
+                }
 
             default:
                 return Description;
@@ -210,7 +214,7 @@ public class UpgradeData : ScriptableObject
     private string FormatAuraDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque l'Aura : équipe le sort exclusif de Kael");
+            return Loc.T("Débloque l'Aura de mana : équipe le sort exclusif de Kael");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
@@ -253,15 +257,15 @@ public class UpgradeData : ScriptableObject
     private string FormatKnivesDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque la Salve de Couteaux : équipe le sort exclusif de Lyra");
+            return Loc.T("Débloque les Dagues : équipe le sort exclusif de Lyra");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
-            case 1: return Loc.T("Débloque un couteau supplémentaire dans la salve");
-            case 2: return Loc.F("Portée : les couteaux vont {0} m plus loin avant de revenir", Mathf.RoundToInt(v));
-            case 3: return Loc.T("Lames larges : couteaux plus gros qui touchent sur une bande plus large");
+            case 1: return Loc.T("Une lame de plus dans chaque salve");
+            case 2: return Loc.T("Portée : les lames vont plus loin avant de revenir");
+            case 3: return Loc.T("Lames larges : lames plus grandes, zone de frappe élargie");
             default: return Description;
         }
     }
@@ -279,16 +283,16 @@ public class UpgradeData : ScriptableObject
     private string FormatBouncingOrbDescription(int level)
     {
         if (level == 1)
-            return Loc.T("Débloque un orbe rebondissant qui traverse les ennemis");
+            return Loc.T("Débloque une sphère taillée qui rebondit et traverse les ennemis");
 
         int tier = level - 1;
         float v = GetLevelValue(tier);
         switch (tier)
         {
             // MODIFIÉ (2026-11-11, retour utilisateur) - singulier : à ce palier, une seule orbe est déployée
-            case 1: return Loc.F("+{0}% vitesse de l'orbe", PercentOf(v));
+            case 1: return Loc.F("+{0}% de vitesse", PercentOf(v));
             case 2:
-            case 3: return Loc.T("+1 orbe rebondissant supplémentaire");
+            case 3: return Loc.T("+1 sphère supplémentaire");
             default: return Description;
         }
     }
@@ -311,6 +315,11 @@ public class UpgradeData : ScriptableObject
                 return levels != null ? Loc.F("+{0}% de dégâts sur toutes tes attaques", PercentOf(levels.DamageBonusTotal)) : Description;
             case UpgradeType.FireRate:
                 return levels != null ? Loc.F("+{0}% de cadence sur tous tes sorts de tir", PercentOf(levels.FireRateBonusTotal)) : Description;
+            case UpgradeType.DoubleShot:
+                {
+                    int lvl = CurrentShotLevel();
+                    return lvl >= 1 ? ShotLevelText(lvl) : Description;
+                }
             case UpgradeType.BouncingOrb:
                 {
                     WeaponBouncingOrb orb = player != null ? player.GetComponent<WeaponBouncingOrb>() : null;
@@ -324,7 +333,7 @@ public class UpgradeData : ScriptableObject
                 {
                     WeaponOrbital orbital = player != null ? player.GetComponent<WeaponOrbital>() : null;
                     if (orbital == null) return Description;
-                    const string key = "{0} pierres runiques tournent autour de toi et frappent les ennemis au contact";
+                    const string key = "{0} pierres gravitent autour de toi et frappent les ennemis au contact";
                     return Loc.Plural(orbital.OrbitalCount, key, key);
                 }
             case UpgradeType.MudPuddle:
@@ -338,7 +347,7 @@ public class UpgradeData : ScriptableObject
                 {
                     WeaponShurikenBarrage knives = player != null ? player.GetComponent<WeaponShurikenBarrage>() : null;
                     if (knives == null) return Description;
-                    return Loc.F("Lance des salves de {0} couteaux qui transpercent les ennemis puis reviennent", knives.KnifeCount);
+                    return Loc.F("Lance des salves de {0} lames qui transpercent les ennemis puis reviennent", knives.KnifeCount);
                 }
             case UpgradeType.Lightning:
                 {
@@ -353,8 +362,27 @@ public class UpgradeData : ScriptableObject
 
     // AJOUTÉ (2026-10-14) - textes à AFFICHER dans la langue courante (voir Loc). upgradeName / description restent les
     // valeurs françaises de l'asset (clés de traduction).
-    public string Name => Loc.T(upgradeName);
+    public string Name => upgradeType == UpgradeType.DoubleShot ? ShotLevelName(CurrentShotLevel()) : Loc.T(upgradeName);
     public string Description => Loc.T(description);
+
+    // AJOUTÉ (2026-11-25, refonte du tir de base en 3 paliers, voir WeaponBase) - Double Tir / Triple Tir / Déluge.
+    // Name = palier ACTUEL (menu Pause, écrans de fin) ; CardTitle = palier PROPOSÉ (cartes de montée de niveau).
+    public string CardTitle => upgradeType == UpgradeType.DoubleShot ? ShotLevelName(CurrentShotLevel() + 1) : Name;
+
+    private static string ShotLevelName(int level) =>
+        level >= WeaponBase.MaxShotLevel ? Loc.T("Déluge") : level == 2 ? Loc.T("Triple Tir") : Loc.T("Double Tir");
+
+    private int CurrentShotLevel()
+    {
+        GameObject player = GetActivePlayer();
+        WeaponBase w = player != null ? player.GetComponent<WeaponBase>() : null;
+        return w != null ? w.ShotLevel : 0;
+    }
+
+    private static string ShotLevelText(int level) =>
+        level >= WeaponBase.MaxShotLevel ? Loc.T("Ton tir de base devient un jet continu")
+        : level == 2 ? Loc.T("Ton tir de base tire trois fois de suite")
+        : Loc.T("Ton tir de base tire deux fois de suite");
 
     // AJOUTE - verifie que le personnage actuellement joue correspond bien au
     // personnage proprietaire de cette upgrade exclusive.
@@ -362,6 +390,16 @@ public class UpgradeData : ScriptableObject
     {
         CharacterIdentity identity = player.GetComponent<CharacterIdentity>();
         return identity != null && identity.Type == expectedType;
+    }
+
+    // Au moins un sort de tir accéléré par la Cadence (mêmes armes que Apply/FireRate ; le tir de base sauf au Déluge).
+    private static bool AnyWeaponUsesFireRate(GameObject player)
+    {
+        bool On(Behaviour b) => b != null && b.enabled;
+        WeaponBase w = player.GetComponent<WeaponBase>();
+        if (On(w) && !w.IsDelugeActive) return true;
+        return On(player.GetComponent<WeaponFireball>()) || On(player.GetComponent<WeaponShurikenBarrage>())
+            || On(player.GetComponent<WeaponFusionRicochetBlades>()) || On(player.GetComponent<WeaponLightningChain>());
     }
 
     public bool IsAvailable()
@@ -378,8 +416,9 @@ public class UpgradeData : ScriptableObject
             // multi-projectiles pour Knives - dupliquer n'aurait plus de sens).
             case UpgradeType.DoubleShot:
                 {
+                    // MODIFIÉ (2026-11-25) - 3 paliers (Double, Triple, Déluge) au lieu d'un seul déblocage.
                     WeaponBase baseWeaponDS = player.GetComponent<WeaponBase>();
-                    if (baseWeaponDS != null) return !baseWeaponDS.IsDoubleShotUnlocked();
+                    if (baseWeaponDS != null) return baseWeaponDS.ShotLevel < WeaponBase.MaxShotLevel;
                     return false;
                 }
 
@@ -391,7 +430,9 @@ public class UpgradeData : ScriptableObject
                 return !IsMaxed();
 
             case UpgradeType.FireRate:
-                return !IsMaxed();
+                // AJOUTÉ (2026-11-25) - le Déluge ignore la Cadence : si aucun autre sort de tir n'en profite, la carte
+                // serait morte -> pas proposée.
+                return !IsMaxed() && AnyWeaponUsesFireRate(player);
 
             // CORRIGE - la verification GetComponent<WeaponX>() != null avait ete
             // retiree entierement, alors qu'elle servait DEUX roles a la fois : eviter
@@ -898,6 +939,7 @@ public class UpgradeData : ScriptableObject
                     float inheritedOrb = orb != null ? orb.CurrentDamage : 0f;
                     int inheritedKnifeCount = knives != null ? knives.KnifeCount : 0;
                     int inheritedOrbCount = orb != null ? orb.OrbCount : 0;
+                    float inheritedKnifeSize = knives != null ? knives.KnifeSize : 1f;
 
                     if (knives != null) Object.Destroy(knives);
                     if (orb != null) Object.Destroy(orb);
@@ -907,7 +949,7 @@ public class UpgradeData : ScriptableObject
                     if (playerGO.GetComponent<WeaponFusionRicochetBlades>() == null)
                     {
                         WeaponFusionRicochetBlades blades = playerGO.AddComponent<WeaponFusionRicochetBlades>();
-                        blades.Init(Mathf.Max(1f, inheritedKnives), Mathf.Max(1f, inheritedOrb), inheritedKnifeCount, inheritedOrbCount);
+                        blades.Init(Mathf.Max(1f, inheritedKnives), Mathf.Max(1f, inheritedOrb), inheritedKnifeCount, inheritedOrbCount, inheritedKnifeSize);
                         // Dégâts déjà hérités des Couteaux (bonus inclus) ; la CADENCE de la fusion repart de sa propre
                         // base : elle rattrape les Cadence+ déjà pris (sinon perdus en fusionnant).
                         float pastFireRate = LevelUpManager.Instance != null ? LevelUpManager.Instance.FireRateBonusTotal : 0f;

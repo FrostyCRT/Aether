@@ -15,11 +15,23 @@ using UnityEngine.Experimental.Rendering;
 //  - Popping : petit saut en arc depuis le point de mort jusqu'au sol, échelle en rebond (EaseOutBack) ;
 //  - Idle : flotte et respire, ramassée quand le joueur marche dessus (contact horizontal) ou aspirée par l'aimant ;
 //  - Attracted : accélère vers le joueur avec une traînée, éclate au contact (XPGemCollectFX) et crédite l'XP.
-// Rendu : un seul maillage dynamique (un quad face caméra par gemme, textures des 3 paliers réunies dans un atlas), trié
-// du plus loin au plus proche de la caméra : un seul draw call pour toutes les gemmes. Seules les gemmes à l'écran sont
-// triées et dessinées (2e passe d'optimisation, mesurée dans LateUpdate) ; le flottement n'est calculé que pour elles. Les traînées d'aspiration sont
-// des TrailRenderer réutilisés (MaxTrails à la fois : au-delà, une aspiration massive par l'Ultime du Cristal vole sans
-// traînée, invisible dans la nuée).
+// Les traînées d'aspiration sont des TrailRenderer réutilisés (MaxTrails à la fois : au-delà, une aspiration massive par
+// l'Ultime du Cristal vole sans traînée, invisible dans la nuée).
+//
+// MODIFIÉ (2026-11-25, retour utilisateur : « ce qui fait chuter les fps de moitié » - mesuré dans sa partie : 9 677
+// gemmes au sol à 5:50 dont 7 320 à l'écran, ~2 ms par image rien que pour elles, et ~1 000 de plus toutes les 45 s) -
+// avant, CHAQUE image, toutes les gemmes visibles étaient triées, animées (flottement + respiration) puis renvoyées à la
+// carte graphique : un coût qui grandissait avec la partie. Le rendu passe sur DEUX couches (même shader
+// Aether/XPGemField, même apparence qu'avant) :
+//  1. Gemmes POSÉES (l'immense majorité) : un maillage déjà trié du plus loin au plus proche de la caméra, que le
+//     processeur ne touche plus d'une image à l'autre. Le flottement et la respiration sont calculés par la carte
+//     graphique à partir d'une horloge (_XPGemClock). Une gemme ramassée ou aspirée y est seulement « éteinte » (ses 4
+//     sommets passent à l'échelle 0). Le maillage n'est reconstruit que par lots (au plus toutes les RebuildInterval
+//     secondes quand de nouvelles gemmes se sont posées, ou quand les trous deviennent nombreux) : le tri se fait alors
+//     par FUSION de la liste déjà triée avec les quelques nouvelles gemmes (la caméra du jeu ne tourne pas : l'ordre de
+//     profondeur d'une gemme posée ne change jamais).
+//  2. Gemmes EN MOUVEMENT (saut d'apparition, aspiration) et gemmes posées pas encore intégrées au lot : petit maillage
+//     reconstruit chaque image comme avant (quelques dizaines de gemmes en général).
 public class XPGemField : MonoBehaviour
 {
     private enum GemState : byte { Popping, Idle, Attracted }
@@ -32,7 +44,9 @@ public class XPGemField : MonoBehaviour
         public float xp;
         public float timer;          // Popping : temps écoulé du saut ; Attracted : rampe d'accélération
         public float popDuration, popArc;
-        public float phase, pulseMul, timeAlive, speedBoost;
+        public float phase, pulseMul, birth, speedBoost;   // birth : horloge des gemmes (_clock) à l'apparition
+        public float key;            // ordre de profondeur (plus petit = plus loin), fixé quand la gemme entre dans la couche
+        public int slot;             // place dans la couche des gemmes posées, -1 si elle n'y est pas
         public int trail;            // index dans _trails, -1 si aucune
     }
 
@@ -52,6 +66,14 @@ public class XPGemField : MonoBehaviour
     private const float HalfWidth = 0.534f;
     private const float HalfHeight = 0.484f;
     private const int MaxTrails = 64;
+
+    // Couche des gemmes posées : fréquence maximale des reconstructions (~0,4 ms pour 10 000 gemmes ; en attendant, les
+    // gemmes fraîchement posées sont dessinées par la couche en mouvement, pour un coût négligeable), et compactage
+    // quand les trous pèsent lourd.
+    private const float RebuildInterval = 1f;
+    private const int MinHolesForCompaction = 512;
+    // La caméra du jeu ne tourne pas ; au-delà de ~2,5° (cos 0,999), l'ordre de profondeur est recalculé.
+    private const float KeyDirTolerance = 0.999f;
 
     private static XPGemField _instance;
     public static XPGemField Instance
@@ -86,37 +108,120 @@ public class XPGemField : MonoBehaviour
 
     private Gem[] _gems = new Gem[512];
     private int _count;
+    // Horloge des gemmes : avance avec le temps de jeu, s'arrête en pause (comme l'ancien timeAlive par gemme).
+    private float _clock;
 
     private Transform _player;
     private Camera _camera;
 
-    // Sommet entrelacé (position, couleur, UV) : un seul envoi à la carte graphique par image au lieu de trois.
+    // ------------------------------------------------------------------------------------------------------------
+    // Rendu : sommet et couche
+    // ------------------------------------------------------------------------------------------------------------
+
+    // Voir Aether/XPGemField pour le rôle de chaque champ.
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    private struct Vertex
+    private struct GemVertex
     {
-        public Vector3 pos;
-        public Color32 color;
-        public Vector2 uv;
+        public Vector3 anchor;
+        public Vector4 uvc;
+        public Vector4 anim;
+        public float fixedGlow;
     }
 
     private static readonly VertexAttributeDescriptor[] VertexLayout =
     {
         new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
-        new VertexAttributeDescriptor(VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4),
-        new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2),
+        new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 4),
+        new VertexAttributeDescriptor(VertexAttribute.TexCoord1, VertexAttributeFormat.Float32, 4),
+        new VertexAttributeDescriptor(VertexAttribute.TexCoord2, VertexAttributeFormat.Float32, 1),
     };
 
     private const MeshUpdateFlags FastUpdate = MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds
                                                | MeshUpdateFlags.DontNotifyMeshUsers | MeshUpdateFlags.DontResetBoneBounds;
 
-    private Mesh _mesh;
+    // Un maillage de quads (un par gemme) et ses tampons, dimensionnés par puissance de 2.
+    private sealed class GemLayer
+    {
+        public readonly Mesh mesh;
+        public GemVertex[] verts = new GemVertex[0];
+        private int _capacity;
+
+        public GemLayer(string name, Transform parent, Material material, int sortingOrder)
+        {
+            mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
+            mesh.MarkDynamic();
+            GameObject go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = material;
+            mr.shadowCastingMode = ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            mr.sortingOrder = sortingOrder;
+        }
+
+        // Réalloue (contenu perdu) seulement quand le nombre de quads dépasse la capacité.
+        public void EnsureCapacity(int quads)
+        {
+            if (_capacity >= quads && _capacity > 0) return;
+            int cap = Mathf.Max(512, Mathf.NextPowerOfTwo(quads));
+            _capacity = cap;
+            verts = new GemVertex[cap * 4];
+            int[] indices = new int[cap * 6];
+            for (int q = 0; q < cap; q++)
+            {
+                int v = q * 4, t = q * 6;
+                indices[t] = v; indices[t + 1] = v + 1; indices[t + 2] = v + 2;
+                indices[t + 3] = v; indices[t + 4] = v + 2; indices[t + 5] = v + 3;
+            }
+            mesh.Clear();
+            mesh.SetVertexBufferParams(cap * 4, VertexLayout);
+            mesh.SetIndexBufferParams(cap * 6, IndexFormat.UInt32);
+            mesh.SetIndexBufferData(indices, 0, 0, cap * 6, FastUpdate);
+            mesh.subMeshCount = 1;
+        }
+
+        public void Upload(int firstQuad, int quadCount)
+        {
+            if (quadCount <= 0) return;
+            mesh.SetVertexBufferData(verts, firstQuad * 4, firstQuad * 4, quadCount * 4, 0, FastUpdate);
+        }
+
+        // Nombre de quads dessinés et boîte réelle (sert au découpage caméra ET au tri des objets transparents).
+        public void SetDrawn(int quads, Bounds bounds)
+        {
+            mesh.SetSubMesh(0, new SubMeshDescriptor(0, quads * 6) { bounds = bounds, firstVertex = 0, vertexCount = quads * 4 }, FastUpdate);
+            mesh.bounds = bounds;
+        }
+    }
+
     private Material _material;
     private Texture2D _atlas;
-    private Vertex[] _verts = new Vertex[0];
-    private int _capacity;
-    private float[] _sortKeys = new float[0];
-    private int[] _sortOrder = new int[0];
+    private GemLayer _settled;   // gemmes posées (presque toutes), voir l'en-tête
+    private GemLayer _moving;    // gemmes en mouvement + gemmes posées en attente d'intégration
+
+    // Couche des gemmes posées : _slotGem[slot] = index de la gemme dans _gems, -1 pour un trou.
+    private int[] _slotGem = new int[512];
+    private int _slotCount;
+    private int _holes;
+    private int _pendingIdle;    // gemmes posées pas encore intégrées à la couche (dessinées par _moving)
+    private float _lastRebuild = float.NegativeInfinity;
+    private Vector3 _keyDir;
+    private bool _hasKeyDir;
+
+    // Tampons de travail (tri des gemmes en mouvement, fusion de la couche posée).
+    private float[] _sortKeys = new float[512];
+    private int[] _sortOrder = new int[512];
+    private int[] _newOrder = new int[512];
     private readonly Plane[] _frustum = new Plane[6];
+
+    // Visibles dans le profileur (coût de chaque étape du rendu des gemmes).
+    private static readonly Unity.Profiling.ProfilerMarker MarkerRebuild = new Unity.Profiling.ProfilerMarker("XPGemField.RebuildSettled");
+    private static readonly Unity.Profiling.ProfilerMarker MarkerMoving = new Unity.Profiling.ProfilerMarker("XPGemField.RenderMoving");
+
+    private static readonly int IdRight = Shader.PropertyToID("_XPGemRight");
+    private static readonly int IdUp = Shader.PropertyToID("_XPGemUp");
+    private static readonly int IdClock = Shader.PropertyToID("_XPGemClock");
 
     private TrailRenderer[] _trails;
     private bool[] _trailBusy;
@@ -126,22 +231,19 @@ public class XPGemField : MonoBehaviour
 
     private void Awake()
     {
-        _mesh = new Mesh { name = "XPGemField", indexFormat = IndexFormat.UInt32 };
-        _mesh.MarkDynamic();
-        gameObject.AddComponent<MeshFilter>().sharedMesh = _mesh;
-        MeshRenderer mr = gameObject.AddComponent<MeshRenderer>();
-        _material = new Material(Shader.Find("Sprites/Default"));
+        // Le matériau vit dans Resources pour que le shader soit inclus dans la build ; copie pour y poser l'atlas.
+        Material template = Resources.Load<Material>("FX/M_XPGemField");
+        _material = template != null ? new Material(template) : new Material(Shader.Find("Aether/XPGemField"));
         _atlas = BuildAtlas();
         _material.mainTexture = _atlas;
-        // La couleur finale est cuite dans les textures : le scintillement module seulement l'intensité (1 -> 1,3,
-        // comme l'ancien _Color par gemme). _Color du matériau porte le maximum, la couleur de sommet la fraction.
-        _material.color = new Color(MaxGlow, MaxGlow, MaxGlow, 1f);
+        _material.SetVector("_Anim", new Vector4(IdleBobSpeed, IdleBobAmplitude, BasePulseSpeed, 0f));
+        _material.SetVector("_Glow", new Vector4(MinGlow, MaxGlow, 0f, 0f));
         _material.renderQueue = 3000;
-        mr.sharedMaterial = _material;
-        mr.shadowCastingMode = ShadowCastingMode.Off;
-        mr.receiveShadows = false;
-        // Sous les ennemis (qui restent à 0), comme les anciennes gemmes (-1 à -7).
-        mr.sortingOrder = -1;
+
+        // Sous les ennemis (qui restent à 0), comme les anciennes gemmes (-1 à -7). Les gemmes posées juste avant celles
+        // en mouvement : une gemme qui saute ou qui est aspirée passe par-dessus celles du sol.
+        _settled = new GemLayer("XPGemsSettled", transform, _material, -2);
+        _moving = new GemLayer("XPGemsMoving", transform, _material, -1);
 
         _trails = new TrailRenderer[MaxTrails];
         _trailBusy = new bool[MaxTrails];
@@ -163,9 +265,9 @@ public class XPGemField : MonoBehaviour
         }
     }
 
-    // Les 3 textures (256x256 chacune) côte à côte dans une seule : un seul matériau, donc un seul maillage trié par
-    // profondeur pour TOUTES les gemmes, quel que soit leur palier. Copie directe sur la carte graphique (textures non
-    // lisibles par le CPU), repli par dessin dans une RenderTexture si la copie n'est pas supportée.
+    // Les 3 textures (256x256 chacune) côte à côte dans une seule : un seul matériau pour TOUTES les gemmes, quel que
+    // soit leur palier. Copie directe sur la carte graphique (textures non lisibles par le CPU), repli par dessin dans une
+    // RenderTexture si la copie n'est pas supportée.
     private static Texture2D BuildAtlas()
     {
         Texture2D small = Resources.Load<Texture2D>("Textures/XPGem/Tex_XPGem_Small");
@@ -233,8 +335,9 @@ public class XPGemField : MonoBehaviour
             popArc = PopArcHeight * Random.Range(0.75f, 1.15f),
             phase = Random.Range(0f, Mathf.PI * 2f),
             pulseMul = Random.Range(0.7f, 1.4f),   // chaque gemme respire à son propre rythme, pas en choeur
-            timeAlive = 0f,
+            birth = _clock,
             speedBoost = 1f,
+            slot = -1,
             trail = -1
         };
     }
@@ -274,7 +377,46 @@ public class XPGemField : MonoBehaviour
         for (int i = 0; i < _count; i++)
             if (_gems[i].trail >= 0) { _trails[_gems[i].trail].emitting = false; _trailBusy[_gems[i].trail] = false; }
         _count = 0;
+        _slotCount = 0;
+        _holes = 0;
+        _pendingIdle = 0;
+        if (_settled != null) _settled.SetDrawn(0, new Bounds(Vector3.zero, Vector3.zero));
     }
+
+#if UNITY_EDITOR
+    // TESTS (éditeur) : cohérence entre les gemmes et la couche des gemmes posées. Renvoie "" si tout est juste.
+    public string DebugValidate()
+    {
+        int pending = 0, holes = 0;
+        for (int i = 0; i < _count; i++)
+        {
+            Gem g = _gems[i];
+            if (g.state != GemState.Idle)
+            {
+                if (g.slot >= 0) return "gemme en mouvement " + i + " encore dans la couche posée";
+                continue;
+            }
+            if (g.slot < 0) { pending++; continue; }
+            if (g.slot >= _slotCount || _slotGem[g.slot] != i) return "place " + g.slot + " ne pointe pas sur la gemme " + i;
+            if (_settled.verts[g.slot * 4].anim.x <= 0f) return "gemme posée " + i + " éteinte à l'écran";
+        }
+        for (int s = 0; s < _slotCount; s++)
+        {
+            int idx = _slotGem[s];
+            if (idx < 0)
+            {
+                holes++;
+                if (_settled.verts[s * 4].anim.x != 0f) return "trou " + s + " encore visible";
+                continue;
+            }
+            if (idx >= _count || _gems[idx].slot != s) return "place " + s + " pointe sur une gemme qui ne l'occupe pas";
+            if (s > 0 && _slotGem[s - 1] >= 0 && _gems[_slotGem[s - 1]].key > _gems[idx].key) return "ordre de profondeur rompu en " + s;
+        }
+        if (holes != _holes) return "trous comptés " + _holes + " / réels " + holes;
+        if (pending != _pendingIdle) return "en attente comptées " + _pendingIdle + " / réelles " + pending;
+        return "";
+    }
+#endif
 
     // ------------------------------------------------------------------------------------------------------------
     // Simulation
@@ -291,6 +433,7 @@ public class XPGemField : MonoBehaviour
         }
 
         float dt = Time.deltaTime;
+        _clock += dt;
         Vector3 player = _player.position;
         float magnet = XPGemSpawner.Instance != null ? XPGemSpawner.Instance.AttractionRadius : 0f;
         float magnetSqr = magnet * magnet;
@@ -299,7 +442,6 @@ public class XPGemField : MonoBehaviour
         for (int i = _count - 1; i >= 0; i--)
         {
             ref Gem g = ref _gems[i];
-            g.timeAlive += dt;
 
             switch (g.state)
             {
@@ -309,7 +451,13 @@ public class XPGemField : MonoBehaviour
                     float t = Mathf.Clamp01(g.timer / g.popDuration);
                     Vector3 flat = Vector3.Lerp(g.origin, g.target, t);
                     g.pos = flat + Vector3.up * (Mathf.Sin(t * Mathf.PI) * g.popArc);
-                    if (t >= 1f) { g.pos = g.target; g.state = GemState.Idle; }
+                    if (t >= 1f)
+                    {
+                        g.pos = g.target;
+                        g.state = GemState.Idle;
+                        g.slot = -1;
+                        _pendingIdle++;   // intégrée à la couche des gemmes posées au prochain lot
+                    }
                     break;
                 }
                 case GemState.Idle:
@@ -321,8 +469,8 @@ public class XPGemField : MonoBehaviour
                         if (Collect(i)) return;
                         continue;
                     }
-                    // Position logique = point d'atterrissage ; le flottement n'est calculé qu'au rendu, pour les gemmes
-                    // visibles (écart de hauteur 0,1 au plus, sans effet sur l'aimant).
+                    // Position logique = point d'atterrissage ; le flottement n'existe qu'au rendu (écart de hauteur
+                    // 0,1 au plus, sans effet sur l'aimant).
                     if (magnetSqr > 0f && (player - g.pos).sqrMagnitude <= magnetSqr) BeginAttraction(ref g, 0f, 1f);
                     break;
                 }
@@ -350,9 +498,12 @@ public class XPGemField : MonoBehaviour
 
     private void BeginAttraction(ref Gem g, float rampProgress, float speedBoost)
     {
-        // Part de la hauteur où la gemme flottait à l'écran (le flottement n'existe qu'au rendu, voir LateUpdate).
         if (g.state == GemState.Idle)
-            g.pos.y += Mathf.Max(0f, Mathf.Sin(g.timeAlive * IdleBobSpeed + g.phase) * IdleBobAmplitude);
+        {
+            // Part de la hauteur où la gemme flottait à l'écran (même calcul que le shader).
+            g.pos.y += Mathf.Max(0f, Mathf.Sin((_clock - g.birth) * IdleBobSpeed + g.phase) * IdleBobAmplitude);
+            LeaveSettledLayer(ref g);
+        }
         g.state = GemState.Attracted;
         g.timer = AttractRampDuration * rampProgress;
         g.speedBoost = speedBoost;
@@ -385,10 +536,31 @@ public class XPGemField : MonoBehaviour
             _trails[g.trail].emitting = false;
             _trailBusy[g.trail] = false;
         }
-        _gems[i] = _gems[--_count];
+        if (g.state == GemState.Idle) LeaveSettledLayer(ref g);
+
+        // Retrait par échange avec la dernière gemme : sa place dans la couche posée pointe maintenant sur i.
+        _count--;
+        if (i != _count)
+        {
+            _gems[i] = _gems[_count];
+            if (_gems[i].slot >= 0) _slotGem[_gems[i].slot] = i;
+        }
 
         if (XPSystem.Instance != null) XPSystem.Instance.AddXP(g.xp);
         return GameManager.Instance != null && GameManager.Instance.IsPaused;
+    }
+
+    // Une gemme posée quitte la couche (ramassée ou aspirée) : sa place devient un trou, éteint tout de suite à l'écran.
+    private void LeaveSettledLayer(ref Gem g)
+    {
+        if (g.slot < 0) { _pendingIdle--; return; }
+        int slot = g.slot;
+        g.slot = -1;
+        _slotGem[slot] = -1;
+        _holes++;
+        GemVertex[] v = _settled.verts;
+        for (int k = slot * 4; k < slot * 4 + 4; k++) v[k].anim.x = 0f;   // échelle 0 : quad sans surface
+        _settled.Upload(slot, 1);
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -400,136 +572,181 @@ public class XPGemField : MonoBehaviour
         if (_camera == null) _camera = Camera.main;
         if (_camera == null) return;
 
-        EnsureCapacity(_count);
         Transform camT = _camera.transform;
         Vector3 camFwd = camT.forward;
         // Même orientation que l'ancien billboard : quad local (XY, face +Z) tourné vers la caméra.
         Quaternion rot = Quaternion.LookRotation(-camFwd, Vector3.up);
-        Vector3 right = rot * Vector3.right;
-        Vector3 up = rot * Vector3.up;
+        Shader.SetGlobalVector(IdRight, rot * Vector3.right);
+        Shader.SetGlobalVector(IdUp, rot * Vector3.up);
+        Shader.SetGlobalFloat(IdClock, _clock);
 
-        // 1. Seulement les gemmes à l'écran (marge 1,5 : un quad qui déborde du bord reste dessiné). Les autres existent
-        //    et se ramassent normalement, elles ne sont simplement pas dessinées cette image. Caméra orthographique (celle
-        //    du jeu) : 2 produits scalaires par gemme ; sinon test sur les 6 plans de la caméra.
-        const float Margin = 1.5f;
-        int visible = 0;
-        if (_camera.orthographic)
+        // 1. Couche des gemmes posées : reconstruite seulement par lots.
+        if (!_hasKeyDir || Vector3.Dot(_keyDir, camFwd) < KeyDirTolerance) RebuildSettled(camFwd, true);
+        else if ((_pendingIdle > 0 && Time.unscaledTime - _lastRebuild >= RebuildInterval)
+                 || (_holes >= MinHolesForCompaction && _holes * 4 >= _slotCount))
+            RebuildSettled(camFwd, false);
+
+        // 2. Couche des gemmes en mouvement : chaque image.
+        RenderMoving(camT, camFwd);
+    }
+
+    private static void Grow<T>(ref T[] array, int needed)
+    {
+        if (array.Length < needed) array = new T[Mathf.NextPowerOfTwo(needed)];
+    }
+
+    // Quad d'une gemme : coins en unités monde (largeur 2 x HalfWidth, hauteur 2 x HalfHeight, ancré par le bas),
+    // tiers de l'atlas selon le palier.
+    private static void WriteQuad(GemVertex[] verts, int quad, Vector3 anchor, XPGem.GemType type, float scale,
+                                  float phase, float pulseMul, float birth, float fixedGlow)
+    {
+        const float Third = 1f / 3f;
+        float u0 = (int)type * Third, u1 = u0 + Third;
+        const float W = HalfWidth, H = HalfHeight * 2f;
+        Vector4 anim = new Vector4(scale, phase, pulseMul, birth);
+        int v = quad * 4;
+        verts[v] = new GemVertex { anchor = anchor, uvc = new Vector4(u0, 0f, -W, 0f), anim = anim, fixedGlow = fixedGlow };
+        verts[v + 1] = new GemVertex { anchor = anchor, uvc = new Vector4(u1, 0f, W, 0f), anim = anim, fixedGlow = fixedGlow };
+        verts[v + 2] = new GemVertex { anchor = anchor, uvc = new Vector4(u1, 1f, W, H), anim = anim, fixedGlow = fixedGlow };
+        verts[v + 3] = new GemVertex { anchor = anchor, uvc = new Vector4(u0, 1f, -W, H), anim = anim, fixedGlow = fixedGlow };
+    }
+
+    // Reconstruit la couche des gemmes posées, triée du plus loin au plus proche. resort : la caméra a tourné (ou
+    // premier passage), toutes les clés sont recalculées et triées ; sinon fusion de la liste déjà triée (trous
+    // ignorés) avec les gemmes posées depuis le dernier lot, triées entre elles.
+    private void RebuildSettled(Vector3 camFwd, bool resort)
+    {
+        using var _ = MarkerRebuild.Auto();
+        _keyDir = camFwd;
+        _hasKeyDir = true;
+        _lastRebuild = Time.unscaledTime;
+
+        Grow(ref _sortKeys, _count);
+        Grow(ref _sortOrder, _count);
+        int pending = 0;
+        for (int i = 0; i < _count; i++)
         {
-            Vector3 camPos = camT.position, camRight = camT.right, camUp = camT.up;
-            float halfH = _camera.orthographicSize + Margin;
-            float halfW = _camera.orthographicSize * _camera.aspect + Margin;
-            for (int i = 0; i < _count; i++)
+            ref Gem g = ref _gems[i];
+            if (g.state != GemState.Idle || (!resort && g.slot >= 0)) continue;
+            g.key = -Vector3.Dot(g.pos, camFwd);
+            _sortKeys[pending] = g.key;
+            _sortOrder[pending++] = i;
+        }
+        System.Array.Sort(_sortKeys, _sortOrder, 0, pending);
+
+        int oldCount = resort ? 0 : _slotCount;
+        int total = (resort ? 0 : _slotCount - _holes) + pending;
+        Grow(ref _newOrder, total);
+        int a = 0, b = 0, n = 0;
+        while (true)
+        {
+            while (a < oldCount && _slotGem[a] < 0) a++;
+            bool hasA = a < oldCount, hasB = b < pending;
+            if (!hasA && !hasB) break;
+            if (hasA && (!hasB || _gems[_slotGem[a]].key <= _sortKeys[b])) _newOrder[n++] = _slotGem[a++];
+            else _newOrder[n++] = _sortOrder[b++];
+        }
+
+        _settled.EnsureCapacity(n);
+        Grow(ref _slotGem, n);
+        GemVertex[] verts = _settled.verts;
+        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        for (int q = 0; q < n; q++)
+        {
+            int idx = _newOrder[q];
+            ref Gem g = ref _gems[idx];
+            g.slot = q;
+            _slotGem[q] = idx;
+            WriteQuad(verts, q, g.pos, g.type, XPGem.ScaleOf(g.type), g.phase, g.pulseMul, g.birth, 0f);
+            min = Vector3.Min(min, g.pos);
+            max = Vector3.Max(max, g.pos);
+        }
+        _slotCount = n;
+        _holes = 0;
+        _pendingIdle = 0;
+        _settled.Upload(0, n);
+        // Marge : taille des quads (~1 de haut) + flottement.
+        _settled.SetDrawn(n, n > 0 ? new Bounds((min + max) * 0.5f, max - min + Vector3.one * 3f) : new Bounds(camFwd, Vector3.zero));
+    }
+
+    // Gemmes en mouvement (saut, aspiration) et gemmes posées en attente du prochain lot : seulement celles à l'écran
+    // (marge 1,5 : un quad qui déborde du bord reste dessiné), triées du plus loin au plus proche.
+    private void RenderMoving(Transform camT, Vector3 camFwd)
+    {
+        using var _ = MarkerMoving.Auto();
+        const float Margin = 1.5f;
+        Grow(ref _sortKeys, _count);
+        Grow(ref _sortOrder, _count);
+        int visible = 0;
+        bool ortho = _camera.orthographic;
+        Vector3 camPos = camT.position, camRight = camT.right, camUp = camT.up;
+        float halfH = _camera.orthographicSize + Margin;
+        float halfW = _camera.orthographicSize * _camera.aspect + Margin;
+        if (!ortho) GeometryUtility.CalculateFrustumPlanes(_camera, _frustum);
+        for (int i = 0; i < _count; i++)
+        {
+            ref Gem g = ref _gems[i];
+            if (g.state == GemState.Idle && g.slot >= 0) continue;   // déjà dans la couche des gemmes posées
+            Vector3 d = g.pos - camPos;
+            if (ortho)
             {
-                Vector3 d = _gems[i].pos - camPos;
+                // Caméra orthographique (celle du jeu) : 2 produits scalaires par gemme.
                 float x = d.x * camRight.x + d.y * camRight.y + d.z * camRight.z;
                 if (x > halfW || x < -halfW) continue;
                 float y = d.x * camUp.x + d.y * camUp.y + d.z * camUp.z;
                 if (y > halfH || y < -halfH) continue;
-                _sortOrder[visible] = i;
-                _sortKeys[visible++] = -(d.x * camFwd.x + d.y * camFwd.y + d.z * camFwd.z);
             }
-        }
-        else
-        {
-            GeometryUtility.CalculateFrustumPlanes(_camera, _frustum);
-            for (int i = 0; i < _count; i++)
+            else
             {
-                Vector3 p = _gems[i].pos;
                 bool inside = true;
-                for (int f = 0; f < 6 && inside; f++) inside = _frustum[f].GetDistanceToPoint(p) > -Margin;
+                for (int f = 0; f < 6 && inside; f++) inside = _frustum[f].GetDistanceToPoint(g.pos) > -Margin;
                 if (!inside) continue;
-                _sortOrder[visible] = i;
-                _sortKeys[visible++] = -Vector3.Dot(p, camFwd);
             }
+            _sortOrder[visible] = i;
+            _sortKeys[visible++] = -(d.x * camFwd.x + d.y * camFwd.y + d.z * camFwd.z);
         }
-
-        // 2. Du plus loin au plus proche : les gemmes qui se chevauchent se recouvrent dans le bon ordre.
         System.Array.Sort(_sortKeys, _sortOrder, 0, visible);
 
-        // 3. Quads face caméra, ancrés par le bas (jamais sous le sol).
+        _moving.EnsureCapacity(visible);
+        GemVertex[] verts = _moving.verts;
         Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
         Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-        const float Third = 1f / 3f;
         for (int k = 0; k < visible; k++)
         {
             ref Gem g = ref _gems[_sortOrder[k]];
             float baseScale = XPGem.ScaleOf(g.type);
-            float scale = baseScale;
-            float glow;
-            Vector3 pos = g.pos;
             switch (g.state)
             {
                 case GemState.Popping:
                 {
                     float t = Mathf.Clamp01(g.timer / g.popDuration);
-                    scale = baseScale * Mathf.Max(0f, FXSprites.EaseOutBack(t, 1.5f));
-                    glow = Mathf.Lerp(MinGlow, MaxGlow, 0.6f);
+                    float scale = baseScale * Mathf.Max(0f, FXSprites.EaseOutBack(t, 1.5f));
+                    WriteQuad(verts, k, g.pos, g.type, scale, g.phase, g.pulseMul, g.birth, Mathf.Lerp(MinGlow, MaxGlow, 0.6f));
                     break;
                 }
                 case GemState.Attracted:
-                    glow = Mathf.Lerp(MinGlow, MaxGlow, 0.5f + 0.5f * Mathf.Sin(g.timeAlive * BasePulseSpeed * g.pulseMul * 1.6f));
-                    break;
-                default:
                 {
-                    float bob = Mathf.Sin(g.timeAlive * IdleBobSpeed + g.phase) * IdleBobAmplitude;
-                    if (bob > 0f) pos.y += bob;
-                    glow = Mathf.Lerp(MinGlow, MaxGlow, 0.5f + 0.5f * Mathf.Sin(g.timeAlive * BasePulseSpeed * g.pulseMul + g.phase));
+                    float glow = Mathf.Lerp(MinGlow, MaxGlow, 0.5f + 0.5f * Mathf.Sin((_clock - g.birth) * BasePulseSpeed * g.pulseMul * 1.6f));
+                    WriteQuad(verts, k, g.pos, g.type, baseScale, g.phase, g.pulseMul, g.birth, glow);
                     break;
                 }
+                default:   // posée, en attente du prochain lot : animée par le shader, comme dans la couche posée
+                    WriteQuad(verts, k, g.pos, g.type, baseScale, g.phase, g.pulseMul, g.birth, 0f);
+                    break;
             }
-
-            Vector3 r = right * (HalfWidth * scale);
-            Vector3 u = up * (HalfHeight * 2f * scale);
-            min = Vector3.Min(min, pos);
-            max = Vector3.Max(max, pos);
-
-            float u0 = (int)g.type * Third, u1 = u0 + Third;
-            byte c = (byte)Mathf.Clamp((int)(glow / MaxGlow * 255f + 0.5f), 0, 255);
-            Color32 col = new Color32(c, c, c, 255);
-            int v = k * 4;
-            _verts[v] = new Vertex { pos = pos - r, color = col, uv = new Vector2(u0, 0f) };
-            _verts[v + 1] = new Vertex { pos = pos + r, color = col, uv = new Vector2(u1, 0f) };
-            _verts[v + 2] = new Vertex { pos = pos + r + u, color = col, uv = new Vector2(u1, 1f) };
-            _verts[v + 3] = new Vertex { pos = pos - r + u, color = col, uv = new Vector2(u0, 1f) };
+            min = Vector3.Min(min, g.pos);
+            max = Vector3.Max(max, g.pos);
         }
-
-        _mesh.SetVertexBufferData(_verts, 0, 0, visible * 4, 0, FastUpdate);
-        // Boîte réelle des gemmes dessinées (+ marge pour la taille des quads) : sert au découpage caméra ET au tri des
-        // objets transparents par distance. Centrée sur la caméra, elle faisait passer les gemmes pour l'objet le plus
-        // proche et les dessinait par-dessus le voile du passage de niveau.
-        Bounds b = visible > 0 ? new Bounds((min + max) * 0.5f, max - min + Vector3.one * 3f) : new Bounds(camT.position, Vector3.zero);
-        _mesh.SetSubMesh(0, new SubMeshDescriptor(0, visible * 6) { bounds = b, firstVertex = 0, vertexCount = visible * 4 }, FastUpdate);
-        _mesh.bounds = b;
-    }
-
-    // Tampons du maillage dimensionnés par puissance de 2 : réalloués seulement quand le nombre de gemmes double.
-    private void EnsureCapacity(int gems)
-    {
-        if (_capacity >= gems && _capacity > 0) return;
-        int cap = Mathf.Max(512, Mathf.NextPowerOfTwo(gems));
-        _capacity = cap;
-        _verts = new Vertex[cap * 4];
-        _sortKeys = new float[cap];
-        _sortOrder = new int[cap];
-
-        int[] indices = new int[cap * 6];
-        for (int q = 0; q < cap; q++)
-        {
-            int v = q * 4, t = q * 6;
-            indices[t] = v; indices[t + 1] = v + 1; indices[t + 2] = v + 2;
-            indices[t + 3] = v; indices[t + 4] = v + 2; indices[t + 5] = v + 3;
-        }
-        _mesh.Clear();
-        _mesh.SetVertexBufferParams(cap * 4, VertexLayout);
-        _mesh.SetIndexBufferParams(cap * 6, IndexFormat.UInt32);
-        _mesh.SetIndexBufferData(indices, 0, 0, cap * 6, FastUpdate);
-        _mesh.subMeshCount = 1;
+        _moving.Upload(0, visible);
+        _moving.SetDrawn(visible, visible > 0 ? new Bounds((min + max) * 0.5f, max - min + Vector3.one * 3f) : new Bounds(camT.position, Vector3.zero));
     }
 
     private void OnDestroy()
     {
         if (_instance == this) _instance = null;
-        if (_mesh != null) Destroy(_mesh);
+        if (_settled != null) Destroy(_settled.mesh);
+        if (_moving != null) Destroy(_moving.mesh);
         if (_material != null) Destroy(_material);
         if (_atlas != null && _atlas != Texture2D.whiteTexture) Destroy(_atlas);
     }

@@ -219,18 +219,18 @@ public static class LocTableEN
         { "Sillage Boueux", "Muddy Wake" },
         { "Tes orbes laissent un sillage de boue qui ralentit et blesse les ennemis", "Your orbs leave a trail of mud that slows and hurts enemies" },
         { "Aura", "Aura" }, { "Crée un champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "Creates a permanent field around you that damages and slows nearby enemies" },
-        { "Orbe Rebondissant", "Bouncing Orb" }, { "Lance des orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Launches orbs that bounce endlessly around the arena, hurting every enemy they hit" },
+        { "Orbe de cristal", "Crystal Orb" }, { "Des sphères taillées rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Faceted spheres bounce endlessly around the arena, hurting every enemy they hit" },
         { "Dégâts +", "Damage +" }, { "+20% de dégâts sur toutes tes attaques", "+20% damage on all your attacks" },
         { "Double Tir", "Double Shot" }, { "Ton tir de base tire un second projectile juste après le premier", "Your basic attack fires a second projectile right after the first" },
         { "Boule de Feu", "Fireball" }, { "Lance une boule de feu qui explose sur le groupe d'ennemis le plus dense", "Throws a fireball that explodes on the densest group of enemies" },
         { "Cadence +", "Fire Rate +" }, { "+20% de cadence sur tous tes sorts de tir", "+20% fire rate on all your shooting spells" },
         { "Soin", "Heal" }, { "Restaure 50% de tes PV max", "Restores 50% of your max HP" },
-        { "Couteaux", "Knives" }, { "Lance des salves de couteaux qui transpercent les ennemis puis reviennent", "Throws volleys of knives that pierce through enemies, then fly back" },
+        { "Dagues", "Daggers" }, { "Lance des salves de lames qui transpercent les ennemis puis reviennent", "Throws volleys of blades that pierce through enemies, then fly back" },
         { "Chaîne de Foudre", "Chain Lightning" }, { "Décharge électrique qui rebondit sur les ennemis proches", "An electric discharge that bounces between nearby enemies" },
-        { "Boue", "Mud" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "Spawns mud puddles that slow and hurt the enemies standing in them" },
-        { "Orbitaux", "Orbitals" }, { "Des pierres runiques tournent autour de toi et frappent les ennemis au contact", "Runestones orbit around you and strike enemies on contact" },
-        { "Débloque 2 pierres runiques qui tournent et frappent au contact", "Unlocks 2 orbiting runestones that strike on contact" },
-        { "+1 pierre runique supplémentaire", "+1 extra runestone" },
+        { "Marécage", "Swamp" }, { "Fait apparaître des flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "Spawns mud puddles that slow and hurt the enemies standing in them" },
+        { "Pierres runiques", "Runestones" }, { "Elles gravitent autour de toi et frappent les ennemis au contact", "They orbit around you and strike enemies on contact" },
+        { "Débloque 2 pierres qui gravitent et frappent au contact", "Unlocks 2 orbiting stones that strike on contact" },
+        { "+1 pierre supplémentaire", "+1 extra stone" },
         { "Débloque la foudre en chaîne : elle frappe 3 ennemis", "Unlocks chain lightning: it strikes 3 enemies" }, { "+1 rebond de foudre supplémentaire", "+1 extra lightning bounce" },
         { "Débloque 3 flaques de boue qui ralentissent et blessent", "Unlocks 3 mud puddles that slow and hurt enemies" }, { "+1 flaque de boue supplémentaire", "+1 extra mud puddle" },
         { "+{0}% de dégâts sur toutes tes attaques", "+{0}% damage on all your attacks" },
@@ -240,13 +240,13 @@ public static class LocTableEN
         { "Débloque Boule de feu : équipe le sort exclusif d'Aether", "Unlocks Fireball: equips Aether's exclusive spell" },
         { "Le rayon d'explosion est 2 fois plus grand", "The explosion radius is twice as large" }, { "+{0}% dégâts", "+{0}% damage" },
         { "Débloque la Brûlure : les ennemis touchés brûlent sur la durée", "Unlocks Burn: enemies hit keep burning over time" },
-        { "Débloque l'Aura : équipe le sort exclusif de Kael", "Unlocks the Aura: equips Kael's exclusive spell" },
+        { "Débloque l'Aura de mana : équipe le sort exclusif de Kael", "Unlocks the Mana Aura: equips Kael's exclusive spell" },
         { "+{0}% rayon", "+{0}% radius" }, { "Ralentissement porté à {0}%", "Slow increased to {0}%" },
-        { "Débloque la Salve de Couteaux : équipe le sort exclusif de Lyra", "Unlocks Knife Volley: equips Lyra's exclusive spell" },
-        { "Débloque un couteau supplémentaire dans la salve", "Adds one more knife to the volley" },
+        { "Débloque les Dagues : équipe le sort exclusif de Lyra", "Unlocks the Daggers: equips Lyra's exclusive spell" },
+        { "Une lame de plus dans chaque salve", "One more blade in every volley" },
         { "+{0} ennemis perforés en plus", "Pierces {0} more enemies" }, { "+{0} ennemi perforé en plus", "Pierces {0} more enemy" },
-        { "Débloque un orbe rebondissant qui traverse les ennemis", "Unlocks a bouncing orb that passes through enemies" },
-        { "+{0}% vitesse de l'orbe", "+{0}% orb speed" }, { "+1 orbe rebondissant supplémentaire", "+1 extra bouncing orb" },
+        { "Débloque une sphère taillée qui rebondit et traverse les ennemis", "Unlocks a faceted sphere that bounces through enemies" },
+        { "+{0}% de vitesse", "+{0}% speed" }, { "+1 sphère supplémentaire", "+1 extra sphere" },
 
         // ======================================================== Personnages (CharacterSelectUI / CharacterInfoPanel) - fait
         { "DISTANCE", "RANGED" }, { "ZONE", "AREA" }, { "BRÛLURE", "BURN" }, { "MÊLÉE", "MELEE" }, { "AURA", "AURA" },
@@ -257,8 +257,8 @@ public static class LocTableEN
         { "Aura de mana", "Mana aura" }, { "Champ permanent autour de toi qui blesse et ralentit les ennemis à portée", "A permanent field around you that damages and slows nearby enemies" },
         { "Ralentissement / Rayon / Onde de choc", "Slow / Radius / Shockwave" },
         { "GARDIEN", "GUARDIAN" }, { "Survie et résilience", "Survival and resilience" },
-        { "Salve de couteaux", "Knife volley" }, { "Lance une salve de couteaux qui transpercent les ennemis puis reviennent", "Throws a volley of knives that pierce through enemies, then fly back" },
-        { "Couteau en plus / Cadence / Perforation", "Extra knife / Fire rate / Pierce" },
+        { "Salve de couteaux", "Knife volley" }, { "Lance une salve de lames qui transpercent les ennemis puis reviennent", "Throws a volley of blades that pierce through enemies, then fly back" },
+        { "Lame en plus / Portée / Lames larges", "Extra blade / Range / Wide blades" },
         { "FANTÔME", "PHANTOM" }, { "Mobilité et dash", "Mobility and dash" },
         { "Atteins le Boss 2 dans une partie pour débloquer Kael", "Reach Boss 2 in a run to unlock Kael" },
         { "Termine une partie (bats le Boss 3) pour débloquer Lyra", "Finish a run (beat Boss 3) to unlock Lyra" },
@@ -374,9 +374,9 @@ public static class LocTableEN
         // AJOUTÉ (2026-10-26) - info-bulles du menu Pause : état ACTUEL de la compétence (UpgradeData.GetCurrentStateDescription).
         { "Lance un orbe qui rebondit sans arrêt dans l'arène et blesse les ennemis touchés", "Launches an orb that bounces endlessly around the arena, hurting every enemy it hits" },
         { "Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés", "Launches {0} orbs that bounce endlessly around the arena, hurting every enemy they hit" },
-        { "{0} pierres runiques tournent autour de toi et frappent les ennemis au contact", "{0} runestones orbit around you and strike enemies on contact" },
+        { "{0} pierres gravitent autour de toi et frappent les ennemis au contact", "{0} stones orbit around you and strike enemies on contact" },
         { "Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent", "Spawns {0} mud puddles that slow and hurt the enemies standing in them" },
-        { "Lance des salves de {0} couteaux qui transpercent les ennemis puis reviennent", "Throws volleys of {0} knives that pierce through enemies, then fly back" },
+        { "Lance des salves de {0} lames qui transpercent les ennemis puis reviennent", "Throws volleys of {0} blades that pierce through enemies, then fly back" },
         { "Décharge électrique qui rebondit sur {0} ennemis proches", "An electric discharge that bounces to {0} nearby enemies" },
 
         // AJOUTÉ (2026-10-26) - intitulés des cases de stats du cadre d'infos des écrans de fin (GameUI.FillEndInfoStats).
@@ -468,8 +468,8 @@ public static class LocTableEN
         { "{0} / {1} découvertes", "{0} / {1} discoveries" },
         { "{0} éclats gagnés", "{0} shards earned" },
         { "Espace de travail ({0})", "Work area ({0})" },
-        { "Portée : les couteaux vont {0} m plus loin avant de revenir", "Range: knives fly {0} m farther before coming back" },
-        { "Lames larges : couteaux plus gros qui touchent sur une bande plus large", "Wide blades: bigger knives that hit across a wider strip" },
+        { "Portée : les lames vont plus loin avant de revenir", "Range: blades fly farther before returning" },
+        { "Lames larges : lames plus grandes, zone de frappe élargie", "Wide blades: larger blades, wider strike area" },
 
         // ---- didacticiel (2026-11-16, refonte 2) ----
         { "le stick gauche", "the left stick" },
@@ -559,6 +559,13 @@ public static class LocTableEN
         { "Obtiens cette fusion une première fois pour la découvrir", "Get this fusion once to discover it" },
         { "Bats ce boss une première fois pour le découvrir", "Defeat this boss once to discover it" },
         { "Apparaît à {0} en mode Classique", "Appears at {0} in Classic mode" },
+
+        // ---- Tir de base en 3 paliers : Double Tir, Triple Tir, Déluge (2026-11-25) ----
+        { "Triple Tir", "Triple Shot" },
+        { "Déluge", "Deluge" },
+        { "Ton tir de base tire deux fois de suite", "Your basic attack fires twice in a row" },
+        { "Ton tir de base tire trois fois de suite", "Your basic attack fires three times in a row" },
+        { "Ton tir de base devient un jet continu", "Your basic attack becomes a continuous stream" },
         // ==== SECTIONS SUIVANTES ====
     };
 }

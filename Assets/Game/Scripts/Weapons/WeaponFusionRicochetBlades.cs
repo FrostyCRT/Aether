@@ -54,6 +54,9 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
     private const float HardRecallTime = 10f;   // une lame qui n'arrive pas à rejoindre le joueur est rattrapée d'office
 
     private float _damage;
+    // AJOUTÉ (2026-11-23, retour utilisateur : « mettre les couteaux de Lyra avec la taille max quand les couteaux sont
+    // maxés ») - taille des Couteaux héritée (Lames larges, x1,6 au palier max) : visuel ET zone de touche des lames.
+    private float _knifeSize = 1f;
     private float _cooldownTimer;
     private int _charge;
     private bool _nextOddFlankOnRight = true;
@@ -82,8 +85,11 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
 
     // Appelé une fois par UpgradeData.ApplyFusionResult avec ce que les 2 armes d'origine avaient accumulé (Réputation et
     // "Dégâts+" déjà inclus : pas de second bonus de Réputation ici).
-    public void Init(float inheritedKnivesDamage, float inheritedOrbDamage, int inheritedKnifeCount, int inheritedOrbCount)
+    public void Init(float inheritedKnivesDamage, float inheritedOrbDamage, int inheritedKnifeCount, int inheritedOrbCount, float inheritedKnifeSize = 1f)
     {
+        // MODIFIÉ (2026-11-25, retour utilisateur : « c'est vraiment le bordel sur l'écran ») - lames remises à leur taille de
+        // base : la taille des Dagues n'est plus héritée.
+        _knifeSize = 1f;
         // MESURÉ (2026-10-28) en partie réelle, Apocalyptique 3:20 -> 4:20, joueur invincible qui tourne lentement en rond,
         // tir de base et Nova coupés, dégâts des deux côtés divisés par 3 (à pleine puissance, Couteaux + Orbe maxés tuent
         // déjà la horde aussi vite qu'elle apparaît : la mesure plafonnait). Couteaux + Orbe maxés = 684 et 535 PV/s.
@@ -91,7 +97,10 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
         // beaucoup trop fort. Retenu : x0,15, salve toutes les 2 s, Kaléidoscope de 12 lames toutes les 30 lames
         // rattrapées (~toutes les 12 s) = 1 497 PV/s (entre x2,2 et x2,8 selon la référence, dans la fourchette des
         // autres fusions, x2,2 à x2,9). Un joueur qui ramène ses lames à travers la horde touche plus que ce test.
-        _damage = (inheritedKnivesDamage + inheritedOrbDamage) * 0.15f;
+        // MODIFIÉ (2026-11-23) : 0,15 -> 0,17 (« légèrement augmenter »), puis mesuré x1,66 seulement face aux Dagues + Orbe de
+        // cristal maxés (522 vs 866 PV/s, dégâts ÷3) depuis le rework des Couteaux -> +45 % validé par l'utilisateur : 0,25
+        // (~x2,4, dans la fourchette des autres fusions). MODIFIÉ (2026-11-25, utilisateur) : +20 % au lieu de +45 % -> 0,2.
+        _damage = (inheritedKnivesDamage + inheritedOrbDamage) * 0.2f;
         _bladeCount = Mathf.Clamp(Mathf.Max(_bladeCount, inheritedKnifeCount + inheritedOrbCount), 1, _maxBladeCount);
         for (int i = 0; i < MaxBlades; i++) _blades[i] = new Blade();
 
@@ -214,7 +223,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
     {
         b.age += dt;
         b.prev = b.pos;
-        float size = 1f + _bounceGrowth * b.bounces;
+        float size = (1f + _bounceGrowth * b.bounces) * _knifeSize;
 
         if (!b.returning && b.age >= _maxFlightTime) StartReturn(b);
 
@@ -385,7 +394,7 @@ public class WeaponFusionRicochetBlades : MonoBehaviour
             Blade b = _blades[i];
             if (!b.active) continue;
             b.spin = Mathf.Repeat(b.spin + (b.returning ? 1100f : 820f) * dt, 360f);
-            _visual.SetBlade(i, b.pos, 1f + _bounceGrowth * b.bounces, b.returning ? _wallBounces + 1 : b.bounces, b.spin);
+            _visual.SetBlade(i, b.pos, (1f + _bounceGrowth * b.bounces) * _knifeSize, b.returning ? _wallBounces + 1 : b.bounces, b.spin);
         }
         int lit = Mathf.FloorToInt(_charge * ChargeShards / (float)Mathf.Max(1, _kaleidoscopeCharge));
         _visual.Render(Center, lit, _charge >= _kaleidoscopeCharge);

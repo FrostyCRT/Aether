@@ -242,6 +242,7 @@ public class EnemyBase : MonoBehaviour
 
     private void Awake()
     {
+        RenderPriority.ApplyEnemy(gameObject);   // AJOUTÉ (2026-11-27) - ennemis au-dessus des sorts et des chiffres de dégâts
         _cachedAnimators = GetComponentsInChildren<Animator>(true);
         foreach (Animator a in _cachedAnimators)
             a.cullingMode = AnimatorCullingMode.CullUpdateTransforms;

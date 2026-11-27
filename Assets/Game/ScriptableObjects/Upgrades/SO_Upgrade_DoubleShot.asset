@@ -22,5 +22,5 @@ MonoBehaviour:
   _fusionResultId: 
   _fusionBranch: 3
   _levelValues: []
-  _maxLevel: 1
+  _maxLevel: 3
   _requiresUnlockPick: 0

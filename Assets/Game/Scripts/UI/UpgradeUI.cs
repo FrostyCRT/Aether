@@ -419,7 +419,7 @@ public class UpgradeUI : MonoBehaviour
                 string sources = isFusionCard ? upgrades[i].FusionSourcesLabel() : "";
                 _cards[i].nameText.text = isFusionCard
                     ? Loc.T("FUSION") + $"\n<size=85%>{upgrades[i].Name}</size>" + (sources.Length > 0 ? $"\n<size=62%><color=#{FusionSourcesHex}>{sources}</color></size>" : "")
-                    : upgrades[i].Name;
+                    : upgrades[i].CardTitle;   // palier PROPOSÉ (Double Tir / Triple Tir / Déluge)
                 _cards[i].descriptionText.text = upgrades[i].GetDynamicDescription();
 
                 // CORRIGE (2026-10-11, retour utilisateur avec capture : "le grand vide en bas", "même écart entre
@@ -844,7 +844,7 @@ public class UpgradeUI : MonoBehaviour
     private void ApplySpinStep(IconSpinState s, UpgradeData upgrade)
     {
         s.iconImage.sprite = upgrade.icon;
-        if (s.nameText != null) s.nameText.text = upgrade.Name;
+        if (s.nameText != null) s.nameText.text = upgrade.CardTitle;
         if (s.descriptionText != null)
         {
             s.descriptionText.text = upgrade.GetDynamicDescription();

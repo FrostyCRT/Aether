@@ -382,8 +382,8 @@
 360| Twoje kule zostawiają smugę błota, która spowalnia i rani wrogów
 361| Aura
 362| Strefa aury
-363| Sprężysta kula
-364| Wystrzeliwuje kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
+363| Kryształowa kula
+364| Szlifowane kule bez przerwy odbijają się po arenie i ranią trafionych wrogów
 365| Obrażenia +
 366| +20% obrażeń wszystkich ataków
 367| Podwójny strzał
@@ -394,16 +394,16 @@
 372| +20% szybkostrzelności wszystkich zaklęć strzelających
 373| Leczenie
 374| Przywraca 50% maksymalnych PŻ
-375| Noże
-376| Rzuca salwy noży przebijających wrogów, które potem wracają
+375| Sztylety
+376| Rzuca salwy ostrzy, które przebijają wrogów, a potem wracają
 377| Łańcuch błyskawic
 378| Wyładowanie elektryczne przeskakujące między pobliskimi wrogami
-379| Błoto
+379| Bagno
 380| Tworzy kałuże błota, które spowalniają i ranią stojących w nich wrogów
-381| Satelity
-382| Kamienie runiczne krążą wokół ciebie i ranią wrogów przy kontakcie
-383| Odblokowuje 2 krążące kamienie runiczne, które ranią przy kontakcie
-384| +1 dodatkowy kamień runiczny
+381| Kamienie runiczne
+382| Krążą wokół ciebie i ranią wrogów przy kontakcie
+383| Odblokowuje 2 krążące kamienie, które ranią przy kontakcie
+384| +1 dodatkowy kamień
 385| Odblokowuje łańcuch błyskawic: trafia 3 wrogów
 386| +1 dodatkowy przeskok błyskawicy
 387| Odblokowuje 3 kałuże błota, które spowalniają i ranią
@@ -416,16 +416,16 @@
 394| Promień wybuchu jest dwa razy większy
 395| +{0}% obrażeń
 396| Odblokowuje podpalenie: trafieni wrogowie płoną jeszcze przez chwilę
-397| Odblokowuje Aurę: wyposaża w unikalne zaklęcie Kaela
+397| Odblokowuje Aurę many: wyposaża w unikalne zaklęcie Kaela
 398| +{0}% promienia
 399| Spowolnienie zwiększone do {0}%
-400| Odblokowuje Salwę noży: wyposaża w unikalne zaklęcie Lyry
-401| Dodaje jeden nóż do salwy
+400| Odblokowuje Sztylety: wyposaża w unikalne zaklęcie Lyry
+401| Jedno ostrze więcej w każdej salwie
 402| Przebija o {0} wrogów więcej
 403| Przebija o {0} wroga więcej
-404| Odblokowuje sprężystą kulę, która przenika przez wrogów
-405| +{0}% szybkości kuli
-406| +1 dodatkowa sprężysta kula
+404| Odblokowuje szlifowaną kulę, która odbija się i przebija wrogów
+405| +{0}% prędkości
+406| +1 dodatkowa kula
 
 ## Personnages
 407| DYSTANS
@@ -447,8 +447,8 @@
 423| STRAŻNIK
 424| Przetrwanie i wytrzymałość
 425| Salwa noży
-426| Rzuca salwę noży, które przebijają wrogów i wracają
-427| Dodatkowy nóż / Szybkostrzelność / Przebicie
+426| Rzuca salwę ostrzy, które przebijają wrogów, a potem wracają
+427| Dodatkowe ostrze / Zasięg / Szerokie ostrza
 428| WIDMO
 429| Mobilność i zryw
 430| Dotrzyj do bossa 2 w jednej rozgrywce, aby odblokować Kaela
@@ -641,12 +641,12 @@
 600| Naciśnij dowolny klawisz, aby pominąć
 601| Wystrzeliwuje kulę, która bez przerwy odbija się po arenie i rani każdego trafionego wroga
 602| Wystrzeliwuje {0} kul, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
-603| {0} kamieni runicznych krąży wokół ciebie i rani wrogów przy kontakcie
+603| {0} kamieni krąży wokół ciebie i rani wrogów przy kontakcie
 604| Tworzy {0} kałuż błota, które spowalniają i ranią stojących w nich wrogów
-605| Rzuca salwy {0} noży przebijających wrogów, które potem wracają
+605| Rzuca salwy {0} ostrzy, które przebijają wrogów, a potem wracają
 606| Wyładowanie elektryczne przeskakujące na {0} pobliskich wrogów
 + Lance {0} orbes qui rebondissent sans arrêt dans l'arène et blessent les ennemis touchés#few| Wystrzeliwuje {0} kule, które bez przerwy odbijają się po arenie i ranią każdego trafionego wroga
-+ {0} pierres runiques tournent autour de toi et frappent les ennemis au contact#few| {0} kamienie runiczne krążą wokół ciebie i ranią wrogów przy kontakcie
++ {0} pierres gravitent autour de toi et frappent les ennemis au contact#few| {0} kamienie runiczne krążą wokół ciebie i ranią wrogów przy kontakcie
 + Fait apparaître {0} flaques de boue qui ralentissent et blessent les ennemis qui s'y trouvent#few| Tworzy {0} kałuże błota, które spowalniają i ranią stojących w nich wrogów
 
 ## Écrans de fin : intitulés des cases de stats
@@ -741,8 +741,8 @@
 692| Odkrycia: {0} / {1}
 693| Zdobyte odłamki: {0}
 694| Obszar roboczy ({0})
-695| Zasięg: noże lecą o {0} m dalej, zanim wrócą
-696| Szerokie ostrza: większe noże trafiające w szerszym pasie
+695| Zasięg: ostrza lecą dalej, zanim wrócą
+696| Szerokie ostrza: większe ostrza, szersza strefa trafienia
 697| lewej gałki
 698| kursora pada
 699| Dalej
@@ -828,3 +828,8 @@
 777| Zdobądź tę fuzję raz, aby ją odkryć
 778| Pokonaj tego bossa raz, aby go odkryć
 779| Pojawia się w {0} w trybie klasycznym
+780| Potrójny strzał
+781| Potop
+782| Twój podstawowy atak strzela dwa razy z rzędu
+783| Twój podstawowy atak strzela trzy razy z rzędu
+784| Twój podstawowy atak staje się ciągłym strumieniem

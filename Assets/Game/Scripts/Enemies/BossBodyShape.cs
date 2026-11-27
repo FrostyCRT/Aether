@@ -72,6 +72,9 @@ public class BossBodyShape : MonoBehaviour
         _parts.Clear();
         foreach (SkinnedMeshRenderer smr in GetComponentsInChildren<SkinnedMeshRenderer>(true))
         {
+            // AJOUTÉ (2026-11-25, Serpent de la Faille) - un modèle désactivé (ancienne version laissée dans le prefab) ne
+            // bouge pas : ses sphères restaient figées là où il n'y a plus de corps (hitbox du boss 3 décalée).
+            if (!smr.gameObject.activeInHierarchy) continue;
             Mesh mesh = smr.sharedMesh;
             Transform[] bones = smr.bones;
             if (mesh == null || !mesh.isReadable || bones == null || bones.Length == 0) continue;

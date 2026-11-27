@@ -8,4 +8,18 @@ https://github.com/Panniantong/Agent-Reach.git
 
 Mode coop ? deux joueurs dans la partie.
 
-revoir le nom 'orbitaux'
+faire un check de la fusion boue + foudre
+
+Animations avec Claude code dans Blender:
+Cris des boss
+animation de mort du boss
+attaque du dragon en morsure
+revoir les animations de marche et run du cerf ancestral, parce que des fois il est en animation de course, alors qu'il est lent.
+
+
+revoir les priorité qui passent devant l'écran des éléments, par exemple, les projectiles ennemis doivent être la priorité, et après les ennemis.
+En gros les sorts doivent être en dessous, et l'affichage des dégâts ne doit pas gêner des éléments.
+
+
+
+revoir les paterns du boss 3, surtout le cd du dash

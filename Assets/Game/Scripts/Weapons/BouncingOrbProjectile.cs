@@ -54,13 +54,23 @@ public class BouncingOrbProjectile : MonoBehaviour
         // à l'écran, surtout vu l'angle de caméra assez plongeant qui aplatit visuellement la traînée). Élargie et
         // éclaircie jusqu'à bien se voir sans devenir un gros ruban blanc criard (testé en Play, capture à l'appui).
         _trail = gameObject.AddComponent<TrailRenderer>();
-        _trail.time = 0.4f;
+        // (2026-11-23, retour utilisateur : « mets aussi une traînée derrière ») - traînée large et douce, de la largeur de
+        // l'orbe, qui se resserre : un sillage de cristal bleu glacier bien lisible.
+        // (2026-11-25, retour utilisateur : « pas assez visible, elle doit faire la largeur de la boule ») - largeur = diamètre
+        // de l'orbe, gardée pleine sur la première moitié avant de s'effiler, plus longue et plus opaque.
+        _trail.time = 0.6f;
         _trail.minVertexDistance = 0.05f;
-        _trail.widthMultiplier = 0.4f;
-        _trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+        // (2026-11-25, retour : « on voit que la ligne est vraiment tracée, bords des deux côtés très visibles ») - le ruban
+        // a maintenant des bords fondus (texture T_TrailSoftEdge de M_FX_SoftTrail) : un peu plus large que l'orbe pour que
+        // la partie bien visible garde la largeur de la boule.
+        _trail.widthMultiplier = _orbRadius * 2.4f;
+        _trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.45f, 0.88f), new Keyframe(1f, 0f));
         _trail.material = new Material(Shader.Find("Sprites/Default"));
-        _trail.startColor = FXSprites.A(DamageNumberSpawner.ColorBouncingOrb, 0.85f);
-        _trail.endColor = FXSprites.A(DamageNumberSpawner.ColorBouncingOrb, 0f);
+        // (2026-11-23, orbe de cristal) traînée bleu glacier de l'illustration au lieu de la couleur des dégâts (jaune)
+        _trail.startColor = new Color(0.74f, 0.88f, 1f, 0.85f);
+        _trail.endColor = new Color(0.62f, 0.6f, 0.98f, 0f);
+        Material soft = Resources.Load<Material>("FX/M_FX_SoftTrail");
+        if (soft != null) _trail.material = soft;
         _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         _trail.receiveShadows = false;
         _trail.sortingOrder = 3;

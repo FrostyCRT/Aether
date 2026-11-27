@@ -173,6 +173,7 @@ public class BossBase : MonoBehaviour
 
     protected virtual void Awake()
     {
+        RenderPriority.ApplyEnemy(gameObject);   // AJOUTÉ (2026-11-27) - boss au-dessus des sorts et des chiffres de dégâts
         _currentHealth = _maxHealth;
 
         _bodyShape = GetComponent<BossBodyShape>();
@@ -371,9 +372,15 @@ public class BossBase : MonoBehaviour
 
             projectileGO.TryGetComponent(out EnemyProjectile projectile);
             if (projectile != null)
+            {
                 projectile.Init(direction, "boss");
+                projectile.SetLook(BossProjectileLook);
+            }
         }
     }
+
+    // Aspect des tirs de ce boss (EnemyProjectile.Look) : le Dragon (BossBase) par défaut, redéfini par le Cerf et la Source.
+    protected virtual EnemyProjectile.Look BossProjectileLook => EnemyProjectile.Look.BossDragon;
 
     protected virtual void HandleCharge()
     {
@@ -546,16 +553,41 @@ public class BossBase : MonoBehaviour
         if (_propBlock == null)
             _propBlock = new MaterialPropertyBlock();
 
-        _bodyRenderer.GetPropertyBlock(_propBlock);
         Color emission = _manaGlowColor * Mathf.Lerp(0f, _maxEmissionIntensity, progress);
-        _propBlock.SetColor(_emissionColorProperty, emission);
-        _propBlock.SetColor("emissiveFactor", emission);
         Color baseTint = Color.Lerp(Color.white, _manaGlowColor, progress * 0.8f) * Mathf.Lerp(1f, 1.8f, progress);
         baseTint.a = 1f;
+
+        // AJOUTÉ (2026-11-26, Archonte de la Source) - un modèle à plusieurs matériaux (porcelaine, or, lumière...) : un
+        // bloc posé sur TOUT le rendu écrasait la couleur de base de chacun par la même teinte (l'or devenait blanc).
+        // Un bloc par matériau, teinte MULTIPLIÉE par la couleur d'origine du matériau.
+        Material[] mats = _bodyRenderer.sharedMaterials;
+        if (mats.Length > 1)
+        {
+            if (_baseColorsByMaterial == null || _baseColorsByMaterial.Length != mats.Length)
+            {
+                _baseColorsByMaterial = new Color[mats.Length];
+                for (int i = 0; i < mats.Length; i++)
+                    _baseColorsByMaterial[i] = mats[i] != null && mats[i].HasProperty("_BaseColor") ? mats[i].GetColor("_BaseColor") : Color.white;
+            }
+            for (int i = 0; i < mats.Length; i++)
+            {
+                _bodyRenderer.GetPropertyBlock(_propBlock, i);
+                Color c = _baseColorsByMaterial[i] * baseTint; c.a = _baseColorsByMaterial[i].a;
+                _propBlock.SetColor("_BaseColor", c);
+                _propBlock.SetColor(_emissionColorProperty, emission);
+                _bodyRenderer.SetPropertyBlock(_propBlock, i);
+            }
+            return;
+        }
+
+        _bodyRenderer.GetPropertyBlock(_propBlock);
+        _propBlock.SetColor(_emissionColorProperty, emission);
+        _propBlock.SetColor("emissiveFactor", emission);
         _propBlock.SetColor("_BaseColor", baseTint);
         _propBlock.SetColor("baseColorFactor", baseTint);
         _bodyRenderer.SetPropertyBlock(_propBlock);
     }
+    private Color[] _baseColorsByMaterial;
 
     // AJOUTE (2026-09-16) - DEBUG/TEST uniquement (voir DebugCheats.cs, F8) :
     // invincibilite du boss actif, pour observer tranquillement un combat/

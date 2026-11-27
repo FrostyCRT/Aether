@@ -38,8 +38,15 @@ public class ProjectileBasic : MonoBehaviour
     private void OrientVisual()
     {
         if (_visual == null || _direction.sqrMagnitude < 0.0001f) return;
-        _visual.rotation = Quaternion.LookRotation(_direction, Vector3.up) * VisualFlip * Quaternion.Euler(0f, 0f, _spinAngle);
+        _visual.rotation = Quaternion.LookRotation(_direction, Vector3.up) * VisualFlip
+                           * Quaternion.AngleAxis(_catchFlip * 180f, Vector3.up) * Quaternion.Euler(0f, 0f, _spinAngle);
     }
+
+    // AJOUTÉ (2026-11-25, retour utilisateur : « quand les couteaux reviennent vers Lyra, il faut qu'ils se retournent à la
+    // dernière seconde, sinon on a l'impression qu'elle se les inflige ») - au retour, dans les derniers CatchFlipDistance
+    // mètres, la lame pivote d'un demi-tour (axe vertical) : elle arrive manche en avant, comme rattrapée en main.
+    private float _catchFlip;
+    private const float CatchFlipDistance = 2.6f;
 
     private void SpinVisual()
     {
@@ -48,8 +55,14 @@ public class ProjectileBasic : MonoBehaviour
         OrientVisual();
     }
 
+    // AJOUTÉ (2026-11-25, Déluge du tir de base) - un jet continu de gouttes : une éclaboussure sur 3 seulement, sinon
+    // l'écran se remplit d'éclaboussures. Remis à faux à chaque Init.
+    private bool _skipImpactFX;
+    public void SkipImpactFX() => _skipImpactFX = true;
+
     private void ImpactFX(float scale = 1f)
     {
+        if (_skipImpactFX) return;
         if (_waterImpact) WaterSplashVFX.Spawn(transform.position, scale);
         else ImpactSparkVFX.Spawn(transform.position, _damageColor, scale);
     }
@@ -151,6 +164,7 @@ public class ProjectileBasic : MonoBehaviour
         _startPosition = transform.position;
         _damage = damage;
         _damageColor = color ?? DamageNumberSpawner.ColorProjectile;
+        _skipImpactFX = false;
         _fragmentChance = 0f;
         _useFireExplosionVisual = false;
         _hasPiercing = false;
@@ -167,6 +181,7 @@ public class ProjectileBasic : MonoBehaviour
         _boomerangOwner = null;
         _returning = false;
         _boomerangLife = 0f;
+        _catchFlip = 0f;
 
         _sizeScale = 1f;
         transform.localScale = _baseScale;
@@ -269,6 +284,7 @@ public class ProjectileBasic : MonoBehaviour
         float dist = to.magnitude;
         if (dist <= BoomerangCatchDistance) { ReturnToPool(); return true; }
         _direction = to / dist;
+        _catchFlip = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CatchFlipDistance, BoomerangCatchDistance + 0.4f, dist));
         OrientVisual();   // au retour, le visuel suit le nouveau cap
         transform.position += _direction * Mathf.Min(dist, _speed * BoomerangReturnSpeedFactor * Time.deltaTime);
         return true;

@@ -380,8 +380,8 @@
 360| Deine Kugeln hinterlassen eine Schlammspur, die bremst und verletzt
 361| Aura
 362| Aura-Zone
-363| Prallkugel
-364| Schießt Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
+363| Kristallkugel
+364| Geschliffene Kugeln prallen endlos durch die Arena und verletzen getroffene Gegner
 365| Schaden +
 366| +20 % Schaden für alle deine Angriffe
 367| Doppelschuss
@@ -392,16 +392,16 @@
 372| +20 % Feuerrate für alle deine Schusszauber
 373| Heilung
 374| Stellt 50 % deiner maximalen LP wieder her
-375| Messer
-376| Wirft Messersalven, die Gegner durchbohren und dann zurückkehren
+375| Dolche
+376| Wirft Salven von Klingen, die Gegner durchbohren und dann zurückkehren
 377| Kettenblitz
 378| Elektrische Entladung, die zwischen nahen Gegnern überspringt
-379| Schlamm
+379| Sumpf
 380| Erzeugt Schlammpfützen, die Gegner darin verlangsamen und verletzen
-381| Trabanten
-382| Runensteine kreisen um dich und treffen Gegner bei Berührung
-383| Schaltet 2 kreisende Runensteine frei, die bei Berührung zuschlagen
-384| +1 zusätzlicher Runenstein
+381| Runensteine
+382| Sie kreisen um dich und treffen Gegner bei Berührung
+383| Schaltet 2 kreisende Steine frei, die bei Berührung treffen
+384| +1 zusätzlicher Stein
 385| Schaltet den Kettenblitz frei: Er trifft 3 Gegner
 386| +1 zusätzlicher Blitzsprung
 387| Schaltet 3 Schlammpfützen frei, die verlangsamen und verletzen
@@ -414,16 +414,16 @@
 394| Der Explosionsradius ist doppelt so groß
 395| +{0} % Schaden
 396| Schaltet Verbrennung frei: Getroffene Gegner brennen eine Weile nach
-397| Schaltet die Aura frei: Kaels exklusiver Zauber
+397| Schaltet die Mana-Aura frei: Kaels exklusiver Zauber
 398| +{0} % Radius
 399| Verlangsamung auf {0} % erhöht
-400| Schaltet die Messersalve frei: Lyras exklusiver Zauber
-401| Ein zusätzliches Messer in der Salve
+400| Schaltet die Dolche frei: Lyras exklusiver Zauber
+401| Eine Klinge mehr pro Salve
 402| Durchbohrt {0} weitere Gegner
 403| Durchbohrt {0} weiteren Gegner
-404| Schaltet eine Prallkugel frei, die Gegner durchdringt
-405| +{0} % Kugeltempo
-406| +1 zusätzliche Prallkugel
+404| Schaltet eine geschliffene Kugel frei, die abprallt und Gegner durchdringt
+405| +{0}% Geschwindigkeit
+406| +1 zusätzliche Kugel
 
 ## Personnages
 407| FERNKAMPF
@@ -445,8 +445,8 @@
 423| WÄCHTER
 424| Überleben und Widerstandskraft
 425| Messersalve
-426| Wirft eine Salve von Messern, die Gegner durchbohren und dann zurückkehren
-427| Extra-Messer / Feuerrate / Durchbohren
+426| Wirft eine Salve von Klingen, die Gegner durchbohren und dann zurückkehren
+427| Zusätzliche Klinge / Reichweite / Breite Klingen
 428| PHANTOM
 429| Mobilität und Dash
 430| Erreiche in einem Run Boss 2, um Kael freizuschalten
@@ -636,9 +636,9 @@
 600| Drücke eine beliebige Taste, um zu überspringen
 601| Schießt eine Kugel, die unablässig durch die Arena prallt und jeden getroffenen Gegner verletzt
 602| Schießt {0} Kugeln, die unablässig durch die Arena prallen und jeden getroffenen Gegner verletzen
-603| {0} Runensteine kreisen um dich und treffen Gegner bei Berührung
+603| {0} Steine kreisen um dich und treffen Gegner bei Berührung
 604| Erzeugt {0} Schlammpfützen, die Gegner darin verlangsamen und verletzen
-605| Wirft Salven aus {0} Messern, die Gegner durchbohren und dann zurückkehren
+605| Wirft Salven von {0} Klingen, die Gegner durchbohren und dann zurückkehren
 606| Elektrische Entladung, die auf {0} nahe Gegner überspringt
 
 ## Écrans de fin : intitulés des cases de stats
@@ -733,8 +733,8 @@
 692| {0} / {1} Entdeckungen
 693| {0} Splitter erhalten
 694| Arbeitsbereich ({0})
-695| Reichweite: Die Messer fliegen {0} m weiter, bevor sie zurückkehren
-696| Breite Klingen: größere Messer, die auf einem breiteren Streifen treffen
+695| Reichweite: Die Klingen fliegen weiter, bevor sie zurückkehren
+696| Breite Klingen: größere Klingen, breitere Trefferzone
 697| den linken Stick
 698| dem Cursor des Controllers
 699| Weiter
@@ -820,3 +820,8 @@
 777| Erhalte diese Fusion einmal, um sie zu entdecken
 778| Besiege diesen Boss einmal, um ihn zu entdecken
 779| Erscheint bei {0} im Modus Klassisch
+780| Dreifachschuss
+781| Sintflut
+782| Dein Standardangriff feuert zweimal hintereinander
+783| Dein Standardangriff feuert dreimal hintereinander
+784| Dein Standardangriff wird zu einem Dauerstrahl

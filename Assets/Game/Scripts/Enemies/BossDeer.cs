@@ -281,8 +281,10 @@ public class BossDeer : BossBase
         GameObject projectileGO = ObjectPool.Instance.Get("EnemyProjectile", transform.position, Quaternion.identity);
         if (projectileGO == null) return;
         projectileGO.TryGetComponent(out EnemyProjectile projectile);
-        if (projectile != null) projectile.Init(direction, "boss");
+        if (projectile != null) { projectile.Init(direction, "boss"); projectile.SetLook(BossProjectileLook); }
     }
+
+    protected override EnemyProjectile.Look BossProjectileLook => EnemyProjectile.Look.BossDeer;
 
     private void ShootSpiralProjectile()
     {

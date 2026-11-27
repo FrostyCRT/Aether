@@ -380,8 +380,8 @@
 360| Seus orbes deixam um rastro de lama que retarda e fere os inimigos
 361| Aura
 362| Zona de Aura
-363| Orbe Quicante
-364| Lança orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
+363| Orbe de cristal
+364| Esferas lapidadas ricocheteiam sem parar pela arena e ferem os inimigos atingidos
 365| Dano +
 366| +20% de dano em todos os seus ataques
 367| Tiro Duplo
@@ -392,16 +392,16 @@
 372| +20% de cadência em todos os seus feitiços de disparo
 373| Cura
 374| Restaura 50% dos seus PV máximos
-375| Facas
-376| Lança rajadas de facas que atravessam os inimigos e depois voltam
+375| Adagas
+376| Lança rajadas de lâminas que atravessam os inimigos e depois voltam
 377| Raio em Cadeia
 378| Descarga elétrica que salta entre os inimigos próximos
-379| Lama
+379| Pântano
 380| Cria poças de lama que deixam os inimigos lentos e os ferem
-381| Orbitais
-382| Pedras rúnicas giram ao seu redor e atingem os inimigos ao contato
-383| Desbloqueia 2 pedras rúnicas giratórias que atingem ao contato
-384| +1 pedra rúnica extra
+381| Pedras rúnicas
+382| Elas orbitam ao seu redor e atingem os inimigos ao contato
+383| Desbloqueia 2 pedras que orbitam e atingem ao contato
+384| +1 pedra adicional
 385| Desbloqueia o raio em cadeia: atinge 3 inimigos
 386| +1 salto de raio extra
 387| Desbloqueia 3 poças de lama que desaceleram e ferem
@@ -414,16 +414,16 @@
 394| O raio de explosão fica duas vezes maior
 395| +{0}% de dano
 396| Desbloqueia a Queimadura: os inimigos atingidos queimam por um tempo
-397| Desbloqueia a Aura: equipa o feitiço exclusivo de Kael
+397| Desbloqueia a Aura de Mana: equipa o feitiço exclusivo de Kael
 398| +{0}% de raio
 399| Lentidão aumentada para {0}%
-400| Desbloqueia a Rajada de Facas: equipa o feitiço exclusivo de Lyra
-401| Adiciona mais uma faca à rajada
+400| Desbloqueia as Adagas: equipa o feitiço exclusivo de Lyra
+401| Uma lâmina a mais em cada rajada
 402| Perfura mais {0} inimigos
 403| Perfura mais {0} inimigo
-404| Desbloqueia um orbe quicante que atravessa os inimigos
-405| +{0}% de velocidade do orbe
-406| +1 orbe quicante extra
+404| Desbloqueia uma esfera lapidada que ricocheteia e atravessa os inimigos
+405| +{0}% de velocidade
+406| +1 esfera adicional
 
 ## Personnages
 407| DISTÂNCIA
@@ -445,8 +445,8 @@
 423| GUARDIÃO
 424| Sobrevivência e resistência
 425| Rajada de Facas
-426| Lança uma rajada de facas que atravessam os inimigos e depois voltam
-427| Faca extra / Cadência / Perfuração
+426| Lança uma rajada de lâminas que atravessam os inimigos e depois voltam
+427| Lâmina extra / Alcance / Lâminas largas
 428| FANTASMA
 429| Mobilidade e dash
 430| Chegue ao chefe 2 em uma partida para desbloquear Kael
@@ -636,9 +636,9 @@
 600| Pressione qualquer tecla para pular
 601| Lança um orbe que quica sem parar pela arena e fere todos os inimigos atingidos
 602| Lança {0} orbes que quicam sem parar pela arena e ferem todos os inimigos atingidos
-603| {0} pedras rúnicas giram ao seu redor e atingem os inimigos ao contato
+603| {0} pedras orbitam ao seu redor e atingem os inimigos ao contato
 604| Cria {0} poças de lama que deixam os inimigos lentos e os ferem
-605| Lança rajadas de {0} facas que atravessam os inimigos e depois voltam
+605| Lança rajadas de {0} lâminas que atravessam os inimigos e depois voltam
 606| Descarga elétrica que salta para {0} inimigos próximos
 
 ## Écrans de fin : intitulés des cases de stats
@@ -733,8 +733,8 @@
 692| {0} / {1} descobertas
 693| {0} fragmentos obtidos
 694| Área de trabalho ({0})
-695| Alcance: as facas vão {0} m mais longe antes de voltar
-696| Lâminas largas: facas maiores que acertam numa faixa mais larga
+695| Alcance: as lâminas vão mais longe antes de voltar
+696| Lâminas largas: lâminas maiores, área de golpe ampliada
 697| o analógico esquerdo
 698| o cursor do controle
 699| Próximo
@@ -820,3 +820,8 @@
 777| Obtenha esta fusão uma vez para descobri-la
 778| Derrote este chefe uma vez para descobri-lo
 779| Aparece aos {0} no modo Clássico
+780| Tiro Triplo
+781| Dilúvio
+782| Seu ataque básico dispara duas vezes seguidas
+783| Seu ataque básico dispara três vezes seguidas
+784| Seu ataque básico vira um jato contínuo

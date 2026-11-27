@@ -44,6 +44,10 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private float _strikeLungeSpeed = 22f;
     [SerializeField] private float _strikeImpactRadius = 2.5f;
     [SerializeField] private float _strikeDamage = 30f;
+    // AJOUTÉ (2026-11-27, Lotus - retour utilisateur : « vu la taille du boss et de sa mare on se perd, il faut le rendre
+    // moins mobile ») - délai minimum entre deux Frappes ; pendant ce délai, une autre attaque est choisie à la place.
+    [SerializeField] private float _strikeCooldown = 10f;
+    private float _lastStrikeTime = -999f;
     // OBSOLÈTE (2026-10-03) : remplacé par GroundTelegraphFX (zone de danger animée construite en code). Peut rester vide.
     [SerializeField] private GameObject _strikeTelegraphPrefab;
     [Tooltip("Couleur du signal de la Frappe (zone d'impact au sol).")]
@@ -67,6 +71,8 @@ public class BossCorruptedSource : BossBase
     [SerializeField] private GameObject _resurfaceBurstPrefab;
     [SerializeField] private float _resurfaceBurstRadius = 3f;
     [SerializeField] private float _resurfaceBurstDamage = 15f;
+    [Tooltip("Distance au joueur à laquelle la fleur s'arrête quand elle se rapproche (elle ne fonce plus sur lui)")]
+    [SerializeField] private float _repositionStopDistance = 10f;
 
     [Header("Invocation d'échos corrompus")]
     [SerializeField] private GameObject _miniBoss1Prefab;
@@ -272,6 +278,8 @@ public class BossCorruptedSource : BossBase
             choice = AttackType.CrystalPulse;
         if (choice == AttackType.Summon && (MiniBossAlive || SummonCooldownAfterMini || Time.time - _lastSummonRealTime < _minSummonInterval))
             choice = AttackType.RearingStrike;
+        if (choice == AttackType.RearingStrike && Time.time - _lastStrikeTime < _strikeCooldown)
+            choice = _lastAttack == AttackType.CrystalPulse ? AttackType.CorruptionWave : AttackType.CrystalPulse;
 
         if (choice == AttackType.Summon)
             _lastSummonRealTime = Time.time;
@@ -320,7 +328,7 @@ public class BossCorruptedSource : BossBase
                     if (projectileGO == null) continue;
 
                     projectileGO.TryGetComponent(out EnemyProjectile projectile);
-                    if (projectile != null) projectile.Init(dirToPlayer, "boss");
+                    if (projectile != null) { projectile.Init(dirToPlayer, "boss"); projectile.SetLook(BossProjectileLook); }
                 }
             }
 
@@ -335,6 +343,23 @@ public class BossCorruptedSource : BossBase
     // glisse rapidement jusqu'à l'impact, puis mord.
     // MODIFIÉ (2026-10-03) : le cercle rouge est maintenant une zone de danger animée (GroundTelegraphFX) : contour complet
     // visible dès le début (rayon réel de l'impact), remplissage qui grandit avec le windup, éclat à l'impact.
+    // Distance de la tête devant le pivot, à plat (0 si le modèle n'a pas d'os « head »).
+    private Transform _headBone;
+    [Tooltip("Décaler le point d'impact de la Frappe de la portée de la tête (serpent). Faux pour l'Archonte.")]
+    [SerializeField] private bool _strikeFromHead = false;
+    private float HeadForwardDistance()
+    {
+        // AJOUTÉ (2026-11-26, Archonte) - la tête de l'Archonte est au-dessus de son pivot (pas de long cou comme le
+        // serpent) et le modèle est penché vers la caméra (BossCameraTilt) : la mesurer fausserait la portée de la Frappe.
+        if (!_strikeFromHead) return 0f;
+        if (_headBone == null)
+            foreach (Transform t in GetComponentsInChildren<Transform>())
+                if (t.name == "head") { _headBone = t; break; }
+        if (_headBone == null) return 0f;
+        Vector3 d = _headBone.position - transform.position; d.y = 0f;
+        return Mathf.Max(0f, Vector3.Dot(d, transform.forward));
+    }
+
     private IEnumerator RearingStrikeAttack()
     {
         _lockRotation = true;
@@ -348,7 +373,16 @@ public class BossCorruptedSource : BossBase
 
         // CORRIGE (2026-10-16, audit) - le point d'impact n'était pas borné : près du bord, le boss pouvait plonger hors
         // de la zone de jeu. Borné ici, et le lunge plus bas va EXACTEMENT à ce point (cercle affiché = vrai impact).
-        Vector3 impactPos = MapBoundaryUtils.ClampToZone(transform.position + dir * _strikeLungeDistance);
+        // MODIFIÉ (2026-11-25, Serpent de la Faille) - le pivot du boss est au MILIEU de son corps (28 m) et non plus à sa
+        // tête : le cercle est posé à _strikeLungeDistance DEVANT LA TÊTE, et la ruée amène la tête dessus (voir endPos).
+        float headDist = HeadForwardDistance();
+        // MODIFIÉ (2026-11-27, Lotus - « il faut adapter la zone cible de son dash ») - la fleur fait ~12 m : le cercle
+        // n'est plus un petit point 9 m devant, c'est l'endroit EXACT où le centre de la fleur atterrit (rayon
+        // _strikeImpactRadius ~ la taille de son cœur), et la ruée ne dépasse jamais le joueur.
+        _lastStrikeTime = Time.time;
+        float flatDist = Vector3.Distance(new Vector3(targetPos.x, 0f, targetPos.z), new Vector3(transform.position.x, 0f, transform.position.z));
+        float lunge = Mathf.Clamp(flatDist, 3f, _strikeLungeDistance);
+        Vector3 impactPos = MapBoundaryUtils.ClampToZone(transform.position + dir * (headDist + lunge));
         GroundTelegraphFX telegraph = GroundTelegraphFX.Spawn(impactPos, _strikeImpactRadius, _strikeTelegraphColor, GroundTelegraphFX.Style.Zone);
         Track(telegraph.gameObject);
 
@@ -370,7 +404,8 @@ public class BossCorruptedSource : BossBase
         }
 
         Vector3 startPos = transform.position;
-        Vector3 endPos = new Vector3(impactPos.x, startPos.y, impactPos.z);
+        // la tête (headDist devant le pivot) arrive sur le cercle : le pivot s'arrête headDist en deçà
+        Vector3 endPos = new Vector3(impactPos.x - dir.x * headDist, startPos.y, impactPos.z - dir.z * headDist);
         float lungeElapsed = 0f;
         // MODIFIÉ (2026-10-21, retour utilisateur : "vitesse de déplacement") - le Boss 3 est ancré (_moveSpeed=0,
         // "ne marche jamais"), sa seule notion de "déplacement" est la ruée de la Frappe : _difficultySpeedMultiplier
@@ -398,7 +433,7 @@ public class BossCorruptedSource : BossBase
         if (_animator != null) _animator.SetTrigger("Bite");
         if (telegraph != null) telegraph.Impact();
 
-        Collider[] hits = Physics.OverlapSphere(endPos, _strikeImpactRadius);
+        Collider[] hits = Physics.OverlapSphere(new Vector3(impactPos.x, endPos.y, impactPos.z), _strikeImpactRadius);
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Player"))
@@ -466,10 +501,17 @@ public class BossCorruptedSource : BossBase
         _isRepositioning = true;
         _lockRotation = true;
 
-        Vector3 offset = Random.insideUnitSphere * 3f;
-        offset.y = 0f;
-        Vector3 targetPos = MapBoundaryUtils.ClampToZone(AimTarget.position + offset);
-        Quaternion targetRot = Quaternion.LookRotation((targetPos - transform.position).normalized);
+        // MODIFIÉ (2026-11-27, Lotus - « quand on est trop loin, il fait une énorme ruée vers le joueur sans qu'on soit
+        // prévenu ») - la fleur ne fonce plus SUR le joueur : elle s'arrête à _repositionStopDistance de lui, la zone
+        // d'arrivée est affichée au sol pendant tout le temps d'alerte, et son corps ne blesse pas pendant le trajet.
+        Vector3 toPlayer = AimTarget.position - transform.position; toPlayer.y = 0f;
+        float far = toPlayer.magnitude;
+        Vector3 targetPos = transform.position + toPlayer.normalized * Mathf.Max(0f, far - _repositionStopDistance);
+        targetPos = MapBoundaryUtils.ClampToZone(new Vector3(targetPos.x, transform.position.y, targetPos.z));
+        Vector3 travel = targetPos - transform.position; travel.y = 0f;
+        Quaternion targetRot = travel.sqrMagnitude > 0.01f ? Quaternion.LookRotation(travel.normalized) : transform.rotation;
+        GroundTelegraphFX arrival = GroundTelegraphFX.Spawn(targetPos, _resurfaceBurstRadius, _waveColor, GroundTelegraphFX.Style.Zone);
+        Track(arrival.gameObject);
 
         GameObject crackTrail = null;
         if (_crackTrailPrefab != null)
@@ -480,10 +522,12 @@ public class BossCorruptedSource : BossBase
         {
             telegraphElapsed += Time.deltaTime;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _bodyRotationSpeed * 2f * Time.deltaTime);
+            if (arrival != null) arrival.SetProgress(telegraphElapsed / _repositionTelegraphDuration);
             yield return null;
         }
 
         if (_animator != null) _animator.SetTrigger("Slither");
+        _contactDamageSuppressed = true;
 
         Vector3 startPos = transform.position;
         float elapsed = 0f;
@@ -496,6 +540,8 @@ public class BossCorruptedSource : BossBase
         }
 
         if (crackTrail != null) Destroy(crackTrail);
+        _contactDamageSuppressed = false;
+        if (arrival != null) arrival.Impact();
 
         if (_resurfaceBurstPrefab != null)
         {
@@ -820,4 +866,6 @@ public class BossCorruptedSource : BossBase
                 if (crystal != null) Destroy(crystal);
         base.Die();
     }
+
+    protected override EnemyProjectile.Look BossProjectileLook => EnemyProjectile.Look.BossSource;
 }

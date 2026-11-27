@@ -1,0 +1,30 @@
+- [Écrans de fin de run (Victory ✅ / Game Over ✅ validés)](current-wip-victory-panel.md) — les deux confirmés visuellement par l'utilisateur (2026-09-16)
+- [TMP measurement unreliable in Unity MCP RunCommand](unity-mcp-tmp-measurement-unreliable.md) — trust RectTransform box math, not GetPreferredValues/textBounds/lineInfo, when repeated in one script call
+- [Ne pas proposer de commit après chaque petit fix](feedback_commit_cadence.md) — attendre un vrai gros morceau ou une demande explicite
+- [EditorApplication.Step() pour tester le timing](unity-mcp-editor-step-for-timing.md) — avance le Play Mode d'une frame de façon fiable, bien plus fiable qu'espérer un délai réel entre 2 appels MCP
+- [Accès Steamworks complet obtenu (2026-09-17)](project_steamworks_access.md) — admin validé, intégration Steam débloquée mais reportée, ne pas relancer le sujet seul
+- [Trailer Steam + vertical (Remotion)](project_trailer_pipeline.md) — projet ../Aether Storm Trailer, capture via Assets/TrailerCapture, DA du jeu obligatoire
+- [Jeu traduit en 11 langues (TERMINÉ)](project_english_localization.md) — FR/EN/DE/ES/PT-BR/IT/PL/RU/ZH/JA/KO, procédure pour ajouter un texte traduit (+ polices)
+- [La sauvegarde = données de test](feedback_save_is_test_data.md) — ne pas proposer de restaurer save.json/save.bak
+- [Audit version finale (étapes 1-2, quasi 3, 4 entamée)](project_audit_version_finale.md) — au 2026-10-29 : manette + perfs faites ; restent companyName/IL2CPP/Steam Cloud (reportés), secousses/flashs, sons ; docs à jour au 29/10
+- [Captures d'écran + contraste via Unity MCP](unity-mcp-ui-screenshots.md) — ScreenCapture en Play, outil piloté par SendMessage, mesure de contraste PIL, piège AllowAutoRefresh
+- [Mesurer une longue partie via Unity MCP](unity-mcp-long-play-measurement.md) — runInBackground, sonde fichier, profileur ; causes FPS 2026-10-24 ; méthode A/B de puissance des fusions (cible x2,2-2,9), SerializedObject car Reflection refusée
+- [Typographie : Bangers + Fira Sans (2026-10-25)](project_typography.md) — rôle de chaque police, GameFonts, pas de point final, pièges TMP
+- [Import des images UI (mipmaps)](project_ui_texture_import.md) — image réduite à l'affichage = mipmaps + trilinéaire + BC7, sinon flou
+- [Jamais de modif de script en Play](feedback_no_edit_in_play.md) — Stop dans la même réponse que la lecture des résultats ; GetState avant tout Edit .cs
+- [Grammaire visuelle des effets](project_vfx_visual_grammar.md) — anneaux lisses/gradués réservés aux télégraphes ennemis, cristal pour le joueur
+- [Gemmes d'XP jamais retirées](feedback_xp_gems_never_removed.md) — pas de plafond ni fusion/destruction des gemmes, l'aimant passif reste ; gemmes = données XPGemField depuis 2026-10-28 (perf), rendu animé par shader en 2 couches depuis 2026-11-25
+- [Objectifs de l'économie (2026-10-27, or x10 le 2026-11-07)](project_economy_targets.md) — branche ~30-40 parties, Réputation ~150, paliers de victoire ; or x10 + kills à rendement décroissant
+- [Manette (2026-10-28)](project_gamepad_support.md) — Input System, curseur rond PadCursor (souris virtuelle) dans les menus, icônes PadGlyph, vibrations PadRumble
+- [Refonte des fusions (2026-10-27)](project_fusion_reworks.md) — toutes validées (2026-10-28) ; gros éléments visuels (orbe) bientôt remplacés par des modèles Tripo3D de l'utilisateur
+- [Éditeur ≠ build : OnValidate rejoue l'habillage](editor-vs-build-onvalidate.md) — HudStyler.Apply 2 fois dans l'éditeur, 1 en build ; habillage idempotent, rappeler de refaire la build
+- [Sauvegardes mises de côté](project_save_backups.md) — vraie save sur le Bureau (2026-11-12), save de l'éditeur = test (~9,7M or) ; une build l'efface à sa 1re ouverture
+- [Début de partie : règles fixes](feedback_run_start_rules.md) — tir de base seul au départ, courbe d'XP intouchable, concevoir les événements en détail avant de coder
+- [Escarmouche, Grimoire, didacticiel, Éclipse, Gobelin doré, Tempête : FAITS](project_next_features.md) — état au 22/11, reste à vérifier ; FreshSaveOnNewBuild à remettre à false avant sortie
+- [Identité visuelle de Lyra](project_lyra_identity.md) — voleuse/assassin, violet+bleu, croissant de lune, illustration LyraTR.png
+- [Retours lot 1 en 5 groupes (2026-11-25)](project_lot1_feedback_groups.md) — groupes 1-5 validés ; boss 3 = LOTUS DE LA SOURCE (fait, test en combat attendu au 2026-11-27)
+- [Trop de cristaux dans le jeu](feedback_too_many_crystals.md) — ne plus en ajouter par défaut (le boss 3 garde son cœur de cristal)
+- [Pas d'humanoïde modélisé par code](feedback_no_procedural_humanoids.md) — rendu « mannequin pas terminé » ; formes géométriques/radiales ou base Tripo3D
+- [Mesurer le sol EN JEU](feedback_measure_ground_in_game.md) — BakeMesh sur chaque état avant de dire « rien ne traverse le sol »
+- [Ordre d'affichage (2026-11-27)](project_render_priority.md) — projectiles ennemis > ennemis > sorts ; calques de rendu + Render Objects URP ; silhouette du héros
+- [Idée Kitsune pour plus tard](project_future_kitsune_idea.md) — renard à 9 queues = futur boss/ennemi si le jeu s'étend, pas dans l'Archonte

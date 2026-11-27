@@ -45,6 +45,9 @@ public class DamageNumberSpawner : MonoBehaviour
     public static readonly Color ColorPlayer = new Color(1f, 0.2f, 0.2f);
 
     [SerializeField] private float _fuseWindow = 0.15f; // fenêtre de fusion en secondes
+    // AJOUTÉ (2026-11-26) - avec le Déluge, un boss touché toutes les 0,1 s cumulait dans le même nombre sans fin
+    // (total illisible). Au-delà de cette durée, le nombre se termine (fondu normal) et un nouveau cumul démarre.
+    [SerializeField] private float _maxFuseDuration = 1.5f;
 
     // MODIFIÉ (2026-10-04) - retour utilisateur : "les dégâts qui ne sont pas de la même source mais qui se
     // cumulent ont une couleur qui ne va pas avec l'arme en question, vu que ça prend la couleur de la première
@@ -118,7 +121,8 @@ public class DamageNumberSpawner : MonoBehaviour
         var key = (target, color);
         if (target != null && _activeNumbers.TryGetValue(key, out DamageNumber existing)
             && existing != null && existing.gameObject.activeSelf
-            && existing.ElapsedTime <= _fuseWindow)
+            && existing.ElapsedTime <= _fuseWindow
+            && existing.Age <= _maxFuseDuration)
         {
             existing.AddDamage(damage, isCritical);
             return;

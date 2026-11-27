@@ -10,6 +10,15 @@ using UnityEngine;
 //  3. Kaléidoscope : une étoile de cristal jaillit sous le joueur au départ de la gerbe.
 // Grammaire visuelle du projet : aucun anneau lisse ni gradué (réservés aux télégraphes ennemis), uniquement du cristal.
 // Racine jamais enfant du joueur, rotation monde nulle.
+//
+// MODIFIÉ (2026-11-25, « Valse de lune », retours lot 1 groupe 3 : lueur des lames « trop simple », charge « violet
+// éclaté moche ») - identité de Lyra (croissant de lune, bleu nuit, blanc de lune) :
+//  1. Lames : Lame croissant à lame de cristal de lune (SM_LyraDaggerCrystal, Resources/FX/WaltzDagger).
+//  2. Traînée accrochée à la POINTE de la lame (plus au centre) : avec la rotation, elle trace des arcs en croissant ;
+//     blanc lunaire -> bleu glacier -> violet, plus longue et plus blanche au retour.
+//  3. Charge : 5 croissants de lune en cristal 3D (Resources/FX/WaltzMoonShard) qui flottent à hauteur de taille,
+//     bleu nuit translucides éteints, blanc lunaire allumés (« phases de lune »). Au Kaléidoscope, ils filent vers
+//     l'extérieur avec un bref éclat blanc au sol (plus de halo violet).
 public class BladeWaltzVisual : MonoBehaviour
 {
     public static readonly Color Magenta = new Color(0.82f, 0.22f, 0.9f);   // DamageNumberSpawner.ColorKnives
@@ -28,13 +37,34 @@ public class BladeWaltzVisual : MonoBehaviour
     private TrailRenderer[] _trails;
     private int[] _stage;
     private Material[] _stageMats;
-    private SpriteRenderer[] _shards, _shardGlows;
-    private SpriteRenderer _burst, _burstGlow;
+    private Transform[] _moons;
+    private MeshRenderer[] _moonRenderers;
+    private MaterialPropertyBlock _mpb;
+    private SpriteRenderer _burst;
     private float _burstAge = BurstLife;
     private float _shardSpin;
     private readonly float[] _shardLight = new float[WeaponFusionRicochetBlades.ChargeShards];
 
+    // Croissants de la charge : éteints (bleu nuit translucide) -> allumés (blanc lunaire)
+    private static readonly Color MoonIce = new Color(0.62f, 0.82f, 1f);
+    private static readonly Color MoonViolet = new Color(0.55f, 0.42f, 1f);
+    private static readonly Color OffA = new Color(0.18f, 0.22f, 0.48f), OffB = new Color(0.26f, 0.2f, 0.48f), OffDeep = new Color(0.06f, 0.07f, 0.18f);
+    private static readonly Color OnA = new Color(0.9f, 0.95f, 1f), OnB = new Color(0.8f, 0.83f, 1f), OnDeep = new Color(0.45f, 0.55f, 0.85f);
+    private const float MoonHeight = 0.9f;
+    private const float MoonScale = 1.6f;
+    private static readonly int IdColorA = Shader.PropertyToID("_ColorA"), IdColorB = Shader.PropertyToID("_ColorB"),
+        IdDeep = Shader.PropertyToID("_DeepColor"), IdGlow = Shader.PropertyToID("_Glow"), IdAlpha = Shader.PropertyToID("_Alpha"),
+        IdEdge = Shader.PropertyToID("_EdgeOpacity");
+    // Pointe de la lame dans le repère de WaltzDagger (enfant « Dagger » à z = 0,16, pointe du maillage à z = -0,62)
+    private static readonly Vector3 TipLocal = new Vector3(0f, 0f, -0.46f);
+
     private static Mesh _bladeMesh;
+    // AJOUTÉ (2026-11-23, retour utilisateur : « mettre le modèle 3D des couteaux sur cette fusion, en le modifiant un peu
+    // pour avoir le style des orbes rebondissants ») - si Resources/FX/WaltzDagger existe : la dague de Lyra à lame de
+    // cristal (matériau de l'Orbe rebondissant), garde et poignée en métal peint. Le palier de rebond se lit alors à la
+    // taille et à la traînée (les matériaux de la dague ne changent pas). Repli : l'ancien losange de cristal procédural.
+    private bool _daggerMode;
+    private const float DaggerScale = 2.16f;   // même taille qu'un Couteau de Lyra de base (taille 1)
 
     public void Build(int maxBlades)
     {
@@ -47,16 +77,30 @@ public class BladeWaltzVisual : MonoBehaviour
         for (int s = 0; s < Stages; s++) _stageMats[s] = MakeBladeMaterial(StageColor(s), s == Stages - 1 ? 0.55f : 0.3f + 0.08f * s);
 
         _bladeRoot = new GameObject("BladeWaltzBlades").transform;
-        Material trailMat = new Material(Shader.Find("Sprites/Default"));
+        Material trailMat = Resources.Load<Material>("FX/M_FX_SoftTrail");
+        if (trailMat == null) trailMat = new Material(Shader.Find("Sprites/Default"));
+        GameObject daggerPrefab = Resources.Load<GameObject>("FX/WaltzDagger");
+        _daggerMode = daggerPrefab != null;
         for (int i = 0; i < maxBlades; i++)
         {
-            GameObject g = new GameObject("WaltzBlade" + i);
-            g.transform.SetParent(_bladeRoot, false);
-            g.AddComponent<MeshFilter>().sharedMesh = BladeMesh();
-            MeshRenderer mr = g.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = _stageMats[0];
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            mr.receiveShadows = false;
+            GameObject g;
+            MeshRenderer mr;
+            if (_daggerMode)
+            {
+                g = Instantiate(daggerPrefab, _bladeRoot, false);
+                g.name = "WaltzBlade" + i;
+                mr = g.GetComponentInChildren<MeshRenderer>(true);
+            }
+            else
+            {
+                g = new GameObject("WaltzBlade" + i);
+                g.transform.SetParent(_bladeRoot, false);
+                g.AddComponent<MeshFilter>().sharedMesh = BladeMesh();
+                mr = g.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = _stageMats[0];
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                mr.receiveShadows = false;
+            }
             g.SetActive(false);
             _blades[i] = g.transform;
             _bladeRenderers[i] = mr;
@@ -75,18 +119,35 @@ public class BladeWaltzVisual : MonoBehaviour
         }
 
         int n = WeaponFusionRicochetBlades.ChargeShards;
-        _shards = new SpriteRenderer[n];
-        _shardGlows = new SpriteRenderer[n];
+        _moons = new Transform[n];
+        _moonRenderers = new MeshRenderer[n];
+        _mpb = new MaterialPropertyBlock();
+        GameObject moonPrefab = Resources.Load<GameObject>("FX/WaltzMoonShard");
         for (int i = 0; i < n; i++)
         {
-            _shardGlows[i] = FXSprites.MakeRenderer(transform, "ChargeGlow" + i, FXSprites.Glow(), 12, 0.15f);
-            _shards[i] = FXSprites.MakeRenderer(transform, "ChargeShard" + i, FXSprites.CrystalShard(), 13, 0.18f);
+            GameObject m = moonPrefab != null ? Instantiate(moonPrefab, transform, false) : new GameObject();
+            m.name = "ChargeMoon" + i;
+            _moons[i] = m.transform;
+            _moonRenderers[i] = m.GetComponent<MeshRenderer>();
         }
+        if (moonPrefab == null) Debug.LogWarning("BladeWaltzVisual : Resources/FX/WaltzMoonShard introuvable, charge invisible");
 
-        _burstGlow = FXSprites.MakeRenderer(transform, "KaleidoscopeGlow", FXSprites.Glow(), 14, 0.08f);
         _burst = FXSprites.MakeRenderer(transform, "KaleidoscopeStar", FXSprites.CrystalShard(), 15, 0.1f);
-        _burst.enabled = _burstGlow.enabled = false;
+        _burst.enabled = false;
     }
+
+    private static Gradient TrailGradient(bool back)
+    {
+        var g = new Gradient();
+        // (2026-11-25, retour : « on voit beaucoup les lueurs de la traînée blanche ») - moins opaque ; les bords du ruban
+        // sont maintenant fondus par la texture de M_FX_SoftTrail (T_TrailSoftEdge).
+        g.SetKeys(new[] { new GradientColorKey(WhiteHot, 0f), new GradientColorKey(back ? Color.Lerp(MoonIce, WhiteHot, 0.4f) : MoonIce, 0.35f), new GradientColorKey(MoonViolet, 1f) },
+                  new[] { new GradientAlphaKey(back ? 0.65f : 0.55f, 0f), new GradientAlphaKey(0.32f, 0.4f), new GradientAlphaKey(0f, 1f) });
+        return g;
+    }
+
+    private Vector3 TrailPoint(Transform blade, Vector3 center) =>
+        _daggerMode ? center + blade.rotation * (TipLocal * blade.localScale.x) : center;
 
     private static Color StageColor(int stage)
     {
@@ -108,7 +169,7 @@ public class BladeWaltzVisual : MonoBehaviour
         TrailRenderer tr = _trails[slot];
         tr.transform.position = p;
         tr.Clear();
-        tr.emitting = true;
+        tr.emitting = false;   // allumée au 1er SetBlade, une fois placée à la pointe (sinon trait centre -> pointe)
     }
 
     // La traînée continue de s'estomper seule : seule la lame disparaît.
@@ -124,27 +185,27 @@ public class BladeWaltzVisual : MonoBehaviour
         Transform t = _blades[slot];
         t.position = p;
         t.rotation = Quaternion.Euler(0f, spinDeg, 0f);
-        t.localScale = Vector3.one * (1.25f * size);
-        _trails[slot].transform.position = p;
+        t.localScale = Vector3.one * ((_daggerMode ? DaggerScale : 1.25f) * size);
+        _trails[slot].transform.position = TrailPoint(t, p);
+        if (_stage[slot] < 0) { _trails[slot].Clear(); _trails[slot].emitting = true; }
 
         stage = Mathf.Clamp(stage, 0, Stages - 1);
         if (_stage[slot] == stage) return;
         _stage[slot] = stage;
-        _bladeRenderers[slot].sharedMaterial = _stageMats[stage];
+        if (!_daggerMode) _bladeRenderers[slot].sharedMaterial = _stageMats[stage];
 
         TrailRenderer tr = _trails[slot];
         bool back = stage == Stages - 1;
-        tr.time = back ? 0.26f : 0.18f;
-        tr.widthMultiplier = 0.36f * size;
-        tr.startColor = FXSprites.A(back ? Color.Lerp(Azure, WhiteHot, 0.5f) : Color.Lerp(Magenta, Azure, stage * 0.35f), back ? 0.7f : 0.8f);
-        tr.endColor = FXSprites.A(back ? Azure : Magenta, 0f);
+        tr.time = back ? 0.22f : 0.15f;
+        tr.widthMultiplier = 0.26f * size;   // bords fondus : un peu plus large pour garder la même présence au cœur
+        tr.colorGradient = TrailGradient(back);
     }
 
     public void Burst(Vector3 center)
     {
         _burstAge = 0f;
         transform.position = new Vector3(center.x, 0f, center.z);
-        _burst.enabled = _burstGlow.enabled = true;
+        _burst.enabled = true;
     }
 
     public void Render(Vector3 center, int litShards, bool ready)
@@ -154,40 +215,53 @@ public class BladeWaltzVisual : MonoBehaviour
         float time = Time.time;
         float dt = Time.deltaTime;
 
-        _shardSpin = Mathf.Repeat(_shardSpin + (ready ? 160f : 40f) * dt, 360f);
-        float pulse = ready ? 0.5f + 0.5f * Mathf.Sin(time * 9f) : 0f;
-        int n = _shards.Length;
+        // Kaléidoscope en cours : les croissants filent vers l'extérieur, allumés, puis reviennent éteints
+        bool flying = _burstAge < BurstLife;
+        float bt = flying ? _burstAge / BurstLife : 1f;
+
+        _shardSpin = Mathf.Repeat(_shardSpin + (ready ? 120f : 35f) * dt, 360f);
+        float pulse = ready ? 0.5f + 0.5f * Mathf.Sin(time * 6f) : 0f;
+        int n = _moons.Length;
         for (int i = 0; i < n; i++)
         {
             bool on = i < litShards || ready;
             _shardLight[i] = Mathf.MoveTowards(_shardLight[i], on ? 1f : 0f, dt / 0.15f);
-            float l = _shardLight[i];
+            float l = flying ? 1f - bt : _shardLight[i];
 
             float a = (_shardSpin + i * 360f / n) * Mathf.Deg2Rad;
-            Vector3 local = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * ShardRadius;
-            _shards[i].transform.localPosition = local + Vector3.up * 0.18f;
-            _shardGlows[i].transform.localPosition = local + Vector3.up * 0.15f;
+            Vector3 outward = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+            float radius = ShardRadius + (flying ? 5f * FXSprites.Smooth(bt) : 0f);
+            float bob = Mathf.Sin(time * 2.2f + i * 1.3f) * 0.06f;
+            _moons[i].localPosition = outward * radius + Vector3.up * (MoonHeight + bob);
+            // cornes tournées vers l'extérieur (pointe des cornes = -Z du maillage)
+            _moons[i].localRotation = Quaternion.LookRotation(-outward, Vector3.up);
+            float scale = MoonScale * (flying ? 1f - 0.6f * bt : 0.8f + 0.2f * l + 0.08f * pulse);
+            _moons[i].localScale = Vector3.one * scale;
 
-            float size = 1.3f + 0.5f * l + 0.3f * pulse;
-            FXSprites.SetFlat(_shards[i], size, -a * Mathf.Rad2Deg + 90f);
-            _shards[i].color = FXSprites.A(Color.Lerp(Color.Lerp(Magenta, Azure, i / (float)(n - 1)), WhiteHot, 0.3f * l + 0.4f * pulse), 0.3f + 0.7f * l);
-            FXSprites.SetFlat(_shardGlows[i], 2.2f + 0.6f * pulse, 0f);
-            _shardGlows[i].color = FXSprites.A(Color.Lerp(Magenta, Azure, 0.5f), (0.5f + 0.3f * pulse) * l);
+            MeshRenderer r = _moonRenderers[i];
+            if (r == null) continue;
+            r.GetPropertyBlock(_mpb);
+            _mpb.SetColor(IdColorA, Color.Lerp(OffA, OnA, l));
+            _mpb.SetColor(IdColorB, Color.Lerp(OffB, OnB, l));
+            _mpb.SetColor(IdDeep, Color.Lerp(OffDeep, OnDeep, l));
+            _mpb.SetFloat(IdGlow, Mathf.Lerp(0.8f, 1.25f, l) + 0.2f * pulse);
+            _mpb.SetFloat(IdAlpha, Mathf.Lerp(0.35f, 0.8f, l));
+            _mpb.SetFloat(IdEdge, Mathf.Lerp(0.35f, 0.9f, l));
+            r.SetPropertyBlock(_mpb);
         }
 
-        if (_burstAge < BurstLife)
+        if (flying)
         {
             _burstAge += dt;
             float t = _burstAge / BurstLife;
-            if (t >= 1f) _burst.enabled = _burstGlow.enabled = false;
+            if (t >= 1f) _burst.enabled = false;
             else
             {
-                float grow = FXSprites.EaseOutBack(Mathf.Clamp01(t / 0.35f));
-                float alpha = 1f - FXSprites.Smooth((t - 0.35f) / 0.65f);
-                FXSprites.SetFlat(_burst, 4.2f * grow, time * 220f);
-                _burst.color = FXSprites.A(Color.Lerp(WhiteHot, Azure, t), alpha);
-                FXSprites.SetFlat(_burstGlow, 6.5f * grow, 0f);
-                _burstGlow.color = FXSprites.A(Color.Lerp(Magenta, Azure, 0.5f), 0.7f * alpha);
+                // bref éclat blanc lunaire au sol
+                float grow = FXSprites.EaseOutBack(Mathf.Clamp01(t / 0.3f));
+                float alpha = 1f - FXSprites.Smooth((t - 0.2f) / 0.8f);
+                FXSprites.SetFlat(_burst, 3.2f * grow, time * 160f);
+                _burst.color = FXSprites.A(Color.Lerp(WhiteHot, MoonIce, t), 0.85f * alpha);
             }
         }
     }

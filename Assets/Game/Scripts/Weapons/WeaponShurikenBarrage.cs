@@ -18,7 +18,12 @@ public class WeaponShurikenBarrage : MonoBehaviour
     [SerializeField] private float _damage = 150f;
     [SerializeField] private float _fireRate = 0.8f;
     private const float LegacyBaseDamage = 180f, NewBaseDamage = 150f;
-    [SerializeField] private float _detectionRange = 15f;
+    // MODIFIÉ (2026-11-25, retour utilisateur : « des fois elles partent sans toucher d'ennemis ») - la détection (15 m)
+    // dépassait l'aller du boomerang (9 m) : un ennemi à 10-15 m déclenchait une salve qui faisait demi-tour avant de
+    // l'atteindre. La détection suit maintenant l'aller (DetectionRange) ; la petite marge couvre la largeur de l'ennemi et
+    // son avance pendant le vol (il marche vers Lyra).
+    private const float DetectionMargin = 1f;
+    private float DetectionRange => _boomerangOutDistance + DetectionMargin;
 
     // MODIFIE - reduit de 3 a 2 par couteau : la salve tire maintenant PLUSIEURS
     // couteaux simultanement (voir _knifeCount ci-dessous), donc chacun perce un
@@ -125,12 +130,13 @@ public class WeaponShurikenBarrage : MonoBehaviour
     private Transform FindNearestEnemy()
     {
         // Gobelin doré à portée : cible prioritaire (GoldenGoblinEvent.PriorityTarget).
-        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, _detectionRange);
+        float range = DetectionRange;
+        Transform golden = GoldenGoblinEvent.PriorityTarget(transform.position, range);
         if (golden != null) return golden;
 
-        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRange, _detectionBuffer, EnemyLayers.Mask);
+        int count = Physics.OverlapSphereNonAlloc(transform.position, range, _detectionBuffer, EnemyLayers.Mask);
         Transform nearest = null;
-        float minDistSqr = _detectionRange * _detectionRange;
+        float minDistSqr = range * range;
         for (int i = 0; i < count; i++)
         {
             Collider col = _detectionBuffer[i];
@@ -174,12 +180,8 @@ public class WeaponShurikenBarrage : MonoBehaviour
     // Appele par le palier 3 de la carte Couteaux
     public void AddPierce(int amount) => _maxPierceCount += Mathf.Max(1, amount);
 
-    // Palier 2 de la carte : les couteaux vont plus loin avant de revenir (+value mètres) ; la détection suit.
-    public void AddRange(float meters)
-    {
-        _boomerangOutDistance += meters;
-        _detectionRange = Mathf.Max(_detectionRange, _boomerangOutDistance + 4f);
-    }
+    // Palier 2 de la carte : les couteaux vont plus loin avant de revenir (+value mètres) ; la détection suit (DetectionRange).
+    public void AddRange(float meters) => _boomerangOutDistance += meters;
     public float OutDistance => _boomerangOutDistance;
 
     // Palier 3 de la carte : couteaux plus gros (x value).

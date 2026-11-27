@@ -308,6 +308,9 @@ MonoBehaviour:
   _cloneScale: {x: 1, y: 1, z: 1}
   _cloneStaffScale: {x: 1, y: 1, z: 1}
   _blinkInterval: 0.1
+  MovementLocked: 0
+  DashLocked: 0
+  WalkRadius: 1
 --- !u!114 &1021830163797081727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -357,6 +360,7 @@ MonoBehaviour:
   _hitstopDuration: 0.08
   _ultGroundY: 0.2
   _gemAttractRange: 14
+  UltimateLocked: 0
 --- !u!54 &1021830163797081720
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -421,6 +425,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 0
 --- !u!114 &1956711883913624630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -436,8 +441,9 @@ MonoBehaviour:
   _baseFireRate: 1
   _baseDetectionRange: 15
   _baseDamage: 100
-  _doubleShot: 0
-  _doubleShotDelay: 0.1
+  _burstDelay: 0.1
+  _delugeInterval: 0.1
+  _delugeDamageFactor: 0.85
   _projectilePrefab: {fileID: 4948786220174907987, guid: 84b001f72cd72f649b7b6035a814cf24,
     type: 3}
   _enemyLayer:
@@ -978,7 +984,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6741533400963721708}
   - component: {fileID: 733029451925596053}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: tripo_node_54690f50
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1400,6 +1406,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 598b524e335ba5947b025f74313ba6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _straightenModelWhenWalking: 0
 --- !u!1 &4610807589996131820
 GameObject:
   m_ObjectHideFlags: 0
@@ -2179,7 +2186,7 @@ GameObject:
   - component: {fileID: 2145784748205815493}
   - component: {fileID: 2806900663333062195}
   - component: {fileID: 766485938666311441}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: BatonV2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -381,8 +381,8 @@
 360| Tus orbes dejan un rastro de barro que ralentiza y daña a los enemigos
 361| Aura
 362| Zona de aura
-363| Orbe rebotador
-364| Lanza orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan
+363| Orbe de cristal
+364| Esferas talladas rebotan sin parar por la arena e hieren a los enemigos que tocan
 365| Daño +
 366| +20% de daño en todos tus ataques
 367| Disparo doble
@@ -393,16 +393,16 @@
 372| +20% de cadencia en todos tus hechizos de disparo
 373| Curación
 374| Restaura el 50% de tus PV máximos
-375| Cuchillos
-376| Lanza ráfagas de cuchillos que atraviesan a los enemigos y luego regresan
+375| Dagas
+376| Lanza ráfagas de hojas que atraviesan a los enemigos y luego regresan
 377| Rayo en cadena
 378| Descarga eléctrica que salta entre los enemigos cercanos
-379| Barro
+379| Pantano
 380| Crea charcos de barro que ralentizan y hieren a los enemigos que los pisan
-381| Orbitales
-382| Unas piedras rúnicas giran a tu alrededor y golpean a los enemigos al contacto
-383| Desbloquea 2 piedras rúnicas giratorias que golpean al contacto
-384| +1 piedra rúnica adicional
+381| Piedras rúnicas
+382| Giran a tu alrededor y golpean a los enemigos al contacto
+383| Desbloquea 2 piedras que giran y golpean al contacto
+384| +1 piedra adicional
 385| Desbloquea el rayo en cadena: golpea a 3 enemigos
 386| +1 salto de rayo adicional
 387| Desbloquea 3 charcos de barro que ralentizan y hieren
@@ -415,16 +415,16 @@
 394| El radio de explosión es el doble de grande
 395| +{0}% de daño
 396| Desbloquea Quemadura: los enemigos alcanzados siguen ardiendo un tiempo
-397| Desbloquea el Aura: equipa el hechizo exclusivo de Kael
+397| Desbloquea el Aura de maná: equipa el hechizo exclusivo de Kael
 398| +{0}% de radio
 399| Ralentización aumentada al {0}%
-400| Desbloquea la Ráfaga de cuchillos: equipa el hechizo exclusivo de Lyra
-401| Añade un cuchillo más a la ráfaga
+400| Desbloquea las Dagas: equipa el hechizo exclusivo de Lyra
+401| Una hoja más en cada ráfaga
 402| Perfora a {0} enemigos más
 403| Perfora a {0} enemigo más
-404| Desbloquea un orbe rebotador que atraviesa a los enemigos
-405| +{0}% de velocidad del orbe
-406| +1 orbe rebotador adicional
+404| Desbloquea una esfera tallada que rebota y atraviesa a los enemigos
+405| +{0}% de velocidad
+406| +1 esfera adicional
 
 ## Personnages
 407| DISTANCIA
@@ -446,8 +446,8 @@
 423| GUARDIÁN
 424| Supervivencia y resistencia
 425| Ráfaga de cuchillos
-426| Lanza una ráfaga de cuchillos que atraviesan a los enemigos y luego regresan
-427| Cuchillo extra / Cadencia / Perforación
+426| Lanza una ráfaga de hojas que atraviesan a los enemigos y luego regresan
+427| Hoja extra / Alcance / Hojas anchas
 428| FANTASMA
 429| Movilidad y dash
 430| Llega al jefe 2 en una partida para desbloquear a Kael
@@ -637,9 +637,9 @@
 600| Pulsa cualquier tecla para saltar
 601| Lanza un orbe que rebota sin parar por la arena y hiere a todos los enemigos que toca
 602| Lanza {0} orbes que rebotan sin parar por la arena y hieren a todos los enemigos que tocan
-603| {0} piedras rúnicas giran a tu alrededor y golpean a los enemigos al contacto
+603| {0} piedras giran a tu alrededor y golpean a los enemigos al contacto
 604| Crea {0} charcos de barro que ralentizan y hieren a los enemigos que los pisan
-605| Lanza ráfagas de {0} cuchillos que atraviesan a los enemigos y luego regresan
+605| Lanza ráfagas de {0} hojas que atraviesan a los enemigos y luego regresan
 606| Descarga eléctrica que salta a {0} enemigos cercanos
 
 ## Écrans de fin : intitulés des cases de stats
@@ -734,8 +734,8 @@
 692| {0} / {1} descubrimientos
 693| {0} fragmentos obtenidos
 694| Área de trabajo ({0})
-695| Alcance: los cuchillos llegan {0} m más lejos antes de regresar
-696| Hojas anchas: cuchillos más grandes que golpean en una franja más ancha
+695| Alcance: las hojas llegan más lejos antes de volver
+696| Hojas anchas: hojas más grandes, zona de golpe más amplia
 697| el stick izquierdo
 698| el cursor del mando
 699| Siguiente
@@ -821,3 +821,8 @@
 777| Obtén esta fusión una vez para descubrirla
 778| Derrota a este jefe una vez para descubrirlo
 779| Aparece a los {0} en el modo Clásico
+780| Disparo triple
+781| Diluvio
+782| Tu ataque básico dispara dos veces seguidas
+783| Tu ataque básico dispara tres veces seguidas
+784| Tu ataque básico se convierte en un chorro continuo

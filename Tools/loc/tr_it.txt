@@ -381,8 +381,8 @@
 360| Le tue sfere lasciano una scia di fango che rallenta e ferisce i nemici
 361| Aura
 362| Zona aura
-363| Sfera rimbalzante
-364| Lancia sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono
+363| Sfera di cristallo
+364| Sfere sfaccettate rimbalzano senza sosta nell'arena e feriscono i nemici colpiti
 365| Danni +
 366| +20% ai danni di tutti i tuoi attacchi
 367| Colpo doppio
@@ -393,16 +393,16 @@
 372| +20% alla cadenza di tutti i tuoi incantesimi da tiro
 373| Cura
 374| Ripristina il 50% dei tuoi PS massimi
-375| Coltelli
-376| Lancia raffiche di coltelli che trafiggono i nemici e poi tornano indietro
+375| Pugnali
+376| Lancia raffiche di lame che trafiggono i nemici e poi tornano indietro
 377| Fulmine a catena
 378| Scarica elettrica che rimbalza tra i nemici vicini
-379| Fango
+379| Palude
 380| Fa comparire pozze di fango che rallentano e feriscono i nemici al loro interno
-381| Orbitali
-382| Delle pietre runiche ti orbitano intorno e colpiscono i nemici al contatto
-383| Sblocca 2 pietre runiche rotanti che colpiscono al contatto
-384| +1 pietra runica aggiuntiva
+381| Pietre runiche
+382| Ti orbitano intorno e colpiscono i nemici al contatto
+383| Sblocca 2 pietre orbitanti che colpiscono al contatto
+384| +1 pietra aggiuntiva
 385| Sblocca il fulmine a catena: colpisce 3 nemici
 386| +1 rimbalzo del fulmine
 387| Sblocca 3 pozze di fango che rallentano e feriscono
@@ -415,16 +415,16 @@
 394| Il raggio dell'esplosione è due volte più grande
 395| +{0}% ai danni
 396| Sblocca Ustione: i nemici colpiti continuano a bruciare per un po'
-397| Sblocca l'Aura: equipaggia l'incantesimo esclusivo di Kael
+397| Sblocca l'Aura di mana: equipaggia l'incantesimo esclusivo di Kael
 398| +{0}% al raggio
 399| Rallentamento aumentato al {0}%
-400| Sblocca la Raffica di coltelli: equipaggia l'incantesimo esclusivo di Lyra
-401| Aggiunge un coltello alla raffica
+400| Sblocca i Pugnali: equipaggia l'incantesimo esclusivo di Lyra
+401| Una lama in più in ogni raffica
 402| Perfora {0} nemici in più
 403| Perfora {0} nemico in più
-404| Sblocca una sfera rimbalzante che attraversa i nemici
-405| +{0}% alla velocità della sfera
-406| +1 sfera rimbalzante aggiuntiva
+404| Sblocca una sfera sfaccettata che rimbalza e trapassa i nemici
+405| +{0}% di velocità
+406| +1 sfera aggiuntiva
 
 ## Personnages
 407| DISTANZA
@@ -446,8 +446,8 @@
 423| GUARDIANO
 424| Sopravvivenza e resistenza
 425| Raffica di coltelli
-426| Lancia una raffica di coltelli che trafiggono i nemici e poi tornano indietro
-427| Coltello extra / Cadenza / Perforazione
+426| Lancia una raffica di lame che trafiggono i nemici e poi tornano indietro
+427| Lama extra / Gittata / Lame larghe
 428| FANTASMA
 429| Mobilità e scatto
 430| Raggiungi il boss 2 in una partita per sbloccare Kael
@@ -637,9 +637,9 @@
 600| Premi un tasto qualsiasi per saltare
 601| Lancia una sfera che rimbalza senza sosta nell'arena e ferisce tutti i nemici che colpisce
 602| Lancia {0} sfere che rimbalzano senza sosta nell'arena e feriscono tutti i nemici che colpiscono
-603| {0} pietre runiche ti orbitano intorno e colpiscono i nemici al contatto
+603| {0} pietre ti orbitano intorno e colpiscono i nemici al contatto
 604| Fa comparire {0} pozze di fango che rallentano e feriscono i nemici al loro interno
-605| Lancia raffiche di {0} coltelli che trafiggono i nemici e poi tornano indietro
+605| Lancia raffiche di {0} lame che trafiggono i nemici e poi tornano indietro
 606| Scarica elettrica che rimbalza su {0} nemici vicini
 
 ## Écrans de fin : intitulés des cases de stats
@@ -734,8 +734,8 @@
 692| {0} / {1} scoperte
 693| {0} frammenti ottenuti
 694| Area di lavoro ({0})
-695| Portata: i coltelli vanno {0} m più lontano prima di tornare
-696| Lame larghe: coltelli più grandi che colpiscono su una fascia più ampia
+695| Gittata: le lame volano più lontano prima di tornare
+696| Lame larghe: lame più grandi, area di colpo più ampia
 697| lo stick sinistro
 698| il cursore del controller
 699| Avanti
@@ -821,3 +821,8 @@
 777| Ottieni questa fusione una volta per scoprirla
 778| Sconfiggi questo boss una volta per scoprirlo
 779| Appare a {0} in modalità Classica
+780| Colpo triplo
+781| Diluvio
+782| Il tuo attacco base spara due volte di fila
+783| Il tuo attacco base spara tre volte di fila
+784| Il tuo attacco base diventa un getto continuo

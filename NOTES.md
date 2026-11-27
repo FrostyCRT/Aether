@@ -50,6 +50,290 @@ Dernier commit : `9aba757` du 2026-11-18 (« Polish »). Arbre de travail propre
 
 ## Journal des sessions (du plus récent au plus ancien)
 
+### 2026-11-27 — Boss 3 moins mobile + ORDRE D'AFFICHAGE (lisibilité)
+- Retour : « vu la taille du boss, de sa mare et des projectiles, on se perd », « réduire son dash », « adapter la zone
+  cible de son dash », « quand on est trop loin, énorme ruée sans être prévenu », « projectiles ennemis en priorité, puis
+  les ennemis, les sorts en dessous, l'affichage des dégâts ne doit pas gêner ».
+- BossCorruptedSource : Frappe avec _strikeCooldown 10 s (sinon Pulsation / Onde) ; cercle = point d'ATTERRISSAGE du
+  centre de la fleur, rayon 5 m (_strikeImpactRadius), ruée = distance au joueur bornée 3..8 m, alerte 1,6 s.
+  Repositionnement (phase 2) : seulement au-delà de 18 m (_anchorLeashRadius, contrôle toutes les 6 s), zone d'arrivée
+  AFFICHÉE au sol 1,4 s, la fleur s'arrête à 10 m du joueur (_repositionStopDistance), trajet 1,6 s SANS dégâts de
+  contact, onde à l'arrivée = zone affichée (5 m).
+- ORDRE D'AFFICHAGE (`Scripts/Systems/RenderPriority.cs` + Render Objects dans les 3 renderers URP, Performant /
+  Balanced / HighFidelity) : calques de RENDU 8 « EnemyVisual », 9 « EnemyFX », 10 « PlayerVisual » (seuls les objets
+  SANS collider changent de calque : physique inchangée). EnemyVisual / EnemyFX retirés des passes normales, redessinés
+  après les transparents : 1) ennemis/boss (EnemyBase/BossBase.Awake) au-dessus des sorts et des chiffres de dégâts ;
+  2b) SILHOUETTE du héros là où il est caché (Shaders/PlayerSilhouette, profondeur « Greater », corps + bâton des
+  prefabs Player_* sur PlayerVisual) ; 3-4) projectiles ennemis (EnemyProjectile.Init) SANS test de profondeur = toujours
+  visibles. La mare du Lotus (SourcePond) reste au niveau du sol. Mesuré : 4,3 ms/image en combat.
+- Piège : le projet utilise le GPU Resident Drawer -> tout shader utilisé en matériau de remplacement (Render Objects)
+  doit avoir `#pragma multi_compile _ DOTS_INSTANCING_ON` (+ target 4.5), sinon erreur console et rendu magenta.
+- Projectiles du Lotus : contour prune épais + halo blanc-rosé (des pétales roses sur une fleur rose se confondaient).
+
+### 2026-11-26 (suite 6) — Lotus : passe « qualité » après auto-critique en jeu
+- Question de l'utilisateur : est-ce parfait / au niveau des meilleurs jeux du genre ? Réponse honnête : non. Défauts
+  relevés sur captures : pétales « clipart » (aplat identique), pas d'ancrage dans le décor, aucun effet vivant,
+  corruption = tache grise, charge peu différente du repos.
+- FAIT : nouveau shader `Shaders/LotusPetal.shader` (dégradé t, nervures fines + nervure centrale selon la position en
+  travers, ombre de contact à la base, bords clairs « soie », variation de teinte par pétale) ; couleur des sommets des
+  pétales = (t, position en travers 0..1, identité du pétale) [lotus_build stocke l'attribut 's', lotus_rig l'écrit].
+  Effets enfants de LotusMesh : FX_DriftPetals (pétales qui se détachent et dérivent, maillage SM_LotusDriftPetal = feuille
+  fusionnée en 1 sous-maillage, obligatoire pour les particules), FX_HeartMotes (lumière qui monte du cœur), FX_CorruptMist
+  (brume indigo, sur l'os P0_7_1). Les effets démarrent après l'entrée du boss (temps figé pendant l'intro).
+- BASSIN DE LA SOURCE (fait) : `Shaders/SourcePond.shader` (eau peinte mate : bleu profond au centre -> turquoise,
+  rive irrégulière claire, ondes concentriques qui partent du cœur, reflets qui scintillent) sur un quad de 16 m,
+  enfant « SourcePond » de la RACINE du boss (suit le boss, ne penche pas avec la fleur) + 7 feuilles de lotus
+  flottantes (maillage SM_LotusPad.asset, disque à encoche, M_LotusPad). Vérifié en jeu, console vide.
+- Passe 2 (faite, vérifiée en jeu, console vide) :
+  - `Scripts/Enemies/LotusSourceFX.cs` sur la racine du boss : bassin qui S'ÉTEND à l'apparition (temps réel, l'intro
+    fige le jeu) ; CHARGE (IsCoiling) = cœur de cristal qui s'illumine (_Glow par bloc de propriétés sur son
+    sous-maillage), ondes plus rapides et plus fortes, lumière du cœur x4,5 ; IMPLOSION (état Dance) = ondes INVERSÉES
+    qui convergent ; feuilles flottantes qui dérivent et ondulent.
+  - Feuilles flottantes : shader LotusPetal (nervures rayonnantes, cœur plus sombre, bord plus clair).
+  - Corruption : pointes presque noires à nervures VIOLETTES, brume plus dense, ENCRE indigo qui s'étend dans l'eau du
+    côté corrompu (SourcePond _CorruptDir ; attention, la conversion d'axes inversait le sens : valeur finale (0,8 ; 0,6)).
+  - CORRIGÉ 2026-11-27 (« la mare est impactée par la rotation du lotus ») : LotusSourceFX.LateUpdate remet le bassin à
+    une orientation FIXE (seule la fleur se tourne vers le joueur) ; _CorruptDir recalculé à chaque image depuis l'os du
+    pétale corrompu (_corruptAnchor = P0_7_1). Vérifié en jeu : boss lacet 270° puis 0°, bassin toujours 0°.
+  - 2026-11-27 (« pourquoi un pétale est violet » -> la corruption ne se lisait pas comme telle) : pétales corrompus FANÉS
+    (retombent, pointe recroquevillée), bord DÉCHIRÉ (morsure + dents), 5 grands éclats sombres qui les TRANSPERCENT ;
+    corruption qui GAGNE les pétales voisins (couleur des sommets A = taux, calculé dans lotus_rig.corruption() selon
+    l'écart d'azimut, le bord tourné vers la corruption et t ; LotusPetal : teinte _CorruptColor + nervures _CorruptVein).
+    Attention : tout maillage sur LotusPetal doit avoir A = 0 hors corruption (les feuilles flottantes sont devenues
+    noires avec A = 1).
+  - Bassin coupé aux MURS de l'arène (le décor d'arbres est au-delà) : SourcePond _ZoneMin/_ZoneMax (monde) envoyés par
+    LotusSourceFX depuis MapBoundaryUtils + rive le long du mur ; feuilles hors zone masquées.
+  - Sol remesuré en jeu (LotusMesh à 0,6 m) : Idle 0,59 / Coiled 0,50 / Slither 0,34 / Bite 0,33 / Dance 0,56 / Death 0,06 m.
+  - RETIRÉ 2026-11-27 (« le pétale violet fait plus bizarre qu'autre chose, pas besoin de marque de corruption ») : plus
+    AUCUNE corruption sur la fleur (lotus_build CORRUPTION = False : ni pétales fanés/violets ni éclats sombres ;
+    lotus_rig.corruption() = 0 ; brume FX_CorruptMist supprimée ; encre du bassin _CorruptStrength = 0). Le code reste
+    en place, désactivé. Sol remesuré : Idle 0,59 / Coiled 0,65 / Slither 0,34 / Bite 0,54 / Dance 0,66 / Death 0,54 m.
+
+### 2026-11-26 (suite 5) — Lotus : sol, taille, cœur
+- Retour : « tu n'as pas fait de test en jeu, certains éléments passent à travers le sol », « plus imposante », « le
+  visage au milieu fait enfantin ».
+- CAUSE DU SOL : le modèle était monté à y -0,31 (x5 = 1,55 m SOUS le pivot du boss), décalage hérité du serpent ; en jeu
+  le pivot du boss est AU SOL (y 0, raycast « Ground ») -> la fleur était enterrée de ~1,9 m (l'Archonte aussi).
+  LotusMesh : y = 0,35 m au-dessus du sol. Racines relevées, glissade moins penchée (7°), mort qui s'affaisse (-0,35 m)
+  au lieu de s'enfoncer.
+- MESURE RÉELLE (outil : Animator.Play de chaque état x 31 instants, SkinnedMeshRenderer.BakeMesh, point le plus bas en
+  monde) : Idle 0,34 / Coiled 0,40 / Slither 0,09 / Bite 0,29 / Dance 0,41 / Death 0,09 m au-dessus du sol. À REFAIRE
+  après toute modification du modèle ou des animations.
+- Plus imposant : 12 pétales extérieurs de 5 m, 10 x 3,8 m, 8 x 2,7 m ; échelle 0,2 -> ~12 m d'envergure, 7 m de haut.
+- « Visage » : les alvéoles sombres du réceptacle formaient des yeux -> supprimées ; cœur = faisceau de flèches de cristal
+  (flèche centrale 4 m + 7 inclinées + 9 éclats).
+
+### 2026-11-26 (suite 4) — Boss 3 = LE LOTUS DE LA SOURCE (l'Archonte est abandonné)
+- Retour : l'Archonte « ressemble pas à grand chose, on dirait un modèle 3D pas terminé ». Honnêtement : un humanoïde
+  modélisé par code donne un mannequin (anatomie, visage, plis = travail de sculpteur). Choix validé : une fleur sacrée,
+  radiale, parfaitement lisible sous la caméra à 65°, cohérente avec la carte nature et le Cerf.
+- `Blender/lotus_build.py` (collection Lotus, X = 80) : 3 couronnes (10 pétales-lames presque à plat, 10 moyens, 8 en
+  coupe ; creusés, cintrés, cannelés), dégradé t blanc -> rose (attribut 't'), 3 pétales côté corruption à pointes
+  INDIGO, réceptacle + 44 étamines, cœur de cristal bleu Cerf (2,9 m), calice sombre, 6 racines vers la faille, éclats
+  indigo qui percent la fleur. ~180 k triangles, ~10 m d'envergure.
+- `Blender/lotus_rig.py` : 107 os (chaque pétale = 3 os le long de sa nervure, ouverture = rotation autour de l'axe
+  transverse ; Heart, Pod, Body, 6 racines x 3 ; « head » sur le cœur). 6 clips sur place : Idle (la fleur respire en
+  vague), Coiled (s'ouvre grand, le cœur monte et tourne), Slither (se replie, penchée), Bite (se ferme puis claque en
+  avant, pétales avant), Dance (se referme en BOUTON puis éclate), Death (fane, s'affaisse dans la faille).
+- Unity : `Boss3/SK_Lotus.fbx`, `Boss3/Lotus.controller` (copie, mêmes transitions), matériaux M_Lotus* (ArchonSoft MAT :
+  auto-éclairage 0, liseré lumineux 0 ; cristal = M_ArchonV2Crystal bleu Cerf ; corruption M_LotusCorrupt indigo sombre).
+  Prefab : enfant LotusMesh (échelle 0,16, rotation 180°) à la place d'ArchonMesh (supprimé ; plus de BossCameraTilt).
+- Couleurs testées en jeu (3 roses) : retenu « Rose 2 » (base 0,99/0,93/0,9 -> pointe 0,86/0,42/0,6). Projectiles =
+  la feuille recolorée en PÉTALE rose (une feuille verte disparaissait sur l'herbe), halo et traînée roses.
+- Restent dans le projet, inutilisés : modèles Archonte (SK_Archon, M_ArchonV2*, Archon.controller sauf matériaux
+  partagés cristal/feuille), serpent v2.
+
+### 2026-11-26 (suite 3) — Archonte : BLANC MAT + lisibilité (bascule face caméra)
+- Retours : « le doré sur son corps j'aime pas, remets le blanc », « pas de lumière flashy sur lui, comme le Cerf (blanc
+  classique) » ; « quand il apparaît on dirait juste un tas d'éléments, on ne comprend pas ce que c'est ».
+- Couleurs : peau, chevelure et capuchon BLANC MAT (auto-éclairage 0, liseré lumineux 0, ombre bleutée), robe saphir
+  gardée (contraste), métal argent clair. Feuilles (projectiles) et cristaux inchangés.
+- Simplification : anneaux de la taille et couronne flottante RETIRÉS, halo sobre (1 cercle, 12 rayons courts), mèches
+  resserrées en une masse ; capuchon passé en matériau blanc (en saphir, son intérieur faisait un trou sombre vu d'en haut).
+- LISIBILITÉ : `Scripts/Enemies/BossCameraTilt.cs` sur ArchonMesh. Caméra orthographique à 65° : un personnage debout
+  n'y montre que le dessus de sa tête. Le modèle est BASCULÉ EN ARRIÈRE de 50° (le haut s'éloigne de la caméra) -> vu
+  de face à l'écran ; il se tourne vers le joueur mais jamais à plus de 70° de la caméra (de dos = illisible). Essai
+  raté noté : pencher VERS la caméra aligne le corps sur le regard (pire). Purement visuel ; BossCorruptedSource :
+  `_strikeFromHead` (faux) -> la Frappe ne dépend plus de la position de la tête. Échelle ArchonMesh 0,21.
+- La zone de collision (BossBodyShape, sur les os) suit le modèle basculé : à surveiller en partie.
+
+### 2026-11-26 (suite 2) — Archonte : palette « Saphir, Or et cristal du Cerf » + projectile FEUILLE
+- Retour : « trop flashy », « fait hologramme », pas assez de contraste ; projectile plume = « on dirait des missiles » ;
+  couleurs à trouver « en rapport avec la nature », référence le Cerf, beaucoup de tests demandés.
+- ArchonSoft : la couleur des sommets porte un FACTEUR t (0 base -> 1 bout) et le shader mélange _ColorA -> _ColorB
+  (palettes réglables dans les matériaux, sans réexport). Anti-hologramme : auto-éclairage 0,05-0,15, liseré lumineux
+  0,18-0,28, vague de lumière coupée, ombres plus profondes.
+- Projectile : `Blender/build_archon_leaf.py` -> `Boss3/SM_ArchonLeaf.fbx`, feuille ovale creusée, nervures en relief,
+  petite tige (matériaux M_ArchonLeafBlade / M_ArchonLeafVeins). La plume (SM_ArchonFeather) n'est plus utilisée.
+- Tests en jeu (outil de captures automatiques, 2 tours de 6 palettes) : robes VERTES = se fondent dans l'herbe (écartées) ;
+  retenue B « Saphir, Or et cristal du Cerf » : peau ivoire chaud, robe saphir (0,12/0,24/0,44 -> 0,42/0,62/0,84),
+  chevelure ivoire -> or pâle, métal OR CLAIR (vu du dessus, un or foncé paraissait brun), cristaux = bleu des bois du Cerf
+  (aussi les cristaux en orbite M_RiftCrystalShell/Core + lumière et halo d'OrbitalCrystal), feuilles dorées à nervures
+  bleues, halo/traînée du projectile dorés. Corruption violette inchangée.
+
+### 2026-11-26 (suite) — Archonte v2 : être de lumière DRAPÉ + projectile plume
+- Retour utilisateur sur la v1 : « il a l'air robotique dans ses formes », couleurs à revoir (« blanc bleu comme les
+  autres »), « il n'est pas incliné vers le joueur », projectiles à revoir. Direction v2 validée : plus aucune armure.
+- ROTATION : le modèle était monté À L'ENVERS dans le prefab (face vers -Z, le boss tourne son +Z vers le joueur) ->
+  ArchonMesh tourné de 180° (localRotation Y 180).
+- Blender (fichier Blender/Archon.blend, collections ArchonV2 / ArchonV2Rig ; l'ancienne v1 reste dans « Archon », cachée) :
+  `archon_v2_body.py` (corps d'un seul tenant en MÉTABALLES : rayon d'influence = 2 x rayon visible (RK), capsules en
+  demi-longueur absolue -> remaillage voxel 0,022 + lissage + réduction 0,45), `archon_v2_parts.py` (robe de 10 voiles
+  ondulants, 7 mèches de lumière, capuchon-voile bordé d'argent qui encadre le visage, couronne de cristal flottante,
+  halo basculé, cœur serti, bracelets, traîne de cristal, 2 anneaux d'argent à runes, corruption VIOLETTE à gauche ;
+  éléments posés sur le corps par lancer de rayons BVH), `archon_v2_rig.py` (78 os : corps à poids lissés par distance
+  aux segments, chaînes de 4 os par mèche et 3 par voile qui ondulent, mêmes 6 clips/noms d'états, couleurs peintes).
+  ~234 k triangles.
+- Unity : nouveau shader `Shaders/ArchonSoft.shader` (dégradé peint de la couleur des sommets, 3 tons à ombre bleutée,
+  liseré lumineux Fresnel, auto-éclairage, vague de lumière, liseré sombre sur la normale skinnée, ombre portée) ;
+  matériaux `Boss3/Materials/M_ArchonV2*` (argent = PaintedMetal ÉCLAIRCI : vu du dessus il reflète le « sol » et
+  paraissait noir). Prefab : ArchonMesh reconstruit (Animator + EnemyAnimatorController recopiés, _bodyRenderer remappé).
+- PROJECTILE : `Blender/build_archon_feather.py` -> `Boss3/SM_ArchonFeather.fbx`, plume-lame de lumière (lame ArchonSoft
+  blanc -> bleu glacier + nervure lumineuse + 2 fines traînées), même taille que l'ancien éclat ; halo et traînée du
+  visuel BossSource d'EnemyProjectile passés en blanc-bleu. EnemyProjectile : plus de vrille (une plume plate vue de
+  profil disparaissait), elle reste à plat face à la caméra et se balance de ±22°.
+- Vérifié en jeu par captures : silhouette lisible, projectiles nets et petits, console vide.
+
+### 2026-11-26 — Boss 3 REMPLACÉ : L'Archonte de la Source (modèle en cours)
+- Le serpent est abandonné (trop large, pas assez « boss final »). Choix de l'utilisateur parmi 3 concepts (Archonte /
+  Kitsune céleste / Baleine-raie) : l'ARCHONTE, divinité de la Source en lévitation au-dessus de la faille. Style « vraie
+  divinité imposante », AUCUNE référence japonaise (le Kitsune est gardé pour un futur boss).
+- `Blender/build_archon.py` (collection « Archon », X = 40), ~9,5 m de haut, ~6,5 m de large anneaux compris, ~22 k faces.
+  Langage de formes : divin = courbes lisses + rayonnement (porcelaine, or, lumière cyan) ; corruption = éclats indigo +
+  fêlures bordeaux lumineuses, côté GAUCHE seulement. Cristal pur : halo, diadème, cœur, traîne.
+- Pièces séparées (pour le rig) : torse + plastron, tête (larmes d'or, diadème, crête), halo (2 cercles, 19 rayons, glyphes),
+  épaulières à 2 étages, bras + or, mains DÉTACHÉES (sceau dans la paume), manteau de 6 plaques, jupe de 10 pétales,
+  traîne d'éclats + fragments, 2 anneaux runiques.
+- Détails validés par l'utilisateur (« ça me semble pas mal »). Manteau refait en AILES de 6 plaques détachées du dos
+  (avant : caché derrière le torse). Halo basculé de 65° vers l'arrière : la caméra du jeu regarde presque à la
+  verticale, un halo vertical n'y était qu'un trait.
+- `Blender/build_archon_rig.py` (lancer après build_archon.py ; fichier Blender/Archon.blend) : 25 os tous orientés +Z
+  (poses écrites en rotations du monde de repos), pièces rigides sauf torse/bras fondus, couleur 'Col' (barycentriques
+  sur cristal/corruption, gris 0,5 ailleurs -> liseré sur la normale skinnée), 6 clips à 60 i/s SUR PLACE, mêmes noms
+  que les états de l'Animator : Idle 4 s, Coiled (charge, bras levés) 2 s, Slither (glissade penchée) 2 s, Bite (ruée,
+  poussée des 2 mains) 1,4 s, Dance (implosion : bras ouverts -> mains jointes, anneaux resserrés) 2,4 s, Death
+  (affaissement dans la faille) 2,5 s. Os « head » en minuscules (HeadForwardDistance).
+- Unity : `3D Models/Boss3/SK_Archon.fbx` (Generic, bakeAxisConversion, matériaux remappés), `Boss3/Archon.controller`
+  (copie de RiftSerpent.controller, mêmes transitions/paramètres), matériaux `Boss3/Materials/M_Archon*` (porcelaine et
+  or = PaintedMetal, cristal et corruption = PaintedCrystal, cœur/lumière/fêlures = URP Unlit). Prefab
+  BossCorruptedSource : enfant ArchonMesh (échelle 0,18, y -0,31) à la place de RiftSerpentMesh, _bodyRenderer remappé.
+  Modèle du serpent v2 et RiftSerpent.controller laissés dans le projet (plus utilisés).
+- BossBase.UpdateGlowEffect : lueur de charge posée MATÉRIAU PAR MATÉRIAU (teinte x couleur d'origine) sur un modèle à
+  plusieurs matériaux ; avant, un bloc sur tout le rendu aurait blanchi l'or.
+- Essai en jeu (captures) : silhouette lisible vue du dessus, Frappe et cercle au sol corrects, console vide.
+- PASSE HAUTE DÉFINITION (retour : « on voit clairement les GameObjects 3D, il faut bien plus de faces ») : ~23 k ->
+  ~233 k triangles. Segments x1,4-2 partout, subdivision sur la porcelaine, profil du torse interpolé (Catmull-Rom),
+  filets d'or le long de courbes lissées, ailes et jupe refaites en LAMES effilées à arête centrale (`leaf()`), cœur plus
+  facetté ; cristaux volontairement facettés. Coût mesuré en jeu : +0,3 ms par image (4,18 -> 4,50 ms).
+- Reste : avis de l'utilisateur en partie, projectiles/cristaux à accorder, illustration du Grimoire à refaire.
+
+### 2026-11-25/26 — Tir de base en 3 paliers (groupe 5) : Double Tir, Triple Tir, DÉLUGE
+- Décidé avec l'utilisateur : carte Double Tir à 3 paliers (SO _maxLevel 1 -> 3, 3 pastilles, PAS de point bleu de
+  déblocage) ; tir LINÉAIRE (gouttes à la suite sur la même ligne, pas d'éventail) ; palier 3 = Déluge, jet continu,
+  1 goutte / 0,1 s, chaque goutte vise l'ennemi le plus proche ; la CADENCE N'ACCÉLÈRE PAS le Déluge (choix utilisateur),
+  aux paliers 1-2 elle raccourcit l'attente entre salves (jamais l'écart 0,1 s entre gouttes d'une salve).
+- WeaponBase : _shotLevel (0-3), salves FireBurst, Déluge sur minuteur propre, _delugeDamageFactor 0,85 (le Déluge doit
+  rester au-dessus du Triple Tir avec Cadence max : 3 x 2,5 = 7,5 gouttes/s), Fragmentation 1 goutte sur 10 au Déluge,
+  éclaboussure 1 goutte sur 3 (ProjectileBasic.SkipImpactFX). Les chiffres de dégâts se regroupaient déjà (0,15 s).
+- UpgradeData : Name = palier actuel, CardTitle = palier proposé (UpgradeUI), textes par palier, IsAvailable jusqu'au
+  palier 3 ; carte Cadence plus proposée si aucun sort de tir n'en profite (AnyWeaponUsesFireRate, Déluge exclu).
+  5 textes traduits (entrées 780-784), polices reconstruites.
+- MESURE (Lyra, horde dense à 3:20, invincible, une seule arme, 20 s) : tir nu 620 PV/s, Déluge 2 688 PV/s (x4,3),
+  Pierres runiques max 1 834 PV/s -> Déluge ≈ x1,5 une arme moyenne max. Pause vérifiée en capture (« Triple Tir », 3 pastilles).
+- VALIDÉ en partie par l'utilisateur (0,85 gardé). Chiffres de dégâts (2026-11-26) : un ajout fusionné ne refait plus
+  l'apparition depuis l'échelle 0 (petite pulsation 1 -> 1,15), la montée est bornée (le nombre reste en place),
+  et une fusion dure au plus 1,5 s (DamageNumberSpawner._maxFuseDuration) : sur un boss, un nouveau total démarre.
+
+### 2026-11-25 — Boss 3 : Serpent v2 ANIMÉ dans Blender et intégré (le site de l'utilisateur a été abandonné)
+- `Blender/build_serpent_rig_v2.py` (objet Serpent2_Rig) : 40 os de colonne + head + jaw ; ORIGINE AU MILIEU du serpent
+  (centre de masse au repos, maillage décalé de -14,06 m) ; poids depuis les attributs 'anchor' / 'part' du modèle
+  (cristaux rigides, mâchoire sur « jaw », tête rigide).
+- Animations à 60 i/s, une clé par image : la FORME du corps est dessinée à chaque image (cap θ(q) + levée H(q) le
+  long de la colonne, longueurs d'os conservées), tournée pour que la tête regarde +Y, puis RECALÉE pour que le centre de
+  masse (sections pondérées par r²) soit exactement à l'origine -> aucun déplacement parasite en jeu. Idle 3 s (S + avant
+  dressé, respiration), Slither 2 s (ondulation progressive), Bite 1,4 s (se ramasse, gueule grande ouverte, frappe, la
+  mâchoire claque), Coiled 2 s (anneau, avant dressé, frémissement), Dance 2,4 s (crochet, avant dressé qui balance),
+  Death 2,5 s (sursaut, effondrement avec rebond, tête qui tombe de côté). Bas du corps jamais sous le sol (vérifié).
+- Export `Boss3/SK_RiftSerpent_v2.fbx` (l'export embarque aussi les actions v1 : clips filtrés sur « |Serpent2_ »),
+  Read/Write ACTIVÉ (nécessaire à BossBodyShape). RiftSerpent.controller -> nouveaux clips. Prefab : anciens modèles
+  (Tripo + v1) SUPPRIMÉS, RiftSerpentMesh centré sur le pivot (échelle 0,2), _bodyRenderer rebranché.
+- HITBOX : la cause du décalage était BossBodyShape, qui découpait AUSSI les maillages désactivés (l'ancien serpent
+  figé) -> il ignore maintenant les objets inactifs. La boîte suit le corps animé (≈ 6,5 x 30 m allongé).
+- FRAPPE (BossCorruptedSource.RearingStrikeAttack) : le pivot étant au milieu, le cercle est posé à _strikeLungeDistance
+  DEVANT LA TÊTE (HeadForwardDistance, os « head ») et la ruée amène la tête dessus ; dégâts au centre du cercle.
+- Vérifié en Play (F3) : Idle -> Frappe (ruée + Bite) -> Idle, aucune erreur console.
+- Retour « beaucoup trop grand » : RiftSerpentMesh 0,2 -> 0,11 (serpent ≈ 15 m au lieu de 28, tête ≈ 5,7 m devant le
+  pivot en Idle). Hitbox et Frappe suivent seules (calculées sur le modèle).
+- Projectiles et cristaux du boss 3 (même jour, `Blender/build_boss3_fx.py`) : NUANCE voulue entre les deux (on les
+  confondait) - projectile = SM_RiftShard (éclat d'obsidienne effilé + 2 barbes, M_RiftShardShell / cœur BORDEAUX sourd
+  M_RiftShardCore, échelle 5,6, halo bordeaux 0,3, BossTrail bordeaux, vapeur verte retirée ; orienté dans le sens du tir
+  et vrille sur l'axe de vol, EnemyProjectile) ; cristal de pulsation = SM_RiftCrystal (grappe de prismes comme les
+  nervures du capuchon, M_RiftCrystalShell / cœur INDIGO M_RiftCrystalCore, halo et lumière indigo, même taille
+  d'ensemble). 1re capture : éclats trop sombres et fins sur l'herbe -> agrandis et éclaircis (non revérifié en capture).
+
+### 2026-11-25 — Boss 3 : Serpent v2 « à plat » pour le site d'animation de l'utilisateur
+- Retours sur la v1 : animations pas bonnes, hitbox mal placée, pas assez long, gueule à ouvrir, pas assez détaillé.
+  L'utilisateur fera les ANIMATIONS SUR SON SITE -> modèle livré droit et TOUT À PLAT (tête comprise), aucun sommet sous
+  le sol (vérifié : min z = 0 dans Blender, min y = 0 dans Unity).
+- `Blender/build_serpent_v2.py` (objet SK_Serpent_Flat) : 28 m (30,3 avec la lame), gueule ouverte de 30° (mâchoire
+  inférieure posée au sol, crâne pivoté autour de la charnière), crochets recourbés + 2 rangées de dents + langue fourchue,
+  palais rouge sombre, yeux à pupille fendue, narines, arcades, écussons, cornes et épines de joue en cristal ; écailles
+  dorsales imbriquées, écailles latérales en rangées décalées et plaques ventrales EN GÉOMÉTRIE ; capuchon = membrane entre
+  13 nervures de cristal, couché à 55° (lisible de dessus) ; crête en grappes, épines des flancs, 5 excroissances de cristal
+  corrompu, lame de queue dentelée. 46 000 sommets dans Unity, 9 matériaux.
+- `build_serpent_tex_v2.py` : textures 2048 (albédo, veines, NORMALES). Shader Aether/SerpentSkin + carte de normales.
+- Fichiers : `Assets/Game/3D Models/Boss3/SK_RiftSerpent_Flat.fbx` (Unity, matériaux M_Serpent* prêts) et
+  `Blender/Export/RiftSerpent_Flat.glb` (textures incluses, pour le site).
+- Prefab BossCorruptedSource REMIS dans son état d'avant (ancien modèle actif, capsule d'origine) en attendant les
+  animations ; RiftSerpentMesh (v1) désactivé. À l'arrivée du modèle animé : nouveau contrôleur avec les 6 clips, tête au
+  pivot du boss, hitbox calée sur le corps.
+
+### 2026-11-25 — Boss 3 : nouveau modèle « Serpent de la Faille » (1re version, remplacée par la v2)
+- Concept validé : Aether corrompu (obsidienne / bleu nuit, veines rouges, yeux rouges), tête de vipère, capuchon de
+  cobra en éclats de cristal (2 rangées, ±100°), cornes de cristal, crête dorsale décroissante, queue en lame. 15 m droit.
+- Blender (fichier AS_Lot1_Projectiles.blend, objets SK_Serpent_Rest / Serpent_Rig / SK_Serpent_PosePreview) :
+  `Blender/build_serpent.py` (modèle par code, attribut 'anchor' = point de la colonne de chaque sommet ; un cristal entier
+  partage l'ancrage de sa base -> rigide), `build_serpent_tex.py` (UV + T_Serpent_Albedo / T_Serpent_Veins générées : écailles
+  en losange, plaques ventrales, veines par plaques + ligne dorsale ; cristaux = « barycentriques » PaintedCrystal en couleur
+  de sommets), `build_serpent_rig.py` (30 os + head, poids depuis 'anchor', 6 actions Idle/Slither/Bite/Coiled/Dance/Death :
+  ondes latérales définies par la FORME du corps en mètres -> pas de dérive cumulée ; vérifié : tête Idle ±0,25 m à 2,5 m).
+  Export `Assets/Game/3D Models/Boss3/SK_RiftSerpent.fbx` (rig Generic, bakeAxisConversion, clips renommés, boucles).
+- Unity : shader `Aether/SerpentSkin` (3 tons + liseré + veines HDR qui pulsent le long du corps + ShadowCaster de Lit),
+  M_SerpentSkin / M_SerpentCrystal (PaintedCrystal obsidienne, arêtes violet sombre) / M_SerpentGlow (Unlit rouge double
+  face) ; contrôleur `Boss3/RiftSerpent.controller` = copie de Snake.controller (mêmes paramètres/transitions, nouveaux clips).
+  Prefab BossCorruptedSource : enfant RiftSerpentMesh (échelle 0,2 car racine x5, TÊTE AU PIVOT : la Frappe applique ses
+  dégâts à la position du boss ; corps 13 m derrière), ancien BossCorruptedMesh (Tripo) DÉSACTIVÉ (à supprimer une fois
+  validé), capsule le long du corps (direction Z, centre (0 ; 0,18 ; -1,3), h 2,9, r 0,22 en local).
+- Reste : projectiles et cristaux du boss 3 (encore verts) à refaire dans les couleurs du serpent, SANS rouge vif (règle).
+
+### 2026-11-25 — Projectiles des boss 1 et 2 (groupe 4)
+- La forme ET les couleurs viennent du boss, discrètes comme les tirs des ennemis de base ; projectiles petits et nets.
+  RÈGLE de l'utilisateur : le ROUGE est réservé aux ZONES AU SOL à esquiver (un 1er essai tout rouge : « trop rouge »).
+  Blender : `Blender/build_boss_projectiles.py`.
+- Dragon de Mana (argent/cyan) : SM_DragonDart (pointe de flèche facettée + nervure), M_DragonDartSteel (PaintedMetal,
+  reflets cyan) + M_DragonDartCore (URP Unlit cyan pâle) ; échelle 4,1 ; orienté dans le sens du tir ; halo cyan léger
+  (alpha 0,22). Fumée et braises retirées.
+- Cerf Ancestral (blanc, bois de cristal, mousse) : SM_DeerThorn (épine + 2 ramures, coque + cœur), M_DeerThornShell
+  (PaintedCrystal blanc givré) + M_DeerThornCore (cœur vert mousse) ; échelle 4,8 ; pointe dans le sens du tir, vrille sur
+  l'axe de vol ; halo BLANC givré (le vert disparaissait sur l'herbe). Pollen retiré.
+- Commun : « BossTrail » (M_FX_SoftTrail, couleur du boss, alpha 0,4, 0,14 s, 0,18), vidée au réemploi du pool
+  (ShowVisual). Vérifié en vraie partie (DebugSpawnBossIndex 0 et 1, captures).
+- Boss 3 (Serpent de la Faille) : modèle à refaire (concept validé, voir mémoire), ses tirs et cristaux ensuite.
+
+### 2026-11-25 — Optimisation des gemmes d'XP (3e passe)
+- Mesure dans la partie de l'utilisateur (« ce qui fait chuter les fps de moitié ») : 9 677 gemmes au sol à 5:50 (7 320 à
+  l'écran), XPGemField ≈ 2 ms/image (le plus gros poste), +~1 000 gemmes toutes les 45 s ; la Valse ne pèse que ~0,35 ms.
+- XPGemField réécrit en 2 couches (règle inchangée : aucune gemme retirée, fusionnée ni plafonnée, aimant intact) :
+  shader `Aether/XPGemField` (matériau `Resources/FX/M_XPGemField`, inclus dans la build) qui calcule flottement et
+  respiration à partir d'une horloge `_XPGemClock` (arrêtée en pause) ; couche des gemmes POSÉES triée et reconstruite
+  par lots (1 fois/s max, fusion de la liste triée avec les nouvelles ; tri complet seulement si la caméra tourne de
+  plus de ~2,5°), gemme ramassée/aspirée = quad à l'échelle 0 (4 sommets renvoyés) ; couche EN MOUVEMENT (saut,
+  aspiration, gemmes en attente du lot) refaite chaque image. Ordre d'affichage : posées sortingOrder -2, en mouvement -1.
+- Vérifié en Play : 0 incohérence sur 2 693 contrôles image par image (`DebugValidate`, éditeur) en marchant dans
+  15 000 gemmes, pendant une aspiration totale et une nouvelle vague ; rendu identique (capture). Coût : 15 000 gemmes
+  ≈ 0,06 ms/image (Update compris) contre ~2 ms pour 8 000 avant ; reconstruction ~0,4 ms pour 10 000 gemmes.
+  Marqueurs profileur `XPGemField.RebuildSettled` / `XPGemField.RenderMoving`.
+
 ### 2026-11-22 — Petites retouches (lueurs, Pause, Réputation, gouttelettes, icône Dégâts)
 - Lueurs blanches de la carte (AmbientManaMotes, Game.unity) : 45 -> 22 motes au réglage maximal, opacité 0,8 -> 0,55.
 - Menu Pause : mot de difficulté du défi en variante SOBRE (DifficultyStyle.WrapInFont(..., sober: true)) : teintes plus profondes, sans lueur colorée, contour sombre gardé ; l'annonce de début de partie garde la variante vive.
@@ -89,6 +373,98 @@ Dernier commit : `9aba757` du 2026-11-18 (« Polish »). Arbre de travail propre
   vers l'arrière, flammèches sur le pourtour de la tête, voile plus transparent au centre de la tête pour la profondeur).
   M_SoftFire_Core/Mid/Outer (files 3000/3001/3002). Version cartoon supprimée (ToonFire). Test : gros plans avec
   UniversalAdditionalCameraData.renderPostProcessing = true pour voir le bloom (sinon caméra temporaire sans post-traitement).
+- Boule de feu v3 VALIDÉE. Pierres runiques : lueur rose des gravures ACTIVÉE (validée sur comparaison avant/après) via
+  OrbitalProjectile.GlowingCopy (copie avec _EMISSION, même cause que les spores).
+- Save de test de l'éditeur : lyraUnlocked = true (demande utilisateur, 2026-11-22).
+- COUTEAUX DE LYRA (ProjectileShuriken.prefab) : dague argentée détaillée SM_LyraDagger (lame à arête et biseaux, garde à
+  boules, poignée cerclée, pommeau étagé ; M_DaggerBlade/Silver/Grip), pointe devant, à plat, ombre portée ; souffle de
+  la carte = 2 rubans menthe + rose (TrailRenderer, M_FX_Dust) qui tournent autour de l'axe de vol (KnifeSwirl) -> spirale ;
+  petites étincelles. CORRIGÉ dans ProjectileBasic : l'angle de départ aléatoire (_spinAngle) n'est plus tiré que si
+  _visualSpin != 0 (sinon la dague était vue tantôt à plat, tantôt par la tranche).
+  Astuce test : Time.timeScale = 0.12 pour capturer un projectile rapide (les rubans/rotations suivent le temps du jeu).
+- Couteaux v2 (retour : « pas assez gros, on ne voit pas les reliefs, fais-les un peu tourner, les lueurs se voient trop ») :
+  dague x1,5 (visuel seul), shader Aether/PaintedMetal (facettes en 3 tons, reflet chrome peint ciel/sol, soleil, éclat qui
+  glisse sur la lame, liseré d'encre en 2e passe avec normales ADOUCIES rangées dans la couleur des sommets - conversion
+  Blender->Unity (x,y,z) = (-x, z, -y) -, passe d'ombre portée maison), balancement ±40° autour de l'axe de vol (KnifeRoll,
+  sur le pivot "DaggerRoll"), rubans plus fins/plus transparents/plus courts. VALIDÉS.
+- DAGUES v3 « LAME CROISSANT » (2026-11-25, retours lot 1 groupe 2 : « fait épée de chevalier », lueur tourbillon moche) :
+  identité de Lyra = croissant de lune (bâton, épaulière, boucle) + bleu nuit + gemmes violettes ; contraste « blanc de lune »
+  voulu par l'utilisateur (réf. ambiance Diana de LoL). SM_LyraDagger refait (script Blender procédural, mêmes encombrement
+  et axes) : lame en croissant bleu nuit, fil argenté sur les deux tranchants, garde en croissant cornes vers l'avant, gemme
+  violette (4e sous-maillage, nouveau M_DaggerGem en PaintedMetal), poignée bleu-violet, pommeau argent. M_DaggerBlade/Grip
+  recolorés. KnifeSwirl à 0°/s (sert à vider la traînée), rubans menthe/rose -> 1 traînée MoonEdge (blanc -> bleu pâle ->
+  violet, fuseau) au ventre de la lame ; traînée centrale de ProjectileBasic coupée (_trailWidthFactor 0).
+  WaltzDagger (Valse) hérite de la forme (+ gemme).
+  Retouche (« traînée mal calée, trop de blanc en permanence, on voit moins la dague ») : MoonEdge ENFANT de la dague
+  (suit le balancement), à l'extérieur du ventre (local mesh +X = côté bombé, (0,15 ; 0,02 ; -0,26)), plus fine (0,2) et
+  plus transparente ; KnifeSwirl déplacé sur la dague (Swirl/MoonTrail supprimé) ; étincelles supprimées ; éclat de la
+  lame 1,2 -> 0,55 et 2x moins fréquent.
+  DAGUES : la détection (15 m) dépassait l'aller du boomerang (9 m) -> salves dans le vide ; détection = aller + 1 m
+  (WeaponShurikenBarrage.DetectionRange). DAGUES v3 VALIDÉES par l'utilisateur (2026-11-25).
+- VALSE DE LUNE (2026-11-25, groupe 3 : lueur « trop simple », charge « violet éclaté moche ») - BladeWaltzVFX :
+  - lame = SM_LyraDaggerCrystal (Blender/build_waltz_moon.py : même dague, lame en « barycentriques » PaintedCrystal :
+    r/g = 0 sur les lignes de facettes en long, b = 0 tous les 7 segments, a = nuance ; les autres pièces gardent
+    OutlineN) ; M_WaltzBladeCrystal en glacier/lavande (alpha 0,62, irisation 0,25) ;
+  - traînée à la POINTE (TipLocal (0,0,-0,46) x échelle) -> arcs en croissant avec la rotation ; M_FX_SoftTrail, blanc ->
+    glacier -> violet ; 0,15 s à l'aller, 0,22 s au retour ; allumée seulement au 1er SetBlade (sinon trait centre-pointe) ;
+  - charge = 5 croissants de cristal 3D (SM_MoonShard, Resources/FX/WaltzMoonShard, M_MoonShard piloté par
+    MaterialPropertyBlock) à 0,9 m, cornes vers l'extérieur, bleu nuit translucide -> blanc lunaire ; Kaléidoscope : ils
+    filent à +5 m en rétrécissant + éclat blanc au sol (halo violet supprimé).
+  Test sans partie : un BladeWaltzVisual piloté par un MonoBehaviour de test + Time.timeScale 0,08 (sinon l'éditeur en
+  arrière-plan a trop peu d'images pour dessiner les arcs).
+  Retouche (« on voit beaucoup les lueurs blanches ; bords des deux côtés très visibles, ça fait pas jeu terminé », aussi
+  pour la traînée de l'Orbe de cristal) : M_FX_SoftTrail n'avait AUCUNE texture -> ruban uniforme à bords nets. Ajout de
+  T_TrailSoftEdge (Lot1/Textures/FX, dégradé en largeur : cœur plein puis fondu jusqu'à 0 aux bords, sans compression)
+  -> s'applique à la Valse, au reflet MoonEdge des Dagues et à l'Orbe de cristal. Largeurs compensées (Valse 0,26 x
+  taille, MoonEdge 0,24, Orbe rayon x 2,4) ; Valse moins opaque (0,55/0,65 en tête, 0,32 au milieu).
+  EXPORT FBX : apply_scale_options FBX_SCALE_ALL + bake_space_transform (sinon échelle cm + rotation 270°), colors_type
+  LINEAR (OutlineN = normale lissée *0.5+0.5 en repère Blender), et TRIER LES FACES PAR MATÉRIAU avant export (Unity
+  numérote les sous-maillages dans l'ordre d'apparition des faces). Capture : caméra temporaire + Render() ne dessine pas
+  les opaques en Play -> passer par Camera.main + ScreenCapture.
+- ORBE REBONDISSANT (Resources/BouncingOrbProjectile.prefab) : enfant "Crystal" = SM_CrystalOrb (80 grandes facettes
+  irrégulières + cœur taillé de 80 facettes), shader Aether/PaintedCrystal (nuance glacier/lavande par facette, 3 tons,
+  reflets irisés sur ~45 % des facettes, arêtes blanches d'épaisseur constante à l'écran via barycentriques en couleur de
+  sommets, liseré Fresnel, translucide -> cœur lumineux visible) ; seul le cœur fait de l'ombre (passe ShadowCaster coupée
+  sur M_CrystalShell). Rotation lente identique à chaque orbe (CrystalTumble), brume bleue + étoiles, traînée bleu glacier
+  (BouncingOrbProjectile, plus le jaune des dégâts). La sphère "Sphere" garde la collision (rendu coupé).
+- Orbe v2 (retour : « style boule disco », rotation comme une boule au sol, traînée, plus gros hitbox comprise) : racine du
+  prefab x1,35 (collision et bornes suivent via lossyScale), CrystalTumble = ROULEMENT selon le déplacement réel, arêtes plus
+  discrètes, traînée large (rayon x1,5) en ruban uni Resources/FX/M_FX_SoftTrail.
+- VALSE DES LAMES (fusion Couteaux + Orbe) : dagues de Lyra à lame de CRISTAL (Resources/FX/WaltzDagger, M_WaltzBladeCrystal
+  + métal peint), taille héritée des Couteaux (x1,6 au max : visuel + zone de touche), dégâts 0,15 -> 0,17.
+  MESURE 2026-11-23 (Lyra, Modéré, 3:20, invincible, tir de base coupé, 60 s de jeu x2, dégâts ÷3 pour éviter la
+  saturation) : Couteaux+Orbe maxés 522 PV/s, Valse 866 PV/s = x1,66 seulement (cible x2,2-2,9 ; le rework des Couteaux
+  a renforcé les sources). Sans ÷3 : 1153 vs 1320 (saturé). Facteur passé à 0,25 (+45 %, validé par l'utilisateur, ~x2,4 estimé, non remesuré).
+  Tests : le palier Violent de l'utilisateur est verrouillé dans la save de test -> passer DifficultyTiers.Current à
+  Moderate pour lancer, puis le remettre (fait).
+- RENOMMAGES (2026-11-23, validés par l'utilisateur) : Couteaux -> Dagues, Orbe Rebondissant -> Orbe de cristal, Orbitaux ->
+  Pierres runiques, Aura -> Aura de mana (clé déjà existante, celle du panneau perso), Boue -> Marécage. Descriptions et
+  paliers réécrits sans répéter le nom de la carte (« Elles gravitent… », « sphères taillées », « lames »…), 11 langues,
+  formes plurielles PL/RU mises à jour, polices reconstruites. Entrée « Salve de couteaux » (id 425) laissée, inutilisée.
+  À faire par l'utilisateur : nouvelle illustration pour l'Aura de mana (prompt fourni ; l'aura EN JEU est VERTE menthe/émeraude,
+  WeaponAura._auraRingColor + AuraShockwaveVFX -> image verte, fond magenta uni à détourer).
+- Vérif des cartes : FR + EN capturées en jeu (OK) ; autres langues par comparaison de longueur avec les textes de cartes déjà
+  validés -> raccourcis : desc. Orbe de cristal DE et KO. Aussi corrigés (répétition du nom) : « +1 pierre supplémentaire »,
+  « +{0}% de vitesse ». Capture des cartes par MCP : changer la langue, PUIS afficher (DisplayUpgrades), attendre 1 appel, capturer.
+- TIRS DES BOSS (EnemyProjectile.Look BossDragon/BossDeer/BossSource, BossBase.BossProjectileLook redéfini par le Cerf et la
+  Source) : Dragon = flamme CRAMOISIE en comète (SM_FireballFlame + SoftFire recoloré M_DragonFire_0-2, orientée dans le sens
+  du tir, fumée sombre + braises rouges) ; Cerf = larme d'AMBRE (SM_CrystalOrb + PaintedCrystal or/miel M_BossAmber(Core),
+  pollen doré, tourne lentement) ; Source = éclat d'OBSIDIENNE hérissé (SM_CorruptShard, M_BossObsidian + M_BossPoisonCrystal,
+  arêtes vert poison, vapeur verte, tournoie). Couleurs absentes des sorts du joueur. Particules : tailles en unités monde
+  (pas réduites par l'échelle 0,3 du projectile). Vérifié en tir de démonstration + vrai combat contre la Source.
+- Carte Aura de mana : icône AuraV2.png (image MetaAI de l'utilisateur, fond framboise détouré par démixage sur le VERT,
+  sinon liseré gris dans la fumée ; .jpg d'origine conservé), aussi dans CharacterInfoPanel._weaponIcons (MainMenu.unity).
+  ATTENTION : modifier une scène OUVERTE sur le disque bloque Unity (dialogue de rechargement) -> passer par l'API Unity.
+- DebugCheats F1/F2/F3 : avancent le chrono ET appellent WaveManager.DebugSpawnBossIndex(0/1/2) -> boss voulu tout de suite
+  (avant, F3 redonnait le 1er boss non battu).
+- CRISTAUX DU BOSS 3 (Prefabs/VFX/OrbitalCrystal.prefab, 6 autour de la Source) : SM_CorruptCrystal (bipyramide d'obsidienne
+  + cœur lumineux + 2 éclats à la base), M_CorruptCrystalShell (obsidienne translucide, arêtes vert poison) + Core vert,
+  halo vert, lumière ponctuelle passée du bleu au vert. Hiérarchie : racine (échelle 0,4/0,6/0,4 d'origine, garde collision
+  + lumière, rendu sphère coupé) > Comp (compense l'échelle, remonté à 1,3 m : avant, à demi enterrés) > Spin (incliné de 40°
+  vers l'arrière : sinon vu de dessus on ne voit que la pointe) > Crystal (SpinY : tourne sur son axe + flotte).
+  Cœur passé au vert franc : nouveau réglage _CoreWhite de PaintedCrystal (part de blanc mélangée au cœur, 1 par défaut =
+  rendu d'origine de l'Orbe de cristal ; 0,25 sur M_CorruptCrystalCore).
+  LOT 1 DES MODÈLES BLENDER TERMINÉ (reste à valider par l'utilisateur : tirs des boss, cristaux).
 - Test rapide (DebugCheats, Éditeur/build de dev) : Page préc. = « tireurs seulement » (retire les ennemis, ne fait plus
   apparaître que Gobelins + Bulbes, EnemySpawner.DebugShootersOnly), Page suiv. = lance l'Éclipse tout de suite.
 - Carte Dégâts : icône DégâtsV2 (SO_Upgrade_Damage) ; le Grimoire et le level-up suivent.
@@ -2653,3 +3029,11 @@ Gros lot de retours utilisateur (captures d'écran à l'appui), traités un par 
 
 - **Bornes de carte encore trop grandes** (retour utilisateur : "raccourci encore un peu la range entre chaque côté pour les murs invisible") : `DifficultyTiers.GetBounds` - Violent Z=±15 → ±12, Apocalyptique ±25 → ±22 sur les 2 axes.
 - **Barre de vie invisible pendant le choix de carte de level-up** (retour utilisateur : "si il y a l'upgrade Soin qui tombe, le joueur ne peut pas savoir à l'avance combien de vie il a") : `LevelUpManager.DisplayLevelUp()` masquait tout `GameUI._hudPanel` (donc aussi "Health", son enfant direct - voir `HudStyler.ApplyBars`) via `SetHUDVisible(false)`. Nouveau paramètre `GameUI.SetHUDVisible(bool visible, bool keepHealthBar = false)` : au lieu de désactiver tout le panneau, il reste actif et chaque enfant direct est désactivé individuellement SAUF "Health" - restauré normalement à la fermeture (`SetHUDVisible(true)` réactive tous les enfants). Seul l'appel de `DisplayLevelUp()` passe `keepHealthBar: true` ; les écrans de fin de partie et le menu pause (autres appelants de `SetHUDVisible(false)`) continuent de tout cacher, inchangés.
+
+## 2026-11-25 - retours du lot 1, groupe 1 (petites retouches)
+- Dagues de Lyra : au retour, demi-tour sur les 2,6 derniers mètres (ProjectileBasic._catchFlip) -> arrivent manche en avant.
+- Pierres runiques : Visual 1,25 -> 1,45 (visuel seul, zone de touche inchangée).
+- Orbe de cristal : traînée = diamètre de l'orbe (_orbRadius x2), pleine sur la 1re moitié, 0,6 s, opacité 0,85.
+- Carte Dagues : « Portée : les lames vont plus loin avant de revenir » (plus de mètres), « Lames larges : lames plus
+  grandes, zone de frappe élargie » (ids 695/696, 11 langues).
+- Valse des Lames : lames à taille de base (taille des Dagues plus héritée), dégâts x0,2 (+20 % au lieu de +45 %).

@@ -25,7 +25,25 @@ public class EnemyProjectile : MonoBehaviour
     // [...] avec sa rotation actuelle on a l'impression que c'est une boule au sol qui avance ») - la braise devient un globe de
     // venin violet à cœur lumineux (visible de jour comme pendant l'Éclipse), et il ne roule plus : il est étiré dans le sens
     // du vol, ondule comme un liquide lancé et tourne sur l'axe de vol (comme une balle), ce qui se lit « en l'air ».
-    public enum Look { Plain, Venom, Spore }
+    // AJOUTÉ (2026-11-23, tirs des boss - retour utilisateur : « pas obligé que ce soit orange [...] il faut juste une couleur
+    // pas trop proche du kit de sorts ») - un projectile par boss, dans une couleur absente des sorts du joueur : Dragon = flamme
+    // draconique CRAMOISIE en comète (orientée dans le sens du tir), Cerf = larme d'AMBRE taillée (or/miel) qui tourne
+    // lentement + feuilles, Source corrompue = éclat d'OBSIDIENNE hérissé, fissures vert poison, qui tournoie.
+    // MODIFIÉ (2026-11-25, retours lot 1 groupe 4 : « les projectiles restent petits et nets », comète rouge du Dragon
+    // rejetée, magma orange « sans rapport » avec le Cerf) - forme ET couleurs du boss, discrètes comme les tirs des ennemis
+    // de base (le ROUGE est réservé aux zones au sol à esquiver : un premier essai en rouge a été jugé « trop rouge ») ;
+    // halo léger + courte traînée aux bords fondus (« BossTrail ») :
+    //  - Dragon de Mana (argent/cyan) = DARD D'ÉCAILLE en acier argenté, nervure cyan pâle, pointe dans le sens du tir ;
+    //  - Cerf Ancestral (blanc, bois de cristal, mousse) = ÉPINE DE BOIS DE CRISTAL blanc givré à cœur vert mousse, pointe
+    //    dans le sens du tir, qui tourne sur l'axe de vol (avant : culbute au hasard, on ne voyait pas d'où elle venait).
+    // Fumée sombre du Dragon et pollen du Cerf retirés (encombraient l'écran).
+    //  - Source corrompue (Serpent de la Faille, obsidienne) = ÉCLAT D'OBSIDIENNE effilé à cœur bordeaux sourd, pointe dans
+    //    le sens du tir, vrille sur l'axe de vol ; ses cristaux de pulsation sont à cœur INDIGO (nuance voulue : on ne doit
+    //    pas confondre les cristaux et leurs tirs). Vapeur verte retirée.
+    public enum Look { Plain, Venom, Spore, BossDragon, BossDeer, BossSource }
+    [SerializeField] private Transform _bossDragonVisual;
+    [SerializeField] private Transform _bossDeerVisual;
+    [SerializeField] private Transform _bossSourceVisual;
     [Header("Visuels par tireur")]
     [SerializeField] private Transform _venomVisual;
     [SerializeField] private Transform _sporeVisual;
@@ -48,6 +66,8 @@ public class EnemyProjectile : MonoBehaviour
     private float _venomSpin;
     private float _venomPhase;
 
+    private bool _renderPriorityDone;
+
     public void SetLook(Look look)
     {
         _look = look;
@@ -55,7 +75,18 @@ public class EnemyProjectile : MonoBehaviour
         if (_plainRenderer != null) _plainRenderer.enabled = look == Look.Plain;
         ShowVisual(_venomVisual, look == Look.Venom);
         ShowVisual(_sporeVisual, look == Look.Spore);
+        ShowVisual(_bossDragonVisual, look == Look.BossDragon);
+        ShowVisual(_bossDeerVisual, look == Look.BossDeer);
+        ShowVisual(_bossSourceVisual, look == Look.BossSource);
         _tumbleAxis = Random.onUnitSphere;
+        // dard du Dragon / épine du Cerf : pointe (-Z du modèle) dans le sens du tir
+        Vector3 aim = _direction.sqrMagnitude > 1e-4f ? _direction : Vector3.forward;
+        if (look == Look.BossDragon && _bossDragonVisual != null)
+            _bossDragonVisual.rotation = Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(0f, 180f, 0f);
+        if (look == Look.BossDeer && _bossDeerVisual != null)
+            _bossDeerVisual.rotation = Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(0f, 180f, Random.value * 360f);
+        if (look == Look.BossSource && _bossSourceVisual != null)
+            _bossSourceVisual.rotation = Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(0f, 180f, 0f);   // à plat (voir Update)
         if (look == Look.Venom && _venomVisual != null)
         {
             // le globe (enfant "Mesh") porte l'étirement ; le parent garde les particules et s'oriente dans le sens du vol
@@ -123,6 +154,7 @@ public class EnemyProjectile : MonoBehaviour
             ps.Clear(true);
             ps.Play(true);
         }
+        foreach (TrailRenderer tr in visual.GetComponentsInChildren<TrailRenderer>(true)) tr.Clear();   // BossTrail des boss
     }
 
     private Vector3 _direction;
@@ -145,6 +177,8 @@ public class EnemyProjectile : MonoBehaviour
     // existants qui n'utilisent pas ce paramètre).
     public void Init(Vector3 direction, string damageSource = "horde", float speedOverride = -1f)
     {
+        // AJOUTÉ (2026-11-27) - projectiles ennemis TOUJOURS visibles, au premier plan (voir RenderPriority)
+        if (!_renderPriorityDone) { RenderPriority.ApplyEnemyProjectile(gameObject); _renderPriorityDone = true; }
         _damageSource = damageSource;
         if (_baseSpeed < 0f) _baseSpeed = _speed; // capturée une seule fois, à la toute première utilisation réelle
         _speed = speedOverride > 0f ? speedOverride : _baseSpeed;
@@ -180,6 +214,15 @@ public class EnemyProjectile : MonoBehaviour
             float w = Mathf.Sin(_venomPhase * 17f) * _venomWobble;
             _venomMesh.localRotation = Quaternion.AngleAxis(_venomSpin, Vector3.forward);
             _venomMesh.localScale = Vector3.Scale(_venomBaseScale, new Vector3(1f / Mathf.Sqrt(_venomStretch) - w * 0.5f, 1f / Mathf.Sqrt(_venomStretch) - w * 0.5f, _venomStretch + w));
+        }
+        else if (_look == Look.BossDeer && _bossDeerVisual != null && _direction.sqrMagnitude > 1e-4f)
+            _bossDeerVisual.rotation = Quaternion.AngleAxis(240f * Time.deltaTime, _direction) * _bossDeerVisual.rotation;   // vrille sur l'axe de vol
+        else if (_look == Look.BossSource && _bossSourceVisual != null && _direction.sqrMagnitude > 1e-4f)
+        {
+            // MODIFIÉ (2026-11-26, Archonte v2) - plume-lame de lumière PLATE : une vrille la montrait de profil (invisible)
+            // la moitié du temps. Elle reste à plat face à la caméra et se balance doucement (±22°) autour de l'axe de vol.
+            _venomPhase += Time.deltaTime;
+            _bossSourceVisual.rotation = Quaternion.LookRotation(_direction, Vector3.up) * Quaternion.Euler(0f, 180f, Mathf.Sin(_venomPhase * 7f) * 22f);
         }
         else if (_look == Look.Spore && _sporeVisual != null)
         {

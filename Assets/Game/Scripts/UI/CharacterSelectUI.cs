@@ -315,9 +315,9 @@ public class CharacterSelectUI : MonoBehaviour
                 infoAccent           = new Color32(0x33, 0xC6, 0xF0, 0xFF),
                 displayName           = "LYRA",
                 tags                 = new[] { "DISTANCE", "PERFORANT", "SALVE" },
-                weaponName           = "Salve de couteaux",
-                weaponDescription    = "Lance une salve de couteaux qui transpercent les ennemis puis reviennent",
-                weaponUpgrades       = "Couteau en plus / Cadence / Perforation",
+                weaponName           = "Dagues",
+                weaponDescription    = "Lance une salve de lames qui transpercent les ennemis puis reviennent",
+                weaponUpgrades       = "Lame en plus / Portée / Lames larges",
                 branch               = SkillTreeData.CharacterBranch.Fantome,
                 branchName           = "FANTÔME",
                 branchFocus          = "Mobilité et dash"

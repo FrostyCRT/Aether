@@ -70,13 +70,13 @@ public class DebugCheats : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(_reachBoss1Key))
-            ReachBoss(Boss1Minute);
+            ReachBoss(Boss1Minute, 0);
 
         if (Input.GetKeyDown(_reachBoss2Key))
-            ReachBoss(Boss2Minute);
+            ReachBoss(Boss2Minute, 1);
 
         if (Input.GetKeyDown(_reachBoss3Key))
-            ReachBoss(Boss3Minute);
+            ReachBoss(Boss3Minute, 2);
 
         if (Input.GetKeyDown(_grantFullBuildKey))
             GrantFullBuild();
@@ -124,7 +124,10 @@ public class DebugCheats : MonoBehaviour
     // apparaît de lui-même dès la frame suivante, via la règle normale du jeu (WaveManager.Update()) : si le joueur a
     // déjà battu les boss précédents, c'est le bon qui spawne (ex: F2 sans avoir battu le Boss 1 refait spawner le
     // Boss 1, exactement comme s'il avait fallu 10 min pour l'atteindre - comportement normal, pas un bug).
-    private void ReachBoss(float minute)
+    // MODIFIÉ (2026-11-24, retour utilisateur : « si je veux accéder direct au boss 3, je dois d'abord battre le boss 1 et le
+    // boss 2 ») - avance le chrono ET fait apparaître directement le boss demandé (WaveManager.DebugSpawnBossIndex), sans
+    // passer par les boss précédents.
+    private void ReachBoss(float minute, int bossIndex)
     {
         if (GameManager.Instance == null)
         {
@@ -133,7 +136,8 @@ public class DebugCheats : MonoBehaviour
         }
 
         GameManager.Instance.DebugSetRunTimer(minute * 60f);
-        Debug.Log($"[DebugCheats] Chrono avancé à {minute:00} min.");
+        if (WaveManager.Instance != null) WaveManager.Instance.DebugSpawnBossIndex(bossIndex);
+        Debug.Log($"[DebugCheats] Chrono avancé à {minute:00} min, boss {bossIndex + 1} appelé.");
     }
 
     private void GrantFullBuild()
